@@ -9,7 +9,8 @@ CFLAGS += -I .
 C_SRCS  = ufsm.c
 C_SRCS += tests/ufsm_test.c
 C_SRCS += tests/simple.c
-C_SRCS += tests/orthogonal.c
+C_SRCS += tests/simple_substate.c
+#C_SRCS += tests/orthogonal.c
 
 
 OBJS = $(C_SRCS:.c=.o)
