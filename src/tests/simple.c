@@ -1,184 +1,99 @@
 #include <stdio.h>
+#include <assert.h>
 #include <ufsm.h>
 
 #include "simple.h"
 
 enum events {
-    EV_INIT,
-    EV_EVENT1,
-    EV_EVENT2,
-    EV_EVENT3,
-    EV_END,
+    EV_A,
+    EV_B
 };
 
+static struct ufsm_state A;
 
-bool flag_action1_called = false;
-bool flag_guard1_called = false;
-bool flag_guard2_called = false;
-
-bool guard1_return_val = false;
-bool guard2_return_val = false;
-
-bool guard1 (uint32_t ev) {
-    flag_guard1_called = true;
-    return guard1_return_val;
-}
-
-
-bool guard2 (uint32_t ev) {
-    flag_guard2_called = true;
-    return guard2_return_val;
-}
-
-
-void action1 (uint32_t ev) {
-    flag_action1_called = true;
-}
-
-
-
-struct ufsm_state state_state1;
-struct ufsm_state state_state2;
-
-struct ufsm_state state_init = {
+static struct ufsm_state simple_INIT =
+{
     .name = "Init",
-    .tbl = { 
-      /* Event  , Guards                , Actions , Next state     */
-        {EV_INIT, {guard1, guard2, NULL}, {NULL}  , &state_state1},
-        UFSM_SENTINEL
-    },
+    .kind = UFSM_STATE_INIT,
+    .next = &A
 };
 
-struct ufsm_state state_state1 = {
-    .name = "State1",
-    .tbl = { 
-        {EV_EVENT2, {guard1, NULL}, {action1, NULL}, &state_state2},
-        {EV_EVENT3, {NULL}, {NULL}, NULL},
-        UFSM_SENTINEL
-    },
+static struct ufsm_state B = 
+{
+    .name = "State B",
+    .kind = UFSM_STATE_SIMPLE,
+    .next = NULL,
+};
+
+static struct ufsm_state A = 
+{
+    .name = "State A",
+    .kind = UFSM_STATE_SIMPLE,
+    .next = &B,
 };
 
 
-struct ufsm_state state_state2 = {
-    .name = "State2",
-    .tbl = { 
-        {EV_EVENT1, {NULL}, {NULL}, &state_state1},
-        {EV_EVENT3, {NULL}, {NULL}, NULL},
-        UFSM_SENTINEL
-    },
+
+
+static struct ufsm_transition simple_transition_B = 
+{
+    .name = "EV_B",
+    .trigger = EV_B,
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .source = &A,
+    .dest = &B,
+    .next = NULL
 };
 
+
+static struct ufsm_transition simple_transition_A = 
+{
+    .name = "EV_A",
+    .trigger = EV_A,
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .source = &B,
+    .dest = &A,
+    .next = &simple_transition_B
+};
+
+static struct ufsm_transition simple_transition_INIT = 
+{
+    .name = "Init",
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .source = &simple_INIT,
+    .trigger = UFSM_NO_TRIGGER,
+    .dest = &A,
+    .next = &simple_transition_A,
+};
+
+static struct ufsm_region region1 = 
+{
+    .state = &A,
+    .transition = &simple_transition_INIT,
+    .next = NULL
+};
+
+static struct ufsm_machine m  = 
+{
+    .name = "Simple Test Machine",
+    .region = &region1,
+};
 
 bool test_simple() {
-    struct ufsm_machine m;
     bool test_ok = true;
-    bool err = false;
+    uint32_t err;
 
-    printf ("Simple test:\n");
-
-    ufsm_init (&m, &state_init);
- 
-    printf (" o Transition from INIT to STATE1: ");
-    guard1_return_val = true;
-    guard2_return_val = true;
-
-    err = ufsm_process(&m, EV_INIT);
-    
-    if (ufsm_state(&m) == &state_state1 && err == false &&
-        flag_guard1_called && flag_guard2_called) {
-        printf ("OK\n");
-    } else {
-        printf ("FAIL, %s %i\n", ufsm_state(&m)->name, err);
-        test_ok = false;
-    }
-
-    flag_guard1_called = false;
-    flag_guard2_called = false;
-    flag_action1_called = false;
-
-    printf (" o Unhandeled event: ");
-
-    err = ufsm_process(&m, EV_EVENT1);
-
-    if (err && !flag_guard1_called && !flag_guard2_called &&
-            !flag_action1_called) {
-        printf ("OK\n");
-    } else {
-        printf ("FAIL\n");
-        test_ok = false;
-    }
-
-    flag_guard1_called = false;
-    flag_guard2_called = false;
-    flag_action1_called = false;
-
-
-    printf (" o Transition from STATE1 to STATE2: ");
- 
-    err = ufsm_process(&m, EV_EVENT2);
-
-    if (ufsm_state(&m) == &state_state2 && err == false && flag_guard1_called
-        && !flag_guard2_called && flag_action1_called) {
-        printf ("OK\n");
-    } else {
-        printf ("FAIL\n");
-        test_ok = false;
-    }
-
-    flag_guard1_called = false;
-    flag_guard2_called = false;
-    flag_action1_called = false;
-
-
-    printf (" o Internal transistion in STATE2: ");
-
-    err = ufsm_process(&m, EV_EVENT3);
-
-    if (ufsm_state(&m) == &state_state2 && !err && !flag_guard1_called
-        && !flag_guard2_called && !flag_action1_called) {
-        printf ("OK\n");
-    } else {
-        printf ("FAIL\n");
-        test_ok = false;
-    }
-
-    flag_guard1_called = false;
-    flag_guard2_called = false;
-    flag_action1_called = false;
-
-
-    printf (" o Transition from STATE2 to STATE1: ");
-
-    err = ufsm_process(&m, EV_EVENT1);
-
-    if (ufsm_state(&m) == &state_state1 && !err && !flag_guard1_called &&
-        !flag_guard2_called && !flag_action1_called) {
-        printf ("OK\n");
-    } else {
-        printf ("FAIL\n");
-        test_ok = false;
-    }
-
-
-    flag_guard1_called = false;
-    flag_guard2_called = false;
-    flag_action1_called = false;
-    
-    guard1_return_val = false;
-
-
-    printf (" o Transition from STATE1 to STATE2 with guard1_val = false : ");
-
-    err = ufsm_process(&m, EV_EVENT2);
-
-    if (ufsm_state(&m) == &state_state1 && !err && flag_guard1_called &&
-        !flag_guard2_called && !flag_action1_called) {
-        printf ("OK\n");
-    } else {
-        printf ("FAIL, current_state = %s, err = %i\n",ufsm_state(&m)->name,err);
-        test_ok = false;
-    }
-
+    err = ufsm_init(&m);
+    assert (err == UFSM_OK && "Initializing");
+    assert (m.region->current == &A);
+    err = ufsm_process(&m, EV_B);
+    assert (m.region->current == &B && err == UFSM_OK);
+    err = ufsm_process(&m, EV_A);
+    assert (m.region->current == &A && err == UFSM_OK);
+    err = ufsm_process(&m, EV_B);
+    assert (m.region->current == &B && err == UFSM_OK);
+    err = ufsm_process(&m, EV_B);
+    assert (m.region->current == &B && err == UFSM_ERROR);
 
     return test_ok;
 }

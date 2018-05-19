@@ -4,53 +4,86 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#ifndef UFSM_MAX_GUARDS
-    #define UFSM_MAX_GUARDS 4
-#endif
+#define UFSM_OK 0
+#define UFSM_ERROR 1
 
-#ifndef UFSM_MAX_ACTIONS
-    #define UFSM_MAX_ACTIONS 4
-#endif
-
-#define UFSM_SENTINEL  {-1, {NULL}, {NULL}, NULL },
- 
+#define UFSM_NO_TRIGGER -1
 
 struct ufsm_state;
 struct ufsm_machine;
 struct ufsm_event;
+struct ufsm_action;
+struct ufsm_guard;
+struct ufsm_transition;
+struct ufsm_pseudo_state;
 
+typedef bool (*ufsm_guard_func) (void);
+typedef void (*ufsm_action_func) (void);
+typedef void (*ufsm_entry_exit_func) (void);
 
-typedef bool (*ufsm_guard) (uint32_t ev);
-
-typedef void (*ufsm_action) (uint32_t ev);
-
-
-typedef void (*ufsm_entry_exit) (void);
-
-struct ufsm_machine {
-    struct ufsm_state *state;
+enum ufsm_transition_kind {
+    UFSM_TRANSITION_EXTERNAL,
+    UFSM_TRANSITION_INTERNAL,
 };
 
-struct ufsm_table {
-    const int32_t event;
-    ufsm_guard guards[UFSM_MAX_GUARDS];
-    ufsm_action actions[UFSM_MAX_ACTIONS];
-    struct ufsm_state *next;
+enum ufsm_state_kind {
+    UFSM_STATE_SIMPLE,
+    UFSM_STATE_INIT,
+    UFSM_STATE_FINAL,
+    UFSM_STATE_SHALLOW_HISTORY,
+    UFSM_STATE_DEEP_HISTORY
+};
+
+struct ufsm_machine {
+    const char *name;
+    struct ufsm_region *region;
+};
+
+struct ufsm_action {
+    ufsm_action_func f;
+    struct ufsm_action *next;
+};
+
+struct ufsm_guard {
+    ufsm_guard_func f;
+    struct ufsm_guard *next;
+};
+
+struct ufsm_entry_exit {
+    ufsm_entry_exit_func f;
+    struct ufsm_entry_exit *next;
+};
+
+struct ufsm_transition {
+    const char *name;
+    int32_t trigger;
+    enum ufsm_transition_kind kind;
+    struct ufsm_action *action;
+    struct ufsm_guard *guard;
+    struct ufsm_state *source;
+    struct ufsm_state *dest;
+    struct ufsm_transition *next;
+};
+
+struct ufsm_region {
+    struct ufsm_state *current;
+    struct ufsm_state *history;
+    struct ufsm_state *state;
+    struct ufsm_transition *transition;
+    struct ufsm_region *next;
 };
 
 struct ufsm_state {
     const char *name;
-    const ufsm_entry_exit entry;
-    const ufsm_entry_exit exit;
-    struct ufsm_state *superstate;
-    struct ufsm_state *substate;
-    struct ufsm_state *composite;
-    struct ufsm_table tbl[];
+    enum ufsm_state_kind kind;
+    struct ufsm_entry_exit *entry;
+    struct ufsm_entry_exit *exit;
+    struct ufsm_region *region;
+    struct ufsm_machine *submachine;
+    struct ufsm_state *next;
 };
 
-uint32_t ufsm_init(struct ufsm_machine *m, struct ufsm_state *state);
+uint32_t ufsm_init(struct ufsm_machine *m);
 uint32_t ufsm_process (struct ufsm_machine *m, uint32_t ev);
-struct ufsm_state * ufsm_state (struct ufsm_machine *m);
-struct ufsm_state * ufsm_substate (struct ufsm_machine *m);
 
 #endif
