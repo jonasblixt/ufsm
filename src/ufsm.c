@@ -46,26 +46,30 @@ static uint32_t _ufsm_make_transition(struct ufsm_transition *t,
 
     /* Call exit functions in previous state */
     struct ufsm_entry_exit *f = t->source->exit;
-    while (f) {
-        f->f();
-        f = f->next;
+    if (t->kind == UFSM_TRANSITION_EXTERNAL) {
+        while (f) {
+            f->f();
+            f = f->next;
+        }
     }
 
     while (a) {
         a->f();
         a = a->next;
     }
-
+    
     printf ("OK\n");
 
     r->current = t->dest;
 
 
     /* Call entry functions in new state */
-    f = t->dest->entry;
-    while (f) {
-        f->f();
-        f = f->next;
+    if (t->kind == UFSM_TRANSITION_EXTERNAL) {
+        f = t->dest->entry;
+        while (f) {
+            f->f();
+            f = f->next;
+        }
     }
 
     struct ufsm_region *regions = t->dest->region;

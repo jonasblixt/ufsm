@@ -15,7 +15,6 @@ struct ufsm_event;
 struct ufsm_action;
 struct ufsm_guard;
 struct ufsm_transition;
-struct ufsm_pseudo_state;
 
 typedef bool (*ufsm_guard_func) (void);
 typedef void (*ufsm_action_func) (void);
@@ -35,26 +34,35 @@ enum ufsm_state_kind {
 };
 
 struct ufsm_machine {
+    const char *id;
     const char *name;
     struct ufsm_region *region;
+    struct ufsm_machine *next;
 };
 
 struct ufsm_action {
+    const char *id;
+    const char *name;
     ufsm_action_func f;
     struct ufsm_action *next;
 };
 
 struct ufsm_guard {
+    const char *id;
+    const char *name;
     ufsm_guard_func f;
     struct ufsm_guard *next;
 };
 
 struct ufsm_entry_exit {
+    const char *id;
+    const char *name;
     ufsm_entry_exit_func f;
     struct ufsm_entry_exit *next;
 };
 
 struct ufsm_transition {
+    const char *id;
     const char *name;
     int32_t trigger;
     enum ufsm_transition_kind kind;
@@ -65,7 +73,10 @@ struct ufsm_transition {
     struct ufsm_transition *next;
 };
 
+
 struct ufsm_region {
+    const char *id;
+    const char *name;
     struct ufsm_state *current;
     struct ufsm_state *history;
     struct ufsm_state *state;
@@ -74,6 +85,7 @@ struct ufsm_region {
 };
 
 struct ufsm_state {
+    const char *id;
     const char *name;
     enum ufsm_state_kind kind;
     struct ufsm_entry_exit *entry;
