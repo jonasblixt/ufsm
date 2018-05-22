@@ -33,6 +33,12 @@ enum ufsm_state_kind {
     UFSM_STATE_DEEP_HISTORY
 };
 
+struct ufsm_event {
+    const char *id;
+    const char *name;
+    struct ufsm_event *next;
+};
+
 struct ufsm_machine {
     const char *id;
     const char *name;

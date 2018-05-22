@@ -40,12 +40,96 @@ static bool is_type(xmlNode *n, const char *id)
 static struct ufsm_machine * ufsmimport_get_machine(struct ufsm_machine *root,
                                                     const char *id) 
 {
+    if (id == NULL)
+        return NULL;
+
     for (struct ufsm_machine *m = root; m; m = m->next) {
         if (strcmp((char *) id, (char *) m->id) == 0)
             return m;
     }
     return NULL;
 }
+
+static struct ufsm_region * _get_region(struct ufsm_region *r,
+                                        const char *id)
+{
+    struct ufsm_region *result = NULL;
+ 
+    if (strcmp((char *) r->id, id) == 0)
+        return r;
+
+    if (!r->state)
+        return NULL;
+
+    for (struct ufsm_state *s = r->state; s; s = s->next) {
+        if (s->region)
+            result = _get_region(s->region, id);
+
+        if (result)
+            return result;
+    }
+    
+    return NULL;
+}
+
+
+static struct ufsm_region * ufsmimport_get_region(struct ufsm_machine *root,
+                                                    const char *id) 
+{
+    struct ufsm_region *result = NULL;
+
+    if (id == NULL)
+        return NULL;
+
+    for (struct ufsm_machine *m = root; m; m = m->next) {
+        if (m->region)
+            result = _get_region(m->region, id);
+
+        if (result)
+            return result;
+    }
+    return NULL;
+}
+
+
+static struct ufsm_state * _get_state(struct ufsm_region *regions,
+                                      const char *id)
+{
+    struct ufsm_state *result = NULL;
+
+
+    for (struct ufsm_region *r = regions; r; r = r->next) {
+        if (r->state) {
+            for (struct ufsm_state *s = r->state; s; s = s->next) {
+                if (strcmp((char*) s->id, id) == 0)
+                    return s;
+
+                result = _get_state(s->region,id);
+
+                if (result)
+                    return result;
+
+            }
+        }
+    }
+    return NULL;
+}
+
+static struct ufsm_state * ufsmimport_get_state(struct ufsm_machine *root,
+                                                    const char *id) 
+{
+    struct ufsm_state *result = NULL;
+
+    for (struct ufsm_machine *m = root; m; m = m->next) {
+        if (m->region)
+            result = _get_state(m->region, id);
+
+        if (result)
+            return result;
+    }
+    return NULL;
+}
+
 
 
 static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m, 
@@ -84,6 +168,70 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
     }
     
     s->region = state_region_last;
+}
+
+
+static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
+                                             struct ufsm_region *r)
+{
+    struct ufsm_transition *t = NULL;
+    struct ufsm_transition *t_last = NULL;
+ 
+    if (n->children == NULL)
+        return UFSM_ERROR;
+
+    for (xmlNode *s_node = n->children; s_node; s_node = s_node->next) {
+
+        if (is_type(s_node, "uml:State")) {
+            for (xmlNode *r_node = s_node->children; r_node; r_node = r_node->next) {
+                struct ufsm_region *region = ufsmimport_get_region(m, 
+                                        (const char*) get_attr(r_node,"id"));
+                if (region)
+                    parse_transition(s_node, m, region);
+            }
+        }
+
+        if (is_type(s_node, "uml:Transition")) {
+            t = malloc(sizeof(struct ufsm_transition));
+            t->id = (const char*) get_attr(s_node, "id");
+            t->next = t_last;
+            t_last = t;
+            struct ufsm_state *src = ufsmimport_get_state(
+                                    m, (const char *) get_attr(s_node, "source"));
+
+            struct ufsm_state *dest = ufsmimport_get_state(
+                                    m, (const char *) get_attr(s_node, "target"));
+
+            t->source = src;
+            t->dest = dest;
+            
+
+            for (xmlNode *trigger = s_node->children; trigger; trigger = trigger->next) {
+                if (is_type(trigger, "uml:Trigger")) {
+                    struct ufsm_event *ev = malloc(sizeof(struct ufsm_event));
+                    ev->id = (const char*) get_attr(trigger,"id");
+                    ev->name = (const char*) get_attr(trigger, "name");
+                    printf ("%.4s", ev->name);
+                }
+                
+                if (is_type(trigger, "uml:Activity")) {
+                    printf (" /%s ", get_attr(trigger, "name"));
+                }
+
+                if (is_type(trigger, "uml:Constraint")) {
+                    printf (" [%s] ", get_attr(trigger, "specification"));
+                }
+ 
+            }
+
+            
+            printf (" T  %-10s -> %-10s %s\n", src->name, 
+                                               dest->name, 
+                                               t->id);
+        }
+    }
+    r->transition = t_last;
+    return UFSM_OK;
 }
 
 
@@ -172,17 +320,34 @@ static uint32_t ufsmimport_pass2 (xmlNode *node, struct ufsm_machine *machines)
                 r = malloc (sizeof(struct ufsm_region));
                 r->next = r_last;
                 parse_region(n, machines, r);
+                r_last = r;
             }
         }
+
+        struct ufsm_machine  *mach = ufsmimport_get_machine(machines,
+                                    (const char*) get_attr(m, "id"));
+        if (mach)
+            mach->region = r_last;
     }
     
     return UFSM_OK;
 }
 
 
-static uint32_t ufsmimport_pass3 (xmlNode *node, struct ufsm_machine *m) 
+static uint32_t ufsmimport_pass3 (xmlNode *node, struct ufsm_machine *machines) 
 {
     printf ("o Pass 3, analysing transitions...\n");
+ 
+    for (xmlNode *m = node; m; m = m->next) {
+        for (xmlNode *n = m->children; n; n = n->next) {
+            if (is_type(n, "uml:Region")) {
+                struct ufsm_region *region = ufsmimport_get_region(machines,
+                                            (const char*) get_attr(n,"id"));
+                
+                parse_transition(n, machines, region);
+            }
+        }
+    }
 
     return UFSM_OK;
 }
