@@ -7,6 +7,7 @@
 #include <libxml/tree.h>
 #include <ufsm.h>
 
+#include "output.h"
 
 static struct ufsm_machine *root_machine;
 
@@ -147,6 +148,8 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
         s->name = (const char *) get_attr(n, "name");
     
     s->id = (const char*) get_attr(n, "id");
+    s->entry = NULL;
+    s->exit = NULL;
 
     printf ("    S %-25s %s\n",s->name,s->id);
 
@@ -157,6 +160,10 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
 
     if (s->submachine)
         printf ("      o-o M %-19s %s\n",s->submachine->name, s->submachine->id);
+    
+    struct ufsm_entry_exit *entry = NULL;
+    struct ufsm_entry_exit *entry_last = NULL;
+ 
     /* Parse regions */
     for (xmlNode *r_sub = n->children; r_sub; r_sub = r_sub->next) {
         if (is_type(r_sub, "uml:Region")) {
@@ -165,8 +172,15 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
             parse_region(r_sub, m, state_region);
             state_region_last = state_region;
         }
+        if(strcmp((char *)r_sub->name, "entry") == 0) {
+            entry = malloc(sizeof(struct ufsm_entry_exit));
+            entry->name = (const char*) get_attr(r_sub,"name");
+            entry->id = (const char *) get_attr(r_sub, "id");
+            entry->next = entry_last;
+            entry_last = entry;
+        }
     }
-    
+    s->entry = entry_last;
     s->region = state_region_last;
 }
 
@@ -205,25 +219,43 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
             t->source = src;
             t->dest = dest;
             
+            struct ufsm_event *ev_last = NULL;
+            struct ufsm_action *action = NULL;
+            struct ufsm_action *action_last = NULL;
+            struct ufsm_guard *guard = NULL;
+            struct ufsm_guard *guard_last = NULL;
 
             for (xmlNode *trigger = s_node->children; trigger; trigger = trigger->next) {
                 if (is_type(trigger, "uml:Trigger")) {
                     struct ufsm_event *ev = malloc(sizeof(struct ufsm_event));
                     ev->id = (const char*) get_attr(trigger,"id");
                     ev->name = (const char*) get_attr(trigger, "name");
+                    ev->next = ev_last;
+                    ev_last = ev;
                     printf ("%.4s", ev->name);
                 }
                 
                 if (is_type(trigger, "uml:Activity")) {
-                    printf (" /%s ", get_attr(trigger, "name"));
+                    action = malloc (sizeof (struct ufsm_action));
+                    action->name = (const char*) get_attr(trigger, "name");
+                    action->id = (const char *) get_attr(trigger, "id");
+                    action->next = action_last;
+                    action_last = action;
+                    printf (" /%s ", action->name);
                 }
 
                 if (is_type(trigger, "uml:Constraint")) {
-                    printf (" [%s] ", get_attr(trigger, "specification"));
+                    guard = malloc(sizeof(struct ufsm_guard));
+                    guard->name = (const char*) get_attr(trigger, "specification");
+                    guard->id = (const char*) get_attr(trigger, "id");
+                    guard->next = guard_last;
+                    guard_last = guard;
+                    printf (" [%s] ", guard->name);
                 }
  
             }
-
+            t->action = action_last;
+            t->guard = guard_last;
             
             printf (" T  %-10s -> %-10s %s\n", src->name, 
                                                dest->name, 
@@ -244,16 +276,21 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
     r->name = (const char *) get_attr(n, "name");
     r->id = (const char*) get_attr(n, "id");
 
+    if (r->name == NULL) {
+        r->name = malloc(strlen(m->name)+7);
+        sprintf((char * restrict) r->name,"%sregion",m->name);
+    }
+
     printf ("    R %-25s %s\n", r->name, r->id);
     for (xmlNode *s_node = n->children; s_node; s_node = s_node->next) {
         if (is_type(s_node, "uml:State")) {
             s = malloc (sizeof(struct ufsm_state));
             s->next = s_last;
-            parse_state(s_node, m, r, s);
             s_last = s;
+            parse_state(s_node, m, r, s);
         } else if (is_type(s_node, "uml:Pseudostate")) {
             s = malloc (sizeof(struct ufsm_state));
-            
+            s->name = NULL;
             if (strcmp((char *) get_attr(s_node, "kind"), "initial") == 0) {
                 s->name = malloc(64);
                 sprintf((char * restrict) s->name,"Init");
@@ -262,22 +299,24 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
                 s->kind = UFSM_STATE_SHALLOW_HISTORY;
             } else if (strcmp((char *) get_attr(s_node, "kind"), "deepHistory") == 0) {
                 s->kind = UFSM_STATE_DEEP_HISTORY;
+            } else if (strcmp((char *) get_attr(s_node, "kind"), "exitPoint") == 0) {
+                s->kind = UFSM_STATE_EXIT_POINT;
             } else {
                 printf ("Warning: unknown pseudostate '%s'\n",
                                             get_attr(s_node,"kind"));
             }
 
             s->next = s_last;
-            parse_state(s_node, m, r, s);
             s_last = s;
+            parse_state(s_node, m, r, s);
         } else if (is_type(s_node, "uml:FinalState")) {
             s = malloc (sizeof(struct ufsm_state));
             s->kind = UFSM_STATE_FINAL;
             s->name = malloc(64);
             sprintf((char * restrict) s->name, "Final");
             s->next = s_last;
-            parse_state(s_node, m, r, s);
             s_last = s;
+            parse_state(s_node, m, r, s);
         }
     }
  
@@ -310,7 +349,6 @@ static struct ufsm_machine * ufsmimport_pass1 (xmlNode *node)
 static uint32_t ufsmimport_pass2 (xmlNode *node, struct ufsm_machine *machines) 
 {
     struct ufsm_region *r = NULL;
-    struct ufsm_region *r_last = NULL;
 
     printf ("o Pass 2, analysing regions, states and sub machines...\n");
  
@@ -318,17 +356,15 @@ static uint32_t ufsmimport_pass2 (xmlNode *node, struct ufsm_machine *machines)
         for (xmlNode *n = m->children; n; n = n->next) {
             if (is_type(n, "uml:Region")) {
                 r = malloc (sizeof(struct ufsm_region));
-                r->next = r_last;
-                parse_region(n, machines, r);
-                r_last = r;
+                r->next = NULL;
+                struct ufsm_machine  *mach = ufsmimport_get_machine(machines,
+                                            (const char*) get_attr(m, "id"));
+                mach->region = r;
+                parse_region(n, mach, r);
             }
         }
 
-        struct ufsm_machine  *mach = ufsmimport_get_machine(machines,
-                                    (const char*) get_attr(m, "id"));
-        if (mach)
-            mach->region = r_last;
-    }
+   }
     
     return UFSM_OK;
 }
@@ -408,6 +444,7 @@ int main(int argc, char **argv)
     ufsmimport_pass2(root_machine_element, root_machine);
     ufsmimport_pass3(root_machine_element, root_machine);
 
+    ufsm_gen_output(root_machine);
 
     return 0;
 }

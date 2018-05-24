@@ -30,7 +30,8 @@ enum ufsm_state_kind {
     UFSM_STATE_INIT,
     UFSM_STATE_FINAL,
     UFSM_STATE_SHALLOW_HISTORY,
-    UFSM_STATE_DEEP_HISTORY
+    UFSM_STATE_DEEP_HISTORY,
+    UFSM_STATE_EXIT_POINT
 };
 
 struct ufsm_event {

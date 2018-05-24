@@ -6,7 +6,7 @@ LDFLAGS = $(shell xml2-config --libs)
 CFLAGS  = -Wall 
 CFLAGS += -I.. -I. $(shell xml2-config --cflags)
 
-C_SRCS  = ufsmimport.c
+C_SRCS  = ufsmimport.c output.c
 
 OBJS = $(C_SRCS:.c=.o)
 
