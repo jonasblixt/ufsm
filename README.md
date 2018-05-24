@@ -1,4 +1,4 @@
-# ufsm
+![](https://github.com/jonpe960/ufsm/raw/master/doc/logo.png)
 
 A statechart library for C. ufsm is designed without any external dependencies and uses no dynamic memory allocation besides stack.
 
