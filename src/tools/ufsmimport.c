@@ -285,6 +285,7 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
     for (xmlNode *s_node = n->children; s_node; s_node = s_node->next) {
         if (is_type(s_node, "uml:State")) {
             s = malloc (sizeof(struct ufsm_state));
+            s->kind = UFSM_STATE_SIMPLE;
             s->next = s_last;
             s_last = s;
             parse_state(s_node, m, r, s);
