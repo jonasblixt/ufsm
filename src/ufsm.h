@@ -11,7 +11,6 @@
 
 struct ufsm_state;
 struct ufsm_machine;
-struct ufsm_event;
 struct ufsm_action;
 struct ufsm_guard;
 struct ufsm_transition;
@@ -32,12 +31,6 @@ enum ufsm_state_kind {
     UFSM_STATE_SHALLOW_HISTORY,
     UFSM_STATE_DEEP_HISTORY,
     UFSM_STATE_EXIT_POINT
-};
-
-struct ufsm_event {
-    const char *id;
-    const char *name;
-    struct ufsm_event *next;
 };
 
 struct ufsm_machine {
@@ -71,6 +64,7 @@ struct ufsm_entry_exit {
 struct ufsm_transition {
     const char *id;
     const char *name;
+    const char *trigger_name;
     int32_t trigger;
     enum ufsm_transition_kind kind;
     struct ufsm_action *action;
@@ -84,6 +78,7 @@ struct ufsm_transition {
 struct ufsm_region {
     const char *id;
     const char *name;
+    bool has_history;
     struct ufsm_state *current;
     struct ufsm_state *history;
     struct ufsm_state *state;

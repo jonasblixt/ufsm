@@ -2,8 +2,6 @@
 #include <assert.h>
 #include <ufsm.h>
 
-#include "simple.h"
-
 enum events {
     EV_A,
     EV_B,
@@ -69,7 +67,7 @@ static struct ufsm_transition simple_transition_INIT =
 
 static struct ufsm_region region1 = 
 {
-    .state = &A,
+    .state = &simple_INIT,
     .transition = &simple_transition_INIT,
     .next = NULL
 };
@@ -151,8 +149,8 @@ static struct ufsm_machine m  =
     .region = &region1,
 };
 
-bool test_simple_substate() {
-    bool test_ok = true;
+int main(int argc, char **argv)
+{
     uint32_t err;
 
     err = ufsm_init(&m);
@@ -180,5 +178,5 @@ bool test_simple_substate() {
     assert (m.region->current->region->current == &C);
 
 
-    return test_ok;
+    return 0;
 }

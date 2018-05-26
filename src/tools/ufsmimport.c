@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -185,11 +186,47 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
 }
 
 
+
+static struct ufsm_region * _state_belongs_to(struct ufsm_region *region,
+                                              struct ufsm_state *state)
+{
+    struct ufsm_region *result = NULL;
+
+    for (struct ufsm_region *r = region; r; r = r->next) {
+        for (struct ufsm_state *s = r->state; s; s = s->next) {
+            if (s == state)
+                return r;
+            if (s->region) {
+                result = _state_belongs_to(s->region, state);
+                if (result)
+                    return result;
+            }
+        
+        }
+    }
+    
+    return NULL;
+}
+
+static struct ufsm_region * state_belongs_to(struct ufsm_machine *machine,
+                                             struct ufsm_state *state)
+{
+    struct ufsm_region *result = NULL;
+
+    for (struct ufsm_machine *m = machine; m; m = m->next) {
+        result = _state_belongs_to(m->region, state);
+        if (result)
+            return result;
+
+    }
+
+    return NULL;
+}
+
 static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
                                              struct ufsm_region *r)
 {
     struct ufsm_transition *t = NULL;
-    struct ufsm_transition *t_last = NULL;
  
     if (n->children == NULL)
         return UFSM_ERROR;
@@ -208,8 +245,7 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
         if (is_type(s_node, "uml:Transition")) {
             t = malloc(sizeof(struct ufsm_transition));
             t->id = (const char*) get_attr(s_node, "id");
-            t->next = t_last;
-            t_last = t;
+            t->next = NULL;
             struct ufsm_state *src = ufsmimport_get_state(
                                     m, (const char *) get_attr(s_node, "source"));
 
@@ -219,7 +255,6 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
             t->source = src;
             t->dest = dest;
             
-            struct ufsm_event *ev_last = NULL;
             struct ufsm_action *action = NULL;
             struct ufsm_action *action_last = NULL;
             struct ufsm_guard *guard = NULL;
@@ -227,12 +262,7 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
 
             for (xmlNode *trigger = s_node->children; trigger; trigger = trigger->next) {
                 if (is_type(trigger, "uml:Trigger")) {
-                    struct ufsm_event *ev = malloc(sizeof(struct ufsm_event));
-                    ev->id = (const char*) get_attr(trigger,"id");
-                    ev->name = (const char*) get_attr(trigger, "name");
-                    ev->next = ev_last;
-                    ev_last = ev;
-                    printf ("%.4s", ev->name);
+                    t->trigger_name = (const char*) get_attr(trigger, "name");
                 }
                 
                 if (is_type(trigger, "uml:Activity")) {
@@ -257,12 +287,28 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
             t->action = action_last;
             t->guard = guard_last;
             
+            struct ufsm_region *trans_region = state_belongs_to(m, src);
+
+            if (trans_region->transition == NULL) {
+                trans_region->transition = t;
+            } else {
+                struct ufsm_transition *tail = trans_region->transition;
+                do {
+                    if (tail->next == NULL) {
+                        tail->next = t;
+                        break;
+                    }
+                    tail = tail->next;                  
+                } while(tail);
+            }
+
+            printf ("   src belongs to %s\n", state_belongs_to(m, src)->name);
             printf (" T  %-10s -> %-10s %s\n", src->name, 
                                                dest->name, 
                                                t->id);
         }
     }
-    r->transition = t_last;
+
     return UFSM_OK;
 }
 
@@ -275,6 +321,7 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
 
     r->name = (const char *) get_attr(n, "name");
     r->id = (const char*) get_attr(n, "id");
+    r->has_history = false;
 
     if (r->name == NULL) {
         r->name = malloc(strlen(m->name)+7);
@@ -297,8 +344,10 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
                 sprintf((char * restrict) s->name,"Init");
                 s->kind = UFSM_STATE_INIT;
             } else if (strcmp((char *) get_attr(s_node, "kind"), "shallowHistory") == 0) {
+                r->has_history = true;
                 s->kind = UFSM_STATE_SHALLOW_HISTORY;
             } else if (strcmp((char *) get_attr(s_node, "kind"), "deepHistory") == 0) {
+                r->has_history = true;
                 s->kind = UFSM_STATE_DEEP_HISTORY;
             } else if (strcmp((char *) get_attr(s_node, "kind"), "exitPoint") == 0) {
                 s->kind = UFSM_STATE_EXIT_POINT;
@@ -408,12 +457,34 @@ static xmlNode * get_first_statemachine(xmlNode *node)
 
 int main(int argc, char **argv) 
 {
+    extern char *optarg;
+    extern int optind, opterr, optopt;
+    char c;
+    char *output_prefix = NULL;
+    char *output_name = NULL;
     xmlDocPtr doc;
     xmlNode *root_element;
     xmlNode *root_machine_element;
+    
+    if (argc < 3) {
+        printf ("Usage: ufsmimport <input.xmi> <output name> [-c prefix/]\n");
+        exit(0);
+    }
+
 
     doc = xmlReadFile(argv[1], NULL, 0);
- 
+    output_name = argv[2];
+
+    while ((c = getopt(argc, argv, "c:")) != -1) {
+        switch (c) {
+            case 'c':
+                printf ("Found option!\n");
+                output_prefix = optarg;
+            break;
+            default:
+                abort();
+        }
+    }
   
     if (doc == NULL) {
         printf ("Could not read file\n");
@@ -445,7 +516,13 @@ int main(int argc, char **argv)
     ufsmimport_pass2(root_machine_element, root_machine);
     ufsmimport_pass3(root_machine_element, root_machine);
 
-    ufsm_gen_output(root_machine);
+    if (output_prefix == NULL) {
+        output_prefix = malloc(2);
+        *output_prefix = 0;
+    }
+    
+    printf ("Output prefix: %s\n", output_prefix);
+    ufsm_gen_output(root_machine, output_name, output_prefix);
 
     return 0;
 }

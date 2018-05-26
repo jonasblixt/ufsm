@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ufsm.h>
@@ -7,6 +8,14 @@
 
 static FILE *fp_c = NULL;
 static FILE *fp_h = NULL;
+
+struct event_list {
+    char *name;
+    uint32_t index;
+    struct event_list *next;
+};
+
+static struct event_list *evlist;
 
 static char * id_to_decl(const char *id)
 {
@@ -28,13 +37,39 @@ static char * id_to_decl(const char *id)
     return decl;
 }
 
+static uint32_t ev_name_to_index(const char *name)
+{
+    struct event_list *last_entry = NULL;
 
+    if (evlist == NULL) {
+        evlist = malloc(sizeof(struct event_list));
+        evlist->name = malloc(strlen(name)+1);
+        strcpy(evlist->name, name);
+        evlist->index = 0;
+        return 0;
+    }
+
+    for (struct event_list *e = evlist; e; e = e->next) {
+        if (strcmp(name, e->name) == 0) {
+            return e->index;
+        }
+        last_entry = e;
+    }
+
+    last_entry->next = malloc(sizeof(struct event_list));
+    struct event_list *e = last_entry->next;
+    e->name = malloc(strlen(name)+1);
+    strcpy(e->name, name);
+    e->index = last_entry->index+1;
+
+    return e->index;
+}
 
 static void ufsm_gen_regions(struct ufsm_region *region);
 
 static void ufsm_gen_states(struct ufsm_state *state)
 {
-    fprintf(fp_c,"static struct ufsm_state %s {\n",id_to_decl(state->id));
+    fprintf(fp_c,"static struct ufsm_state %s = {\n",id_to_decl(state->id));
     fprintf(fp_c,"  .id   = \"%s\",\n",state->id);
     fprintf(fp_c,"  .name = \"%s\",\n",state->name);
     fprintf(fp_c,"  .kind = %i,\n",state->kind);
@@ -69,7 +104,7 @@ static void ufsm_gen_states(struct ufsm_state *state)
 
 
     for (struct ufsm_entry_exit *e = state->entry; e; e = e->next) {
-        fprintf(fp_c, "static struct ufsm_entry_exit %s {\n",
+        fprintf(fp_c, "static struct ufsm_entry_exit %s = {\n",
                         id_to_decl(e->id)); 
         fprintf(fp_c, "  .id = \"%s\",\n", e->id);
         fprintf(fp_c, "  .name = \"%s\",\n",e->name);
@@ -77,7 +112,7 @@ static void ufsm_gen_states(struct ufsm_state *state)
     }
 
     for (struct ufsm_entry_exit *e = state->exit; e; e = e->next) {
-        fprintf(fp_c, "static struct ufsm_entry_exit %s {\n",
+        fprintf(fp_c, "static struct ufsm_entry_exit %s = {\n",
                         id_to_decl(e->id));
 
         fprintf(fp_c, "};\n");
@@ -89,10 +124,12 @@ static void ufsm_gen_states(struct ufsm_state *state)
 static void ufsm_gen_regions(struct ufsm_region *region) 
 {
     for (struct ufsm_region *r = region; r; r = r->next) {
-        fprintf (fp_c,"static struct ufsm_region %s {\n",id_to_decl(r->id));
+        fprintf (fp_c,"static struct ufsm_region %s = {\n",id_to_decl(r->id));
         fprintf (fp_c,"  .id = \"%s\",\n", r->id);
         fprintf (fp_c,"  .name = \"%s\",\n", r->name);
         fprintf (fp_c,"  .state = &%s,\n", id_to_decl(r->state->id));
+        fprintf (fp_c,"  .has_history = %s,\n", r->has_history?"true":"false");
+        fprintf (fp_c,"  .history = NULL,\n");
         if (r->transition)
             fprintf (fp_c,"  .transition = &%s,\n", id_to_decl(r->transition->id));
         else   
@@ -104,20 +141,31 @@ static void ufsm_gen_regions(struct ufsm_region *region)
             fprintf (fp_c,"  .next = NULL,\n");
         fprintf (fp_c,"};\n");
         for (struct ufsm_transition *t = r->transition; t; t = t->next) {
-            fprintf(fp_c, "static struct ufsm_transition %s {\n",
+            fprintf(fp_c, "static struct ufsm_transition %s = {\n",
                                id_to_decl(t->id));
             fprintf(fp_c, "  .id = \"%s\",\n", t->id);
             fprintf(fp_c, "  .name = \"\",\n");
-            fprintf(fp_c, "  .trigger = %i,\n",t->trigger);
+            if (t->trigger_name != NULL) {
+                fprintf(fp_c, "  .trigger = %i,\n",ev_name_to_index(t->trigger_name));
+                fprintf(fp_c, "  .trigger_name = \"%s\",\n",t->trigger_name);
+            } else {
+                fprintf(fp_c, "  .trigger = -1,\n");
+                fprintf(fp_c, "  .trigger_name = \"\",\n");
+            }
+
             fprintf(fp_c, "  .kind = %i,\n",t->kind);
-            if (t->action)
+            if (t->action) {
                 fprintf(fp_c, "  .action = &%s,\n", id_to_decl(t->action->id));
-            else
+                fprintf(fp_h, "void %s(void);\n",t->action->name);
+            } else {
                 fprintf(fp_c, "  .action = NULL,\n");
-            if (t->guard)
+            }
+            if (t->guard) {
                 fprintf(fp_c, "  .guard = &%s,\n", id_to_decl(t->guard->id));
-            else
+                fprintf(fp_h, "bool %s(void);\n",t->guard->name);
+            } else {
                 fprintf(fp_c, "  .guard = NULL,\n");
+            }
             fprintf(fp_c, "  .source = &%s,\n",id_to_decl(t->source->id));
             fprintf(fp_c, "  .dest = &%s,\n",id_to_decl(t->dest->id));
             
@@ -128,7 +176,7 @@ static void ufsm_gen_regions(struct ufsm_region *region)
             fprintf(fp_c, "};\n");
 
             for (struct ufsm_action *a = t->action; a; a = a->next) {
-                fprintf(fp_c, "static struct ufsm_action %s {\n",
+                fprintf(fp_c, "static struct ufsm_action %s = {\n",
                             id_to_decl(a->id));
                 fprintf(fp_c, "  .id = \"%s\",\n", a->id);
                 fprintf(fp_c, "  .name = \"%s\",\n", a->name);
@@ -141,7 +189,7 @@ static void ufsm_gen_regions(struct ufsm_region *region)
             }
 
             for (struct ufsm_guard *g = t->guard; g; g = g->next) {
-                fprintf(fp_c, "static struct ufsm_guard %s {\n",
+                fprintf(fp_c, "static struct ufsm_guard %s = {\n",
                             id_to_decl(g->id));
                 fprintf(fp_c, "  .id = \"%s\",\n", g->id);
                 fprintf(fp_c, "  .name = \"%s\",\n", g->name);
@@ -163,7 +211,7 @@ static void ufsm_gen_regions(struct ufsm_region *region)
 
 bool ufsm_gen_machine (struct ufsm_machine *m)
 {
-    fprintf (fp_c,"static struct ufsm_machine %s {\n",id_to_decl(m->id));
+    fprintf (fp_c,"static struct ufsm_machine %s = {\n",id_to_decl(m->id));
     fprintf (fp_c,"  .id     = \"%s\", \n", m->id);
     fprintf (fp_c,"  .name   = \"%s\", \n", m->name);
     fprintf (fp_c,"  .region = &%s,    \n",id_to_decl(m->region->id));
@@ -232,16 +280,15 @@ bool ufsm_gen_machine_decl (struct ufsm_machine *m)
     return true;
 }
 
-bool ufsm_gen_output(struct ufsm_machine *root) {
-    printf ("o Generating output\n");
-
-    const char output_name[] = "ufsm_gen_output";
+bool ufsm_gen_output(struct ufsm_machine *root, char *output_name,
+                    char *output_prefix) {
+    printf ("o Generating output %s\n", output_name);
     
-    char *fn_c = malloc(strlen(output_name)+3);
-    char *fn_h = malloc(strlen(output_name)+3);
+    char *fn_c = malloc(strlen(output_name)+strlen(output_prefix)+3);
+    char *fn_h = malloc(strlen(output_name)+strlen(output_prefix)+3);
 
-    sprintf(fn_c, "%s.c",output_name);
-    sprintf(fn_h, "%s.h",output_name);
+    sprintf(fn_c, "%s%s.c",output_prefix,output_name);
+    sprintf(fn_h, "%s%s.h",output_prefix,output_name);
 
     fp_c = fopen(fn_c, "w");
     fp_h = fopen(fn_h, "w");
@@ -249,6 +296,9 @@ bool ufsm_gen_output(struct ufsm_machine *root) {
     fprintf(fp_h,"#ifndef __%s_H__\n", output_name);
     fprintf(fp_h,"#define __%s_H__\n", output_name);
     fprintf(fp_h,"#include <ufsm.h>\n");
+    fprintf(fp_h,"#ifndef NULL\n");
+    fprintf(fp_h," #define NULL (void *) 0\n");
+    fprintf(fp_h,"#endif\n");
 
     fprintf(fp_c,"#include \"%s\"\n", fn_h);
 
@@ -260,10 +310,21 @@ bool ufsm_gen_output(struct ufsm_machine *root) {
         ufsm_gen_machine(m);
 
     fprintf(fp_c,"\n");
-    fprintf(fp_c,"struct ufsm_machine * get_%s(void) { return &%s; }\n",
-                output_name, id_to_decl(root->id));
 
-    fprintf(fp_h,"struct ufsm_machine * get_%s(void);\n",output_name);
+    for (struct ufsm_machine *m = root; m; m = m->next) {
+        fprintf(fp_c,"struct ufsm_machine * get_%s(void) { return &%s; }\n",
+                    m->name, id_to_decl(m->id));
+    }
+
+    fprintf(fp_h, "enum {\n");
+    for (struct event_list *e = evlist; e; e = e->next) {
+        fprintf (fp_h,"  %s,\n",e->name);
+    }
+    fprintf(fp_h,"};\n");
+
+    for (struct ufsm_machine *m = root; m; m = m->next) {
+        fprintf(fp_h,"struct ufsm_machine * get_%s(void);\n",m->name);
+    }
     fprintf(fp_h,"#endif\n");
     fclose(fp_c);
     fclose(fp_h);

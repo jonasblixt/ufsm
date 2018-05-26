@@ -1,5 +1,5 @@
 TARGET = ufsmimport
-
+PREFIX ?= /usr
 CC ?= gcc
 
 LDFLAGS = $(shell xml2-config --libs)
@@ -19,6 +19,9 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	@echo LINK $@
 	@$(CC) $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+
+install:
+	@install -m 755 $(TARGET) $(PREFIX)/bin	
 
 clean:
 	@rm -f $(TARGET)
