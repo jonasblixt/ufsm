@@ -30,7 +30,8 @@ enum ufsm_state_kind {
     UFSM_STATE_FINAL,
     UFSM_STATE_SHALLOW_HISTORY,
     UFSM_STATE_DEEP_HISTORY,
-    UFSM_STATE_EXIT_POINT
+    UFSM_STATE_EXIT_POINT,
+    UFSM_STATE_ENTRY_POINT,
 };
 
 struct ufsm_machine {
@@ -83,6 +84,7 @@ struct ufsm_region {
     struct ufsm_state *history;
     struct ufsm_state *state;
     struct ufsm_transition *transition;
+    struct ufsm_state *parent_state;
     struct ufsm_region *next;
 };
 
@@ -93,6 +95,7 @@ struct ufsm_state {
     struct ufsm_entry_exit *entry;
     struct ufsm_entry_exit *exit;
     struct ufsm_region *region;
+    struct ufsm_region *parent_region;
     struct ufsm_machine *submachine;
     struct ufsm_state *next;
 };

@@ -73,6 +73,8 @@ static void ufsm_gen_states(struct ufsm_state *state)
     fprintf(fp_c,"  .id   = \"%s\",\n",state->id);
     fprintf(fp_c,"  .name = \"%s\",\n",state->name);
     fprintf(fp_c,"  .kind = %i,\n",state->kind);
+    fprintf(fp_c,"  .parent_region = &%s,\n", 
+                            id_to_decl(state->parent_region->id));
     if (state->entry)
         fprintf(fp_c,"  .entry = &%s,\n",id_to_decl(state->entry->id));
     else
@@ -108,14 +110,32 @@ static void ufsm_gen_states(struct ufsm_state *state)
                         id_to_decl(e->id)); 
         fprintf(fp_c, "  .id = \"%s\",\n", e->id);
         fprintf(fp_c, "  .name = \"%s\",\n",e->name);
+        fprintf(fp_c, "  .f = &%s,\n", e->name);
+        if (e->next)
+            fprintf (fp_c, "  .next = &%s,\n", id_to_decl(e->next->id));
+        else
+            fprintf (fp_c, "  .next = NULL,\n");
+
         fprintf(fp_c, "};\n");
+
+        fprintf(fp_h, "void %s(void);\n", e->name);
     }
 
     for (struct ufsm_entry_exit *e = state->exit; e; e = e->next) {
         fprintf(fp_c, "static struct ufsm_entry_exit %s = {\n",
                         id_to_decl(e->id));
+        fprintf(fp_c, "  .id = \"%s\",\n", e->id);
+        fprintf(fp_c, "  .name = \"%s\",\n",e->name);
+        fprintf(fp_c, "  .f = &%s,\n", e->name);
+        if (e->next)
+            fprintf (fp_c, "  .next = &%s,\n", id_to_decl(e->next->id));
+        else
+            fprintf (fp_c, "  .next = NULL,\n");
+
 
         fprintf(fp_c, "};\n");
+        fprintf(fp_h, "void %s(void);\n", e->name);
+
     }
 
 
@@ -134,7 +154,11 @@ static void ufsm_gen_regions(struct ufsm_region *region)
             fprintf (fp_c,"  .transition = &%s,\n", id_to_decl(r->transition->id));
         else   
             fprintf (fp_c,"  .transition = NULL,\n");
-
+        
+        if (r->parent_state)
+            fprintf (fp_c,"  .parent_state = &%s,\n",id_to_decl(r->parent_state->id));
+        else
+            fprintf (fp_c,"  .parent_state = NULL,\n");
         if (r->next)
             fprintf (fp_c,"  .next = &%s,\n",id_to_decl(r->next->id));
         else

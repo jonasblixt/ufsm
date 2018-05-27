@@ -36,11 +36,13 @@ static void action1_f(void) {
 }
 
 static struct ufsm_state A;
+static struct ufsm_region region1;
 
 static struct ufsm_state simple_INIT =
 {
     .name = "Init",
     .kind = UFSM_STATE_INIT,
+    .parent_region = &region1,
     .next = &A
 };
 
@@ -48,6 +50,7 @@ static struct ufsm_state B =
 {
     .name = "State B",
     .kind = UFSM_STATE_SIMPLE,
+    .parent_region = &region1,
     .next = NULL,
 };
 
@@ -55,6 +58,7 @@ static struct ufsm_state A =
 {
     .name = "State A",
     .kind = UFSM_STATE_SIMPLE,
+    .parent_region = &region1,
     .next = &B,
 };
 

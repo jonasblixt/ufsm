@@ -144,6 +144,7 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
 {
     struct ufsm_region *state_region = NULL;
     struct ufsm_region *state_region_last = NULL;
+    uint32_t region_count = 0;
 
     if (get_attr(n, "name"))
         s->name = (const char *) get_attr(n, "name");
@@ -151,6 +152,7 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
     s->id = (const char*) get_attr(n, "id");
     s->entry = NULL;
     s->exit = NULL;
+    s->parent_region = r;
 
     printf ("    S %-25s %s\n",s->name,s->id);
 
@@ -164,13 +166,23 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
     
     struct ufsm_entry_exit *entry = NULL;
     struct ufsm_entry_exit *entry_last = NULL;
+    struct ufsm_entry_exit *exits = NULL;
+    struct ufsm_entry_exit *exits_last = NULL;
  
     /* Parse regions */
     for (xmlNode *r_sub = n->children; r_sub; r_sub = r_sub->next) {
         if (is_type(r_sub, "uml:Region")) {
             state_region = malloc (sizeof(struct ufsm_region));
+            state_region->parent_state = s;
             state_region->next = state_region_last;
             parse_region(r_sub, m, state_region);
+            
+            if (state_region->name == NULL) {
+                state_region->name = malloc(strlen(s->name)+16);
+                sprintf((char *)state_region->name,"%sregion%i",
+                                        s->name,region_count++);
+            }
+
             state_region_last = state_region;
         }
         if(strcmp((char *)r_sub->name, "entry") == 0) {
@@ -180,8 +192,17 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
             entry->next = entry_last;
             entry_last = entry;
         }
+        if(strcmp((char *)r_sub->name, "exit") == 0) {
+            exits = malloc(sizeof(struct ufsm_entry_exit));
+            exits->name = (const char*) get_attr(r_sub,"name");
+            exits->id = (const char *) get_attr(r_sub, "id");
+            exits->next = exits_last;
+            exits_last = exits;
+        }
+ 
     }
     s->entry = entry_last;
+    s->exit = exits_last;
     s->region = state_region_last;
 }
 
@@ -323,11 +344,6 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
     r->id = (const char*) get_attr(n, "id");
     r->has_history = false;
 
-    if (r->name == NULL) {
-        r->name = malloc(strlen(m->name)+7);
-        sprintf((char * restrict) r->name,"%sregion",m->name);
-    }
-
     printf ("    R %-25s %s\n", r->name, r->id);
     for (xmlNode *s_node = n->children; s_node; s_node = s_node->next) {
         if (is_type(s_node, "uml:State")) {
@@ -351,6 +367,8 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
                 s->kind = UFSM_STATE_DEEP_HISTORY;
             } else if (strcmp((char *) get_attr(s_node, "kind"), "exitPoint") == 0) {
                 s->kind = UFSM_STATE_EXIT_POINT;
+            } else if (strcmp((char *) get_attr(s_node, "kind"), "entryPoint") == 0) {
+                s->kind = UFSM_STATE_ENTRY_POINT;
             } else {
                 printf ("Warning: unknown pseudostate '%s'\n",
                                             get_attr(s_node,"kind"));
@@ -399,10 +417,12 @@ static struct ufsm_machine * ufsmimport_pass1 (xmlNode *node)
 static uint32_t ufsmimport_pass2 (xmlNode *node, struct ufsm_machine *machines) 
 {
     struct ufsm_region *r = NULL;
+    uint32_t region_count = 0;
 
     printf ("o Pass 2, analysing regions, states and sub machines...\n");
  
     for (xmlNode *m = node; m; m = m->next) {
+        region_count = 0;
         for (xmlNode *n = m->children; n; n = n->next) {
             if (is_type(n, "uml:Region")) {
                 r = malloc (sizeof(struct ufsm_region));
@@ -410,7 +430,14 @@ static uint32_t ufsmimport_pass2 (xmlNode *node, struct ufsm_machine *machines)
                 struct ufsm_machine  *mach = ufsmimport_get_machine(machines,
                                             (const char*) get_attr(m, "id"));
                 mach->region = r;
+                r->parent_state = NULL;
                 parse_region(n, mach, r);
+
+                if (r->name == NULL) {
+                    r->name = malloc(strlen(mach->name)+16);
+                    sprintf ((char *) r->name,"%sregion%i",
+                                        mach->name,region_count++);
+                }
             }
         }
 
@@ -478,7 +505,6 @@ int main(int argc, char **argv)
     while ((c = getopt(argc, argv, "c:")) != -1) {
         switch (c) {
             case 'c':
-                printf ("Found option!\n");
                 output_prefix = optarg;
             break;
             default:
@@ -491,7 +517,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    printf ("o Reading %s...\n", argv[1]);
+    printf ("o Reading...\n");
  
     root_element = xmlDocGetRootElement(doc);
     

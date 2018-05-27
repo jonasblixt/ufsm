@@ -11,11 +11,13 @@ enum events {
 
 static struct ufsm_state A;
 static struct ufsm_region sub_region;
+static struct ufsm_region region1;
 
 static struct ufsm_state simple_INIT =
 {
     .name = "Init",
     .kind = UFSM_STATE_INIT,
+    .parent_region = &region1,
     .next = &A
 };
 
@@ -23,6 +25,7 @@ static struct ufsm_state B =
 {
     .name = "State B",
     .kind = UFSM_STATE_SIMPLE,
+    .parent_region = &region1,
     .next = NULL,
 };
 
@@ -31,6 +34,7 @@ static struct ufsm_state A =
     .name = "State A",
     .kind = UFSM_STATE_SIMPLE,
     .region = &sub_region,
+    .parent_region = &region1,
     .next = &B,
 };
 
@@ -83,6 +87,7 @@ static struct ufsm_state simple_sub_INIT =
 {
     .name = "Substate Init",
     .kind = UFSM_STATE_INIT,
+    .parent_region = &sub_region,
     .next = &C
 };
 
@@ -90,6 +95,7 @@ static struct ufsm_state C =
 {
     .name = "State C",
     .kind = UFSM_STATE_SIMPLE,
+    .parent_region = &sub_region,
     .next = &D,
 };
 
@@ -97,6 +103,7 @@ static struct ufsm_state D =
 {
     .name = "State D",
     .kind = UFSM_STATE_SIMPLE,
+    .parent_region = &sub_region,
     .next = NULL,
 };
 
