@@ -9,7 +9,7 @@ CC ?= gcc
 UFSMIMPORT ?= ufsmimport
 
 LDFLAGS = 
-CFLAGS  = -Wall 
+CFLAGS  = -Wall -std=c99
 CFLAGS += -I.. -I. -I gen/
 
 C_SRCS = ../ufsm.c common.c

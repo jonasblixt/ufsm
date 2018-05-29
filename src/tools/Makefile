@@ -3,7 +3,7 @@ PREFIX ?= /usr
 CC ?= gcc
 
 LDFLAGS = $(shell xml2-config --libs)
-CFLAGS  = -Wall 
+CFLAGS  = -Wall -std=c99
 CFLAGS += -I.. -I. $(shell xml2-config --cflags)
 
 C_SRCS  = ufsmimport.c output.c
