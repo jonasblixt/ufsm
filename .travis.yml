@@ -9,6 +9,8 @@ env:
 
 before_install:
   - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-certificates.crt
+  - pip install --user cpp-coveralls
+  - sudo apt install libcunit1-dev
 
 addons:
   coverity_scan:
@@ -17,10 +19,16 @@ addons:
       description: "Build submitted via Travis CI"
     notification_email: jonpe960@gmail.com
     build_command_prepend: ""
-    build_command:   "make -C src/tools && UFSMIMPORT=../tools/ufsmimport make -C src/tests"
+    build_command:   "make"
     branch_pattern: "*"
 
 script:
     - make -C src/tools
     - export UFSMIMPORT=../tools/ufsmimport
     - make -C src/tests
+
+jobs:
+    include:
+        -   stage: Code Coverage
+            after_success:
+                - coveralls --exclude src/tests --exclude src/tools --gcov-options '\-lp'

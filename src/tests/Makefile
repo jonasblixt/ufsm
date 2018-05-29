@@ -2,6 +2,7 @@ TESTS  = test_simple
 TESTS += test_simple_substate
 TESTS += test_guards_actions
 TESTS += test_compound_transition
+#TESTS += test_join_fork
 TESTS += test_xmi_machine
 TESTS += test_deephistory
 
@@ -42,6 +43,11 @@ clean:
 test_xmi_machine: $(OBJS) test_xmi_machine_input.c test_xmi_machine.o
 	@echo BUILD $@
 	@$(CC) $@.c gen/test_xmi_machine_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+
+test_join_fork: $(OBJS) test_join_fork_input.c test_join_fork.o
+	@echo BUILD $@
+	@$(CC) $@.c gen/test_join_fork_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+
 
 test_compound_transition: $(OBJS) test_compound_transition_input.c test_compound_transition.o
 	@echo BUILD $@

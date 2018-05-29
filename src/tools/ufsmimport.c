@@ -176,6 +176,7 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
     /* Parse regions */
     for (xmlNode *r_sub = n->children; r_sub; r_sub = r_sub->next) {
         if (is_type(r_sub, "uml:Region")) {
+            printf ("Has region\n");
             state_region = malloc (sizeof(struct ufsm_region));
             bzero(state_region, sizeof(struct ufsm_region));
             state_region->parent_state = s;
@@ -364,22 +365,27 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
             s = malloc (sizeof(struct ufsm_state));
             bzero(s, sizeof(struct ufsm_state));
             s->name = NULL;
-            if (strcmp((char *) get_attr(s_node, "kind"), "initial") == 0) {
+            char *node_kind = (char*) get_attr(s_node, "kind");
+
+            if (strcmp(node_kind, "initial") == 0) {
                 s->name = malloc(64);
                 sprintf((char * restrict) s->name,"Init");
                 s->kind = UFSM_STATE_INIT;
-            } else if (strcmp((char *) get_attr(s_node, "kind"), "shallowHistory") == 0) {
+            } else if (strcmp(node_kind, "shallowHistory") == 0) {
                 r->has_history = true;
                 s->kind = UFSM_STATE_SHALLOW_HISTORY;
-            } else if (strcmp((char *) get_attr(s_node, "kind"), "deepHistory") == 0) {
+            } else if (strcmp(node_kind, "deepHistory") == 0) {
                 r->has_history = true;
-                printf ("%s has deep history\n",r->name);
                 has_deep_history = true;
                 s->kind = UFSM_STATE_DEEP_HISTORY;
-            } else if (strcmp((char *) get_attr(s_node, "kind"), "exitPoint") == 0) {
+            } else if (strcmp(node_kind, "exitPoint") == 0) {
                 s->kind = UFSM_STATE_EXIT_POINT;
-            } else if (strcmp((char *) get_attr(s_node, "kind"), "entryPoint") == 0) {
+            } else if (strcmp(node_kind, "entryPoint") == 0) {
                 s->kind = UFSM_STATE_ENTRY_POINT;
+            } else if (strcmp(node_kind, "join") == 0) {
+                s->kind = UFSM_STATE_JOIN;
+            } else if (strcmp(node_kind, "fork") == 0) {
+                s->kind = UFSM_STATE_FORK;
             } else {
                 printf ("Warning: unknown pseudostate '%s'\n",
                                             get_attr(s_node,"kind"));
@@ -527,7 +533,7 @@ int main(int argc, char **argv)
     doc = xmlReadFile(argv[1], NULL, 0);
     output_name = argv[2];
 
-    while ((c = getopt(argc, argv, "c:")) != -1) {
+    while ((c = getopt(argc-2, argv+2, "c:")) != -1) {
         switch (c) {
             case 'c':
                 output_prefix = optarg;

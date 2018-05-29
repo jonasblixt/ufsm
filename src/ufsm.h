@@ -62,6 +62,8 @@ enum ufsm_state_kind {
     UFSM_STATE_DEEP_HISTORY,
     UFSM_STATE_EXIT_POINT,
     UFSM_STATE_ENTRY_POINT,
+    UFSM_STATE_JOIN,
+    UFSM_STATE_FORK,
 };
 
 struct ufsm_machine {

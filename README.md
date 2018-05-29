@@ -6,6 +6,7 @@
 </a>
 
 [![Build Status](https://travis-ci.org/jonpe960/ufsm.svg?branch=master)](https://travis-ci.org/jonpe960/ufsm)
+[![Coverage Status](https://coveralls.io/repos/github/jonpe960/ufsm/badge.svg?branch=master)](https://coveralls.io/github/jonpe960/ufsm?branch=master)
 
 A statechart library for C. ufsm is designed without any external dependencies and uses no dynamic memory allocation besides stack.
 
