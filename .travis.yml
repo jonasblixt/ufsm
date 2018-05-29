@@ -13,6 +13,8 @@ before_install:
   - sudo apt install libcunit1-dev
 
 addons:
+  apt:
+    update: true
   coverity_scan:
     project:
       name: "jonpe960/ufsm"

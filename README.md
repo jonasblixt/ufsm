@@ -1,10 +1,6 @@
 ![](https://github.com/jonpe960/ufsm/raw/master/doc/logo.png)
 
-<a href="https://scan.coverity.com/projects/jonpe960-ufsm">
-  <img alt="Coverity Scan Build Status"
-       src="https://scan.coverity.com/projects/15860/badge.svg"/>
-</a>
-
+[![Coverity](https://scan.coverity.com/projects/15860/badge.svg)](https://scan.coverity.com/projects/jonpe960-ufsm)
 [![Build Status](https://travis-ci.org/jonpe960/ufsm.svg?branch=master)](https://travis-ci.org/jonpe960/ufsm)
 [![Coverage Status](https://coveralls.io/repos/github/jonpe960/ufsm/badge.svg?branch=master)](https://coveralls.io/github/jonpe960/ufsm?branch=master)
 
