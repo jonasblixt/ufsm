@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include <ufsm.h>
+#include "common.h"
+
 
 enum events {
     EV_A,
@@ -83,8 +85,15 @@ static struct ufsm_machine m  =
 
 int main(int argc, char **argv) {
     uint32_t err;
+    m.debug_transition = &debug_transition;
+    m.debug_enter_region = &debug_enter_region;
+    m.debug_leave_region = &debug_leave_region;
+    m.debug_event = &debug_event;
+    m.debug_action = &debug_action;
+    m.debug_guard = &debug_guard;
 
-    err = ufsm_init(&m);
+
+    err = ufsm_init_machine(&m);
     assert (err == UFSM_OK && "Initializing");
     assert (m.region->current == &A);
     err = ufsm_process(&m, EV_B);
@@ -94,7 +103,7 @@ int main(int argc, char **argv) {
     err = ufsm_process(&m, EV_B);
     assert (m.region->current == &B && err == UFSM_OK);
     err = ufsm_process(&m, EV_B);
-    assert (m.region->current == &B && err == UFSM_ERROR);
+    assert (m.region->current == &B && err == UFSM_ERROR_EVENT_NOT_PROCESSED);
 
     return 0;
 }

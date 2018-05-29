@@ -12,16 +12,16 @@ LDFLAGS =
 CFLAGS  = -Wall 
 CFLAGS += -I.. -I. -I gen/
 
-C_SRCS = ../ufsm.c
+C_SRCS = ../ufsm.c common.c
 
 OBJS = $(C_SRCS:.c=.o)
 
 all: $(TESTS)
 	@$(foreach TEST,$(TESTS), \
 		echo && \
-		echo "\n\n --- TEST $(TEST) -----------------------------------------" && \
+		echo "\n\n --- TEST $(TEST) ---" && \
 		./$(TEST))
-	@echo "*** ALL TESTS PASSED ***"
+	@echo "*** ALL $(words ${TESTS}) TESTS PASSED ***"
 
 %.o : %.c
 	@echo CC $<

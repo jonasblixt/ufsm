@@ -69,6 +69,7 @@ static void ufsm_gen_regions(struct ufsm_region *region);
 
 static void ufsm_gen_states(struct ufsm_state *state)
 {
+ 
     fprintf(fp_c,"static struct ufsm_state %s = {\n",id_to_decl(state->id));
     fprintf(fp_c,"  .id   = \"%s\",\n",state->id);
     fprintf(fp_c,"  .name = \"%s\",\n",state->name);
@@ -148,15 +149,18 @@ static void ufsm_gen_regions(struct ufsm_region *region)
         fprintf (fp_c,"  .id = \"%s\",\n", r->id);
         fprintf (fp_c,"  .name = \"%s\",\n", r->name);
         fprintf (fp_c,"  .state = &%s,\n", id_to_decl(r->state->id));
-        fprintf (fp_c,"  .has_history = %s,\n", r->has_history?"true":"false");
+        fprintf (fp_c,"  .has_history = %s,\n", r->has_history ? "true" : "false");
         fprintf (fp_c,"  .history = NULL,\n");
+
         if (r->transition)
-            fprintf (fp_c,"  .transition = &%s,\n", id_to_decl(r->transition->id));
+            fprintf (fp_c,"  .transition = &%s,\n", 
+                                            id_to_decl(r->transition->id));
         else   
             fprintf (fp_c,"  .transition = NULL,\n");
         
         if (r->parent_state)
-            fprintf (fp_c,"  .parent_state = &%s,\n",id_to_decl(r->parent_state->id));
+            fprintf (fp_c,"  .parent_state = &%s,\n",
+                                id_to_decl(r->parent_state->id));
         else
             fprintf (fp_c,"  .parent_state = NULL,\n");
         if (r->next)
@@ -170,7 +174,8 @@ static void ufsm_gen_regions(struct ufsm_region *region)
             fprintf(fp_c, "  .id = \"%s\",\n", t->id);
             fprintf(fp_c, "  .name = \"\",\n");
             if (t->trigger_name != NULL) {
-                fprintf(fp_c, "  .trigger = %i,\n",ev_name_to_index(t->trigger_name));
+                fprintf(fp_c, "  .trigger = %i,\n",
+                                        ev_name_to_index(t->trigger_name));
                 fprintf(fp_c, "  .trigger_name = \"%s\",\n",t->trigger_name);
             } else {
                 fprintf(fp_c, "  .trigger = -1,\n");

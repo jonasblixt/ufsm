@@ -1,27 +1,57 @@
+/**
+ * uFSM
+ *
+ * Copyright (C) 2018 Jonas Persson <jonpe960@gmail.com>
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
 #ifndef __UFSM_H__
 #define __UFSM_H__
 
 #include <stdint.h>
 #include <stdbool.h>
 
-#define UFSM_OK 0
-#define UFSM_ERROR 1
+/* Error codes */
+#define UFSM_OK                        0
+#define UFSM_ERROR                     1
+#define UFSM_ERROR_NO_INIT_REGION      2
+#define UFSM_ERROR_UNKNOWN_STATE_KIND  3
+#define UFSM_ERROR_EVENT_NOT_PROCESSED 4
+#define UFSM_ERROR_LCA_NOT_FOUND       5
 
+/* Misc defines */
 #define UFSM_NO_TRIGGER -1
+
+#ifndef NULL
+    #define NULL ((void *) 0)
+#endif
 
 struct ufsm_state;
 struct ufsm_machine;
 struct ufsm_action;
 struct ufsm_guard;
 struct ufsm_transition;
+struct ufsm_region;
 
 typedef bool (*ufsm_guard_func) (void);
 typedef void (*ufsm_action_func) (void);
 typedef void (*ufsm_entry_exit_func) (void);
 
+/* Debug callbacks */
+typedef void (*ufsm_debug_event) (uint32_t ev);
+typedef void (*ufsm_debug_transition) (struct ufsm_transition *t);
+typedef void (*ufsm_debug_enter_region) (struct ufsm_region *region);
+typedef void (*ufsm_debug_leave_region) (struct ufsm_region *region);
+typedef void (*ufsm_debug_guard) (struct ufsm_guard *guard, bool result);
+typedef void (*ufsm_debug_action) (struct ufsm_action *action);
+
+
 enum ufsm_transition_kind {
     UFSM_TRANSITION_EXTERNAL,
     UFSM_TRANSITION_INTERNAL,
+    UFSM_TRANSITION_LOCAL,
 };
 
 enum ufsm_state_kind {
@@ -37,6 +67,12 @@ enum ufsm_state_kind {
 struct ufsm_machine {
     const char *id;
     const char *name;
+    ufsm_debug_event debug_event;
+    ufsm_debug_transition debug_transition;
+    ufsm_debug_enter_region debug_enter_region;
+    ufsm_debug_leave_region debug_leave_region;
+    ufsm_debug_guard debug_guard;
+    ufsm_debug_action debug_action;
     struct ufsm_region *region;
     struct ufsm_machine *next;
 };
@@ -75,7 +111,6 @@ struct ufsm_transition {
     struct ufsm_transition *next;
 };
 
-
 struct ufsm_region {
     const char *id;
     const char *name;
@@ -100,7 +135,7 @@ struct ufsm_state {
     struct ufsm_state *next;
 };
 
-uint32_t ufsm_init(struct ufsm_machine *m);
+uint32_t ufsm_init_machine(struct ufsm_machine *m);
 uint32_t ufsm_process (struct ufsm_machine *m, uint32_t ev);
 
 #endif

@@ -135,12 +135,14 @@ static struct ufsm_state * ufsmimport_get_state(struct ufsm_machine *root,
 
 
 static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m, 
-                                         struct ufsm_region *r);
+                                         struct ufsm_region *r,
+                                         bool deep_history);
 
 
 static void parse_state(xmlNode *n, struct ufsm_machine *m,
                                     struct ufsm_region *r,
-                                    struct ufsm_state *s) 
+                                    struct ufsm_state *s,
+                                    bool deep_history) 
 {
     struct ufsm_region *state_region = NULL;
     struct ufsm_region *state_region_last = NULL;
@@ -154,13 +156,14 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
     s->exit = NULL;
     s->parent_region = r;
 
-    printf ("    S %-25s %s\n",s->name,s->id);
+    printf ("    S %-25s %s %i\n",s->name,s->id, deep_history);
 
     if (get_attr(n,"submachine")) {
         s->submachine = ufsmimport_get_machine(root_machine,
                             (const char*) get_attr(n,"submachine"));   
     }
 
+    /* TODO: Should deep history propagate to sub statemachines? */
     if (s->submachine)
         printf ("      o-o M %-19s %s\n",s->submachine->name, s->submachine->id);
     
@@ -175,7 +178,8 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
             state_region = malloc (sizeof(struct ufsm_region));
             state_region->parent_state = s;
             state_region->next = state_region_last;
-            parse_region(r_sub, m, state_region);
+            state_region->has_history = deep_history;
+            parse_region(r_sub, m, state_region, deep_history);
             
             if (state_region->name == NULL) {
                 state_region->name = malloc(strlen(s->name)+16);
@@ -286,7 +290,8 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
                     t->trigger_name = (const char*) get_attr(trigger, "name");
                 }
                 
-                if (is_type(trigger, "uml:Activity")) {
+                if (is_type(trigger, "uml:Activity") ||
+                    is_type(trigger, "uml:OpaqueBehavior")) {
                     action = malloc (sizeof (struct ufsm_action));
                     action->name = (const char*) get_attr(trigger, "name");
                     action->id = (const char *) get_attr(trigger, "id");
@@ -335,24 +340,20 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
 
 
 static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m, 
-                                         struct ufsm_region *r) 
+                                         struct ufsm_region *r,
+                                         bool deep_history) 
 {
+    bool has_deep_history = deep_history;
     struct ufsm_state *s = NULL;
     struct ufsm_state *s_last = NULL;
 
     r->name = (const char *) get_attr(n, "name");
     r->id = (const char*) get_attr(n, "id");
-    r->has_history = false;
+    r->has_history = has_deep_history;
 
-    printf ("    R %-25s %s\n", r->name, r->id);
+    printf ("    R %-25s %s %i\n", r->name, r->id, deep_history);
     for (xmlNode *s_node = n->children; s_node; s_node = s_node->next) {
-        if (is_type(s_node, "uml:State")) {
-            s = malloc (sizeof(struct ufsm_state));
-            s->kind = UFSM_STATE_SIMPLE;
-            s->next = s_last;
-            s_last = s;
-            parse_state(s_node, m, r, s);
-        } else if (is_type(s_node, "uml:Pseudostate")) {
+       if (is_type(s_node, "uml:Pseudostate")) {
             s = malloc (sizeof(struct ufsm_state));
             s->name = NULL;
             if (strcmp((char *) get_attr(s_node, "kind"), "initial") == 0) {
@@ -364,6 +365,8 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
                 s->kind = UFSM_STATE_SHALLOW_HISTORY;
             } else if (strcmp((char *) get_attr(s_node, "kind"), "deepHistory") == 0) {
                 r->has_history = true;
+                printf ("%s has deep history\n",r->name);
+                has_deep_history = true;
                 s->kind = UFSM_STATE_DEEP_HISTORY;
             } else if (strcmp((char *) get_attr(s_node, "kind"), "exitPoint") == 0) {
                 s->kind = UFSM_STATE_EXIT_POINT;
@@ -376,7 +379,7 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
 
             s->next = s_last;
             s_last = s;
-            parse_state(s_node, m, r, s);
+            parse_state(s_node, m, r, s, false);
         } else if (is_type(s_node, "uml:FinalState")) {
             s = malloc (sizeof(struct ufsm_state));
             s->kind = UFSM_STATE_FINAL;
@@ -384,7 +387,17 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
             sprintf((char * restrict) s->name, "Final");
             s->next = s_last;
             s_last = s;
-            parse_state(s_node, m, r, s);
+            parse_state(s_node, m, r, s, false);
+        }
+    }
+
+    for (xmlNode *s_node = n->children; s_node; s_node = s_node->next) {
+        if (is_type(s_node, "uml:State")) {
+            s = malloc (sizeof(struct ufsm_state));
+            s->kind = UFSM_STATE_SIMPLE;
+            s->next = s_last;
+            s_last = s;
+            parse_state(s_node, m, r, s, has_deep_history);
         }
     }
  
@@ -431,7 +444,7 @@ static uint32_t ufsmimport_pass2 (xmlNode *node, struct ufsm_machine *machines)
                                             (const char*) get_attr(m, "id"));
                 mach->region = r;
                 r->parent_state = NULL;
-                parse_region(n, mach, r);
+                parse_region(n, mach, r, false);
 
                 if (r->name == NULL) {
                     r->name = malloc(strlen(mach->name)+16);

@@ -135,7 +135,7 @@ int main(int argc, char **argv)
 
 
     reset_test_flags();
-    err = ufsm_init(&m);
+    err = ufsm_init_machine(&m);
     assert (err == UFSM_OK && "Initializing");
     assert (m.region->current == &A);
     assert (flag_guard1_called == false);

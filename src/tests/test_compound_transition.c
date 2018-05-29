@@ -8,6 +8,9 @@ static bool flag_eT11 = false;
 static bool flag_eT111 = false;
 static bool flag_xS1 = false;
 static bool flag_xS11 = false;
+static bool flag_t1 = false;
+static bool flag_t2 = false;
+static bool flag_t3 = false;
 
 static void reset_flags(void)
 {
@@ -16,6 +19,32 @@ static void reset_flags(void)
     flag_eT111 = false;
     flag_xS1 = false;
     flag_xS11 = false;
+    flag_t1 = false;
+    flag_t2 = false;
+    flag_t3 = false;
+}
+
+void t1(void) 
+{
+    printf (" t1\n");
+    flag_t1 = true;
+    assert (flag_xS11 && !flag_eT1 && !flag_eT11 && !flag_eT111 &&
+                !flag_xS1 && flag_t1 && !flag_t2 && !flag_t3);
+}
+void t2(void) 
+{
+    printf (" t2\n");
+    flag_t2 = true;
+    assert (flag_xS11 && !flag_eT1 && !flag_eT11 && !flag_eT111 &&
+                flag_xS1 && flag_t1 && flag_t2 && !flag_t3);
+}
+
+void t3(void) 
+{
+    printf (" t3\n");
+    flag_t3 = true;
+    assert (flag_xS11 && flag_eT1 && flag_eT11 && !flag_eT111 &&
+                flag_xS1 && flag_t1 && flag_t2 && flag_t3);
 }
 
 void eT1(void)
@@ -62,7 +91,7 @@ int main(int argc, char **argv)
     struct ufsm_machine *m = get_StateMachine1();
  
     reset_flags();
-    ufsm_init(m);
+    ufsm_init_machine(m);
     
     assert(!flag_eT1 && !flag_eT11 && !flag_eT111);
     assert(!flag_xS1 && !flag_xS11);
