@@ -46,7 +46,7 @@ static uint32_t ufsm_enter_parent_regions(struct ufsm_machine *m,
     if (m->debug_enter_region)
         m->debug_enter_region(r);
 
-    if (r->parent_state)
+    if (r->parent_state) {
         if (r->parent_state->parent_region)
         {
             r->parent_state->parent_region->current = r->parent_state;
@@ -54,8 +54,9 @@ static uint32_t ufsm_enter_parent_regions(struct ufsm_machine *m,
                         r->parent_state->parent_region);
         }
 
-    for (struct ufsm_entry_exit *e = r->parent_state->entry; e; e = e->next)
-        e->f();
+        for (struct ufsm_entry_exit *e = r->parent_state->entry; e; e = e->next)
+            e->f();
+    }
 
     if (r->has_history)
         ancestor->history = ancestor->current;

@@ -33,4 +33,4 @@ jobs:
     include:
         -   stage: Code Coverage
             after_success:
-                - coveralls --exclude src/tests --exclude src/tools --gcov-options '\-lp'
+                - coveralls --exclude src/tools --gcov-options '\-lp'
