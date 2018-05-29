@@ -17,4 +17,3 @@ addons:
     build_command:   "make -C src/tools && export UFSMIMPORT=tools/ufsmimport && make -C src/tests"
     branch_pattern: "*"
 
-script: make
