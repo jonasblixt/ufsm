@@ -1,5 +1,10 @@
 ![](https://github.com/jonpe960/ufsm/raw/master/doc/logo.png)
 
+<a href="https://scan.coverity.com/projects/jonpe960-ufsm">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/15860/badge.svg"/>
+</a>
+
 A statechart library for C. ufsm is designed without any external dependencies and uses no dynamic memory allocation besides stack.
 
 ufsm is currently not in any working order, it is very much a work in progress.
