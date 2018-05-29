@@ -510,7 +510,7 @@ int main(int argc, char **argv)
         printf ("Usage: ufsmimport <input.xmi> <output name> [-c prefix/]\n");
         exit(0);
     }
-
+    printf ("Input: %s Output: %s\n",argv[1], argv[2]);
 
     doc = xmlReadFile(argv[1], NULL, 0);
     output_name = argv[2];
