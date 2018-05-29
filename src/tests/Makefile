@@ -28,7 +28,7 @@ all: $(TESTS)
 	@$(CC) -c $(CFLAGS) $< -o $@
 
 %.c : %.xmi
-	@echo UFSMIMPORT $< 
+	@echo UFSMIMPORT $< $(patsubst %.xmi, %, $(<)) 
 	@mkdir -p gen
 	@$(UFSMIMPORT) $< $(patsubst %.xmi, %, $(<)) -c gen/
 
