@@ -47,5 +47,9 @@ This statechart is taken from the UML standard, see chapter 14.2.3.9.6 for a com
 
 'test_compound_transition' tests entry and exits of parent states up until a least common ancestor. When event 'sig' is dispatched the transition algoritm executes the following: xS11; t1; xS1; t2; eT1; eT11; t3; eT111
 
+## Fork
+
+![](https://github.com/jonpe960/ufsm/raw/master/doc/test_fork.png)
+
 
 

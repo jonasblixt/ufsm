@@ -25,12 +25,10 @@ addons:
     branch_pattern: "coverity_test"
 
 script:
-    - make -C src/tools
-    - export UFSMIMPORT=../tools/ufsmimport
-    - make -C src/tests
+    - make
 
 jobs:
     include:
         -   stage: Code Coverage
             after_success:
-                - coveralls --exclude src/tools --gcov-options '\-lp'
+                - coveralls -i src --gcov-options '\-lp'

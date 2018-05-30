@@ -2,6 +2,7 @@
 #include <ufsm.h>
 #include <assert.h>
 #include <test_compound_transition_input.h>
+#include "common.h"
 
 static bool flag_eT1 = false;
 static bool flag_eT11 = false;
