@@ -66,13 +66,7 @@ int main(int argc, char **argv)
 {
     struct ufsm_machine *m = get_StateMachine1();
     uint32_t err = UFSM_OK;
- 
-    m->debug_transition = &debug_transition;
-    m->debug_enter_region = &debug_enter_region;
-    m->debug_leave_region = &debug_leave_region;
-    m->debug_event = &debug_event;
-    m->debug_action = &debug_action;
-    m->debug_guard = &debug_guard;
+    test_init(m);
 
     assert (ufsm_init_machine(m) == UFSM_OK);
     assert (flag_eC);

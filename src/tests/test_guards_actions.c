@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <ufsm.h>
+#include "common.h"
 
 enum events {
     EV_A,
@@ -135,6 +136,7 @@ int main(int argc, char **argv)
 
 
     reset_test_flags();
+    test_init(&m);
     err = ufsm_init_machine(&m);
     assert (err == UFSM_OK && "Initializing");
     assert (m.region->current == &A);

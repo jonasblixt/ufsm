@@ -160,13 +160,7 @@ static struct ufsm_machine m  =
 int main(int argc, char **argv)
 {
     uint32_t err;
-    m.debug_transition = &debug_transition;
-    m.debug_enter_region = &debug_enter_region;
-    m.debug_leave_region = &debug_leave_region;
-    m.debug_event = &debug_event;
-    m.debug_action = &debug_action;
-    m.debug_guard = &debug_guard;
-
+    test_init(&m);
 
     err = ufsm_init_machine(&m);
     assert (err == UFSM_OK && "Initializing");

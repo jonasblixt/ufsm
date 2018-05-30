@@ -2,15 +2,15 @@ TESTS  = test_simple
 TESTS += test_simple_substate
 TESTS += test_guards_actions
 TESTS += test_compound_transition
-#TESTS += test_join_fork
 TESTS += test_xmi_machine
 TESTS += test_deephistory
+TESTS += test_fork
 
 CC ?= gcc
 UFSMIMPORT ?= ufsmimport
 
-LDFLAGS = 
-CFLAGS  = -Wall -std=c99
+LDFLAGS = -lgcov
+CFLAGS  = -Wall -std=c99 -fprofile-arcs -ftest-coverage
 CFLAGS += -I.. -I. -I gen/
 
 C_SRCS = ../ufsm.c common.c
@@ -34,9 +34,12 @@ all: $(TESTS)
 	@$(UFSMIMPORT) $< $(patsubst %.xmi, %, $(<)) -c gen/
 
 clean:
-	@$(foreach TEST,$(TESTS), rm $(TEST);)
+	@$(foreach TEST,$(TESTS), rm -f $(TEST);)
 	@rm -rf gen/
 	@rm -f *.o
+	@rm -f *.gcda 
+	@rm -f *.gcno
+	@rm -f *.gcov
 
 # TEST DEFINITIONS ###########################################################
 
@@ -44,9 +47,9 @@ test_xmi_machine: $(OBJS) test_xmi_machine_input.c test_xmi_machine.o
 	@echo BUILD $@
 	@$(CC) $@.c gen/test_xmi_machine_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
-test_join_fork: $(OBJS) test_join_fork_input.c test_join_fork.o
+test_fork: $(OBJS) test_fork_input.c test_fork.o
 	@echo BUILD $@
-	@$(CC) $@.c gen/test_join_fork_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+	@$(CC) $@.c gen/test_fork_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 
 test_compound_transition: $(OBJS) test_compound_transition_input.c test_compound_transition.o

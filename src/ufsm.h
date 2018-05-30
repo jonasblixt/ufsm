@@ -21,6 +21,8 @@
 #define UFSM_ERROR_EVENT_NOT_PROCESSED 4
 #define UFSM_ERROR_LCA_NOT_FOUND       5
 
+extern const char *ufsm_errors[];
+
 /* Misc defines */
 #define UFSM_NO_TRIGGER -1
 
@@ -46,13 +48,16 @@ typedef void (*ufsm_debug_enter_region) (struct ufsm_region *region);
 typedef void (*ufsm_debug_leave_region) (struct ufsm_region *region);
 typedef void (*ufsm_debug_guard) (struct ufsm_guard *guard, bool result);
 typedef void (*ufsm_debug_action) (struct ufsm_action *action);
-
+typedef void (*ufsm_debug_enter_state) (struct ufsm_state *s);
+typedef void (*ufsm_debug_exit_state) (struct ufsm_state *s);
 
 enum ufsm_transition_kind {
     UFSM_TRANSITION_EXTERNAL,
     UFSM_TRANSITION_INTERNAL,
     UFSM_TRANSITION_LOCAL,
 };
+
+extern const char *ufsm_errors[];
 
 enum ufsm_state_kind {
     UFSM_STATE_SIMPLE,
@@ -66,6 +71,8 @@ enum ufsm_state_kind {
     UFSM_STATE_FORK,
 };
 
+extern const char *ufsm_state_kinds[];
+
 struct ufsm_machine {
     const char *id;
     const char *name;
@@ -75,6 +82,9 @@ struct ufsm_machine {
     ufsm_debug_leave_region debug_leave_region;
     ufsm_debug_guard debug_guard;
     ufsm_debug_action debug_action;
+    ufsm_debug_enter_state debug_enter_state;
+    ufsm_debug_exit_state debug_exit_state;
+
     struct ufsm_region *region;
     struct ufsm_machine *next;
 };
@@ -138,6 +148,7 @@ struct ufsm_state {
 };
 
 uint32_t ufsm_init_machine(struct ufsm_machine *m);
+uint32_t ufsm_reset_machine(struct ufsm_machine *m);
 uint32_t ufsm_process (struct ufsm_machine *m, uint32_t ev);
 
 #endif

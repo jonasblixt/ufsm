@@ -26,14 +26,12 @@ static void reset_flags(void)
 
 void t1(void) 
 {
-    printf (" t1\n");
     flag_t1 = true;
     assert (flag_xS11 && !flag_eT1 && !flag_eT11 && !flag_eT111 &&
                 !flag_xS1 && flag_t1 && !flag_t2 && !flag_t3);
 }
 void t2(void) 
 {
-    printf (" t2\n");
     flag_t2 = true;
     assert (flag_xS11 && !flag_eT1 && !flag_eT11 && !flag_eT111 &&
                 flag_xS1 && flag_t1 && flag_t2 && !flag_t3);
@@ -41,7 +39,6 @@ void t2(void)
 
 void t3(void) 
 {
-    printf (" t3\n");
     flag_t3 = true;
     assert (flag_xS11 && flag_eT1 && flag_eT11 && !flag_eT111 &&
                 flag_xS1 && flag_t1 && flag_t2 && flag_t3);
@@ -49,35 +46,30 @@ void t3(void)
 
 void eT1(void)
 {
-    printf(" eT1 \n");
     assert (flag_xS1 && flag_xS11);
     flag_eT1 = true;
 }
 
 void eT11(void)
 {
-    printf(" eT11 \n");
     assert (flag_eT1);
     flag_eT11 = true;
 }
 
 void eT111(void)
 {
-    printf (" eT111 \n");
     assert (flag_eT1 && flag_eT11);
     flag_eT111 = true;
 }
 
 void xS1(void)
 {
-    printf(" xS1 \n");
     assert (flag_xS11);
     flag_xS1 = true;
 }
 
 void xS11(void)
 {
-    printf (" xS11 \n");
  
     assert(!flag_eT1 && !flag_eT11 && !flag_eT111);
     assert(!flag_xS1 && !flag_xS11);
@@ -90,6 +82,7 @@ int main(int argc, char **argv)
 {
     struct ufsm_machine *m = get_StateMachine1();
  
+    test_init(m);
     reset_flags();
     ufsm_init_machine(m);
     
