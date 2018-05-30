@@ -31,4 +31,5 @@ jobs:
     include:
         -   stage: Code Coverage
             after_success:
-                - coveralls -i src --gcov-options '\-lp'
+                - pwd
+                - coveralls -i src
