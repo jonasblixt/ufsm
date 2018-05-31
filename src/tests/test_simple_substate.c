@@ -146,6 +146,7 @@ static struct ufsm_transition simple_transition_sub_INIT =
 
 static struct ufsm_region sub_region = 
 {
+    .name ="Sub region",
     .state = &simple_sub_INIT,
     .transition = &simple_transition_C,
     .next = NULL

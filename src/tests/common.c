@@ -47,7 +47,15 @@ void debug_exit_state(struct ufsm_state *s)
 
 void test_process(struct ufsm_machine *m, uint32_t ev)
 {
-    assert (ufsm_process(m,ev) == UFSM_OK);
+    uint32_t err = UFSM_OK;
+
+    err = ufsm_process(m,ev);
+
+    if (err != UFSM_OK)
+        printf ("ERROR: %s\n", ufsm_errors[err]);
+    assert (err == UFSM_OK);
+
+    assert (m->stack.pos == 0);
 }
 
 

@@ -20,11 +20,17 @@
 #define UFSM_ERROR_UNKNOWN_STATE_KIND  3
 #define UFSM_ERROR_EVENT_NOT_PROCESSED 4
 #define UFSM_ERROR_LCA_NOT_FOUND       5
+#define UFSM_ERROR_STACK_OVERFLOW      6
+#define UFSM_ERROR_STACK_UNDERFLOW     7
 
 extern const char *ufsm_errors[];
 
 /* Misc defines */
 #define UFSM_NO_TRIGGER -1
+
+#ifndef UFSM_STACK_SIZE
+    #define UFSM_STACK_SIZE 128
+#endif
 
 #ifndef NULL
     #define NULL ((void *) 0)
@@ -73,6 +79,12 @@ enum ufsm_state_kind {
 
 extern const char *ufsm_state_kinds[];
 
+struct ufsm_stack {
+    uint32_t no_of_elements;
+    void **data;
+    uint32_t pos;
+};
+
 struct ufsm_machine {
     const char *id;
     const char *name;
@@ -85,6 +97,11 @@ struct ufsm_machine {
     ufsm_debug_enter_state debug_enter_state;
     ufsm_debug_exit_state debug_exit_state;
 
+    void *stack_data[UFSM_STACK_SIZE];
+    void *stack_data2[UFSM_STACK_SIZE];
+
+    struct ufsm_state *parent_state;
+    struct ufsm_stack stack;
     struct ufsm_region *region;
     struct ufsm_machine *next;
 };
@@ -150,5 +167,10 @@ struct ufsm_state {
 uint32_t ufsm_init_machine(struct ufsm_machine *m);
 uint32_t ufsm_reset_machine(struct ufsm_machine *m);
 uint32_t ufsm_process (struct ufsm_machine *m, uint32_t ev);
+uint32_t ufsm_stack_init(struct ufsm_stack *stack,
+                            uint32_t no_of_elements,
+                            void **stack_data);
+uint32_t ufsm_stack_push(struct ufsm_stack *stack, void *item);
+uint32_t ufsm_stack_pop(struct ufsm_stack *stack, void **item);
 
 #endif

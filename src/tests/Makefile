@@ -5,6 +5,8 @@ TESTS += test_compound_transition
 TESTS += test_xmi_machine
 TESTS += test_deephistory
 TESTS += test_fork
+TESTS += test_join
+TESTS += test_stack
 
 CC ?= gcc
 UFSMIMPORT ?= ufsmimport
@@ -13,7 +15,7 @@ LDFLAGS = -lgcov
 CFLAGS  = -Wall -std=c99 -fprofile-arcs -ftest-coverage
 CFLAGS += -I.. -I. -I gen/
 
-C_SRCS = ../ufsm.c common.c
+C_SRCS = ../ufsm.c ../ufsm_stack.c common.c
 
 OBJS = $(C_SRCS:.c=.o)
 
@@ -51,6 +53,9 @@ test_fork: $(OBJS) test_fork_input.c test_fork.o
 	@echo BUILD $@
 	@$(CC) $@.c gen/test_fork_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
+test_join: $(OBJS) test_join_input.c test_join.o
+	@echo BUILD $@
+	@$(CC) $@.c gen/test_join_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 test_compound_transition: $(OBJS) test_compound_transition_input.c test_compound_transition.o
 	@echo BUILD $@
@@ -69,6 +74,10 @@ test_simple_substate: $(OBJS) test_simple_substate.o
 	@$(CC) $@.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 test_guards_actions: $(OBJS) test_guards_actions.o
+	@echo BUILD $@
+	@$(CC) $@.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+
+test_stack: $(OBJS) test_stack.o
 	@echo BUILD $@
 	@$(CC) $@.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 

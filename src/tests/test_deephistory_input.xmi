@@ -6,9 +6,9 @@
 			<packagedElement xmi:id="AAAAAAFjiQL7txnCfYk=" name="StateMachine1" visibility="public" isReentrant="true" xmi:type="uml:StateMachine">
 				<region xmi:id="AAAAAAFjiQL7txnDxOA=" visibility="public" xmi:type="uml:Region">
 					<subvertex xmi:id="AAAAAAFjiQNFFRnJb0M=" name="A" visibility="public" xmi:type="uml:State">
-						<region xmi:id="AAAAAAFjiQO4Axo9x+c=" name="Region1" visibility="public" xmi:type="uml:Region">
+						<region xmi:id="AAAAAAFjiQO4Axo9x+c=" name="RegionA" visibility="public" xmi:type="uml:Region">
 							<subvertex xmi:id="AAAAAAFjiQOGihoVkqY=" name="C" visibility="public" xmi:type="uml:State">
-								<region xmi:id="AAAAAAFjiQudMRrBS+w=" name="Region1" visibility="public" xmi:type="uml:Region">
+								<region xmi:id="AAAAAAFjiQudMRrBS+w=" name="RegionC" visibility="public" xmi:type="uml:Region">
 									<subvertex xmi:id="AAAAAAFjiQv+vxrOc3w=" name="D" visibility="public" xmi:type="uml:State">
 										<entry xmi:id="AAAAAAFjo1yYaCRGW6U=" name="eD" visibility="public" isReentrant="true" xmi:type="uml:OpaqueBehavior"/>
 										<exit xmi:id="AAAAAAFjo1zUhSRNyOk=" name="xD" visibility="public" isReentrant="true" xmi:type="uml:OpaqueBehavior"/>

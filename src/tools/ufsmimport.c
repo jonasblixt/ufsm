@@ -162,6 +162,8 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
     if (get_attr(n,"submachine")) {
         s->submachine = ufsmimport_get_machine(root_machine,
                             (const char*) get_attr(n,"submachine"));   
+        if (s->submachine->region)
+            s->submachine->region->parent_state = s;
     }
 
     /* TODO: Should deep history propagate to sub statemachines? */
@@ -176,7 +178,6 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
     /* Parse regions */
     for (xmlNode *r_sub = n->children; r_sub; r_sub = r_sub->next) {
         if (is_type(r_sub, "uml:Region")) {
-            printf ("Has region\n");
             state_region = malloc (sizeof(struct ufsm_region));
             bzero(state_region, sizeof(struct ufsm_region));
             state_region->parent_state = s;

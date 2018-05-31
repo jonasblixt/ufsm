@@ -4,18 +4,23 @@
 [![Build Status](https://travis-ci.org/jonpe960/ufsm.svg?branch=master)](https://travis-ci.org/jonpe960/ufsm)
 [![Coverage Status](https://coveralls.io/repos/github/jonpe960/ufsm/badge.svg)](https://coveralls.io/github/jonpe960/ufsm)
 
-A statechart library for C. ufsm is designed without any external dependencies and uses no dynamic memory allocation besides stack.
+A statechart library for C. ufsm is designed without any external dependencies and uses no dynamic memory allocation. uFSM is implemented without any recursion.
 
-ufsm is currently not in any working order, it is very much a work in progress.
+At the moment the following UML statchart features are working:
 
-Stage 1 objectives:
- - Support all features in UML Statecharts
- 
-Stage 2 objectives:
- - XMI import tool
- 
-Stage 3 objectives:
- - Verification/Simulation tool
+| Feature              | Implemented | Test case                              |
+| -------------------- |:-----------:| -------------------------------------- |
+| Simple state         | Yes         | test_simple                            |
+| Composit states      | Yes         | test_simple_substate, test_xmi_machine |
+| Submachines          | Yes         | test_xmi_machine                       |
+| Compound transition  | Yes         | test_compound_transition               |
+| Fork                 | Yes         | test_fork                              |
+| Join                 | Yes         | test_join                              |
+| Guards/Actions       | Yes         | test_guards_actions + various          |
+| Shallow/Deep history | Yes         | test_xmi_machine, test_deephistory     | 
+| exit/entry points    | Yes         | test_compound_transition               |
+| Init/Final           | Yes         | all                                    |
+| Event deferral       | No          |                                        |
 
 # Description of test cases
 

@@ -207,7 +207,6 @@ int main(int argc, char **argv)
     reset_flags();
     test_process(m, EV_1);
 
-
     assert(!flag_final &&
         !flag_eB &&
         !flag_eA2 &&
@@ -222,7 +221,6 @@ int main(int argc, char **argv)
         flag_xC &&
         !flag_eA &&
         !flag_xA);
-
     
     test_process(m ,EV_1);
     reset_flags();

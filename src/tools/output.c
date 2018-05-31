@@ -70,14 +70,12 @@ static void ufsm_gen_regions(struct ufsm_region *region);
 static void ufsm_gen_states(struct ufsm_state *state)
 {
  
-printf ("B %p\n",state->parent_region);
     fprintf(fp_c,"static struct ufsm_state %s = {\n",id_to_decl(state->id));
     fprintf(fp_c,"  .id   = \"%s\",\n",state->id);
     fprintf(fp_c,"  .name = \"%s\",\n",state->name);
     fprintf(fp_c,"  .kind = %i,\n",state->kind);
     fprintf(fp_c,"  .parent_region = &%s,\n", 
                             id_to_decl(state->parent_region->id));
-printf ("B2\n");
     if (state->entry)
         fprintf(fp_c,"  .entry = &%s,\n",id_to_decl(state->entry->id));
     else
@@ -103,12 +101,10 @@ printf ("B2\n");
         fprintf(fp_c,"  .next = NULL,\n");
 
     fprintf(fp_c,"};\n");
-printf ("B3\n");
     if (state->region)
         ufsm_gen_regions(state->region);
 
 
-printf ("1\n");
     for (struct ufsm_entry_exit *e = state->entry; e; e = e->next) {
         fprintf(fp_c, "static struct ufsm_entry_exit %s = {\n",
                         id_to_decl(e->id)); 
@@ -124,7 +120,6 @@ printf ("1\n");
 
         fprintf(fp_h, "void %s(void);\n", e->name);
     }
-printf ("3\n");
     for (struct ufsm_entry_exit *e = state->exit; e; e = e->next) {
         fprintf(fp_c, "static struct ufsm_entry_exit %s = {\n",
                         id_to_decl(e->id));
@@ -142,21 +137,17 @@ printf ("3\n");
 
     }
 
-printf ("4\n");
 }
 
 static void ufsm_gen_regions(struct ufsm_region *region) 
 {
-    printf ("R0\n");
     for (struct ufsm_region *r = region; r; r = r->next) {
         fprintf (fp_c,"static struct ufsm_region %s = {\n",id_to_decl(r->id));
         fprintf (fp_c,"  .id = \"%s\",\n", r->id);
         fprintf (fp_c,"  .name = \"%s\",\n", r->name);
-        printf ("R0.2\n");
         fprintf (fp_c,"  .state = &%s,\n", id_to_decl(r->state->id));
         fprintf (fp_c,"  .has_history = %s,\n", r->has_history ? "true" : "false");
         fprintf (fp_c,"  .history = NULL,\n");
-        printf ("R0.1\n");
         if (r->transition)
             fprintf (fp_c,"  .transition = &%s,\n", 
                                             id_to_decl(r->transition->id));
@@ -173,7 +164,6 @@ static void ufsm_gen_regions(struct ufsm_region *region)
         else
             fprintf (fp_c,"  .next = NULL,\n");
         fprintf (fp_c,"};\n");
-        printf ("R1\n");
         for (struct ufsm_transition *t = r->transition; t; t = t->next) {
             fprintf(fp_c, "static struct ufsm_transition %s = {\n",
                                id_to_decl(t->id));
@@ -251,7 +241,12 @@ bool ufsm_gen_machine (struct ufsm_machine *m)
         fprintf (fp_c,"  .next = &%s, \n", id_to_decl(m->next->id));
     else
         fprintf (fp_c,"  .next = NULL,\n");
-        
+    
+    if (m->parent_state)
+        fprintf (fp_c,"  .next = &%s, \n", id_to_decl(m->parent_state->id));
+    else
+        fprintf (fp_c,"  .next = NULL, \n");
+
     fprintf (fp_c,"};\n");
     ufsm_gen_regions(m->region);
     return true;
