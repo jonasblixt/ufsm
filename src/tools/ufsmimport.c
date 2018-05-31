@@ -186,7 +186,7 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
             parse_region(r_sub, m, state_region, deep_history);
             
             if (state_region->name == NULL) {
-                state_region->name = malloc(strlen(s->name)+16);
+                state_region->name = malloc(strlen(s->name)+32);
                 sprintf((char *)state_region->name,"%sregion%i",
                                         s->name,region_count++);
             }

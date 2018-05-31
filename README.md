@@ -4,9 +4,11 @@
 [![Build Status](https://travis-ci.org/jonpe960/ufsm.svg?branch=master)](https://travis-ci.org/jonpe960/ufsm)
 [![Coverage Status](https://coveralls.io/repos/github/jonpe960/ufsm/badge.svg)](https://coveralls.io/github/jonpe960/ufsm)
 
-A statechart library for C. ufsm is designed without any external dependencies and uses no dynamic memory allocation. uFSM is implemented without any recursion.
+uFSM is a statechart library written in C. uFSM is designed without any external dependencies and uses no dynamic memory allocation or recursion.
 
-At the moment the following UML statchart features are working:
+uFSM is desiged with embedded applications in mind but can also be used in other environments. 
+
+Supported UML statchart features:
 
 | Feature              | Implemented | Test case                              |
 | -------------------- |:-----------:| -------------------------------------- |
@@ -21,8 +23,19 @@ At the moment the following UML statchart features are working:
 | exit/entry points    | Yes         | test_compound_transition               |
 | Init/Final           | Yes         | all                                    |
 | Event deferral       | No          |                                        |
+| Terminate            | No          |                                        |
+| Choice               | No          |                                        |
+| Junction             | No          |                                        |
+
+Remaining work besides what's not implemented above:
+ - An event queue
+ - OSAL for mutex's
+ - Some proper examples
+ - Simulation/Analysis tool
 
 # Description of test cases
+
+All of the statecharts were drawn in StarUML and the XMI files generated with the 'XMI' plugin.
 
 ## XMI machine
 
