@@ -7,6 +7,7 @@ TESTS += test_deephistory
 TESTS += test_fork
 TESTS += test_join
 TESTS += test_stack
+TESTS += test_choice
 
 CC ?= gcc
 UFSMIMPORT ?= ufsmimport
@@ -80,4 +81,8 @@ test_guards_actions: $(OBJS) test_guards_actions.o
 test_stack: $(OBJS) test_stack.o
 	@echo BUILD $@
 	@$(CC) $@.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+
+test_choice: $(OBJS) test_choice_input.c test_choice.o
+	@echo BUILD $@
+	@$(CC) $@.c gen/test_choice_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 

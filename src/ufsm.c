@@ -27,6 +27,7 @@ const char *ufsm_state_kinds[] =
     "Entry point",
     "Join",
     "Fork",
+    "Choice",
 };
 
 const char *ufsm_errors[] = 
@@ -538,6 +539,31 @@ static uint32_t ufsm_make_transition(struct ufsm_machine *m,
                                 return err;
                             transition_count++;
                         }
+                    }
+                }
+            break;
+            case UFSM_STATE_CHOICE:
+                for (struct ufsm_transition *dt = dest->parent_region->transition;
+                                                dt; dt = dt->next)
+                {
+                    bool guard_test = true;
+                    
+                    if (dt->source != dest)
+                        continue;
+
+                    for (struct ufsm_guard *g = dt->guard; g; g = g->next) {
+                        if (!g->f())
+                            guard_test = false;
+                    }
+                    
+                    if (guard_test) {
+                        err = ufsm_stack_push(&m->stack, act_region);
+                        if (err != UFSM_OK)
+                            return err;
+                        err = ufsm_stack_push(&m->stack, dt);
+                        if (err != UFSM_OK)
+                            return err;
+                        transition_count++;
                     }
                 }
             break;

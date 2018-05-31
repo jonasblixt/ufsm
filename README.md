@@ -24,7 +24,7 @@ Supported UML statchart features:
 | Init/Final           | Yes         | all                                    |
 | Event deferral       | No          |                                        |
 | Terminate            | No          |                                        |
-| Choice               | No          |                                        |
+| Choice               | Yes         | test_choice                            |
 | Junction             | No          |                                        |
 
 Remaining work besides what's not implemented above:

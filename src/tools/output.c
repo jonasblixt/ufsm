@@ -242,9 +242,9 @@ bool ufsm_gen_machine (struct ufsm_machine *m)
     else
         fprintf (fp_c,"  .next = NULL,\n");
     
-    if (m->parent_state)
-        fprintf (fp_c,"  .next = &%s, \n", id_to_decl(m->parent_state->id));
-    else
+    //if (m->parent_state)
+    //    fprintf (fp_c,"  .next = &%s, \n", id_to_decl(m->parent_state->id));
+    //else
         fprintf (fp_c,"  .next = NULL, \n");
 
     fprintf (fp_c,"};\n");

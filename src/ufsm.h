@@ -75,6 +75,7 @@ enum ufsm_state_kind {
     UFSM_STATE_ENTRY_POINT,
     UFSM_STATE_JOIN,
     UFSM_STATE_FORK,
+    UFSM_STATE_CHOICE,
 };
 
 extern const char *ufsm_state_kinds[];

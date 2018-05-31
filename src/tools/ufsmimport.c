@@ -387,6 +387,8 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
                 s->kind = UFSM_STATE_JOIN;
             } else if (strcmp(node_kind, "fork") == 0) {
                 s->kind = UFSM_STATE_FORK;
+            } else if (strcmp(node_kind, "choice") == 0) {
+                s->kind = UFSM_STATE_CHOICE;
             } else {
                 printf ("Warning: unknown pseudostate '%s'\n",
                                             get_attr(s_node,"kind"));
