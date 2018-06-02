@@ -22,6 +22,8 @@
 #define UFSM_ERROR_LCA_NOT_FOUND       5
 #define UFSM_ERROR_STACK_OVERFLOW      6
 #define UFSM_ERROR_STACK_UNDERFLOW     7
+#define UFSM_ERROR_QUEUE_EMPTY         8
+#define UFSM_ERROR_QUEUE_FULL          9
 
 extern const char *ufsm_errors[];
 
@@ -50,6 +52,7 @@ struct ufsm_region;
 typedef bool (*ufsm_guard_func) (void);
 typedef void (*ufsm_action_func) (void);
 typedef void (*ufsm_entry_exit_func) (void);
+typedef void (*ufsm_queue_cb) (void);
 
 /* Debug callbacks */
 typedef void (*ufsm_debug_event) (uint32_t ev);
@@ -80,6 +83,7 @@ enum ufsm_state_kind {
     UFSM_STATE_JOIN,
     UFSM_STATE_FORK,
     UFSM_STATE_CHOICE,
+    UFSM_STATE_JUNCTION,
 };
 
 extern const char *ufsm_state_kinds[];
@@ -92,9 +96,13 @@ struct ufsm_stack {
 
 struct ufsm_queue {
     uint32_t no_of_elements;
+    uint32_t s;
     uint32_t head;
     uint32_t tail;
-    uint32_t data[UFSM_QUEUE_SIZE];
+    uint32_t *data;
+    ufsm_queue_cb on_data;
+    ufsm_queue_cb lock;
+    ufsm_queue_cb unlock;
 };
 
 struct ufsm_machine {
@@ -110,6 +118,8 @@ struct ufsm_machine {
     ufsm_debug_exit_state debug_exit_state;
 
     void *stack_data[UFSM_STACK_SIZE];
+    uint32_t queue_data[UFSM_QUEUE_SIZE];
+
     struct ufsm_queue queue;
     struct ufsm_state *parent_state;
     struct ufsm_stack stack;
@@ -183,6 +193,12 @@ uint32_t ufsm_stack_init(struct ufsm_stack *stack,
                             void **stack_data);
 uint32_t ufsm_stack_push(struct ufsm_stack *stack, void *item);
 uint32_t ufsm_stack_pop(struct ufsm_stack *stack, void **item);
-uint32_t ufsm_queue_init(struct ufsm_queue *q);
+
+uint32_t ufsm_queue_init(struct ufsm_queue *q, uint32_t no_of_elements,
+                                               uint32_t *data);
+
+uint32_t ufsm_queue_put(struct ufsm_queue *q, uint32_t ev);
+uint32_t ufsm_queue_get(struct ufsm_queue *q, uint32_t *ev);
+struct ufsm_queue * ufsm_get_queue(struct ufsm_machine *m);
 
 #endif

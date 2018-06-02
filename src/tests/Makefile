@@ -9,6 +9,7 @@ TESTS += test_join
 TESTS += test_stack
 TESTS += test_choice
 TESTS += test_queue
+TESTS += test_junction
 
 CC ?= gcc
 UFSMIMPORT ?= ufsmimport
@@ -20,7 +21,6 @@ CFLAGS  = -O2 -Wall -std=c99 -fprofile-arcs -ftest-coverage
 CFLAGS += -I.. -I. -I gen/ -DUFSM_TESTS_VERBOSE=$(UFSM_TESTS_VERBOSE)
 
 C_SRCS = ../ufsm.c ../ufsm_stack.c ../ufsm_queue.c common.c
-
 OBJS = $(C_SRCS:.c=.o)
 
 all: $(TESTS)
@@ -91,5 +91,9 @@ test_choice: $(OBJS) test_choice_input.c test_choice.o
 test_queue: $(OBJS) test_queue.o
 	@echo LINK $@
 	@$(CC) $@.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+
+test_junction: $(OBJS) test_junction_input.c test_junction.o
+	@echo LINK $@
+	@$(CC) $@.c gen/test_junction_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 

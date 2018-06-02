@@ -28,6 +28,7 @@ const char *ufsm_state_kinds[] =
     "Join",
     "Fork",
     "Choice",
+    "Junction",
 };
 
 const char *ufsm_errors[] = 
@@ -40,6 +41,8 @@ const char *ufsm_errors[] =
     "No least common ancestor found",
     "Stack overflow",
     "Stack underflow",
+    "Queue empty",
+    "Queue full",
 };
 
 static bool ufsm_state_is(struct ufsm_state *s, uint32_t kind)
@@ -542,6 +545,25 @@ static uint32_t ufsm_process_choice(struct ufsm_machine *m,
     return err;
 }
 
+static uint32_t ufsm_process_junction(struct ufsm_machine *m,
+                                      struct ufsm_state *dest,
+                                      uint32_t *c)
+{
+    uint32_t err = UFSM_OK;
+
+    for (struct ufsm_transition *t = dest->parent_region->transition; 
+                                                            t; t = t->next) 
+    {
+        if (t->source == dest)
+        {
+            err = ufsm_push_rt_pair(m, dest->parent_region, t);
+            *c = *c + 1;
+        }
+    }
+
+    return err;
+}
+
 static uint32_t ufsm_make_transition(struct ufsm_machine *m,
                                      struct ufsm_transition *t,
                                      struct ufsm_region *r)
@@ -641,6 +663,9 @@ static uint32_t ufsm_make_transition(struct ufsm_machine *m,
                                                         &transition_count);
 
             break;
+            case  UFSM_STATE_JUNCTION:
+                err = ufsm_process_junction(m, dest, &transition_count);
+            break;
             default:
                 err = UFSM_ERROR_UNKNOWN_STATE_KIND;
             break;
@@ -655,7 +680,7 @@ uint32_t ufsm_init_machine(struct ufsm_machine *m)
     uint32_t err = UFSM_OK;
     
     ufsm_stack_init(&(m->stack), UFSM_STACK_SIZE, m->stack_data);
-    ufsm_queue_init(&(m->queue));
+    ufsm_queue_init(&(m->queue), UFSM_QUEUE_SIZE, m->queue_data);
 
     for (struct ufsm_region *r = m->region; r && err == UFSM_OK; r = r->next) 
     {
@@ -756,12 +781,14 @@ uint32_t ufsm_process (struct ufsm_machine *m, uint32_t ev)
                 if (t->trigger == ev && t->source == r->current) 
                 {
                     events_processed = true;
-
-                    if (ufsm_make_transition(m, t, r) == UFSM_OK) 
+                    uint32_t e = ufsm_make_transition(m, t, r);
+                    if (e == UFSM_OK) 
                     {
                         struct ufsm_region *dr = t->dest->parent_region;
                         all_transitions_done = ufsm_all_transitions_done(dr);
                         break;
+                    } else if (e != UFSM_ERROR_EVENT_NOT_PROCESSED) {
+                        err = e;
                     }
                 }
             }
@@ -843,4 +870,9 @@ uint32_t ufsm_reset_machine(struct ufsm_machine *m)
         ufsm_reset_region(m, r);
 
     return UFSM_OK;
+}
+
+struct ufsm_queue * ufsm_get_queue(struct ufsm_machine *m)
+{
+    return &m->queue;
 }

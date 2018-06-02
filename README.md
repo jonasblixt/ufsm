@@ -25,11 +25,9 @@ Supported UML statchart features:
 | Event deferral       | No          |                                        |
 | Terminate            | No          |                                        |
 | Choice               | Yes         | test_choice                            |
-| Junction             | No          |                                        |
+| Junction             | Yes         | test_junction                                        |
 
 Remaining work besides what's not implemented above:
- - An event queue
- - OSAL for mutex's
  - Some proper examples
  - Simulation/Analysis tool
 

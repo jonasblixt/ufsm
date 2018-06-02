@@ -1,3 +1,12 @@
+/**
+ * uFSM
+ *
+ * Copyright (C) 2018 Jonas Persson <jonpe960@gmail.com>
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
 #include <ufsm.h>
 
 uint32_t ufsm_stack_init(struct ufsm_stack *stack,
