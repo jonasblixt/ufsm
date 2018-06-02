@@ -32,11 +32,21 @@ Supported UML statchart features:
 Future work:
  - Some proper examples
  - Simulation/Analysis tool
+ - Test XMI files from other tools
+ - Maybe support SCXML data
+
+# Examples
+All examples are located in 'src/examples'. Some of the examples have specific
+ platform dependancies. For example 'dhcpclient' will only work with linux.
+
+## dhcpclient
+
+
 
 # Implementation details & metrics
 
 ## Transitions
-The UML specification does not enforce how transitions are ownen but suggests 
+The UML specification does not enforce how transitions are owned but suggests 
 that the transition should be owned by the least common region, which makes sense. 
 This however comes at a much greater computational cost in the transition algorithm. 
 uFSM stores the transition in the region where the source state is located.
@@ -61,7 +71,7 @@ Functions with highest cyclomatic complexity:
 
 | CCN | LoC   | Function                   |
 |:---:|:-----:| ---------------------------|
-| 15  | 124   | ufsm_make_transitio        |
+| 15  | 124   | ufsm_make_transition       |
 | 13  | 54    | ufsm_process               |
 | 13  | 48    | ufsm_process_final_state   |
 | 12  | 50    | ufsm_enter_parent_states   |

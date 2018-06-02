@@ -302,9 +302,11 @@ static void ufsm_gen_regions_decl(struct ufsm_region *region)
                                id_to_decl(t->id));
         
             for (struct ufsm_action *a = t->action; a; a = a->next)
-                fprintf(fp_c, "static struct ufsm_action %s;\n",
+            {
+                if (! (strcmp(a->name, "ufsm_deferr") == 0))
+                    fprintf(fp_c, "static struct ufsm_action %s;\n",
                             id_to_decl(a->id));
-
+            }
 
             for (struct ufsm_guard *g = t->guard; g; g = g->next)
                 fprintf(fp_c, "static struct ufsm_guard %s;\n",
