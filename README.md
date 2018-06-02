@@ -60,7 +60,7 @@ can be adjusted by setting 'UFSM_STACK_SIZE' build variable.
 Functions with highest cyclomatic complexity:
 
 | CCN | LoC   | Function                   |
-| :-: | :---: | ---------------------------|
+|:---:|:-----:| ---------------------------|
 | 15  | 124   | ufsm_make_transitio        |
 | 13  | 54    | ufsm_process               |
 | 13  | 48    | ufsm_process_final_state   |
