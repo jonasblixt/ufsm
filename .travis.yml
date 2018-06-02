@@ -33,3 +33,4 @@ jobs:
             after_success:
                 - pwd
                 - coveralls -i src
+                - bash <(curl -s https://codecov.io/bash)

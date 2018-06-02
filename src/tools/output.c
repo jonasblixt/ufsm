@@ -22,8 +22,9 @@ static struct event_list *evlist;
 
 static char * id_to_decl(const char *id)
 {
-    char * decl = malloc (strlen(id));
+    char * decl = malloc (strlen(id)+1);
     char * decl_ptr = decl;
+    bzero(decl, strlen(id) + 1);
 
     do {
         *decl_ptr = *id++;
