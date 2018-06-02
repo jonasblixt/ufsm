@@ -64,7 +64,7 @@
 						<trigger xmi:id="AAAAAAFjb/zVyCM1uE4=" name="EV_E3" visibility="public" xmi:type="uml:AnyReceiveEvent"/>
 						<effect xmi:id="AAAAAAFjopMTniLaqlE=" name="t3" visibility="public" isReentrant="true" xmi:type="uml:OpaqueBehavior"/>
 					</transition>
-					<transition xmi:id="AAAAAAFjmN+xCh2jV5Q=" visibility="public" xmi:type="uml:Transition" source="AAAAAAFjb/uAYSIoKcE=" target="AAAAAAFjb/vZeiJfbqI=" kind="local">
+					<transition xmi:id="AAAAAAFjmN+xCh2jV5Q=" visibility="public" xmi:type="uml:Transition" source="AAAAAAFjb/uAYSIoKcE=" target="AAAAAAFjb/vZeiJfbqI=" kind="external">
 						<ownedMember xmi:id="AAAAAAFjmN+67R21MJY=" name="EV_E1" visibility="public" xmi:type="uml:AnyReceiveEvent"/>
 						<trigger xmi:id="AAAAAAFjoyqgLCMmgmg=" xmi:type="uml:Trigger" name="EV_E1" event="AAAAAAFjmN+67R21MJY="/>
 						<trigger xmi:id="AAAAAAFjmN+67R21MJY=" name="EV_E1" visibility="public" xmi:type="uml:AnyReceiveEvent"/>

@@ -24,7 +24,7 @@
 #define UFSM_ERROR_STACK_UNDERFLOW     7
 #define UFSM_ERROR_QUEUE_EMPTY         8
 #define UFSM_ERROR_QUEUE_FULL          9
-
+#define UFSM_ERROR_MACHINE_TERMINATED  10
 extern const char *ufsm_errors[];
 
 /* Misc defines */
@@ -84,6 +84,7 @@ enum ufsm_state_kind {
     UFSM_STATE_FORK,
     UFSM_STATE_CHOICE,
     UFSM_STATE_JUNCTION,
+    UFSM_STATE_TERMINATE,
 };
 
 extern const char *ufsm_state_kinds[];
@@ -116,11 +117,15 @@ struct ufsm_machine {
     ufsm_debug_action debug_action;
     ufsm_debug_enter_state debug_enter_state;
     ufsm_debug_exit_state debug_exit_state;
+    bool terminated;
 
     void *stack_data[UFSM_STACK_SIZE];
     uint32_t queue_data[UFSM_QUEUE_SIZE];
+    uint32_t deferr_queue_data[UFSM_QUEUE_SIZE];
 
     struct ufsm_queue queue;
+    struct ufsm_queue deferr_queue;
+
     struct ufsm_state *parent_state;
     struct ufsm_stack stack;
     struct ufsm_region *region;
@@ -153,6 +158,7 @@ struct ufsm_transition {
     const char *name;
     const char *trigger_name;
     int32_t trigger;
+    bool deferr;
     enum ufsm_transition_kind kind;
     struct ufsm_action *action;
     struct ufsm_guard *guard;

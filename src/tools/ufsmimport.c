@@ -288,6 +288,15 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
             t->source = src;
             t->dest = dest;
             
+            char *t_kind = (char *) get_attr(s_node, "kind");
+
+            if (strcmp(t_kind, "internal") == 0)
+                t->kind = UFSM_TRANSITION_INTERNAL;
+            else if (strcmp(t_kind, "external") == 0)
+                t->kind = UFSM_TRANSITION_EXTERNAL;
+            else if (strcmp(t_kind, "local") == 0)
+                t->kind = UFSM_TRANSITION_LOCAL;
+
             struct ufsm_action *action = NULL;
             struct ufsm_action *action_last = NULL;
             struct ufsm_guard *guard = NULL;
@@ -392,6 +401,8 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
                 s->kind = UFSM_STATE_CHOICE;
             } else if (strcmp(node_kind, "junction") == 0) {
                 s->kind = UFSM_STATE_JUNCTION;
+            } else if (strcmp(node_kind, "terminate") == 0) {
+                s->kind = UFSM_STATE_TERMINATE;
             } else {
                 printf ("Warning: unknown pseudostate '%s'\n",
                                             get_attr(s_node,"kind"));

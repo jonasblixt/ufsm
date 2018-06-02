@@ -14,9 +14,6 @@ uint32_t ufsm_queue_put(struct ufsm_queue *q, uint32_t ev)
     uint32_t err = UFSM_OK;
 
     if (q->s < q->no_of_elements) {
-        if (q->lock)
-            q->lock();
-
         q->data[q->head] = ev;
         q->s++;
         q->head++;
@@ -26,9 +23,6 @@ uint32_t ufsm_queue_put(struct ufsm_queue *q, uint32_t ev)
 
         if (q->head >= q->no_of_elements)
             q->head = 0;
-
-        if (q->unlock)
-            q->unlock();
 
     } else {
         err = UFSM_ERROR_QUEUE_FULL;

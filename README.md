@@ -3,6 +3,7 @@
 [![Coverity](https://scan.coverity.com/projects/15860/badge.svg)](https://scan.coverity.com/projects/jonpe960-ufsm)
 [![Build Status](https://travis-ci.org/jonpe960/ufsm.svg?branch=master)](https://travis-ci.org/jonpe960/ufsm)
 [![Coverage Status](https://coveralls.io/repos/github/jonpe960/ufsm/badge.svg)](https://coveralls.io/github/jonpe960/ufsm)
+[![codecov](https://codecov.io/gh/jonpe960/ufsm/branch/master/graph/badge.svg)](https://codecov.io/gh/jonpe960/ufsm)
 
 uFSM is a statechart library written in C. uFSM is designed without any external dependencies and uses no dynamic memory allocation or recursion.
 
@@ -22,14 +23,49 @@ Supported UML statchart features:
 | Shallow/Deep history | Yes         | test_xmi_machine, test_deephistory     | 
 | exit/entry points    | Yes         | test_compound_transition               |
 | Init/Final           | Yes         | all                                    |
-| Event deferral       | No          |                                        |
-| Terminate            | No          |                                        |
+| Event deferral       | Yes         | test_deferr                            |
+| Terminate            | Yes         | test_terminate                         |
 | Choice               | Yes         | test_choice                            |
-| Junction             | Yes         | test_junction                                        |
+| Junction             | Yes         | test_junction                          |
+| Do activity          | No          |                                        |
 
-Remaining work besides what's not implemented above:
+Future work:
  - Some proper examples
  - Simulation/Analysis tool
+
+# Implementation details & metrics
+
+## Transitions
+The UML specification does not enforce how transitions are ownen but suggests 
+that the transition should be owned by the least common region, which makes sense. 
+This however comes at a much greater computational cost in the transition algorithm. 
+uFSM stores the transition in the region where the source state is located.
+
+## Event deferral
+uFSM implements event deferral by using a local transition on the state where
+an event should be deferred. The local transition should have an action with
+the name 'ufsm_deferr'. This is a special keyword which is detected by
+the transition algorithm. Whenever an 'ufsm_deferr' action is found
+the event will be stored on a deferred event queue.
+
+## Do activiies
+Do activities are not implemented.
+
+## Code complexity and memory usage
+uFSM is desiged with embedded and safety critical applications in mind. 
+uFSM does not use any dynamic memory allocation and uses no recursion.
+Instead uFSM uses a statically allocated stack 'ufsm_stack'. The stack depth
+can be adjusted by setting 'UFSM_STACK_SIZE' build variable.
+
+Functions with highest cyclomatic complexity:
+
+| CCN | LoC   | Function                   |
+| :-: | :---: | ---------------------------|
+| 15  | 124   | ufsm_make_transitio        |
+| 13  | 54    | ufsm_process               |
+| 13  | 48    | ufsm_process_final_state   |
+| 12  | 50    | ufsm_enter_parent_states   |
+| 10  | 37    | ufsm_leave_nested_states   |
 
 # Description of test cases
 

@@ -29,6 +29,7 @@ const char *ufsm_state_kinds[] =
     "Fork",
     "Choice",
     "Junction",
+    "Terminate",
 };
 
 const char *ufsm_errors[] = 
@@ -43,6 +44,7 @@ const char *ufsm_errors[] =
     "Stack underflow",
     "Queue empty",
     "Queue full",
+    "Machine has terminated",
 };
 
 static bool ufsm_state_is(struct ufsm_state *s, uint32_t kind)
@@ -564,6 +566,20 @@ static uint32_t ufsm_process_junction(struct ufsm_machine *m,
     return err;
 }
 
+void ufsm_update_deferr_queue(struct ufsm_machine *m,
+                              uint32_t ev)
+{
+    uint32_t err = UFSM_OK;
+
+    do {
+        err = ufsm_queue_get(&m->deferr_queue, &ev);
+        if (err == UFSM_OK)
+            err = ufsm_queue_put(&m->queue, ev);
+    } while(err == UFSM_OK);
+
+
+}
+
 static uint32_t ufsm_make_transition(struct ufsm_machine *m,
                                      struct ufsm_transition *t,
                                      struct ufsm_region *r)
@@ -575,6 +591,9 @@ static uint32_t ufsm_make_transition(struct ufsm_machine *m,
     struct ufsm_transition *act_t = NULL;
     struct ufsm_region *lca_region = NULL;
     uint32_t transition_count = 1;
+    uint32_t ev = 0;
+
+    ufsm_update_deferr_queue(m, ev);
 
     err = ufsm_push_rt_pair (m, r, t);
 
@@ -589,6 +608,9 @@ static uint32_t ufsm_make_transition(struct ufsm_machine *m,
 
         src = act_t->source;
         dest = act_t->dest;
+
+        if (t->deferr)
+            err = ufsm_queue_put(&m->deferr_queue, ev);
 
         /* When H state entered implicitly through region initialisation */
     
@@ -607,21 +629,24 @@ static uint32_t ufsm_make_transition(struct ufsm_machine *m,
         if (m->debug_transition)
             m->debug_transition(act_t);
 
-        /* If we are in a composite state make sure to exit all nested states */
-        ufsm_leave_nested_states(m, src);
-        ufsm_leave_state(m, act_t->source);
+        if (t->kind == UFSM_TRANSITION_EXTERNAL)
+        {
+            /* If we are in a composite state make sure to exit all nested states */
+            ufsm_leave_nested_states(m, src);
+            ufsm_leave_state(m, act_t->source);
 
-        /* For compound transitions parents must be exited and entered
-         * in the correct order.
-         * */
-        err = ufsm_leave_parent_states(m, src, dest, &lca_region, 
-                                                         &act_region);
-        if (err != UFSM_OK)
-            break;
-            
-        ufsm_execute_actions(m, act_t);
+            /* For compound transitions parents must be exited and entered
+             * in the correct order.
+             * */
+            err = ufsm_leave_parent_states(m, src, dest, &lca_region, 
+                                                             &act_region);
+            if (err != UFSM_OK)
+                break;
+                
+            ufsm_execute_actions(m, act_t);
 
-        err = ufsm_enter_parent_states(m, lca_region, dest->parent_region);
+            err = ufsm_enter_parent_states(m, lca_region, dest->parent_region);
+        }
 
         if (err != UFSM_OK)
             break;
@@ -634,8 +659,10 @@ static uint32_t ufsm_make_transition(struct ufsm_machine *m,
             case UFSM_STATE_SIMPLE:
                 ufsm_update_history(dest);
                 act_region->current = dest;
-                ufsm_enter_state(m, dest);
-                err = ufsm_process_regions(m, dest, &transition_count);
+                if (t->kind == UFSM_TRANSITION_EXTERNAL) {
+                    ufsm_enter_state(m, dest);
+                    err = ufsm_process_regions(m, dest, &transition_count);
+                }
             break;
             case UFSM_STATE_ENTRY_POINT:
             case UFSM_STATE_EXIT_POINT:
@@ -661,10 +688,13 @@ static uint32_t ufsm_make_transition(struct ufsm_machine *m,
             case UFSM_STATE_CHOICE:
                 err = ufsm_process_choice(m, act_region, dest, 
                                                         &transition_count);
-
             break;
-            case  UFSM_STATE_JUNCTION:
+            case UFSM_STATE_JUNCTION:
                 err = ufsm_process_junction(m, dest, &transition_count);
+            break;
+            case UFSM_STATE_TERMINATE:
+                m->terminated = true;
+                return UFSM_OK;
             break;
             default:
                 err = UFSM_ERROR_UNKNOWN_STATE_KIND;
@@ -681,6 +711,8 @@ uint32_t ufsm_init_machine(struct ufsm_machine *m)
     
     ufsm_stack_init(&(m->stack), UFSM_STACK_SIZE, m->stack_data);
     ufsm_queue_init(&(m->queue), UFSM_QUEUE_SIZE, m->queue_data);
+    ufsm_queue_init(&(m->deferr_queue), UFSM_QUEUE_SIZE, m->deferr_queue_data);
+    m->terminated = false;
 
     for (struct ufsm_region *r = m->region; r && err == UFSM_OK; r = r->next) 
     {
@@ -757,6 +789,9 @@ uint32_t ufsm_process (struct ufsm_machine *m, uint32_t ev)
     bool events_processed = false;
     uint32_t err = UFSM_OK;
     uint32_t state_count = 0;
+
+    if (m->terminated)
+        return UFSM_ERROR_MACHINE_TERMINATED;
 
     if (m->debug_event)
         m->debug_event(ev);

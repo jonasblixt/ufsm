@@ -10,6 +10,9 @@ TESTS += test_stack
 TESTS += test_choice
 TESTS += test_queue
 TESTS += test_junction
+TESTS += test_deferr
+TESTS += test_terminate
+
 
 CC ?= gcc
 UFSMIMPORT ?= ufsmimport
@@ -95,5 +98,13 @@ test_queue: $(OBJS) test_queue.o
 test_junction: $(OBJS) test_junction_input.c test_junction.o
 	@echo LINK $@
 	@$(CC) $@.c gen/test_junction_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+
+test_deferr: $(OBJS) test_deferr_input.c test_deferr.o
+	@echo LINK $@
+	@$(CC) $@.c gen/test_deferr_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+
+test_terminate: $(OBJS) test_terminate_input.c test_terminate.o
+	@echo LINK $@
+	@$(CC) $@.c gen/test_terminate_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 
