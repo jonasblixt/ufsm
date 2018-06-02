@@ -3,45 +3,62 @@
 
 void debug_transition (struct ufsm_transition *t)
 {
+#if UFSM_TESTS_VERBOSE == true
+ 
     printf ("    | Transition | %s {%s} --> %s {%s}\n", t->source->name,
                                             ufsm_state_kinds[t->source->kind],
                                             t->dest->name,
                                             ufsm_state_kinds[t->dest->kind]);
+#endif
 }
 
 void debug_enter_region(struct ufsm_region *r)
 {
+#if UFSM_TESTS_VERBOSE == true
     printf ("    | R enter    | %s, H=%i\n", r->name, r->has_history);
+#endif
 }
 
 void debug_leave_region(struct ufsm_region *r)
 {
+#if UFSM_TESTS_VERBOSE == true
     printf ("    | R exit     | %s, H=%i\n", r->name, r->has_history);
+#endif
 }
 
 void debug_event(uint32_t ev)
 {
+#if UFSM_TESTS_VERBOSE == true
     printf (" %-3i|            |\n",ev);
+#endif
 }
 
 void debug_action(struct ufsm_action *a)
 {
+#if UFSM_TESTS_VERBOSE == true
     printf ("    | Action     | %s()\n",a->name);
+#endif
 }
 
 void debug_guard(struct ufsm_guard *g, bool result) 
 {
+#if UFSM_TESTS_VERBOSE == true
     printf ("    | Guard      | %s() = %i\n", g->name, result);
+#endif
 }
 
 void debug_enter_state(struct ufsm_state *s)
 {
+#if UFSM_TESTS_VERBOSE == true
     printf ("    | S enter    | %s {%s}\n", s->name,ufsm_state_kinds[s->kind]);
+#endif
 }
 
 void debug_exit_state(struct ufsm_state *s)
 {
+#if UFSM_TESTS_VERBOSE == true
     printf ("    | S exit     | %s {%s}\n", s->name,ufsm_state_kinds[s->kind]);
+#endif
 }
 
 
@@ -55,6 +72,11 @@ void test_process(struct ufsm_machine *m, uint32_t ev)
         printf ("ERROR: %s\n", ufsm_errors[err]);
     assert (err == UFSM_OK);
 
+
+    if (m->stack.pos == UFSM_STACK_SIZE)
+        printf ("ERROR: Stack overflow!\n");
+    else if (m->stack.pos > 0)
+        printf ("ERROR: Stack did not return to zero\n");
     assert (m->stack.pos == 0);
 }
 
@@ -72,7 +94,9 @@ void test_init(struct ufsm_machine *m)
     m->debug_enter_state = &debug_enter_state;
     m->debug_exit_state = &debug_exit_state;
 
+#if UFSM_TESTS_VERBOSE == true
     printf (" EV |     OP     | Details\n");
+#endif
 
 }
 

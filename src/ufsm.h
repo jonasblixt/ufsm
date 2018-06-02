@@ -32,6 +32,10 @@ extern const char *ufsm_errors[];
     #define UFSM_STACK_SIZE 128
 #endif
 
+#ifndef UFSM_QUEUE_SIZE
+    #define UFSM_QUEUE_SIZE 16
+#endif
+
 #ifndef NULL
     #define NULL ((void *) 0)
 #endif
@@ -86,6 +90,13 @@ struct ufsm_stack {
     uint32_t pos;
 };
 
+struct ufsm_queue {
+    uint32_t no_of_elements;
+    uint32_t head;
+    uint32_t tail;
+    uint32_t data[UFSM_QUEUE_SIZE];
+};
+
 struct ufsm_machine {
     const char *id;
     const char *name;
@@ -99,8 +110,7 @@ struct ufsm_machine {
     ufsm_debug_exit_state debug_exit_state;
 
     void *stack_data[UFSM_STACK_SIZE];
-    void *stack_data2[UFSM_STACK_SIZE];
-
+    struct ufsm_queue queue;
     struct ufsm_state *parent_state;
     struct ufsm_stack stack;
     struct ufsm_region *region;
@@ -173,5 +183,6 @@ uint32_t ufsm_stack_init(struct ufsm_stack *stack,
                             void **stack_data);
 uint32_t ufsm_stack_push(struct ufsm_stack *stack, void *item);
 uint32_t ufsm_stack_pop(struct ufsm_stack *stack, void **item);
+uint32_t ufsm_queue_init(struct ufsm_queue *q);
 
 #endif

@@ -184,7 +184,6 @@ int main(int argc, char **argv)
         !flag_eA &&
         flag_xA);
 
-    printf (" -- Trying to recover deep history --\n");
     reset_flags();
     test_process(m, EV_A);
 

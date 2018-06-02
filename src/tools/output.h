@@ -5,7 +5,7 @@
 
 
 bool ufsm_gen_output(struct ufsm_machine *root, char *output_name,
-                    char *output_prefix);
+                    char *output_prefix, uint32_t verbose);
 
 
 

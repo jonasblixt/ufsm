@@ -12,6 +12,7 @@
 #include "output.h"
 
 static struct ufsm_machine *root_machine;
+static uint32_t v = 0;
 
 static xmlChar *get_attr(xmlNode *n, const char* id)
 {
@@ -157,7 +158,7 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
     s->exit = NULL;
     s->parent_region = r;
 
-    printf ("    S %-25s %s %i\n",s->name,s->id, deep_history);
+    if (v) printf ("    S %-25s %s %i\n",s->name,s->id, deep_history);
 
     if (get_attr(n,"submachine")) {
         s->submachine = ufsmimport_get_machine(root_machine,
@@ -168,7 +169,7 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
 
     /* TODO: Should deep history propagate to sub statemachines? */
     if (s->submachine)
-        printf ("      o-o M %-19s %s\n",s->submachine->name, s->submachine->id);
+        if (v) printf ("      o-o M %-19s %s\n",s->submachine->name, s->submachine->id);
     
     struct ufsm_entry_exit *entry = NULL;
     struct ufsm_entry_exit *entry_last = NULL;
@@ -305,7 +306,7 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
                     action->id = (const char *) get_attr(trigger, "id");
                     action->next = action_last;
                     action_last = action;
-                    printf (" /%s ", action->name);
+                    if (v) printf (" /%s ", action->name);
                 }
 
                 if (is_type(trigger, "uml:Constraint")) {
@@ -315,7 +316,7 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
                     guard->id = (const char*) get_attr(trigger, "id");
                     guard->next = guard_last;
                     guard_last = guard;
-                    printf (" [%s] ", guard->name);
+                    if (v) printf (" [%s] ", guard->name);
                 }
  
             }
@@ -337,8 +338,8 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
                 } while(tail);
             }
 
-            printf ("   src belongs to %s\n", state_belongs_to(m, src)->name);
-            printf (" T  %-10s -> %-10s %s\n", src->name, 
+            if (v) printf ("   src belongs to %s\n", state_belongs_to(m, src)->name);
+            if (v) printf (" T  %-10s -> %-10s %s\n", src->name, 
                                                dest->name, 
                                                t->id);
         }
@@ -360,7 +361,7 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
     r->id = (const char*) get_attr(n, "id");
     r->has_history = has_deep_history;
 
-    printf ("    R %-25s %s %i\n", r->name, r->id, deep_history);
+    if (v) printf ("    R %-25s %s %i\n", r->name, r->id, deep_history);
     for (xmlNode *s_node = n->children; s_node; s_node = s_node->next) {
        if (is_type(s_node, "uml:Pseudostate")) {
             s = malloc (sizeof(struct ufsm_state));
@@ -431,7 +432,7 @@ static struct ufsm_machine * ufsmimport_pass1 (xmlNode *node)
     struct ufsm_machine *m = NULL;
     struct ufsm_machine *m_last = NULL;
 
-    printf ("o Pass 1, analysing state machines...\n");
+    if (v) printf ("o Pass 1, analysing state machines...\n");
     for (n = node; n; n = n->next) {
         if (is_type(n, "uml:StateMachine")) {
             m = malloc(sizeof(struct ufsm_machine));
@@ -440,7 +441,7 @@ static struct ufsm_machine * ufsmimport_pass1 (xmlNode *node)
             m->id = (const char*) get_attr(n, "id");
             m->name = (const char*) get_attr(n, "name");
             m_last = m;
-            printf ("    M %-25s %s\n",m->name,m->id);
+            if (v) printf ("    M %-25s %s\n",m->name,m->id);
         }
     }
 
@@ -452,7 +453,7 @@ static uint32_t ufsmimport_pass2 (xmlNode *node, struct ufsm_machine *machines)
     struct ufsm_region *r = NULL;
     uint32_t region_count = 0;
 
-    printf ("o Pass 2, analysing regions, states and sub machines...\n");
+    if (v) printf ("o Pass 2, analysing regions, states and sub machines...\n");
  
     for (xmlNode *m = node; m; m = m->next) {
         region_count = 0;
@@ -483,7 +484,7 @@ static uint32_t ufsmimport_pass2 (xmlNode *node, struct ufsm_machine *machines)
 
 static uint32_t ufsmimport_pass3 (xmlNode *node, struct ufsm_machine *machines) 
 {
-    printf ("o Pass 3, analysing transitions...\n");
+    if (v) printf ("o Pass 3, analysing transitions...\n");
  
     for (xmlNode *m = node; m; m = m->next) {
         for (xmlNode *n = m->children; n; n = n->next) {
@@ -531,15 +532,17 @@ int main(int argc, char **argv)
         printf ("Usage: ufsmimport <input.xmi> <output name> [-c prefix/]\n");
         exit(0);
     }
-    printf ("Input: %s Output: %s\n",argv[1], argv[2]);
 
     doc = xmlReadFile(argv[1], NULL, 0);
     output_name = argv[2];
 
-    while ((c = getopt(argc-2, argv+2, "c:")) != -1) {
+    while ((c = getopt(argc-2, argv+2, "vc:")) != -1) {
         switch (c) {
             case 'c':
                 output_prefix = optarg;
+            break;
+            case 'v':
+                v++;
             break;
             default:
                 abort();
@@ -551,7 +554,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    printf ("o Reading...\n");
+
+    if (v) printf ("o Reading...\n");
  
     root_element = xmlDocGetRootElement(doc);
     
@@ -560,13 +564,13 @@ int main(int argc, char **argv)
         printf ("Error: Not an XMI file\n");
         return -1;
     }
-    printf (" XMI v%s\n",get_attr(root_element,"version"));
+    if (v) printf (" XMI v%s\n",get_attr(root_element,"version"));
     
     /* Exporter info */
     root_element = root_element->children;
     root_element = root_element->next;
 
-    printf (" Exporter: %s, exporter version: %s\n", 
+    if (v) printf (" Exporter: %s, exporter version: %s\n", 
                 get_attr(root_element, "exporter"),
                 get_attr(root_element, "exporterVersion"));
     
@@ -581,8 +585,8 @@ int main(int argc, char **argv)
         *output_prefix = 0;
     }
     
-    printf ("Output prefix: %s\n", output_prefix);
-    ufsm_gen_output(root_machine, output_name, output_prefix);
+    if (v) printf ("Output prefix: %s\n", output_prefix);
+    ufsm_gen_output(root_machine, output_name, output_prefix,v);
 
     return 0;
 }

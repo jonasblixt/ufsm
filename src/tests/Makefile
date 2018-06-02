@@ -8,31 +8,33 @@ TESTS += test_fork
 TESTS += test_join
 TESTS += test_stack
 TESTS += test_choice
+TESTS += test_queue
 
 CC ?= gcc
 UFSMIMPORT ?= ufsmimport
 
-LDFLAGS = -lgcov
-CFLAGS  = -Wall -std=c99 -fprofile-arcs -ftest-coverage
-CFLAGS += -I.. -I. -I gen/
+UFSM_TESTS_VERBOSE ?= false
 
-C_SRCS = ../ufsm.c ../ufsm_stack.c common.c
+LDFLAGS = -lgcov
+CFLAGS  = -O2 -Wall -std=c99 -fprofile-arcs -ftest-coverage
+CFLAGS += -I.. -I. -I gen/ -DUFSM_TESTS_VERBOSE=$(UFSM_TESTS_VERBOSE)
+
+C_SRCS = ../ufsm.c ../ufsm_stack.c ../ufsm_queue.c common.c
 
 OBJS = $(C_SRCS:.c=.o)
 
 all: $(TESTS)
 	@$(foreach TEST,$(TESTS), \
 		echo && \
-		echo "\n\n --- TEST $(TEST) ---" && \
+		echo "TEST $(TEST)" && \
 		./$(TEST))
 	@echo "*** ALL $(words ${TESTS}) TESTS PASSED ***"
-
 %.o : %.c
 	@echo CC $<
 	@$(CC) -c $(CFLAGS) $< -o $@
 
 %.c : %.xmi
-	@echo UFSMIMPORT $< $(patsubst %.xmi, %, $(<)) 
+	@echo UFSMIMPORT $< 
 	@mkdir -p gen
 	@$(UFSMIMPORT) $< $(patsubst %.xmi, %, $(<)) -c gen/
 
@@ -47,42 +49,47 @@ clean:
 # TEST DEFINITIONS ###########################################################
 
 test_xmi_machine: $(OBJS) test_xmi_machine_input.c test_xmi_machine.o
-	@echo BUILD $@
+	@echo LINK $@
 	@$(CC) $@.c gen/test_xmi_machine_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 test_fork: $(OBJS) test_fork_input.c test_fork.o
-	@echo BUILD $@
+	@echo LINK $@
 	@$(CC) $@.c gen/test_fork_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 test_join: $(OBJS) test_join_input.c test_join.o
-	@echo BUILD $@
+	@echo LINK $@
 	@$(CC) $@.c gen/test_join_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 test_compound_transition: $(OBJS) test_compound_transition_input.c test_compound_transition.o
-	@echo BUILD $@
+	@echo LINK $@
 	@$(CC) $@.c gen/test_compound_transition_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 test_deephistory: $(OBJS) test_deephistory_input.c test_deephistory.o
-	@echo BUILD $@
+	@echo LINK $@
 	@$(CC) $@.c gen/test_deephistory_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 test_simple: $(OBJS) test_simple.o
-	@echo BUILD $@
+	@echo LINK $@
 	@$(CC) $@.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 test_simple_substate: $(OBJS) test_simple_substate.o
-	@echo BUILD $@
+	@echo LINK $@
 	@$(CC) $@.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 test_guards_actions: $(OBJS) test_guards_actions.o
-	@echo BUILD $@
+	@echo LINK $@
 	@$(CC) $@.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 test_stack: $(OBJS) test_stack.o
-	@echo BUILD $@
+	@echo LINK $@
 	@$(CC) $@.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 test_choice: $(OBJS) test_choice_input.c test_choice.o
-	@echo BUILD $@
+	@echo LINK $@
 	@$(CC) $@.c gen/test_choice_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+
+test_queue: $(OBJS) test_queue.o
+	@echo LINK $@
+	@$(CC) $@.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+
 
