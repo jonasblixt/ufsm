@@ -68,6 +68,7 @@ uint32_t ufsm_queue_init(struct ufsm_queue *q, uint32_t no_of_elements,
     q->head = 0;
     q->tail = 0;
     q->data = data;
+    q->s = 0;
     q->on_data = NULL;
     q->lock = NULL;
     q->unlock = NULL;
