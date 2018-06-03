@@ -93,7 +93,7 @@ test_choice: $(OBJS) test_choice_input.c test_choice.o
 
 test_queue: $(OBJS) test_queue.o
 	@echo LINK $@
-	@$(CC) $@.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+	@$(CC) $@.c gen/test_terminate_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 test_junction: $(OBJS) test_junction_input.c test_junction.o
 	@echo LINK $@
