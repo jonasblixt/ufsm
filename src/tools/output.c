@@ -1,3 +1,12 @@
+/**
+ * uFSM
+ *
+ * Copyright (C) 2018 Jonas Persson <jonpe960@gmail.com>
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
