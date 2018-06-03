@@ -110,7 +110,7 @@ Functions with highest cyclomatic complexity:
 
 | CCN | LoC   | Function                   |
 |:---:|:-----:| ---------------------------|
-| 13  | 118   | ufsm_make_transition       |
+| 15  | 128   | ufsm_make_transition       |
 | 13  | 54    | ufsm_process               |
 | 13  | 48    | ufsm_process_final_state   |
 | 12  | 52    | ufsm_enter_parent_states   |

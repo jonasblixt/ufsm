@@ -3,13 +3,13 @@ UFSMIMPORT ?= ../../../tools/ufsmimport
 
 CC ?= gcc
 
-CFLAGS = -Wall -O2 -O -I ../../../ -I .
+CFLAGS = -Wall -O2 -I ../../../ -I .
 LDFLAGS = -lpthread
 
 UFSM_XMI = dhcp_client_fsm.xmi
 UFSM_XMI_OBJS = $(UFSM_XMI:.xmi=.xmio)
 
-C_SRCS  = dhcpclient.c 
+C_SRCS  = dhcpc.c dhcpclient.c
 C_SRCS += ../../../ufsm.c 
 C_SRCS += ../../../ufsm_queue.c 
 C_SRCS += ../../../ufsm_stack.c
@@ -24,7 +24,8 @@ all: dhcpclient
 	@$(CC) $(CFLAGS) -c $(patsubst %.xmi, %.c, $(<)) -o $@
 
 %.o : %.c
-	@$(CC) -c $(CFLAGS) $< -o $@
+	@echo CC $<
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 dhcpclient: $(UFSM_XMI_OBJS) $(C_OBJS)
 	@echo LINK $@

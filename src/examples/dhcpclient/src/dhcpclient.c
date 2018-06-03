@@ -16,11 +16,13 @@
 #include <ufsm.h>
 
 #include "dhcp_client_fsm.h"
+#include "dhcpc.h"
 
 static struct ufsm_machine *m = NULL;
 static struct ufsm_queue *q = NULL;
 static pthread_mutex_t queue_lock;
 static pthread_mutex_t event_loop_lock;
+static char *ifacename = NULL;
 
 #define MSG(x...) printf("    | Message    | " x)
 
@@ -87,7 +89,7 @@ void dhcp_enable_socket(void)
 
 void dhcp_send_request(void)
 {
-
+    MSG ("Send request\n");
 }
 
 void dhcp_display_result(void)
@@ -96,25 +98,31 @@ void dhcp_display_result(void)
 
 void dhcp_disable_socket(void)
 {
+    MSG ("Disable socket\n");
 }
 
 void dhcp_enable_broadcast(void)
 {
     MSG("Enable broadcast\n");
+    dhcpc_enable_broadcast(ifacename);
 }
 
 void dhcp_bcast_request(void)
 {
+    MSG("Bcast request\n");
+    dhcpc_bcast_request();
 }
 
 void dhcp_set_timers(void)
 {
+    MSG("Set timers\n");
 }
 
 void dhcp_reset(void)
 {
     MSG ("DHCP Reset\n");
-    ufsm_queue_put(q, READY);
+    dhcpc_reset(q);
+    
 }
 
 void dhcp_select_offer(void)
@@ -181,6 +189,8 @@ int main(int argc, char **argv)
         printf ("Usage: dhcpclient <network interface>\n");
         return 0;
     }
+
+    ifacename = argv[1];
 
     if (pthread_mutex_init (&queue_lock, NULL) != 0)
     {
