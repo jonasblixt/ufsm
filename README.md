@@ -53,7 +53,7 @@ All examples are located in 'src/examples'. Some of the examples have specific
 uFSM can be used as it is, without any XMI files or graphical editors. It is
 fully possible to create the state, transition, etc.. structures. This works
 for trivial state machines. This, however, defeats the purpose of uFSM, and
-quickly becomes difficult to work with. The real use case for this library 
+quickly becomes difficult to work with. The real use case for this library is
 with applications that have complex logic.
 
 See 'test_simple' or 'test_simple_substate' for examples on how to create
@@ -68,8 +68,8 @@ uFSM can be part of an application by including it as a sub repo and add
 ufsm.c, ufsm.h ufsm_stack.c and ufsm_queue.c to the applications Makefile. 
 Alternatively just copy those files into the target application.
 
-Calling the top most make file in this repository builds the library with
-gcov and code coverage flags which is not something that should be done for
+Calling the top most makefile in this repository builds the library with
+gcov and code coverage flags which is not something that should not be done for
 an application. Further more calling the top make file will build the import
 tool and run through all of the test cases.
 
