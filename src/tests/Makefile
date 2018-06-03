@@ -12,7 +12,7 @@ TESTS += test_queue
 TESTS += test_junction
 TESTS += test_defer
 TESTS += test_terminate
-
+#TESTS += test_conref
 
 CC ?= gcc
 UFSMIMPORT ?= ufsmimport
@@ -107,4 +107,8 @@ test_terminate: $(OBJS) test_terminate_input.c test_terminate.o
 	@echo LINK $@
 	@$(CC) $@.c gen/test_terminate_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
+
+test_conref: $(OBJS) test_conref_input.c test_conref.o
+	@echo LINK $@
+	@$(CC) $@.c gen/test_conref_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 

@@ -22,6 +22,7 @@
 
 static struct ufsm_machine *root_machine;
 static uint32_t v = 0;
+static bool flag_strip = false;
 
 static xmlChar *get_attr(xmlNode *n, const char* id)
 {
@@ -551,20 +552,27 @@ int main(int argc, char **argv)
     xmlNode *root_machine_element;
     
     if (argc < 3) {
-        printf ("Usage: ufsmimport <input.xmi> <output name> [-c prefix/]\n");
+        printf ("Usage: ufsmimport <input.xmi> <output name> [options]\n");
+        printf ("                              -v          - Verbose\n");
+        printf ("                              -c prefix/  - Output prefix\n");
+        printf ("                              -s          - Strip output\n");
+   
         exit(0);
     }
 
     doc = xmlReadFile(argv[1], NULL, 0);
     output_name = argv[2];
 
-    while ((c = getopt(argc-2, argv+2, "vc:")) != -1) {
+    while ((c = getopt(argc-2, argv+2, "svc:")) != -1) {
         switch (c) {
             case 'c':
                 output_prefix = optarg;
             break;
             case 'v':
                 v++;
+            break;
+            case 's':
+                flag_strip = true;
             break;
             default:
                 abort();
@@ -608,7 +616,7 @@ int main(int argc, char **argv)
     }
     
     if (v) printf ("Output prefix: %s\n", output_prefix);
-    ufsm_gen_output(root_machine, output_name, output_prefix,v);
+    ufsm_gen_output(root_machine, output_name, output_prefix,v,flag_strip);
 
     return 0;
 }
