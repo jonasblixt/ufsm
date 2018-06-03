@@ -24,6 +24,14 @@ static struct ufsm_machine *root_machine;
 static uint32_t v = 0;
 static bool flag_strip = false;
 
+struct ufsmimport_connection_map {
+    char *id;
+    char *target_id;
+    struct ufsmimport_connection_map *next;
+};
+
+static struct ufsmimport_connection_map *conmap;
+
 static xmlChar *get_attr(xmlNode *n, const char* id)
 {
     xmlAttr* attribute = n->properties;
@@ -141,7 +149,15 @@ static struct ufsm_state * ufsmimport_get_state(struct ufsm_machine *root,
         if (result)
             return result;
     }
-    return NULL;
+
+    if (result == NULL) {
+        for (struct ufsmimport_connection_map *cm = conmap; cm; cm = cm->next) {
+            if (strcmp(id, cm->id) == 0)
+                result = ufsmimport_get_state(root, cm->target_id);
+        }
+    }
+
+    return result;
 }
 
 
@@ -151,7 +167,7 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
                                          bool deep_history);
 
 
-static void parse_state(xmlNode *n, struct ufsm_machine *m,
+static uint32_t parse_state(xmlNode *n, struct ufsm_machine *m,
                                     struct ufsm_region *r,
                                     struct ufsm_state *s,
                                     bool deep_history) 
@@ -173,8 +189,8 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
     if (get_attr(n,"submachine")) {
         s->submachine = ufsmimport_get_machine(root_machine,
                             (const char*) get_attr(n,"submachine"));   
-        if (s->submachine->region)
-            s->submachine->region->parent_state = s;
+        //if (s->submachine->region)
+        //    s->submachine->region->parent_state = s;
     }
 
     /* TODO: Should deep history propagate to sub statemachines? */
@@ -203,28 +219,50 @@ static void parse_state(xmlNode *n, struct ufsm_machine *m,
             }
 
             state_region_last = state_region;
-        }
-        if(strcmp((char *)r_sub->name, "entry") == 0) {
+        } else if(strcmp((char *)r_sub->name, "entry") == 0) {
             entry = malloc(sizeof(struct ufsm_entry_exit));
             bzero(entry, sizeof(struct ufsm_entry_exit));
             entry->name = (const char*) get_attr(r_sub,"name");
             entry->id = (const char *) get_attr(r_sub, "id");
             entry->next = entry_last;
             entry_last = entry;
-        }
-        if(strcmp((char *)r_sub->name, "exit") == 0) {
+        } else if(strcmp((char *)r_sub->name, "exit") == 0) {
             exits = malloc(sizeof(struct ufsm_entry_exit));
             bzero(exits, sizeof(struct ufsm_entry_exit));
             exits->name = (const char*) get_attr(r_sub,"name");
             exits->id = (const char *) get_attr(r_sub, "id");
             exits->next = exits_last;
             exits_last = exits;
+        } else if(strcmp((char *) r_sub->name, "text") == 0) {
+            /* Do nothing */
+        } else if(strcmp((char *) r_sub->name, "connection") == 0) {
+            struct ufsmimport_connection_map * cm = NULL;
+
+            if (conmap == NULL) {
+                conmap = malloc(sizeof(struct ufsmimport_connection_map));
+                bzero(conmap, sizeof(struct ufsmimport_connection_map));
+                cm = conmap;
+            } else {
+                conmap->next = malloc(sizeof(struct ufsmimport_connection_map));
+                bzero(conmap->next, sizeof(struct ufsmimport_connection_map));
+                cm = conmap->next;
+            }
+            cm->id = (char *) get_attr(r_sub, "id");
+            cm->target_id = (char *) get_attr (r_sub->children->next, "idref");
+            if (v)
+                printf (" Created connection reference %s -> %s\n", cm->id, cm->target_id);
+    
+        } else {
+            printf ("Error: Unknown element in state definition: '%s'\n", r_sub->name);
+            return UFSM_ERROR;
         }
  
     }
     s->entry = entry_last;
     s->exit = exits_last;
     s->region = state_region_last;
+
+    return UFSM_OK;
 }
 
 
@@ -373,6 +411,7 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
                                          bool deep_history) 
 {
     bool has_deep_history = deep_history;
+    uint32_t err = UFSM_OK;
     struct ufsm_state *s = NULL;
     struct ufsm_state *s_last = NULL;
 
@@ -420,7 +459,10 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
 
             s->next = s_last;
             s_last = s;
-            parse_state(s_node, m, r, s, false);
+            err = parse_state(s_node, m, r, s, false);
+
+            if (err != UFSM_OK)
+                return err;
         } else if (is_type(s_node, "uml:FinalState")) {
             s = malloc (sizeof(struct ufsm_state));
             bzero(s, sizeof(struct ufsm_state));
@@ -429,7 +471,9 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
             sprintf((char * restrict) s->name, "Final");
             s->next = s_last;
             s_last = s;
-            parse_state(s_node, m, r, s, false);
+            err = parse_state(s_node, m, r, s, false);
+            if (err != UFSM_OK)
+                return err;
         }
     }
 
@@ -440,7 +484,9 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
             s->kind = UFSM_STATE_SIMPLE;
             s->next = s_last;
             s_last = s;
-            parse_state(s_node, m, r, s, has_deep_history);
+            err = parse_state(s_node, m, r, s, has_deep_history);
+            if (err != UFSM_OK)
+                return err;
         }
     }
  
@@ -454,13 +500,17 @@ static struct ufsm_machine * ufsmimport_pass1 (xmlNode *node)
     xmlNode *n = NULL;
     struct ufsm_machine *m = NULL;
     struct ufsm_machine *m_last = NULL;
-
+    struct ufsm_machine *m_first = NULL;
     if (v) printf ("o Pass 1, analysing state machines...\n");
     for (n = node; n; n = n->next) {
         if (is_type(n, "uml:StateMachine")) {
             m = malloc(sizeof(struct ufsm_machine));
             bzero (m, sizeof(struct ufsm_machine));
-            m->next = m_last;
+            if (!m_first)
+                m_first = m;
+            if (m_last)
+                m_last->next = m;
+            //m->next = m_last;
             m->id = (const char*) get_attr(n, "id");
             m->name = (const char*) get_attr(n, "name");
             m_last = m;
@@ -468,13 +518,14 @@ static struct ufsm_machine * ufsmimport_pass1 (xmlNode *node)
         }
     }
 
-    return m_last;
+    return m_first;
 }
 
 static uint32_t ufsmimport_pass2 (xmlNode *node, struct ufsm_machine *machines) 
 {
     struct ufsm_region *r = NULL;
     uint32_t region_count = 0;
+    uint32_t err = UFSM_OK;
 
     if (v) printf ("o Pass 2, analysing regions, states and sub machines...\n");
  
@@ -489,8 +540,10 @@ static uint32_t ufsmimport_pass2 (xmlNode *node, struct ufsm_machine *machines)
                                             (const char*) get_attr(m, "id"));
                 mach->region = r;
                 r->parent_state = NULL;
-                parse_region(n, mach, r, false);
+                err = parse_region(n, mach, r, false);
 
+                if (err != UFSM_OK)
+                    return err;
                 if (r->name == NULL) {
                     r->name = malloc(strlen(mach->name)+16);
                     sprintf ((char *) r->name,"%sregion%i",
@@ -545,6 +598,7 @@ int main(int argc, char **argv)
     extern char *optarg;
     extern int optind, opterr, optopt;
     char c;
+    uint32_t err = UFSM_OK;
     char *output_prefix = NULL;
     char *output_name = NULL;
     xmlDocPtr doc;
@@ -607,8 +661,26 @@ int main(int argc, char **argv)
     root_machine_element = get_first_statemachine(root_element);
 
     root_machine = ufsmimport_pass1 (root_machine_element);
-    ufsmimport_pass2(root_machine_element, root_machine);
-    ufsmimport_pass3(root_machine_element, root_machine);
+    
+    if (!root_machine) {
+        printf ("Error: Pass 1 failed, found no root machine\n");
+        return UFSM_ERROR;
+    }
+
+    err = ufsmimport_pass2(root_machine_element, root_machine);
+    if (err != UFSM_OK) {
+        printf ("Error: pass2 failed with error code '%i'\n",err);
+        return err;
+    }
+
+    err = ufsmimport_pass3(root_machine_element, root_machine);
+
+
+    if (err != UFSM_OK) {
+        printf ("Error: pass3 failed with error code '%i'\n",err);
+        return err;
+    }
+
 
     if (output_prefix == NULL) {
         output_prefix = malloc(2);
@@ -618,5 +690,5 @@ int main(int argc, char **argv)
     if (v) printf ("Output prefix: %s\n", output_prefix);
     ufsm_gen_output(root_machine, output_name, output_prefix,v,flag_strip);
 
-    return 0;
+    return err;
 }

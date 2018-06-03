@@ -30,7 +30,7 @@ Supported UML statechart features:
 | Choice               | Yes         | test_choice                            |
 | Junction             | Yes         | test_junction                          |
 | Do activity          | No          |                                        |
-| Connection point ref | No          |                                        |
+| Connection point ref | Yes         |                                        |
 | Protocol Machines    | No          |                                        |
 
 Future work:
@@ -110,11 +110,11 @@ Functions with highest cyclomatic complexity:
 
 | CCN | LoC   | Function                   |
 |:---:|:-----:| ---------------------------|
-| 15  | 124   | ufsm_make_transition       |
+| 13  | 118   | ufsm_make_transition       |
 | 13  | 54    | ufsm_process               |
 | 13  | 48    | ufsm_process_final_state   |
-| 12  | 50    | ufsm_enter_parent_states   |
-| 10  | 37    | ufsm_leave_nested_states   |
+| 12  | 52    | ufsm_enter_parent_states   |
+| 10  | 40    | ufsm_leave_nested_states   |
 
 # Description of test cases
 

@@ -12,7 +12,7 @@ TESTS += test_queue
 TESTS += test_junction
 TESTS += test_defer
 TESTS += test_terminate
-#TESTS += test_conref
+TESTS += test_conref
 
 CC ?= gcc
 UFSMIMPORT ?= ufsmimport

@@ -105,15 +105,16 @@ static void ufsm_gen_states(struct ufsm_state *state)
     else
         fprintf(fp_c,"  .exit = NULL,\n");
 
-    if (state->region)
+    if (state->region) {
         fprintf(fp_c,"  .region = &%s,\n",id_to_decl(state->region->id));
-    else
+    } else if (state->submachine) {
+        state->submachine->region->parent_state = state;
+        fprintf(fp_c,"  .region = &%s,\n",id_to_decl(state->submachine->region->id));
+    } else {
         fprintf(fp_c,"  .region = NULL,\n");
+    }
 
-    if (state->submachine)
-        fprintf(fp_c,"  .submachine = &%s,\n",id_to_decl(state->submachine->id));
-    else
-        fprintf(fp_c,"  .submachine = NULL,\n");
+    fprintf(fp_c,"  .submachine = NULL,\n");
 
     if (state->next)
         fprintf(fp_c,"  .next = &%s,\n",id_to_decl(state->next->id));
