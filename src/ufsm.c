@@ -186,22 +186,24 @@ static uint32_t ufsm_enter_parent_states(struct ufsm_machine *m,
         ps = pr->parent_state;
     }
 
-    for (uint32_t i = 0; i < c && err == UFSM_OK; i++)
+    for (uint32_t i = 0; i < c; i++)
     {
         err = ufsm_stack_pop(&m->stack, (void **) &pr);
+
+        if (err != UFSM_OK)
+            break;
 
         if (m->debug_enter_region)
             m->debug_enter_region(pr);
 
         ps = pr->parent_state;
         
-        if (!ps)
-            continue;
+        if (ps) {
+            ufsm_set_current_state (m, ps->parent_region, ps);
 
-        ufsm_set_current_state (m, ps->parent_region, ps);
-
-        if (pr != ancestor)
-            ufsm_enter_state(m, ps);            
+            if (pr != ancestor)
+                ufsm_enter_state(m, ps);            
+        }
     }
     
     return err;
@@ -265,11 +267,11 @@ static uint32_t ufsm_leave_parent_states(struct ufsm_machine *m,
 
         if (m->debug_leave_region)
             m->debug_leave_region(rl);
-
-        ufsm_leave_state(m, rl->parent_state); 
-
-        rl->current = NULL;
+        
         if (rl->parent_state) {
+            ufsm_leave_state(m, rl->parent_state); 
+            rl->current = NULL;
+
             if (rl->parent_state->parent_region) {
                 rl = rl->parent_state->parent_region;
                 states_to_leave = true;
@@ -306,8 +308,11 @@ static uint32_t ufsm_leave_nested_states(struct ufsm_machine *m,
             r = NULL;
     } while (r);
 
-    for (uint32_t i = 0; i < c && err == UFSM_OK; i++) { 
+    for (uint32_t i = 0; i < c; i++) { 
         err = ufsm_stack_pop(&m->stack, (void **) &r);
+
+        if (err != UFSM_OK)
+            break;
 
         if (r->current) {
 
@@ -839,27 +844,25 @@ uint32_t ufsm_process (struct ufsm_machine *m, uint32_t ev)
 
 static uint32_t ufsm_reset_submachine(struct ufsm_machine *m,
                                       struct ufsm_machine *submachine,
-                                      uint32_t *err)
+                                      uint32_t *c)
 {
-    uint32_t result = 0;
+    uint32_t err = UFSM_OK;
 
-    if (!submachine)
-        result = 0;
-
-    for (struct ufsm_region *r = submachine->region ; r && *err == UFSM_OK
-                                                                ; r = r->next) 
-    {
-        if (r) 
+    if (submachine) {
+        for (struct ufsm_region *r = submachine->region ; r; r = r->next) 
         {
-            *err = ufsm_stack_push(&m->stack, r);
-            result++;
+            if (r) 
+            {
+                err = ufsm_stack_push(&m->stack, r);
+                if (err != UFSM_OK)
+                    break;
+
+                *c = *c +1;
+            }
         }
     }
 
-    if (*err != UFSM_OK)
-        result = 0;
-
-    return result;
+    return err;
 }
 
 static uint32_t ufsm_reset_region(struct ufsm_machine *m,
@@ -876,6 +879,9 @@ static uint32_t ufsm_reset_region(struct ufsm_machine *m,
         
         err = ufsm_stack_pop(&m->stack, (void **) &r);
         
+        if (err != UFSM_OK)
+            break;
+
         r->history = NULL;
         r->current = NULL;
      
@@ -892,7 +898,8 @@ static uint32_t ufsm_reset_region(struct ufsm_machine *m,
                 }
             }
 
-            regions_count += ufsm_reset_submachine(m, s->submachine, &err);
+            if (err != UFSM_OK)
+                err = ufsm_reset_submachine(m, s->submachine, &regions_count);
        }
         
     }
