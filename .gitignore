@@ -2,3 +2,4 @@ src/tests/gen
 src/tools/ufsmimport
 *.gcda
 *.gcno
+*.bak
