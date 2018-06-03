@@ -30,7 +30,7 @@ Supported UML statechart features:
 | Choice               | Yes         | test_choice                            |
 | Junction             | Yes         | test_junction                          |
 | Do activity          | No          |                                        |
-| Connection point ref | Yes         |                                        |
+| Connection point ref | Yes         | test_conref                            |
 | Protocol Machines    | No          |                                        |
 
 Future work:
@@ -164,4 +164,22 @@ executes the following: xS11; t1; xS1; t2; eT1; eT11; t3; eT111
 
 This example demonstrates the use of a fork pseudo state to enter more than
 one state in different, orthogonal regions.
+
+## Connection references
+
+![](https://github.com/jonpe960/ufsm/raw/master/doc/test_conref_1.png)
+
+![](https://github.com/jonpe960/ufsm/raw/master/doc/test_conref_2.png)
+
+Using connection references it is possible to transition into a specific state
+ of a submachine.
+
+## Event deferral
+
+![](https://github.com/jonpe960/ufsm/raw/master/doc/test_defer.png)
+
+## Junction
+
+![](https://github.com/jonpe960/ufsm/raw/master/doc/test_junction.png)
+
 

@@ -612,8 +612,14 @@ static uint32_t ufsm_make_transition(struct ufsm_machine *m,
         src = act_t->source;
         dest = act_t->dest;
 
-        if (t->defer)
+        if (t->defer) {
             err = ufsm_queue_put(&m->defer_queue, ev);
+        
+            if (err != UFSM_OK)
+                break;
+
+            continue;
+        }
 
         ufsm_load_history(src, &dest);
 
@@ -646,10 +652,11 @@ static uint32_t ufsm_make_transition(struct ufsm_machine *m,
             src->parent_region != dest->parent_region) 
         {
             err = ufsm_enter_parent_states(m, lca_region, dest->parent_region);
-        }
 
-        if (err != UFSM_OK)
-            break;
+            if (err != UFSM_OK)
+                break;
+
+        }
 
         /* Decode destination state kind */
         switch(dest->kind) {
