@@ -711,7 +711,7 @@ uint32_t ufsm_init_machine(struct ufsm_machine *m)
     
     ufsm_stack_init(&(m->stack), UFSM_STACK_SIZE, m->stack_data);
     ufsm_queue_init(&(m->queue), UFSM_QUEUE_SIZE, m->queue_data);
-    ufsm_queue_init(&(m->defer_queue), UFSM_QUEUE_SIZE, m->defer_queue_data);
+    ufsm_queue_init(&(m->defer_queue), UFSM_DEFER_QUEUE_SIZE, m->defer_queue_data);
     m->terminated = false;
 
     for (struct ufsm_region *r = m->region; r && err == UFSM_OK; r = r->next) 

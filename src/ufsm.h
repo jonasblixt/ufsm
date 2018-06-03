@@ -38,6 +38,10 @@ extern const char *ufsm_errors[];
     #define UFSM_QUEUE_SIZE 16
 #endif
 
+#ifndef UFSM_DEFER_QUEUE_SIZE
+    #define UFSM_DEFER_QUEUE_SIZE 16
+#endif
+
 #ifndef NULL
     #define NULL ((void *) 0)
 #endif
@@ -121,7 +125,7 @@ struct ufsm_machine {
 
     void *stack_data[UFSM_STACK_SIZE];
     uint32_t queue_data[UFSM_QUEUE_SIZE];
-    uint32_t defer_queue_data[UFSM_QUEUE_SIZE];
+    uint32_t defer_queue_data[UFSM_DEFER_QUEUE_SIZE];
 
     struct ufsm_queue queue;
     struct ufsm_queue defer_queue;

@@ -73,6 +73,17 @@ gcov and code coverage flags which is not something that should be done for
 an application. Further more calling the top make file will build the import
 tool and run through all of the test cases.
 
+## Build parameters
+
+| Parameter             | Default | Description                               |
+| --------------------- |:-------:| ----------------------------------------- |
+| UFSM_STACK_SIZE       | 128     | uFSM stack size                           |
+| UFSM_QUEUE_SIZE       | 16      | Number of events that can be queued       |
+| UFSM_DEFER_QUEUE_SIZE | 16      | Number of events that can be deferred     |
+
+These are all higly dependant on the complexity of the state machine and must
+be manually tuned for each application.
+
 ## Transitions
 The UML specification does not enforce how transitions are owned but suggests 
 that the transition should be owned by the least common region. 
