@@ -187,17 +187,17 @@ static void ufsm_gen_regions(struct ufsm_region *region)
             }
             fprintf(fp_c, "  .kind = %i,\n",t->kind);
             if (t->action) {
-                if (strcmp(t->action->name, "ufsm_deferr") == 0) {
+                if (strcmp(t->action->name, "ufsm_defer") == 0) {
                     fprintf(fp_c, "  .action = NULL,\n");
-                    fprintf(fp_c, "  .deferr = true,\n");
+                    fprintf(fp_c, "  .defer = true,\n");
                 } else {
                     fprintf(fp_c, "  .action = &%s,\n", id_to_decl(t->action->id));
-                    fprintf(fp_c, "  .deferr = false,\n");
+                    fprintf(fp_c, "  .defer = false,\n");
                     fprintf(fp_h, "void %s(void);\n",t->action->name);
                 }
             } else {
                 fprintf(fp_c, "  .action = NULL,\n");
-                fprintf(fp_c, "  .deferr = false,\n");
+                fprintf(fp_c, "  .defer = false,\n");
             }
             if (t->guard) {
                 fprintf(fp_c, "  .guard = &%s,\n", id_to_decl(t->guard->id));
@@ -214,7 +214,7 @@ static void ufsm_gen_regions(struct ufsm_region *region)
                fprintf(fp_c, "  .next = NULL,\n");
             fprintf(fp_c, "};\n");
             for (struct ufsm_action *a = t->action; a; a = a->next) {
-                if (strcmp(a->name, "ufsm_deferr") == 0)
+                if (strcmp(a->name, "ufsm_defer") == 0)
                     continue;
                 fprintf(fp_c, "static struct ufsm_action %s = {\n",
                             id_to_decl(a->id));
@@ -303,7 +303,7 @@ static void ufsm_gen_regions_decl(struct ufsm_region *region)
         
             for (struct ufsm_action *a = t->action; a; a = a->next)
             {
-                if (! (strcmp(a->name, "ufsm_deferr") == 0))
+                if (! (strcmp(a->name, "ufsm_defer") == 0))
                     fprintf(fp_c, "static struct ufsm_action %s;\n",
                             id_to_decl(a->id));
             }

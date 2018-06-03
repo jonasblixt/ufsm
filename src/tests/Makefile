@@ -10,7 +10,7 @@ TESTS += test_stack
 TESTS += test_choice
 TESTS += test_queue
 TESTS += test_junction
-TESTS += test_deferr
+TESTS += test_defer
 TESTS += test_terminate
 
 
@@ -99,9 +99,9 @@ test_junction: $(OBJS) test_junction_input.c test_junction.o
 	@echo LINK $@
 	@$(CC) $@.c gen/test_junction_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
-test_deferr: $(OBJS) test_deferr_input.c test_deferr.o
+test_defer: $(OBJS) test_defer_input.c test_defer.o
 	@echo LINK $@
-	@$(CC) $@.c gen/test_deferr_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+	@$(CC) $@.c gen/test_defer_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 test_terminate: $(OBJS) test_terminate_input.c test_terminate.o
 	@echo LINK $@

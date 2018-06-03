@@ -121,10 +121,10 @@ struct ufsm_machine {
 
     void *stack_data[UFSM_STACK_SIZE];
     uint32_t queue_data[UFSM_QUEUE_SIZE];
-    uint32_t deferr_queue_data[UFSM_QUEUE_SIZE];
+    uint32_t defer_queue_data[UFSM_QUEUE_SIZE];
 
     struct ufsm_queue queue;
-    struct ufsm_queue deferr_queue;
+    struct ufsm_queue defer_queue;
 
     struct ufsm_state *parent_state;
     struct ufsm_stack stack;
@@ -158,7 +158,7 @@ struct ufsm_transition {
     const char *name;
     const char *trigger_name;
     int32_t trigger;
-    bool deferr;
+    bool defer;
     enum ufsm_transition_kind kind;
     struct ufsm_action *action;
     struct ufsm_guard *guard;

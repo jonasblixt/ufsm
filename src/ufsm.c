@@ -566,13 +566,13 @@ static uint32_t ufsm_process_junction(struct ufsm_machine *m,
     return err;
 }
 
-void ufsm_update_deferr_queue(struct ufsm_machine *m,
+void ufsm_update_defer_queue(struct ufsm_machine *m,
                               uint32_t ev)
 {
     uint32_t err = UFSM_OK;
 
     do {
-        err = ufsm_queue_get(&m->deferr_queue, &ev);
+        err = ufsm_queue_get(&m->defer_queue, &ev);
         if (err == UFSM_OK)
             err = ufsm_queue_put(&m->queue, ev);
     } while(err == UFSM_OK);
@@ -593,7 +593,7 @@ static uint32_t ufsm_make_transition(struct ufsm_machine *m,
     uint32_t transition_count = 1;
     uint32_t ev = 0;
 
-    ufsm_update_deferr_queue(m, ev);
+    ufsm_update_defer_queue(m, ev);
 
     err = ufsm_push_rt_pair (m, r, t);
 
@@ -609,8 +609,8 @@ static uint32_t ufsm_make_transition(struct ufsm_machine *m,
         src = act_t->source;
         dest = act_t->dest;
 
-        if (t->deferr)
-            err = ufsm_queue_put(&m->deferr_queue, ev);
+        if (t->defer)
+            err = ufsm_queue_put(&m->defer_queue, ev);
 
         /* When H state entered implicitly through region initialisation */
     
@@ -711,7 +711,7 @@ uint32_t ufsm_init_machine(struct ufsm_machine *m)
     
     ufsm_stack_init(&(m->stack), UFSM_STACK_SIZE, m->stack_data);
     ufsm_queue_init(&(m->queue), UFSM_QUEUE_SIZE, m->queue_data);
-    ufsm_queue_init(&(m->deferr_queue), UFSM_QUEUE_SIZE, m->deferr_queue_data);
+    ufsm_queue_init(&(m->defer_queue), UFSM_QUEUE_SIZE, m->defer_queue_data);
     m->terminated = false;
 
     for (struct ufsm_region *r = m->region; r && err == UFSM_OK; r = r->next) 

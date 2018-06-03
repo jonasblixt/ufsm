@@ -5,17 +5,19 @@
 [![Coverage Status](https://coveralls.io/repos/github/jonpe960/ufsm/badge.svg)](https://coveralls.io/github/jonpe960/ufsm)
 [![codecov](https://codecov.io/gh/jonpe960/ufsm/branch/master/graph/badge.svg)](https://codecov.io/gh/jonpe960/ufsm)
 
-uFSM is a statechart library written in C. uFSM is designed without any external dependencies and uses no dynamic memory allocation or recursion.
+uFSM is a statechart library written in C. uFSM is designed without any external 
+dependencies and uses no dynamic memory allocation or recursion.
 
-uFSM is desiged with embedded applications in mind but can also be used in other environments. 
+uFSM is designed with embedded applications in mind but can also be used in 
+other environments. 
 
-Supported UML statchart features:
+Supported UML statechart features:
 
 | Feature              | Implemented | Test case                              |
 | -------------------- |:-----------:| -------------------------------------- |
 | Simple state         | Yes         | test_simple                            |
-| Composit states      | Yes         | test_simple_substate, test_xmi_machine |
-| Submachines          | Yes         | test_xmi_machine                       |
+| Composite states     | Yes         | test_simple_substate, test_xmi_machine |
+| Sub machines         | Yes         | test_xmi_machine                       |
 | Compound transition  | Yes         | test_compound_transition               |
 | Fork                 | Yes         | test_fork                              |
 | Join                 | Yes         | test_join                              |
@@ -23,46 +25,72 @@ Supported UML statchart features:
 | Shallow/Deep history | Yes         | test_xmi_machine, test_deephistory     | 
 | exit/entry points    | Yes         | test_compound_transition               |
 | Init/Final           | Yes         | all                                    |
-| Event deferral       | Yes         | test_deferr                            |
+| Event deferral       | Yes         | test_defer                             |
 | Terminate            | Yes         | test_terminate                         |
 | Choice               | Yes         | test_choice                            |
 | Junction             | Yes         | test_junction                          |
 | Do activity          | No          |                                        |
+| Connection point ref | No          |                                        |
+| Protocol Machines    | No          |                                        |
 
 Future work:
- - Some proper examples
- - Simulation/Analysis tool
+ - More examples
+ - Simulation tool
+ - Analysis tool
  - Test XMI files from other tools
  - Maybe support SCXML data
 
 # Examples
 All examples are located in 'src/examples'. Some of the examples have specific
- platform dependancies. For example 'dhcpclient' will only work with linux.
+ platform dependencies. For example 'dhcpclient' will only work with linux.
 
 ## dhcpclient
 
 
 
-# Implementation details & metrics
+# Design
+
+uFSM can be used as it is, without any XMI files or graphical editors. It is
+fully possible to create the state, transition, etc.. structures. This works
+for trivial state machines. This, however, defeats the purpose of uFSM, and
+quickly becomes difficult to work with. The real use case for this library 
+with applications that have complex logic.
+
+See 'test_simple' or 'test_simple_substate' for examples on how to create
+machines manually.
+
+uFSM comes with an XMI import tool 'ufsmimport'. The import tool can be called 
+by an application makefile and used generate the data structures needed by uFSM.
+
+See examples/dhcpclient for a more detailed example on how this can be done.
+
+uFSM can be part of an application by including it as a sub repo and add 
+ufsm.c, ufsm.h ufsm_stack.c and ufsm_queue.c to the applications Makefile. 
+Alternatively just copy those files into the target application.
+
+Calling the top most make file in this repository builds the library with
+gcov and code coverage flags which is not something that should be done for
+an application. Further more calling the top make file will build the import
+tool and run through all of the test cases.
 
 ## Transitions
 The UML specification does not enforce how transitions are owned but suggests 
-that the transition should be owned by the least common region, which makes sense. 
+that the transition should be owned by the least common region. 
 This however comes at a much greater computational cost in the transition algorithm. 
 uFSM stores the transition in the region where the source state is located.
 
 ## Event deferral
 uFSM implements event deferral by using a local transition on the state where
 an event should be deferred. The local transition should have an action with
-the name 'ufsm_deferr'. This is a special keyword which is detected by
-the transition algorithm. Whenever an 'ufsm_deferr' action is found
+the name 'ufsm_defer'. This is a special keyword which is detected by
+the transition algorithm. Whenever an 'ufsm_defer' action is found
 the event will be stored on a deferred event queue.
 
-## Do activiies
-Do activities are not implemented.
+## Do activities
+Do activities are not implemented. 
 
 ## Code complexity and memory usage
-uFSM is desiged with embedded and safety critical applications in mind. 
+uFSM is designed with embedded and safety critical applications in mind. 
 uFSM does not use any dynamic memory allocation and uses no recursion.
 Instead uFSM uses a statically allocated stack 'ufsm_stack'. The stack depth
 can be adjusted by setting 'UFSM_STACK_SIZE' build variable.
@@ -79,13 +107,14 @@ Functions with highest cyclomatic complexity:
 
 # Description of test cases
 
-All of the statecharts were drawn in StarUML and the XMI files generated with the 'XMI' plugin.
+All of the state charts were drawn in StarUML and the XMI files generated with 
+the 'XMI' plugin.
 
 ## XMI machine
 
 This is a mixture of different tests. Most notably:
- - The acutal state machines are generated by importing an XMI file, using ufsmimport
- - Use of sub statemachines
+ - The actual state machines are generated by importing an XMI file, using ufsmimport
+ - Use of sub state machines
  - Shallow history
  - Orthogonal regions
 
@@ -93,25 +122,35 @@ This is a mixture of different tests. Most notably:
 Top level state machine
 
 ![](https://github.com/jonpe960/ufsm/raw/master/doc/test_xmi_machine2.png)
-Sub statemachine
+Sub state machine
 
 ## Deep history
 
 ![](https://github.com/jonpe960/ufsm/raw/master/doc/test_deephistory.png)
 
+This example illustrates the deep history pseudo state. In this example the
+machine is initialised and events are sent to enter the D substate. At this
+point the B event is sent and consequently state A is left but history is stored
+before leaving to state B.
 
+At a later point A is re-entered and history is recovered which means that 
+the machine will be in state A, C and D.
 
 ## Compound transitions
 
 ![](https://github.com/jonpe960/ufsm/raw/master/doc/test_compound_transition.png)
 
-This statechart is taken from the UML standard, see chapter 14.2.3.9.6 for a complete description.
+This statechart is taken from the UML standard, see chapter 14.2.3.9.6 for a 
+complete description.
 
-'test_compound_transition' tests entry and exits of parent states up until a least common ancestor. When event 'sig' is dispatched the transition algoritm executes the following: xS11; t1; xS1; t2; eT1; eT11; t3; eT111
+'test_compound_transition' tests entry and exits of parent states up until a 
+least common ancestor. When event 'sig' is dispatched the transition algorithm 
+executes the following: xS11; t1; xS1; t2; eT1; eT11; t3; eT111
 
 ## Fork
 
 ![](https://github.com/jonpe960/ufsm/raw/master/doc/test_fork.png)
 
-
+This example demonstrates the use of a fork pseudo state to enter more than
+one state in different, orthogonal regions.
 
