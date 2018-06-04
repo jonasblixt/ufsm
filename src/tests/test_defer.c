@@ -20,11 +20,11 @@ int main(int argc, char **argv)
     test_init(m);
     ufsm_init_machine(m);
 
-    test_process(m, EV_D);
-    test_process(m, EV_D);
-    test_process(m, EV_D);
+    ufsm_process(m, EV_D);
+    ufsm_process(m, EV_D);
+    ufsm_process(m, EV_D);
 
-    test_process(m, EV);
+    ufsm_process(m, EV);
 
     while(true) {
         err = ufsm_queue_get(&m->queue, &ev);

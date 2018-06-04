@@ -201,7 +201,9 @@ static uint32_t parse_state(xmlNode *n, struct ufsm_machine *m,
     struct ufsm_entry_exit *entry_last = NULL;
     struct ufsm_entry_exit *exits = NULL;
     struct ufsm_entry_exit *exits_last = NULL;
- 
+    struct ufsm_doact *doact = NULL;
+    struct ufsm_doact *doact_last = NULL;
+
     /* Parse regions */
     for (xmlNode *r_sub = n->children; r_sub; r_sub = r_sub->next) {
         if (is_type(r_sub, "uml:Region")) {
@@ -233,6 +235,14 @@ static uint32_t parse_state(xmlNode *n, struct ufsm_machine *m,
             exits->id = (const char *) get_attr(r_sub, "id");
             exits->next = exits_last;
             exits_last = exits;
+        } else if (strcmp((char *) r_sub->name, "doActivity") == 0) {
+            doact = malloc(sizeof(struct ufsm_doact));
+            bzero(doact, sizeof(struct ufsm_doact));
+            doact->name = (const char*) get_attr(r_sub,"name");
+            doact->id = (const char *) get_attr(r_sub, "id");
+            doact->next = doact_last;
+            doact_last = doact;
+            
         } else if(strcmp((char *) r_sub->name, "text") == 0) {
             /* Do nothing */
         } else if(strcmp((char *) r_sub->name, "connection") == 0) {
@@ -259,6 +269,7 @@ static uint32_t parse_state(xmlNode *n, struct ufsm_machine *m,
  
     }
     s->entry = entry_last;
+    s->doact = doact_last;
     s->exit = exits_last;
     s->region = state_region_last;
 
@@ -318,7 +329,7 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
                 struct ufsm_region *region = ufsmimport_get_region(m, 
                                         (const char*) get_attr(r_node,"id"));
                 if (region)
-                    parse_transition(s_node, m, region);
+                    parse_transition(r_node, m, region);
             }
         }
 
@@ -335,7 +346,7 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
 
             t->source = src;
             t->dest = dest;
-            
+
             char *t_kind = (char *) get_attr(s_node, "kind");
 
             if (strcmp(t_kind, "internal") == 0)
@@ -353,9 +364,7 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
             for (xmlNode *trigger = s_node->children; trigger; trigger = trigger->next) {
                 if (is_type(trigger, "uml:Trigger")) {
                     t->trigger_name = (const char*) get_attr(trigger, "name");
-                }
-                
-                if (is_type(trigger, "uml:Activity") ||
+                } else if (is_type(trigger, "uml:Activity") ||
                     is_type(trigger, "uml:OpaqueBehavior")) {
                     action = malloc (sizeof (struct ufsm_action));
                     bzero(action, sizeof(struct ufsm_action));
@@ -364,9 +373,7 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
                     action->next = action_last;
                     action_last = action;
                     if (v) printf (" /%s ", action->name);
-                }
-
-                if (is_type(trigger, "uml:Constraint")) {
+                } else if (is_type(trigger, "uml:Constraint")) {
                     guard = malloc(sizeof(struct ufsm_guard));
                     bzero(guard, sizeof(struct ufsm_guard));
                     guard->name = (const char*) get_attr(trigger, "specification");
@@ -374,6 +381,15 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
                     guard->next = guard_last;
                     guard_last = guard;
                     if (v) printf (" [%s] ", guard->name);
+                } else if (strcmp((char *)trigger->name, "text") == 0) {
+                    /* Ignore */
+                } else if (strcmp((char *)trigger->name, "ownedMember") == 0) {
+                    /* Ignore */
+                } else if (strcmp((char *)trigger->name, "trigger") == 0) {
+                    /* Ignore */
+                } else {
+                    printf ("Unhandeled type '%s' in transition\n",trigger->name);
+                    return UFSM_ERROR;
                 }
  
             }
@@ -474,7 +490,7 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
             err = parse_state(s_node, m, r, s, false);
             if (err != UFSM_OK)
                 return err;
-        }
+        } 
     }
 
     for (xmlNode *s_node = n->children; s_node; s_node = s_node->next) {
@@ -488,6 +504,8 @@ static uint32_t parse_region(xmlNode *n, struct ufsm_machine *m,
             if (err != UFSM_OK)
                 return err;
         }
+
+ 
     }
  
     r->state = s_last;

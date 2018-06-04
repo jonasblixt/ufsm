@@ -29,7 +29,7 @@ Supported UML statechart features:
 | Terminate            | Yes         | test_terminate                         |
 | Choice               | Yes         | test_choice                            |
 | Junction             | Yes         | test_junction                          |
-| Do activity          | No          |                                        |
+| Do activity          | Yes         | test_do                                |
 | Connection point ref | Yes         | test_conref                            |
 | Protocol Machines    | No          |                                        |
 
@@ -96,9 +96,6 @@ an event should be deferred. The local transition should have an action with
 the name 'ufsm_defer'. This is a special keyword which is detected by
 the transition algorithm. Whenever an 'ufsm_defer' action is found
 the event will be stored on a deferred event queue.
-
-## Do activities
-Do activities are not implemented. 
 
 ## Code complexity and memory usage
 uFSM is designed with embedded and safety critical applications in mind. 

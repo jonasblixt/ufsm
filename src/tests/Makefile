@@ -14,6 +14,7 @@ TESTS += test_defer
 TESTS += test_terminate
 TESTS += test_conref
 TESTS += test_transition_prio
+TESTS += test_do
 
 CC ?= gcc
 UFSMIMPORT ?= ufsmimport
@@ -115,3 +116,8 @@ test_conref: $(OBJS) test_conref_input.c test_conref.o
 test_transition_prio: $(OBJS) test_transition_prio_input.c test_transition_prio.o
 	@echo LINK $@
 	@$(CC) $@.c gen/test_transition_prio_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+
+test_do: $(OBJS) test_do_input.c test_do.o
+	@echo LINK $@
+	@$(CC) $@.c gen/test_do_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+

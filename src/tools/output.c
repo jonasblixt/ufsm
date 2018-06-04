@@ -100,6 +100,14 @@ static void ufsm_gen_states(struct ufsm_state *state)
         fprintf(fp_c,"  .entry = &%s,\n",id_to_decl(state->entry->id));
     else
         fprintf(fp_c,"  .entry = NULL,\n");
+
+
+    if (state->doact)
+        fprintf(fp_c,"  .doact = &%s,\n",id_to_decl(state->doact->id));
+    else
+        fprintf(fp_c,"  .doact = NULL,\n");
+
+
     if (state->exit)
         fprintf(fp_c,"  .exit = &%s,\n",id_to_decl(state->exit->id));
     else
@@ -145,6 +153,31 @@ static void ufsm_gen_states(struct ufsm_state *state)
 
         fprintf(fp_h, "void %s(void);\n", e->name);
     }
+
+
+    for (struct ufsm_doact *d = state->doact; d; d = d->next) {
+        fprintf(fp_c, "static struct ufsm_doact %s = {\n",
+                        id_to_decl(d->id));
+        if (flag_strip) {
+             fprintf (fp_c,"  .id     = \"\", \n");
+             fprintf (fp_c,"  .name   = \"\", \n");
+        } else {
+            fprintf(fp_c, "  .id = \"%s\",\n", d->id);
+            fprintf(fp_c, "  .name = \"%s\",\n",d->name);
+        }
+
+        fprintf(fp_c, "  .f = &%s,\n", d->name);
+        if (d->next)
+            fprintf (fp_c, "  .next = &%s,\n", id_to_decl(d->next->id));
+        else
+            fprintf (fp_c, "  .next = NULL,\n");
+
+
+        fprintf(fp_c, "};\n");
+        fprintf(fp_h, "void %s(struct ufsm_machine *m, struct ufsm_state *s, ufsm_doact_cb_t cb);\n", d->name);
+
+    }
+
     for (struct ufsm_entry_exit *e = state->exit; e; e = e->next) {
         fprintf(fp_c, "static struct ufsm_entry_exit %s = {\n",
                         id_to_decl(e->id));
@@ -333,6 +366,11 @@ static void ufsm_gen_states_decl(struct ufsm_state *state)
     for (struct ufsm_entry_exit *e = state->entry; e; e = e->next)
         fprintf(fp_c, "static struct ufsm_entry_exit %s;\n",
                         id_to_decl(e->id));
+
+    for (struct ufsm_doact *e = state->doact; e; e = e->next)
+        fprintf(fp_c, "static struct ufsm_doact %s;\n",
+                        id_to_decl(e->id));
+
     for (struct ufsm_entry_exit *e = state->exit; e; e = e->next)
         fprintf(fp_c, "static struct ufsm_entry_exit %s;\n",
                         id_to_decl(e->id));
