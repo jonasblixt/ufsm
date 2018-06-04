@@ -23,7 +23,7 @@ Supported UML statechart features:
 | Join                 | Yes         | test_join                              |
 | Guards/Actions       | Yes         | test_guards_actions + various          |
 | Shallow/Deep history | Yes         | test_xmi_machine, test_deephistory     | 
-| exit/entry points    | Yes         | test_compound_transition               |
+| Exit/Entry points    | Yes         | test_compound_transition               |
 | Init/Final           | Yes         | all                                    |
 | Event deferral       | Yes         | test_defer                             |
 | Terminate            | Yes         | test_terminate                         |
@@ -33,16 +33,16 @@ Supported UML statechart features:
 | Connection point ref | Yes         | test_conref                            |
 | Protocol Machines    | No          |                                        |
 
-Future work:
+Planned additions:
  - More examples
  - Simulation tool
  - Analysis tool
  - Test XMI files from other tools
- - Maybe support SCXML data
+ - Potentially support SCXML data
 
 # Examples
 All examples are located in 'src/examples'. Some of the examples have specific
- platform dependencies. For example 'dhcpclient' will only work with linux.
+ platform dependencies. For example, 'dhcpclient' will only work with linux.
 
 ## dhcpclient
 

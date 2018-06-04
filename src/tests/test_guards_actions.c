@@ -163,7 +163,8 @@ int main(int argc, char **argv)
     reset_test_flags();
     guard2_ret_val = false;
     err = ufsm_process(&m, EV_A);
-    assert (m.region->current == &B && err == UFSM_OK);
+    assert (m.region->current == &B);
+    assert (err == UFSM_OK);
     assert (flag_guard1_called);
     assert (flag_guard2_called);
     assert (flag_action1_called == false);

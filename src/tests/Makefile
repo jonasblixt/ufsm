@@ -13,6 +13,7 @@ TESTS += test_junction
 TESTS += test_defer
 TESTS += test_terminate
 TESTS += test_conref
+TESTS += test_transition_prio
 
 CC ?= gcc
 UFSMIMPORT ?= ufsmimport
@@ -91,7 +92,7 @@ test_choice: $(OBJS) test_choice_input.c test_choice.o
 	@echo LINK $@
 	@$(CC) $@.c gen/test_choice_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
-test_queue: $(OBJS) test_queue.o
+test_queue: $(OBJS) test_terminate_input.c test_queue.o
 	@echo LINK $@
 	@$(CC) $@.c gen/test_terminate_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
@@ -107,8 +108,10 @@ test_terminate: $(OBJS) test_terminate_input.c test_terminate.o
 	@echo LINK $@
 	@$(CC) $@.c gen/test_terminate_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
-
 test_conref: $(OBJS) test_conref_input.c test_conref.o
 	@echo LINK $@
 	@$(CC) $@.c gen/test_conref_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
+test_transition_prio: $(OBJS) test_transition_prio_input.c test_transition_prio.o
+	@echo LINK $@
+	@$(CC) $@.c gen/test_transition_prio_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@

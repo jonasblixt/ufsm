@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="2.1" xmlns:uml="http://schema.omg.org/spec/UML/2.0" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1">
+	<xmi:Documentation exporter="StarUML" exporterVersion="2.0"/>
+	<uml:Model xmi:id="AAAAAAFjx6DPyovb4Bs=" xmi:type="uml:Model" name="RootModel">
+		<packagedElement xmi:id="AAAAAAFF+qBWK6M3Z8Y=" name="Model" visibility="public" xmi:type="uml:Model">
+			<packagedElement xmi:id="AAAAAAFjx5zDFYpZVaA=" name="StateMachine1" visibility="public" isReentrant="true" xmi:type="uml:StateMachine">
+				<region xmi:id="AAAAAAFjx5zDFYpa+zM=" visibility="public" xmi:type="uml:Region">
+					<subvertex xmi:id="AAAAAAFjx5zdKYpg+48=" name="A" visibility="public" xmi:type="uml:State">
+						<region xmi:id="AAAAAAFjx5zdKYphFLQ=" visibility="public" xmi:type="uml:Region">
+							<subvertex xmi:id="AAAAAAFjx50nyoqvZ9U=" name="B" visibility="public" xmi:type="uml:State"/>
+							<subvertex xmi:id="AAAAAAFjx51GvYrXLBE=" visibility="public" xmi:type="uml:Pseudostate" kind="initial"/>
+							<subvertex xmi:id="AAAAAAFjx51sz4r7U7s=" name="C" visibility="public" xmi:type="uml:State"/>
+						</region>
+					</subvertex>
+					<subvertex xmi:id="AAAAAAFjx50GiYqMuNM=" visibility="public" xmi:type="uml:Pseudostate" kind="initial"/>
+					<subvertex xmi:id="AAAAAAFjx55HRYtUsj0=" name="D" visibility="public" xmi:type="uml:State">
+						<entry xmi:id="AAAAAAFjx58bl4vT1V0=" name="eD" visibility="public" isReentrant="true" xmi:type="uml:OpaqueBehavior"/>
+					</subvertex>
+					<subvertex xmi:id="AAAAAAFjx56xB4uSyH4=" name="E" visibility="public" xmi:type="uml:State">
+						<entry xmi:id="AAAAAAFjx58FWovM040=" name="eE" visibility="public" isReentrant="true" xmi:type="uml:OpaqueBehavior"/>
+					</subvertex>
+					<transition xmi:id="AAAAAAFjx50Gp4qdUsc=" visibility="public" xmi:type="uml:Transition" source="AAAAAAFjx50GiYqMuNM=" target="AAAAAAFjx5zdKYpg+48=" kind="external"/>
+					<transition xmi:id="AAAAAAFjx51G5IrofLA=" visibility="public" xmi:type="uml:Transition" source="AAAAAAFjx51GvYrXLBE=" target="AAAAAAFjx50nyoqvZ9U=" kind="external"/>
+					<transition xmi:id="AAAAAAFjx52SSYsj1Ds=" visibility="public" xmi:type="uml:Transition" source="AAAAAAFjx50nyoqvZ9U=" target="AAAAAAFjx51sz4r7U7s=" kind="external">
+						<ownedMember xmi:id="AAAAAAFjx52X0os1XcM=" name="EV1" visibility="public" xmi:type="uml:AnyReceiveEvent"/>
+						<trigger xmi:id="AAAAAAFjx6DPzIvceqs=" xmi:type="uml:Trigger" name="EV1" event="AAAAAAFjx52X0os1XcM="/>
+						<trigger xmi:id="AAAAAAFjx52X0os1XcM=" name="EV1" visibility="public" xmi:type="uml:AnyReceiveEvent"/>
+					</transition>
+					<transition xmi:id="AAAAAAFjx532Yos9x8w=" visibility="public" xmi:type="uml:Transition" source="AAAAAAFjx51sz4r7U7s=" target="AAAAAAFjx50nyoqvZ9U=" kind="external">
+						<ownedMember xmi:id="AAAAAAFjx538gotPln8=" name="EV2" visibility="public" xmi:type="uml:AnyReceiveEvent"/>
+						<trigger xmi:id="AAAAAAFjx6DPzYvdJkc=" xmi:type="uml:Trigger" name="EV2" event="AAAAAAFjx538gotPln8="/>
+						<trigger xmi:id="AAAAAAFjx538gotPln8=" name="EV2" visibility="public" xmi:type="uml:AnyReceiveEvent"/>
+					</transition>
+					<transition xmi:id="AAAAAAFjx55uB4t72fs=" visibility="public" xmi:type="uml:Transition" source="AAAAAAFjx5zdKYpg+48=" target="AAAAAAFjx55HRYtUsj0=" kind="external">
+						<ownedMember xmi:id="AAAAAAFjx554eouNRCc=" name="EV2" visibility="public" xmi:type="uml:AnyReceiveEvent"/>
+						<trigger xmi:id="AAAAAAFjx6DPzYveVBs=" xmi:type="uml:Trigger" name="EV2" event="AAAAAAFjx554eouNRCc="/>
+						<trigger xmi:id="AAAAAAFjx554eouNRCc=" name="EV2" visibility="public" xmi:type="uml:AnyReceiveEvent"/>
+					</transition>
+					<transition xmi:id="AAAAAAFjx57c3Iu5Vw8=" visibility="public" xmi:type="uml:Transition" source="AAAAAAFjx5zdKYpg+48=" target="AAAAAAFjx56xB4uSyH4=" kind="external"/>
+				</region>
+			</packagedElement>
+		</packagedElement>
+	</uml:Model>
+</xmi:XMI>
