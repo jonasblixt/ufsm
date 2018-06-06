@@ -48,7 +48,7 @@ All examples are located in 'src/examples'. Some of the examples have specific
 
 This video gives an introduction to ufsm, drawing statecharts and how to import them.
 
-[![uFSM Demo](https://img.youtube.com/vi/7fhL58BJNas/0.jpg)] (https://www.youtube.com/watch?v=7fhL58BJNas)
+[![uFSM Demo](https://img.youtube.com/vi/7fhL58BJNas/0.jpg)](https://www.youtube.com/watch?v=7fhL58BJNas)
 
 ## dhcpclient
 
