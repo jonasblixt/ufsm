@@ -76,6 +76,7 @@ typedef void (*ufsm_debug_guard_t) (struct ufsm_guard *guard, bool result);
 typedef void (*ufsm_debug_action_t) (struct ufsm_action *action);
 typedef void (*ufsm_debug_enter_state_t) (struct ufsm_state *s);
 typedef void (*ufsm_debug_exit_state_t) (struct ufsm_state *s);
+typedef void (*ufsm_debug_reset_t) (struct ufsm_machine *m);
 
 enum ufsm_transition_kind {
     UFSM_TRANSITION_EXTERNAL,
@@ -130,6 +131,7 @@ struct ufsm_machine {
     ufsm_debug_action_t debug_action;
     ufsm_debug_enter_state_t debug_enter_state;
     ufsm_debug_exit_state_t debug_exit_state;
+    ufsm_debug_reset_t debug_reset;
     bool terminated;
 
     void *stack_data[UFSM_STACK_SIZE];
@@ -172,7 +174,8 @@ struct ufsm_entry_exit {
 struct ufsm_doact {
     const char *id;
     const char *name;
-    ufsm_doact_func_t f;
+    ufsm_doact_func_t f_start;
+    ufsm_entry_exit_func_t f_stop;
     struct ufsm_doact *next;
 };
 

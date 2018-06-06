@@ -44,33 +44,38 @@ Planned additions:
 All examples are located in 'src/examples'. Some of the examples have specific
  platform dependencies. For example, 'dhcpclient' will only work with linux.
 
+## Simple
+
+This video gives an introduction to ufsm, drawing statecharts and how to import them.
+
+[![uFSM Demo](https://img.youtube.com/vi/7fhL58BJNas/0.jpg)] (https://www.youtube.com/watch?v=7fhL58BJNas)
+
 ## dhcpclient
 
-
+This is a work in progress.
 
 # Design
 
-uFSM can be used as it is, without any XMI files or graphical editors. It is
-fully possible to create the state, transition, etc.. structures. This works
-for trivial state machines. This, however, defeats the purpose of uFSM, and
-quickly becomes difficult to work with. The real use case for this library is
-with applications that have complex logic.
+uFSM can be used as it is, without any XMI files or graphical editors by writing
+the various ufsm - structs manually, This works for trivial state machines. 
+This, however, defeats the purpose of uFSM, and quickly becomes difficult to 
+work with. The real use case for this library is with applications that have complex logic.
 
 See 'test_simple' or 'test_simple_substate' for examples on how to create
-machines manually.
+state machines manually.
 
 uFSM comes with an XMI import tool 'ufsmimport'. The import tool can be called 
-by an application makefile and used generate the data structures needed by uFSM.
+by an application makefile and used to generate the data structures needed by uFSM.
 
 See examples/dhcpclient for a more detailed example on how this can be done.
 
 uFSM can be part of an application by including it as a sub repo and add 
-ufsm.c, ufsm.h ufsm_stack.c and ufsm_queue.c to the applications Makefile. 
-Alternatively just copy those files into the target application.
+ufsm.c, ufsm.h ufsm_stack.c and ufsm_queue.c to the applications makefile. 
+Alternatively, just copy these files into the target application.
 
-Calling the top most makefile in this repository builds the library with
-gcov and code coverage flags which is not something that should not be done for
-an application. Further more calling the top make file will build the import
+Calling the topmost makefile in this repository builds the library with
+gcov and code coverage flags which is not something that should be done for
+an application. Furthermore, calling the top makefile will build the import
 tool and run through all of the test cases.
 
 ## Build parameters
@@ -81,46 +86,46 @@ tool and run through all of the test cases.
 | UFSM_QUEUE_SIZE       | 16      | Number of events that can be queued       |
 | UFSM_DEFER_QUEUE_SIZE | 16      | Number of events that can be deferred     |
 
-These are all higly dependant on the complexity of the state machine and must
+These are all highly dependant on the complexity of the state machine and must
 be manually tuned for each application.
 
 ## Transitions
 The UML specification does not enforce how transitions are owned but suggests 
 that the transition should be owned by the least common region. 
-This however comes at a much greater computational cost in the transition algorithm. 
+This, however, comes at a much greater computational cost in the transition algorithm. 
 uFSM stores the transition in the region where the source state is located.
 
 ## Event deferral
-uFSM implements event deferral by using a local transition on the state where
-an event should be deferred. The local transition should have an action with
+uFSM implements event deferral by using an internal transition on the state where
+a event should be deferred. The local transition should have an action with
 the name 'ufsm_defer'. This is a special keyword which is detected by
-the transition algorithm. Whenever an 'ufsm_defer' action is found
+the transition algorithm. Whenever an 'ufsm_defer' action is found,
 the event will be stored on a deferred event queue.
 
 ## Code complexity and memory usage
 uFSM is designed with embedded and safety critical applications in mind. 
 uFSM does not use any dynamic memory allocation and uses no recursion.
-Instead uFSM uses a statically allocated stack 'ufsm_stack'. The stack depth
+Instead uFSM uses a statically allocated stack; 'ufsm_stack'. The stack depth
 can be adjusted by setting 'UFSM_STACK_SIZE' build variable.
 
 Functions with highest cyclomatic complexity:
 
 | CCN | LoC   | Function                   |
 |:---:|:-----:| ---------------------------|
-| 15  | 128   | ufsm_make_transition       |
-| 13  | 54    | ufsm_process               |
-| 13  | 48    | ufsm_process_final_state   |
-| 12  | 52    | ufsm_enter_parent_states   |
-| 10  | 40    | ufsm_leave_nested_states   |
+| 15  | 51    | ufsm_process               |
+| 13  | 124   | ufsm_make_transition       |
+| 13  | 49    | ufsm_process_final_state   |
+| 12  | 53    | ufsm_enter_parent_states   |
+| 10  | 41    | ufsm_enter_state           |
 
 # Description of test cases
 
-All of the state charts were drawn in StarUML and the XMI files generated with 
+All of the state charts shown below were drawn in StarUML and the XMI files generated with 
 the 'XMI' plugin.
 
 ## XMI machine
 
-This is a mixture of different tests. Most notably:
+This is a mixture of different tests, most notably:
  - The actual state machines are generated by importing an XMI file, using ufsmimport
  - Use of sub state machines
  - Shallow history
@@ -130,36 +135,36 @@ This is a mixture of different tests. Most notably:
 Top level state machine
 
 ![](https://github.com/jonpe960/ufsm/raw/master/doc/test_xmi_machine2.png)
-Sub state machine
+Sub statemachine
 
 ## Deep history
 
 ![](https://github.com/jonpe960/ufsm/raw/master/doc/test_deephistory.png)
 
-This example illustrates the deep history pseudo state. In this example the
+This example illustrates the deep history pseudostate. In this example, the
 machine is initialised and events are sent to enter the D substate. At this
-point the B event is sent and consequently state A is left but history is stored
+point, the B event is sent and consequently state A is left but history is stored
 before leaving to state B.
 
-At a later point A is re-entered and history is recovered which means that 
+At a later point, A is re-entered and history is recovered which means that 
 the machine will be in state A, C and D.
 
 ## Compound transitions
 
 ![](https://github.com/jonpe960/ufsm/raw/master/doc/test_compound_transition.png)
 
-This statechart is taken from the UML standard, see chapter 14.2.3.9.6 for a 
+This statechart is taken from the UML standard - see chapter 14.2.3.9.6 for a 
 complete description.
 
-'test_compound_transition' tests entry and exits of parent states up until a 
-least common ancestor. When event 'sig' is dispatched the transition algorithm 
+'test_compound_transition' tests entries and exits of parent states up until a 
+least common ancestor. When event 'sig' is dispatched, the transition algorithm 
 executes the following: xS11; t1; xS1; t2; eT1; eT11; t3; eT111
 
 ## Fork
 
 ![](https://github.com/jonpe960/ufsm/raw/master/doc/test_fork.png)
 
-This example demonstrates the use of a fork pseudo state to enter more than
+This example demonstrates the use of a fork pseudostate to enter more than
 one state in different, orthogonal regions.
 
 ## Connection references
@@ -168,8 +173,8 @@ one state in different, orthogonal regions.
 
 ![](https://github.com/jonpe960/ufsm/raw/master/doc/test_conref_2.png)
 
-Using connection references it is possible to transition into a specific state
- of a submachine.
+Using connection references, it is possible to transition into a specific state
+ of a sub statemachine.
 
 ## Event deferral
 

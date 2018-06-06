@@ -166,7 +166,10 @@ static void ufsm_gen_states(struct ufsm_state *state)
             fprintf(fp_c, "  .name = \"%s\",\n",d->name);
         }
 
-        fprintf(fp_c, "  .f = &%s,\n", d->name);
+        fprintf(fp_c, "  .f_start = &%s_start,\n", d->name);
+        fprintf(fp_c, "  .f_stop = &%s_stop,\n", d->name);
+
+
         if (d->next)
             fprintf (fp_c, "  .next = &%s,\n", id_to_decl(d->next->id));
         else
@@ -174,7 +177,8 @@ static void ufsm_gen_states(struct ufsm_state *state)
 
 
         fprintf(fp_c, "};\n");
-        fprintf(fp_h, "void %s(struct ufsm_machine *m, struct ufsm_state *s, ufsm_doact_cb_t cb);\n", d->name);
+        fprintf(fp_h, "void %s_start(struct ufsm_machine *m, struct ufsm_state *s, ufsm_doact_cb_t cb);\n", d->name);
+        fprintf(fp_h, "void %s_stop(void);\n", d->name);
 
     }
 

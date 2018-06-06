@@ -62,6 +62,13 @@ void debug_exit_state(struct ufsm_state *s)
 }
 
 
+void debug_reset(struct ufsm_machine *m)
+{
+#if UFSM_TESTS_VERBOSE == true
+    printf (" -- | RESET      | %s\n", m->name);
+#endif
+}
+
 void test_process(struct ufsm_machine *m, uint32_t ev)
 {
     uint32_t err = UFSM_OK;
@@ -113,6 +120,7 @@ void test_init(struct ufsm_machine *m)
     m->debug_guard = &debug_guard;
     m->debug_enter_state = &debug_enter_state;
     m->debug_exit_state = &debug_exit_state;
+    m->debug_reset = &debug_reset;
 
 #if UFSM_TESTS_VERBOSE == true
     printf (" EV |     OP     | Details\n");

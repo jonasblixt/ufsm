@@ -111,7 +111,7 @@ static uint32_t ufsm_enter_state(struct ufsm_machine *m,
     for (struct ufsm_doact *d = s->doact; d; d = d->next)
     {
         state_completed = false;
-        d->f(m,s,&ufsm_completion_handler);
+        d->f_start(m,s,&ufsm_completion_handler);
     }
 
     if (state_completed) 
@@ -139,6 +139,9 @@ inline static void ufsm_leave_state(struct ufsm_machine *m,
 {
     if (m->debug_exit_state)
         m->debug_exit_state(s);
+
+    for (struct ufsm_doact *d = s->doact; d; d = d->next)
+        d->f_stop();
 
     for (struct ufsm_entry_exit *e = s->exit; e; e = e->next)
         e->f();
@@ -1016,6 +1019,9 @@ static uint32_t ufsm_reset_region(struct ufsm_machine *m,
 
 uint32_t ufsm_reset_machine(struct ufsm_machine *m)
 {
+    if (m->debug_reset)
+        m->debug_reset(m);
+
     for (struct ufsm_region *r = m->region; r; r = r->next)
         ufsm_reset_region(m, r);
 
