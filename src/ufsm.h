@@ -14,17 +14,22 @@
 #include <stdbool.h>
 
 /* Error codes */
-#define UFSM_OK                        0
-#define UFSM_ERROR                     1
-#define UFSM_ERROR_NO_INIT_REGION      2
-#define UFSM_ERROR_UNKNOWN_STATE_KIND  3
-#define UFSM_ERROR_EVENT_NOT_PROCESSED 4
-#define UFSM_ERROR_LCA_NOT_FOUND       5
-#define UFSM_ERROR_STACK_OVERFLOW      6
-#define UFSM_ERROR_STACK_UNDERFLOW     7
-#define UFSM_ERROR_QUEUE_EMPTY         8
-#define UFSM_ERROR_QUEUE_FULL          9
-#define UFSM_ERROR_MACHINE_TERMINATED  10
+
+enum {
+    UFSM_OK,
+    UFSM_ERROR,
+    UFSM_ERROR_NO_INIT_REGION,
+    UFSM_ERROR_UNKNOWN_STATE_KIND,
+    UFSM_ERROR_EVENT_NOT_PROCESSED,
+    UFSM_ERROR_LCA_NOT_FOUND,
+    UFSM_ERROR_STACK_OVERFLOW,
+    UFSM_ERROR_STACK_UNDERFLOW,
+    UFSM_ERROR_QUEUE_EMPTY,
+    UFSM_ERROR_QUEUE_FULL,
+    UFSM_ERROR_MACHINE_TERMINATED,
+};
+
+
 extern const char *ufsm_errors[];
 
 /* Misc defines */
