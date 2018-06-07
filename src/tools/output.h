@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef __UFSM_OUTPUT_H__
-#define __UFSM_OUTPUT_H__
+#ifndef UFSM_OUTPUT_H
+#define UFSM_OUTPUT_H
 
 #include <ufsm.h>
 

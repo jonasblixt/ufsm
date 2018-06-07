@@ -445,8 +445,8 @@ bool ufsm_gen_output(struct ufsm_machine *root, char *output_name,
         return false;
     }
 
-    fprintf(fp_h,"#ifndef __%s_H__\n", output_name);
-    fprintf(fp_h,"#define __%s_H__\n", output_name);
+    fprintf(fp_h,"#ifndef UFSM_GEN_%s_H\n", output_name);
+    fprintf(fp_h,"#define UFSM_GEN_%s_H__\n", output_name);
     fprintf(fp_h,"#include <ufsm.h>\n");
     fprintf(fp_h,"#ifndef NULL\n");
     fprintf(fp_h," #define NULL (void *) 0\n");

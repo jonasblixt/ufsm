@@ -1,5 +1,5 @@
-#ifndef __TEST_COMMON__
-#define __TEST_COMMON__
+#ifndef UFSM_TEST_COMMON
+#define UFSM_TEST_COMMON
 
 #include <assert.h>
 #include <ufsm.h>

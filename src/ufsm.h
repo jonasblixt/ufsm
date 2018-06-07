@@ -7,8 +7,8 @@
  *
  */
 
-#ifndef __UFSM_H__
-#define __UFSM_H__
+#ifndef UFSM_H
+#define UFSM_H
 
 #include <stdint.h>
 #include <stdbool.h>
