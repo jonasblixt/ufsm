@@ -172,7 +172,7 @@ void * q_test (void *arg)
 {
     while (true)
     {
-        ufsm_queue_put(q,0);
+        ufsm_queue_put(q,DHCPACK);
         sleep(1);
     }
 }

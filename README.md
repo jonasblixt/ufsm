@@ -118,6 +118,7 @@ Functions with highest cyclomatic complexity:
 | 12  | 53    | ufsm_enter_parent_states   |
 | 10  | 41    | ufsm_enter_state           |
 
+
 # Description of test cases
 
 All of the state charts shown below were drawn in StarUML and the XMI files generated with 
