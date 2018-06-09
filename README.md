@@ -118,6 +118,22 @@ Functions with highest cyclomatic complexity:
 | 12  | 53    | ufsm_enter_parent_states   |
 | 10  | 41    | ufsm_enter_state           |
 
+## Event queue
+The event is implemented as a circular buffer with a 'put' and 'get' function to
+store and retreve data. 
+
+The queue has three optional callbacks; 'on_data', 'lock' and 'unlock'. This 
+allowes some flexibility with the target environment.
+
+The 'dhcpclient' -example demonstrates the use of mutex -locks for ensuring
+thread safety with the event queue and also a way to wake the main event loop
+with a nother mutext that gets unlocked by the 'on_data' callback.
+
+In an embedded context this might be a bit different. One possible setup would 
+be that whenever there is no more events to process, in the queue, the main loop
+calls the 'WFI' -instruction and the CPU halts until the next interrupt.
+The 'lock' and 'unlock' callbacks would disable and enable global interrupts
+to ensure that the queue is accessed in an atomical way.
 
 # Description of test cases
 
