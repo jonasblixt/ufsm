@@ -622,6 +622,8 @@ static uint32_t ufsm_process_choice(struct ufsm_machine *m,
                                     uint32_t *c)
 {
     uint32_t err = UFSM_OK;
+    struct ufsm_transition *t_default = NULL;
+    bool made_transition = false;
 
     struct ufsm_transition *transitions = dest->parent_region->transition;
 
@@ -629,17 +631,27 @@ static uint32_t ufsm_process_choice(struct ufsm_machine *m,
     {
         if (dt->source == dest)
         {
-            if (ufsm_test_guards(m, dt) && dt->guard) 
+            if (dt->guard)
             {
-                err = ufsm_push_rt_pair(m, act_region, dt);
+                if (ufsm_test_guards(m, dt)) 
+                {
+                    err = ufsm_push_rt_pair(m, act_region, dt);
 
-                if (err != UFSM_OK)
+                    if (err != UFSM_OK)
+                        break;
+                    made_transition = true;
+                    *c = *c + 1;
                     break;
-
-                *c = *c + 1;
-                break;
+                }
+            } else {
+                t_default = dt;
             }
         }
+    }
+
+    if (!made_transition && t_default && err == UFSM_OK) {
+        err = ufsm_push_rt_pair(m, act_region, t_default);
+        *c = *c + 1;
     }
 
     return err;
