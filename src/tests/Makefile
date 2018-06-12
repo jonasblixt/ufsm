@@ -15,6 +15,7 @@ TESTS += test_terminate
 TESTS += test_conref
 TESTS += test_transition_prio
 TESTS += test_do
+TESTS += test_argouml
 
 CC ?= gcc
 UFSMIMPORT ?= ufsmimport
@@ -41,7 +42,7 @@ all: $(TESTS)
 %.c : %.xmi
 	@echo UFSMIMPORT $< 
 	@mkdir -p gen
-	@$(UFSMIMPORT) $< $(patsubst %.xmi, %, $(<)) -c gen/
+	@$(UFSMIMPORT) $< $(patsubst %.xmi, %, $(<)) -v -c gen/
 
 clean:
 	@$(foreach TEST,$(TESTS), rm -f $(TEST);)
@@ -121,3 +122,6 @@ test_do: $(OBJS) test_do_input.c test_do.o
 	@echo LINK $@
 	@$(CC) $@.c gen/test_do_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
+test_argouml: $(OBJS) test_argouml_input.c test_argouml.o
+	@echo LINK $@
+	@$(CC) $@.c gen/test_argouml_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@

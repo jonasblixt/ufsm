@@ -270,6 +270,7 @@ static void ufsm_gen_regions(struct ufsm_region *region)
                     fprintf(fp_c, "  .defer = false,\n");
                     fprintf(fp_h, "void %s(void);\n",t->action->name);
                 }
+
             } else {
                 fprintf(fp_c, "  .action = NULL,\n");
                 fprintf(fp_c, "  .defer = false,\n");

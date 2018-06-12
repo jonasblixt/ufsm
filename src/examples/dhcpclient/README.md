@@ -1,4 +1,4 @@
 # DHCP client
 
-![](https://github.com/jonpe960/ufsm/raw/master/doc/test_junction.png)
+![](https://github.com/jonpe960/ufsm/raw/master/src/examples/dhcpclient/doc/dhcpclient.png)
 

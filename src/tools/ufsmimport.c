@@ -370,7 +370,9 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
                     bzero(action, sizeof(struct ufsm_action));
                     action->name = (const char*) get_attr(trigger, "name");
                     action->id = (const char *) get_attr(trigger, "id");
-                    action->next = action_last;
+                    action->next = NULL;
+                    if (action_last)
+                        action_last->next = action;
                     action_last = action;
                     if (v) printf (" /%s ", action->name);
                 } else if (is_type(trigger, "uml:Constraint")) {
