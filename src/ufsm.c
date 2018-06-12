@@ -629,7 +629,7 @@ static uint32_t ufsm_process_choice(struct ufsm_machine *m,
     {
         if (dt->source == dest)
         {
-            if (ufsm_test_guards(m, dt)) 
+            if (ufsm_test_guards(m, dt) && dt->guard) 
             {
                 err = ufsm_push_rt_pair(m, act_region, dt);
 
