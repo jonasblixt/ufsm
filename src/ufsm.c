@@ -533,7 +533,7 @@ static uint32_t ufsm_process_final_state(struct ufsm_machine *m,
  
         for (struct ufsm_transition *tf = transition; tf; tf = tf->next) 
         {
-            if (tf->dest->kind == UFSM_STATE_FINAL &&
+            if (tf->trigger == -1 &&
                 tf->source == parent_state) 
             {
 
