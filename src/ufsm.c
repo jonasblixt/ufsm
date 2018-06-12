@@ -637,6 +637,7 @@ static uint32_t ufsm_process_choice(struct ufsm_machine *m,
                     break;
 
                 *c = *c + 1;
+                break;
             }
         }
     }
