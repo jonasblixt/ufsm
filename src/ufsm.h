@@ -31,6 +31,7 @@ enum ufsm_status_codes
 };
 
 typedef enum ufsm_status_codes ufsm_status_t;
+typedef int32_t event_t;
 
 extern const char* ufsm_errors[];
 
@@ -76,7 +77,7 @@ typedef void (*ufsm_doact_func_t)(struct ufsm_machine* m,
                                   ufsm_doact_cb_t cb);
 
 /* Debug callbacks */
-typedef void (*ufsm_debug_event_t)(uint32_t ev);
+typedef void (*ufsm_debug_event_t)(event_t ev);
 typedef void (*ufsm_debug_transition_t)(struct ufsm_transition* t);
 typedef void (*ufsm_debug_enter_region_t)(struct ufsm_region* region);
 typedef void (*ufsm_debug_leave_region_t)(struct ufsm_region* region);
@@ -120,13 +121,17 @@ struct ufsm_stack
     uint32_t pos;
 };
 
-struct ufsm_queue
-{
+struct ufsm_queue_data_t {
+    event_t ev;
+    void *data;
+};
+
+struct ufsm_queue {
     uint32_t no_of_elements;
     uint32_t s;
     uint32_t head;
     uint32_t tail;
-    uint32_t* data;
+    struct ufsm_queue_data_t *data;
     ufsm_queue_cb_t on_data;
     ufsm_queue_cb_t lock;
     ufsm_queue_cb_t unlock;
@@ -147,10 +152,10 @@ struct ufsm_machine
     ufsm_debug_reset_t debug_reset;
     bool terminated;
 
-    void* stack_data[UFSM_STACK_SIZE];
-    void* completion_stack_data[UFSM_COMPLETION_STACK_SIZE];
-    uint32_t queue_data[UFSM_QUEUE_SIZE];
-    uint32_t defer_queue_data[UFSM_DEFER_QUEUE_SIZE];
+    void *stack_data[UFSM_STACK_SIZE];
+    void *completion_stack_data[UFSM_COMPLETION_STACK_SIZE];
+    struct ufsm_queue_data_t queue_data[UFSM_QUEUE_SIZE];
+    struct ufsm_queue_data_t defer_queue_data[UFSM_DEFER_QUEUE_SIZE];
 
     struct ufsm_queue queue;
     struct ufsm_queue defer_queue;
@@ -238,21 +243,22 @@ struct ufsm_state
     struct ufsm_state* next;
 };
 
-ufsm_status_t ufsm_init_machine(struct ufsm_machine* m);
-ufsm_status_t ufsm_reset_machine(struct ufsm_machine* m);
-ufsm_status_t ufsm_process(struct ufsm_machine* m, int32_t ev);
-ufsm_status_t ufsm_stack_init(struct ufsm_stack* stack,
-                              uint32_t no_of_elements,
-                              void** stack_data);
-ufsm_status_t ufsm_stack_push(struct ufsm_stack* stack, void* item);
-ufsm_status_t ufsm_stack_pop(struct ufsm_stack* stack, void** item);
+ufsm_status_t ufsm_init_machine(struct ufsm_machine *m);
+ufsm_status_t ufsm_reset_machine(struct ufsm_machine *m);
+ufsm_status_t ufsm_process (struct ufsm_machine *m, event_t ev);
+ufsm_status_t ufsm_stack_init(struct ufsm_stack *stack,
+                            uint32_t no_of_elements,
+                            void **stack_data);
+ufsm_status_t ufsm_stack_push(struct ufsm_stack *stack, void *item);
+ufsm_status_t ufsm_stack_pop(struct ufsm_stack *stack, void **item);
 
-ufsm_status_t ufsm_queue_init(struct ufsm_queue* q,
-                              uint32_t no_of_elements,
-                              uint32_t* data);
+ufsm_status_t ufsm_queue_init(struct ufsm_queue *q, uint32_t no_of_elements,
+                                            struct ufsm_queue_data_t *data);
 
-ufsm_status_t ufsm_queue_put(struct ufsm_queue* q, uint32_t ev);
-ufsm_status_t ufsm_queue_get(struct ufsm_queue* q, uint32_t* ev);
-struct ufsm_queue* ufsm_get_queue(struct ufsm_machine* m);
+ufsm_status_t ufsm_queue_put(struct ufsm_queue *q, event_t ev);
+ufsm_status_t ufsm_queue_get(struct ufsm_queue *q, event_t *ev);
+ufsm_status_t ufsm_queue_put2(struct ufsm_queue *q, event_t ev, void *data);
+ufsm_status_t ufsm_queue_get2(struct ufsm_queue *q, event_t *ev, void **data);
+struct ufsm_queue * ufsm_get_queue(struct ufsm_machine *m);
 
 #endif

@@ -4,21 +4,22 @@
  * Copyright (C) 2018 Jonas Persson <jonpe960@gmail.com>
  *
  * SPDX-License-Identifier: BSD-3-Clause
+
  *
  */
 
 #include <ufsm.h>
 
-uint32_t ufsm_queue_put(struct ufsm_queue* q, uint32_t ev)
+static ufsm_status_t _ufsm_queue_put(struct ufsm_queue *q, event_t ev, void *data)
 {
-    uint32_t err = UFSM_OK;
+    ufsm_status_t err = UFSM_OK;
 
     if (q->lock)
         q->lock();
 
-    if (q->s < q->no_of_elements)
-    {
-        q->data[q->head] = ev;
+    if (q->s < q->no_of_elements) {
+        q->data[q->head].ev = ev;
+        q->data[q->head].data = data;
         q->s++;
         q->head++;
 
@@ -39,16 +40,17 @@ uint32_t ufsm_queue_put(struct ufsm_queue* q, uint32_t ev)
     return err;
 }
 
-uint32_t ufsm_queue_get(struct ufsm_queue* q, uint32_t* ev)
+static ufsm_status_t _ufsm_queue_get(struct ufsm_queue *q, event_t *ev, void **data)
 {
-    uint32_t err = UFSM_OK;
+    ufsm_status_t err = UFSM_OK;
 
     if (q->lock)
         q->lock();
 
-    if (q->s)
-    {
-        *ev = q->data[q->tail];
+    if (q->s) {
+        *ev = q->data[q->tail].ev;
+        if (data != NULL)
+            *data = q->data[q->tail].data;
         q->s--;
         q->tail++;
 
@@ -66,9 +68,28 @@ uint32_t ufsm_queue_get(struct ufsm_queue* q, uint32_t* ev)
     return err;
 }
 
-uint32_t ufsm_queue_init(struct ufsm_queue* q,
-                         uint32_t no_of_elements,
-                         uint32_t* data)
+ufsm_status_t ufsm_queue_put(struct ufsm_queue *q, event_t ev)
+{
+    return _ufsm_queue_put(q, ev, NULL);
+}
+
+ufsm_status_t ufsm_queue_get(struct ufsm_queue *q, event_t *ev)
+{
+    return _ufsm_queue_get(q, ev, NULL);
+}
+
+ufsm_status_t ufsm_queue_put2(struct ufsm_queue *q, event_t ev, void *data)
+{
+    return _ufsm_queue_put(q, ev, data);
+}
+
+ufsm_status_t ufsm_queue_get2(struct ufsm_queue *q, event_t *ev, void **data)
+{
+    return _ufsm_queue_get(q, ev, data);
+}
+
+ufsm_status_t ufsm_queue_init(struct ufsm_queue *q, uint32_t no_of_elements,
+                                            struct ufsm_queue_data_t *data)
 {
     q->head = 0;
     q->tail = 0;

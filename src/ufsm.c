@@ -680,7 +680,7 @@ static ufsm_status_t ufsm_process_junction(struct ufsm_machine* m,
 void ufsm_update_defer_queue(struct ufsm_machine* m)
 {
     ufsm_status_t err = UFSM_OK;
-    uint32_t ev;
+    event_t ev;
 
     do
     {
@@ -909,7 +909,7 @@ ufsm_status_t ufsm_find_active_regions(struct ufsm_machine* m, uint32_t* c)
 
 bool ufsm_transition(struct ufsm_machine* m,
                      struct ufsm_region* r,
-                     int32_t ev,
+                     event_t ev,
                      bool* state_transitioned)
 {
     bool event_consumed = false;
@@ -943,7 +943,7 @@ bool ufsm_transition(struct ufsm_machine* m,
     return event_consumed;
 }
 
-ufsm_status_t ufsm_process(struct ufsm_machine* m, int32_t ev)
+ufsm_status_t ufsm_process(struct ufsm_machine* m, event_t ev)
 {
     ufsm_status_t err = UFSM_OK;
     uint32_t region_count = 0;

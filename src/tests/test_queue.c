@@ -28,9 +28,9 @@ void q_unlock(void) { flag_q_unlock = true; }
 
 int main(void)
 {
-    uint32_t err = UFSM_OK;
-    uint32_t data[4];
-    uint32_t i = 0;
+    ufsm_status_t err = UFSM_OK;
+    struct ufsm_queue_data_t data[4];
+    event_t i = 0;
     struct ufsm_machine* m = get_StateMachine1();
 
     struct ufsm_queue* q = ufsm_get_queue(m);

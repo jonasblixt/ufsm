@@ -27,7 +27,7 @@ void debug_leave_region(struct ufsm_region* r)
 #endif
 }
 
-void debug_event(uint32_t ev)
+void debug_event(event_t ev)
 {
 #if UFSM_TESTS_VERBOSE == true
     printf(" %-3i|            |\n", ev);
@@ -69,7 +69,7 @@ void debug_reset(struct ufsm_machine* m)
 #endif
 }
 
-void test_process(struct ufsm_machine* m, uint32_t ev)
+void test_process(struct ufsm_machine* m, event_t ev)
 {
     uint32_t err = UFSM_OK;
 
@@ -86,7 +86,7 @@ void test_process(struct ufsm_machine* m, uint32_t ev)
     assert(m->stack.pos == 0);
 
     struct ufsm_queue* q = ufsm_get_queue(m);
-    uint32_t q_ev;
+    event_t q_ev;
 
     /* Process queued events */
     while (ufsm_queue_get(q, &q_ev) == UFSM_OK)
