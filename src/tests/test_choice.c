@@ -49,7 +49,7 @@ void e3(void)
     flag_e3 = true;
 }
 
-int main(int argc, char **argv) 
+int main(void) 
 {
     struct ufsm_machine *m = get_StateMachine1();
     

@@ -23,7 +23,7 @@ void eE(void)
     flag_eE = true;
 }
 
-int main(int argc, char **argv) 
+int main(void) 
 {
     struct ufsm_machine *m = get_StateMachine1();
     

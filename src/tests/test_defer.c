@@ -11,7 +11,7 @@ void final(void)
     flag_final = true;
 }
 
-int main(int argc, char **argv) 
+int main(void) 
 {
     struct ufsm_machine *m = get_StateMachine1();
     uint32_t err = UFSM_OK;

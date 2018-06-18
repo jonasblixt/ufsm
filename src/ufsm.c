@@ -148,8 +148,7 @@ inline static void ufsm_leave_state(struct ufsm_machine *m,
 }
 
 
-inline static void ufsm_set_current_state(struct ufsm_machine *m,
-                                          struct ufsm_region *r,
+inline static void ufsm_set_current_state(struct ufsm_region *r,
                                           struct ufsm_state *s)
 {
     if (r)
@@ -271,7 +270,7 @@ static uint32_t ufsm_enter_parent_states(struct ufsm_machine *m,
         
         if (ps) 
         {
-            ufsm_set_current_state (m, ps->parent_region, ps);
+            ufsm_set_current_state (ps->parent_region, ps);
 
             if (pr != ancestor)
                 ufsm_enter_state(m, ps);            
@@ -281,8 +280,7 @@ static uint32_t ufsm_enter_parent_states(struct ufsm_machine *m,
     return err;
 }
 
-static struct ufsm_region * ufsm_least_common_ancestor(struct ufsm_machine *m,
-                                                       struct ufsm_region *r1,
+static struct ufsm_region * ufsm_least_common_ancestor(struct ufsm_region *r1,
                                                        struct ufsm_region *r2)
 {
     struct ufsm_region *lca = r1;
@@ -327,7 +325,7 @@ static uint32_t ufsm_leave_parent_states(struct ufsm_machine *m,
     *act = dest->parent_region;
     rl = src->parent_region;
 
-    ancestor = ufsm_least_common_ancestor(m, src->parent_region,
+    ancestor = ufsm_least_common_ancestor(src->parent_region,
                                         dest->parent_region);
     *lca = ancestor;
 
@@ -900,7 +898,7 @@ uint32_t ufsm_find_active_regions(struct ufsm_machine *m, uint32_t *c)
 
 
 bool ufsm_transition(struct ufsm_machine *m, struct ufsm_region *r,
-                                             uint32_t ev,
+                                             int32_t ev,
                                              bool *state_transitioned)
 {
     bool event_consumed = false;
@@ -935,7 +933,7 @@ bool ufsm_transition(struct ufsm_machine *m, struct ufsm_region *r,
 }
 
 
-uint32_t ufsm_process (struct ufsm_machine *m, uint32_t ev) 
+uint32_t ufsm_process (struct ufsm_machine *m, int32_t ev) 
 {
     uint32_t err = UFSM_OK;
     uint32_t region_count = 0;

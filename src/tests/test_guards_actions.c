@@ -130,7 +130,7 @@ static struct ufsm_machine m  =
     .region = &region1,
 };
 
-int main(int argc, char **argv)
+int main(void)
 {
     uint32_t err;
 

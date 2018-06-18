@@ -79,7 +79,7 @@ void xS11(void)
     flag_xS11 = true;
 }
 
-int main(int argc, char **argv) 
+int main(void) 
 {
     struct ufsm_machine *m = get_StateMachine1();
  

@@ -35,7 +35,7 @@ void q_unlock(void)
     flag_q_unlock = true;
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
     uint32_t err = UFSM_OK;
     uint32_t data[4];

@@ -107,7 +107,7 @@ void xA(void)
     flag_xA = true;
 }
 
-int main(int argc, char **argv) 
+int main(void) 
 {
     struct ufsm_machine *m = get_StateMachine1();
     

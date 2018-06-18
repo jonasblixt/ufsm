@@ -30,7 +30,7 @@ void t2(void)
 }
 
 
-int main(int argc, char **argv) 
+int main(void) 
 {
     struct ufsm_machine *m = get_StateMachine1();
     

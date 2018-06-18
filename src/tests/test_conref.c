@@ -65,7 +65,7 @@ void eB(void)
     eBc++;
 }
 
-int main(int argc, char **argv) 
+int main(void) 
 {
     struct ufsm_machine *m = get_StateMachine1();
     

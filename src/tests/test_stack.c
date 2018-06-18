@@ -5,7 +5,7 @@
 #define STACK_SIZE 4
 
 
-int main(int argc, char **argv)
+int main(void)
 {
     void *stack_data[STACK_SIZE];
     struct ufsm_stack s;
