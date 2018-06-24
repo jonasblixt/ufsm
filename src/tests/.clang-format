@@ -1,7 +1,0 @@
-AllowShortFunctionsOnASingleLine: All
-BreakBeforeBraces: Allman
-BreakBeforeBinaryOperators: NonAssignment
-AlignOperands: true
-AlignTrailingComments: true
-AllowAllParametersOfDeclarationOnNextLine: false
-
