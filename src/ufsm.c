@@ -851,16 +851,19 @@ ufsm_status_t ufsm_init_machine(struct ufsm_machine* m)
 {
     ufsm_status_t err = UFSM_OK;
 
+    // Initialize Stacks
     ufsm_stack_init(&(m->stack), UFSM_STACK_SIZE, m->stack_data);
     ufsm_stack_init(&(m->completion_stack),
                     UFSM_COMPLETION_STACK_SIZE,
                     m->completion_stack_data);
+    // Initialize Queues
     ufsm_queue_init(&(m->queue), UFSM_QUEUE_SIZE, m->queue_data);
     ufsm_queue_init(&(m->defer_queue),
                     UFSM_DEFER_QUEUE_SIZE,
                     m->defer_queue_data);
     m->terminated = false;
 
+    // Process Regions
     for (struct ufsm_region* r = m->region; r; r = r->next)
     {
         struct ufsm_transition* rt = ufsm_get_first_state(r);
