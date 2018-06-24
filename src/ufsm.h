@@ -15,7 +15,7 @@
 
 /* Error codes */
 
-enum {
+enum ufsm_status_codes {
     UFSM_OK,
     UFSM_ERROR,
     UFSM_ERROR_NO_INIT_REGION,
@@ -29,6 +29,7 @@ enum {
     UFSM_ERROR_MACHINE_TERMINATED,
 };
 
+typedef enum ufsm_status_codes ufsm_status_t;
 
 extern const char *ufsm_errors[];
 
@@ -223,20 +224,20 @@ struct ufsm_state {
     struct ufsm_state *next;
 };
 
-uint32_t ufsm_init_machine(struct ufsm_machine *m);
-uint32_t ufsm_reset_machine(struct ufsm_machine *m);
-uint32_t ufsm_process (struct ufsm_machine *m, int32_t ev);
-uint32_t ufsm_stack_init(struct ufsm_stack *stack,
+ufsm_status_t ufsm_init_machine(struct ufsm_machine *m);
+ufsm_status_t ufsm_reset_machine(struct ufsm_machine *m);
+ufsm_status_t ufsm_process (struct ufsm_machine *m, int32_t ev);
+ufsm_status_t ufsm_stack_init(struct ufsm_stack *stack,
                             uint32_t no_of_elements,
                             void **stack_data);
-uint32_t ufsm_stack_push(struct ufsm_stack *stack, void *item);
-uint32_t ufsm_stack_pop(struct ufsm_stack *stack, void **item);
+ufsm_status_t ufsm_stack_push(struct ufsm_stack *stack, void *item);
+ufsm_status_t ufsm_stack_pop(struct ufsm_stack *stack, void **item);
 
-uint32_t ufsm_queue_init(struct ufsm_queue *q, uint32_t no_of_elements,
+ufsm_status_t ufsm_queue_init(struct ufsm_queue *q, uint32_t no_of_elements,
                                                uint32_t *data);
 
-uint32_t ufsm_queue_put(struct ufsm_queue *q, uint32_t ev);
-uint32_t ufsm_queue_get(struct ufsm_queue *q, uint32_t *ev);
+ufsm_status_t ufsm_queue_put(struct ufsm_queue *q, uint32_t ev);
+ufsm_status_t ufsm_queue_get(struct ufsm_queue *q, uint32_t *ev);
 struct ufsm_queue * ufsm_get_queue(struct ufsm_machine *m);
 
 #endif
