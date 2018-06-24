@@ -2,8 +2,8 @@ BasedOnStyle: Chromium
 IndentWidth: 4
 AllowShortFunctionsOnASingleLine: None
 BreakBeforeBraces: Allman
-# BreakBeforeBinaryOperators: NonAssignment
-BreakBeforeBinaryOperators: None
+BreakBeforeBinaryOperators: NonAssignment
+# BreakBeforeBinaryOperators: None
 AlignOperands: true
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: false

@@ -406,8 +406,8 @@ static uint32_t parse_transition(xmlNode* n,
                 {
                     t->trigger_name = (const char*)get_attr(trigger, "name");
                 }
-                else if (is_type(trigger, "uml:Activity") ||
-                         is_type(trigger, "uml:OpaqueBehavior"))
+                else if (is_type(trigger, "uml:Activity")
+                         || is_type(trigger, "uml:OpaqueBehavior"))
                 {
                     action = malloc(sizeof(struct ufsm_action));
                     bzero(action, sizeof(struct ufsm_action));
