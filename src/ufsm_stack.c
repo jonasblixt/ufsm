@@ -9,9 +9,9 @@
 
 #include <ufsm.h>
 
-uint32_t ufsm_stack_init(struct ufsm_stack *stack,
-                        uint32_t no_of_elements,
-                        void **stack_data)
+uint32_t ufsm_stack_init(struct ufsm_stack* stack,
+                         uint32_t no_of_elements,
+                         void** stack_data)
 {
     stack->no_of_elements = no_of_elements;
     stack->data = stack_data;
@@ -20,7 +20,7 @@ uint32_t ufsm_stack_init(struct ufsm_stack *stack,
     return UFSM_OK;
 }
 
-uint32_t ufsm_stack_push(struct ufsm_stack *stack, void *item)
+uint32_t ufsm_stack_push(struct ufsm_stack* stack, void* item)
 {
     if (stack->pos >= stack->no_of_elements)
         return UFSM_ERROR_STACK_OVERFLOW;
@@ -30,11 +30,11 @@ uint32_t ufsm_stack_push(struct ufsm_stack *stack, void *item)
     return UFSM_OK;
 }
 
-uint32_t ufsm_stack_pop(struct ufsm_stack *stack, void **item)
+uint32_t ufsm_stack_pop(struct ufsm_stack* stack, void** item)
 {
-    if(!stack->pos)
+    if (!stack->pos)
         return UFSM_ERROR_STACK_UNDERFLOW;
-    
+
     stack->pos--;
 
     *item = stack->data[stack->pos];

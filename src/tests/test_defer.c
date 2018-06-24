@@ -1,19 +1,16 @@
-#include <stdio.h>
 #include <assert.h>
-#include <ufsm.h>
+#include <stdio.h>
 #include <test_defer_input.h>
+#include <ufsm.h>
 #include "common.h"
 
 static bool flag_final = false;
 
-void final(void)
-{
-    flag_final = true;
-}
+void final(void) { flag_final = true; }
 
-int main(void) 
+int main(void)
 {
-    struct ufsm_machine *m = get_StateMachine1();
+    struct ufsm_machine* m = get_StateMachine1();
     uint32_t err = UFSM_OK;
     uint32_t ev;
 
@@ -26,7 +23,8 @@ int main(void)
 
     ufsm_process(m, EV);
 
-    while(true) {
+    while (true)
+    {
         err = ufsm_queue_get(&m->queue, &ev);
         if (err == UFSM_OK)
             test_process(m, ev);
@@ -36,7 +34,5 @@ int main(void)
 
     assert(flag_final);
 
-
-   
     return 0;
 }

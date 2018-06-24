@@ -13,10 +13,10 @@
 
 #include <ufsm.h>
 
-
-bool ufsm_gen_output(struct ufsm_machine *root, char *output_name,
-                    char *output_prefix, uint32_t verbose, bool strip);
-
-
+bool ufsm_gen_output(struct ufsm_machine* root,
+                     char* output_name,
+                     char* output_prefix,
+                     uint32_t verbose,
+                     bool strip);
 
 #endif

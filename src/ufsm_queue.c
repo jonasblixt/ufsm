@@ -9,25 +9,27 @@
 
 #include <ufsm.h>
 
-uint32_t ufsm_queue_put(struct ufsm_queue *q, uint32_t ev)
+uint32_t ufsm_queue_put(struct ufsm_queue* q, uint32_t ev)
 {
     uint32_t err = UFSM_OK;
 
     if (q->lock)
         q->lock();
 
-    if (q->s < q->no_of_elements) {
+    if (q->s < q->no_of_elements)
+    {
         q->data[q->head] = ev;
         q->s++;
         q->head++;
-        
+
         if (q->on_data)
             q->on_data();
-        
+
         if (q->head >= q->no_of_elements)
             q->head = 0;
-
-    } else {
+    }
+    else
+    {
         err = UFSM_ERROR_QUEUE_FULL;
     }
 
@@ -37,22 +39,24 @@ uint32_t ufsm_queue_put(struct ufsm_queue *q, uint32_t ev)
     return err;
 }
 
-uint32_t ufsm_queue_get(struct ufsm_queue *q, uint32_t *ev)
+uint32_t ufsm_queue_get(struct ufsm_queue* q, uint32_t* ev)
 {
     uint32_t err = UFSM_OK;
 
     if (q->lock)
         q->lock();
 
-    if (q->s) {
+    if (q->s)
+    {
         *ev = q->data[q->tail];
         q->s--;
         q->tail++;
 
         if (q->tail >= q->no_of_elements)
             q->tail = 0;
-
-    } else {
+    }
+    else
+    {
         err = UFSM_ERROR_QUEUE_EMPTY;
     }
 
@@ -62,16 +66,17 @@ uint32_t ufsm_queue_get(struct ufsm_queue *q, uint32_t *ev)
     return err;
 }
 
-uint32_t ufsm_queue_init(struct ufsm_queue *q, uint32_t no_of_elements,
-                                               uint32_t *data)
+uint32_t ufsm_queue_init(struct ufsm_queue* q,
+                         uint32_t no_of_elements,
+                         uint32_t* data)
 {
     q->head = 0;
     q->tail = 0;
     q->data = data;
     q->s = 0;
-    //q->on_data = NULL;
-    //q->lock = NULL;
-    //q->unlock = NULL;
+    // q->on_data = NULL;
+    // q->lock = NULL;
+    // q->unlock = NULL;
     q->no_of_elements = no_of_elements;
 
     return UFSM_OK;
