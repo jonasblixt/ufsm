@@ -586,8 +586,8 @@ static ufsm_status_t ufsm_process_join(struct ufsm_machine* m,
         return UFSM_ERROR_EVENT_NOT_PROCESSED;
 
     orth_region = src->parent_region->parent_state->region;
-
     src->parent_region->current = dest;
+
     for (struct ufsm_region* dr = orth_region; dr; dr = dr->next)
     {
         if (dr->current != dest)
