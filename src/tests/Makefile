@@ -23,7 +23,10 @@ UFSMIMPORT ?= ufsmimport
 
 UFSM_TESTS_VERBOSE ?= false
 
+ifdef COVERAGE
 LDFLAGS = -lgcov
+endif
+
 CFLAGS  = -O2 -Wall -Wextra -pedantic-errors -std=c99 -fprofile-arcs -ftest-coverage
 CFLAGS += -I.. -I. -I gen/ -DUFSM_TESTS_VERBOSE=$(UFSM_TESTS_VERBOSE)
 
