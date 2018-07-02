@@ -1,7 +1,7 @@
-#include <stdio.h>
 #include <assert.h>
-#include <ufsm.h>
+#include <stdio.h>
 #include <test_fork_input.h>
+#include <ufsm.h>
 #include "common.h"
 
 static bool gA_val = false;
@@ -36,8 +36,16 @@ void reset_flags(void)
     flag_xAB = false;
 }
 
-bool gA(void) { flag_gA = true; return gA_val; }
-bool g2(void) { flag_g2 = true; return g2_val; }
+bool gA(void)
+{
+    flag_gA = true;
+    return gA_val;
+}
+bool g2(void)
+{
+    flag_g2 = true;
+    return g2_val;
+}
 void finalD(void) { flag_finalD = true; }
 void eD(void) { flag_eD = true; }
 void eC(void) { flag_eC = true; }
@@ -47,86 +55,51 @@ void xB2(void) { flag_xB2 = true; }
 void eA2(void) { flag_eA2 = true; }
 void xA2(void) { flag_xA2 = true; }
 void eAB(void) { flag_eAB = true; }
-void xAB(void) { ab_exit_cnt++; flag_xAB = true; }
-
-int main(void) 
+void xAB(void)
 {
-    struct ufsm_machine *m = get_StateMachine1();
-    
+    ab_exit_cnt++;
+    flag_xAB = true;
+}
+
+int main(void)
+{
+    struct ufsm_machine* m = get_StateMachine1();
+
     test_init(m);
     ufsm_init_machine(m);
 
-    assert (!flag_finalD &&
-            !flag_gA &&
-            !flag_g2 &&
-            !flag_eD &&
-            !flag_eC &&
-            !flag_finalC &&
-            !flag_eB2 &&
-            !flag_xB2 &&
-            !flag_eA2 &&
-            !flag_xA2 &&
-            !flag_eAB &&
-            !flag_xAB);
+    assert(!flag_finalD && !flag_gA && !flag_g2 && !flag_eD && !flag_eC &&
+           !flag_finalC && !flag_eB2 && !flag_xB2 && !flag_eA2 && !flag_xA2 &&
+           !flag_eAB && !flag_xAB);
 
     g2_val = true;
     gA_val = false;
     test_process(m, EV);
 
-    assert (!flag_finalD &&
-            flag_gA &&
-            flag_g2 &&
-            !flag_eD &&
-            !flag_eC &&
-            !flag_finalC &&
-            flag_eB2 &&
-            !flag_xB2 &&
-            flag_eA2 &&
-            !flag_xA2 &&
-            flag_eAB &&
-            !flag_xAB);
+    assert(!flag_finalD && flag_gA && flag_g2 && !flag_eD && !flag_eC &&
+           !flag_finalC && flag_eB2 && !flag_xB2 && flag_eA2 && !flag_xA2 &&
+           flag_eAB && !flag_xAB);
 
     reset_flags();
     test_process(m, EV);
 
-    assert (!flag_finalD &&
-            !flag_gA &&
-            !flag_g2 &&
-            !flag_eD &&
-            !flag_eC &&
-            flag_finalC &&
-            !flag_eB2 &&
-            flag_xB2 &&
-            !flag_eA2 &&
-            flag_xA2 &&
-            !flag_eAB &&
-            flag_xAB);
+    assert(!flag_finalD && !flag_gA && !flag_g2 && !flag_eD && !flag_eC &&
+           flag_finalC && !flag_eB2 && flag_xB2 && !flag_eA2 && flag_xA2 &&
+           !flag_eAB && flag_xAB);
 
-    assert (ab_exit_cnt == 1);
+    assert(ab_exit_cnt == 1);
 
     ufsm_reset_machine(m);
     ufsm_init_machine(m);
     reset_flags(),
 
-    g2_val = false;
+        g2_val = false;
     gA_val = true;
     test_process(m, EV);
 
-
-    assert (!flag_finalD &&
-            flag_gA &&
-            !flag_g2 &&
-            !flag_eD &&
-            !flag_eC &&
-            !flag_finalC &&
-            !flag_eB2 &&
-            !flag_xB2 &&
-            !flag_eA2 &&
-            !flag_xA2 &&
-            flag_eAB &&
-            !flag_xAB);
-
-
+    assert(!flag_finalD && flag_gA && !flag_g2 && !flag_eD && !flag_eC &&
+           !flag_finalC && !flag_eB2 && !flag_xB2 && !flag_eA2 && !flag_xA2 &&
+           flag_eAB && !flag_xAB);
 
     return 0;
 }

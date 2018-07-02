@@ -1,9 +1,5 @@
+#include <test_argouml_input.h>
 #include <ufsm.h>
 #include "common.h"
-#include <test_argouml_input.h>
 
-
-
-int main (int argc, char **argv)
-{
-}
+int main(int argc, char** argv) {}

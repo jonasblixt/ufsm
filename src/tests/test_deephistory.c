@@ -1,7 +1,7 @@
-#include <stdio.h>
 #include <assert.h>
-#include <ufsm.h>
+#include <stdio.h>
 #include <test_deephistory_input.h>
+#include <ufsm.h>
 #include "common.h"
 
 static bool flag_final = false;
@@ -37,209 +37,86 @@ static void reset_flags(void)
     flag_xA = false;
 }
 
-void final(void)
-{
-    flag_final = true;
-}
+void final(void) { flag_final = true; }
 
-void eB(void)
-{
-    flag_eB = true;
-}
+void eB(void) { flag_eB = true; }
 
-void eA2(void)
-{
-    flag_eA2 = true;
-}
+void eA2(void) { flag_eA2 = true; }
 
-void xA2(void)
-{
-    flag_xA2 = true;
-}
+void xA2(void) { flag_xA2 = true; }
 
-void eA1(void)
-{
-    flag_eA1 = true;
-}
+void eA1(void) { flag_eA1 = true; }
 
-void xA1(void)
-{
-    flag_xA1 = true;
-}
+void xA1(void) { flag_xA1 = true; }
 
-void eE(void)
-{
-    flag_eE = true;
-}
+void eE(void) { flag_eE = true; }
 
-void xE(void)
-{
-    flag_xE = true;
-}
+void xE(void) { flag_xE = true; }
 
-void eD(void)
-{
-    flag_eD = true;
-}
+void eD(void) { flag_eD = true; }
 
-void xD(void)
-{
-    flag_xD = true;
-}
+void xD(void) { flag_xD = true; }
 
-void eC(void)
-{
-    flag_eC = true;
-}
+void eC(void) { flag_eC = true; }
 
-void xC(void)
-{
-    flag_xC = true;
-}
+void xC(void) { flag_xC = true; }
 
-void eA(void)
-{
-    flag_eA = true;
-}
+void eA(void) { flag_eA = true; }
 
-void xA(void)
-{
-    flag_xA = true;
-}
+void xA(void) { flag_xA = true; }
 
-int main(void) 
+int main(void)
 {
-    struct ufsm_machine *m = get_StateMachine1();
-    
+    struct ufsm_machine* m = get_StateMachine1();
+
     test_init(m);
     ufsm_init_machine(m);
-    assert(!flag_final &&
-        flag_eB &&
-        !flag_eA2 &&
-        !flag_xA2 &&
-        !flag_eA1 &&
-        !flag_xA1 &&
-        !flag_eE &&
-        !flag_xE &&
-        !flag_eD &&
-        !flag_xD &&
-        !flag_eC &&
-        !flag_xC &&
-        !flag_eA &&
-        !flag_xA);
+    assert(!flag_final && flag_eB && !flag_eA2 && !flag_xA2 && !flag_eA1 &&
+           !flag_xA1 && !flag_eE && !flag_xE && !flag_eD && !flag_xD &&
+           !flag_eC && !flag_xC && !flag_eA && !flag_xA);
 
     reset_flags();
     test_process(m, EV_A);
-    assert(!flag_final &&
-        !flag_eB &&
-        !flag_eA2 &&
-        !flag_xA2 &&
-        flag_eA1 &&
-        !flag_xA1 &&
-        !flag_eE &&
-        !flag_xE &&
-        !flag_eD &&
-        !flag_xD &&
-        !flag_eC &&
-        !flag_xC &&
-        flag_eA &&
-        !flag_xA);
-
+    assert(!flag_final && !flag_eB && !flag_eA2 && !flag_xA2 && flag_eA1 &&
+           !flag_xA1 && !flag_eE && !flag_xE && !flag_eD && !flag_xD &&
+           !flag_eC && !flag_xC && flag_eA && !flag_xA);
 
     test_process(m, EV_1);
     test_process(m, EV_1);
     test_process(m, EV_1);
 
-    assert(!flag_final &&
-        !flag_eB &&
-        flag_eA2 &&
-        flag_xA2 &&
-        flag_eA1 &&
-        flag_xA1 &&
-        flag_eE &&
-        flag_xE &&
-        flag_eD &&
-        !flag_xD &&
-        flag_eC &&
-        !flag_xC &&
-        flag_eA &&
-        !flag_xA);
+    assert(!flag_final && !flag_eB && flag_eA2 && flag_xA2 && flag_eA1 &&
+           flag_xA1 && flag_eE && flag_xE && flag_eD && !flag_xD && flag_eC &&
+           !flag_xC && flag_eA && !flag_xA);
 
     reset_flags();
     test_process(m, EV_B);
 
-
-    assert(!flag_final &&
-        flag_eB &&
-        !flag_eA2 &&
-        !flag_xA2 &&
-        !flag_eA1 &&
-        !flag_xA1 &&
-        !flag_eE &&
-        !flag_xE &&
-        !flag_eD &&
-        flag_xD &&
-        !flag_eC &&
-        flag_xC &&
-        !flag_eA &&
-        flag_xA);
+    assert(!flag_final && flag_eB && !flag_eA2 && !flag_xA2 && !flag_eA1 &&
+           !flag_xA1 && !flag_eE && !flag_xE && !flag_eD && flag_xD &&
+           !flag_eC && flag_xC && !flag_eA && flag_xA);
 
     reset_flags();
     test_process(m, EV_A);
 
-
-    assert(!flag_final &&
-        !flag_eB &&
-        !flag_eA2 &&
-        !flag_xA2 &&
-        !flag_eA1 &&
-        !flag_xA1 &&
-        !flag_eE &&
-        !flag_xE &&
-        flag_eD &&
-        !flag_xD &&
-        flag_eC &&
-        !flag_xC &&
-        flag_eA &&
-        !flag_xA);
+    assert(!flag_final && !flag_eB && !flag_eA2 && !flag_xA2 && !flag_eA1 &&
+           !flag_xA1 && !flag_eE && !flag_xE && flag_eD && !flag_xD &&
+           flag_eC && !flag_xC && flag_eA && !flag_xA);
 
     reset_flags();
     test_process(m, EV_1);
 
-    assert(!flag_final &&
-        !flag_eB &&
-        !flag_eA2 &&
-        !flag_xA2 &&
-        flag_eA1 &&
-        !flag_xA1 &&
-        !flag_eE &&
-        !flag_xE &&
-        !flag_eD &&
-        flag_xD &&
-        !flag_eC &&
-        flag_xC &&
-        !flag_eA &&
-        !flag_xA);
-    
-    test_process(m ,EV_1);
+    assert(!flag_final && !flag_eB && !flag_eA2 && !flag_xA2 && flag_eA1 &&
+           !flag_xA1 && !flag_eE && !flag_xE && !flag_eD && flag_xD &&
+           !flag_eC && flag_xC && !flag_eA && !flag_xA);
+
+    test_process(m, EV_1);
     reset_flags();
     test_process(m, EV_EXIT);
 
-    assert(flag_final &&
-        !flag_eB &&
-        !flag_eA2 &&
-        flag_xA2 &&
-        !flag_eA1 &&
-        !flag_xA1 &&
-        !flag_eE &&
-        !flag_xE &&
-        !flag_eD &&
-        !flag_xD &&
-        !flag_eC &&
-        !flag_xC &&
-        !flag_eA &&
-        flag_xA);
-
+    assert(flag_final && !flag_eB && !flag_eA2 && flag_xA2 && !flag_eA1 &&
+           !flag_xA1 && !flag_eE && !flag_xE && !flag_eD && !flag_xD &&
+           !flag_eC && !flag_xC && !flag_eA && flag_xA);
 
     return 0;
 }

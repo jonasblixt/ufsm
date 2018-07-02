@@ -8,4 +8,4 @@ clean:
 	@make -C src clean
 
 format:
-	find src/ -maxdepth 1 -iname *.h -o -iname *.c | xargs clang-format -i
+	find src/ -iname *.h -o -iname *.c | xargs clang-format -i
