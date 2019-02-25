@@ -81,7 +81,8 @@ static ufsm_status_t ufsm_completion_handler(struct ufsm_machine *m,
     for (struct ufsm_transition *t = s->parent_region->transition; 
                                             t; t = t->next)
     {
-        if (t->source == s && t->trigger == -1) {
+        if ((t->source == s) && (t->trigger == -1)) 
+        {
             err = ufsm_stack_push(&m->completion_stack, s);
             if (err == UFSM_OK)
                 err = ufsm_queue_put(&m->queue, UFSM_COMPLETION_EVENT);
@@ -720,7 +721,7 @@ static ufsm_status_t ufsm_make_transition(struct ufsm_machine *m,
 
     err = ufsm_push_rt_pair (m, r, t);
 
-    while (transition_count && err == UFSM_OK)
+    while (transition_count && (err == UFSM_OK))
     {
         err = ufsm_pop_rt_pair(m, &act_region, &act_t);
 
@@ -763,8 +764,8 @@ static ufsm_status_t ufsm_make_transition(struct ufsm_machine *m,
 
         ufsm_execute_actions(m, act_t);
 
-        if (t->kind == UFSM_TRANSITION_EXTERNAL &&
-            src->parent_region != dest->parent_region) 
+        if ((t->kind == UFSM_TRANSITION_EXTERNAL) &&
+            (src->parent_region != dest->parent_region)) 
         {
             err = ufsm_enter_parent_states(m, lca_region, dest->parent_region);
 
@@ -906,19 +907,22 @@ static bool ufsm_transition(struct ufsm_machine *m, struct ufsm_region *r,
 {
     bool event_consumed = false;
     ufsm_status_t err = UFSM_OK;
+    struct ufsm_state *current_state = r->current;
 
     for (struct ufsm_transition *t = r->transition; t; t = t->next) 
     {
-        if (t->defer && t->trigger == ev && t->source == r->current) 
+        if (t->defer && (t->trigger == ev) && (t->source == r->current)) 
         {
             err = ufsm_queue_put(&m->defer_queue, ev);
         
             if (err != UFSM_OK)
                 break;
 
-        } else if (t->trigger == ev && t->source == r->current) {
+        } 
+        else if ((t->trigger == ev) && (t->source == current_state)) 
+        {
             event_consumed = true;
-
+        
             uint32_t e = ufsm_make_transition(m, t, r);       
 
             if (e == UFSM_OK) 
@@ -968,14 +972,11 @@ ufsm_status_t ufsm_process (struct ufsm_machine *m, int32_t ev)
             for (struct ufsm_region *r = region; r; r = r->next) 
             {
                 bool state_transitioned = false;
-
                 if (ufsm_transition (m, r, ev, &state_transitioned))
                     event_consumed = true;
-
                 if (!state_transitioned)
                     if (ufsm_transition (m, r, -1, &state_transitioned))
                         event_consumed = true;
-
                 if (!r->next && event_consumed)
                     break;
             }
