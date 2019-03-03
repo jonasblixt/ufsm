@@ -394,13 +394,16 @@ static ufsm_status_t ufsm_leave_nested_states(struct ufsm_machine *m,
         if (err != UFSM_OK)
             break;
 
-        if (r->current) 
+        for (struct ufsm_region *sr = r; sr; sr = sr->next)
         {
-            ufsm_leave_state(m, r->current);
+            if (sr->current) 
+            {
+                ufsm_leave_state(m, sr->current);
 
-            if (r->has_history)
-                r->history = r->current;
-            r->current = NULL;
+                if (sr->has_history)
+                    sr->history = r->current;
+                sr->current = NULL;
+            }
         }
     }
     return err;
