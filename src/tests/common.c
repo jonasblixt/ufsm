@@ -4,11 +4,12 @@
 void debug_transition (struct ufsm_transition *t)
 {
 #if UFSM_TESTS_VERBOSE == true
- 
-    printf ("    | Transition | %s {%s} --> %s {%s}\n", t->source->name,
+
+    printf ("    | Transition | %s {%s} --> %s {%s} T=%i\n", t->source->name,
                                             ufsm_state_kinds[t->source->kind],
                                             t->dest->name,
-                                            ufsm_state_kinds[t->dest->kind]);
+                                            ufsm_state_kinds[t->dest->kind],
+                                            t->trigger);
 #endif
 }
 

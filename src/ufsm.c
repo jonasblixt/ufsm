@@ -428,6 +428,33 @@ static ufsm_status_t ufsm_init_region_history(struct ufsm_machine *m,
     return err;
 }
 
+inline static ufsm_status_t ufsm_push_sr_pair(struct ufsm_machine *m,
+                                         struct ufsm_region *r,
+                                         struct ufsm_state *s)
+{
+    ufsm_status_t err = UFSM_OK;
+
+    err = ufsm_stack_push (&m->stack, r);
+    
+    if (err == UFSM_OK)
+        err = ufsm_stack_push (&m->stack, s);
+
+    return err;
+}
+
+inline static ufsm_status_t ufsm_pop_sr_pair(struct ufsm_machine *m,
+                                        struct ufsm_region **r,
+                                        struct ufsm_state **s)
+{
+    ufsm_status_t err = UFSM_OK;
+
+    err = ufsm_stack_pop (&m->stack, (void **) s);
+    
+    if (err == UFSM_OK)
+        err = ufsm_stack_pop (&m->stack, (void **) r);
+
+    return err;
+}
 
 inline static ufsm_status_t ufsm_push_rt_pair(struct ufsm_machine *m,
                                          struct ufsm_region *r,
@@ -855,6 +882,7 @@ ufsm_status_t ufsm_init_machine(struct ufsm_machine *m)
     ufsm_status_t err = UFSM_OK;
     
     ufsm_stack_init(&(m->stack), UFSM_STACK_SIZE, m->stack_data);
+    ufsm_stack_init(&(m->stack2), UFSM_STACK_SIZE, m->stack_data2);
     ufsm_stack_init(&(m->completion_stack), 
                     UFSM_COMPLETION_STACK_SIZE, m->completion_stack_data);
     ufsm_queue_init(&(m->queue), UFSM_QUEUE_SIZE, m->queue_data);
@@ -877,19 +905,33 @@ ufsm_status_t ufsm_init_machine(struct ufsm_machine *m)
     return err;
 }
 
-static ufsm_status_t ufsm_find_active_regions(struct ufsm_machine *m, uint32_t *c)
+static ufsm_status_t ufsm_find_active_regions(struct ufsm_machine *m, 
+                                              uint32_t *c)
 {
     ufsm_status_t err = UFSM_OK;
     struct ufsm_region *r = m->region;
     struct ufsm_state *s = NULL;
- 
+    uint32_t sibling_counter = 0;
+
+process_sibling:
+
     while (r) 
     {
         s = r->current;
+    
+        /**
+         * If this region has 'sibblings' in a composite state,
+         *  save the first sibling on stack2 for later processing.
+         */
+        if (r->next)
+        {
+            err = ufsm_stack_push(&m->stack2, r->next);
+            sibling_counter++;
+        }
 
         if (s) 
         {
-            err = ufsm_stack_push(&m->stack, r);
+            err = ufsm_push_sr_pair(m, r, s);
             if (err != UFSM_OK)
                 break;
             
@@ -898,6 +940,17 @@ static ufsm_status_t ufsm_find_active_regions(struct ufsm_machine *m, uint32_t *
         } else {
             break;
         }
+    }
+    
+    if (sibling_counter)
+    {
+        sibling_counter--;
+        err = ufsm_stack_pop(&m->stack2, (void **)&r);
+
+        if (err != UFSM_OK)
+            return err;
+
+        goto process_sibling;
     }
 
     return err;
@@ -948,6 +1001,7 @@ ufsm_status_t ufsm_process (struct ufsm_machine *m, int32_t ev)
     ufsm_status_t err = UFSM_OK;
     uint32_t region_count = 0;
     struct ufsm_region *region = NULL;
+    struct ufsm_state *s = NULL;
     bool event_consumed = false;
     if (m->terminated)
         return UFSM_ERROR_MACHINE_TERMINATED;
@@ -963,25 +1017,36 @@ ufsm_status_t ufsm_process (struct ufsm_machine *m, int32_t ev)
    
     ufsm_find_active_regions(m, &region_count);
 
+    bool state_transitioned = false;
+
     for (uint32_t i = 0; i < region_count; i++) 
     {
-        err = ufsm_stack_pop(&m->stack, (void **) &region);
+        err = ufsm_pop_sr_pair(m, &region, &s);
 
         if (err != UFSM_OK)
             break;
-    
-        if (!event_consumed) 
+        
+        /* First ensure that the active state has not
+         * changed
+         * */
+        if (region->current == s)
         {
-            for (struct ufsm_region *r = region; r; r = r->next) 
+            if (ufsm_transition (m, region, ev, &state_transitioned))
             {
-                bool state_transitioned = false;
-                if (ufsm_transition (m, r, ev, &state_transitioned))
+                event_consumed = true;
+            }
+
+            /*
+             * If it was not possible to transition from active state 's'
+             *  in region 'region'. Try to invoke an anonymous transition.
+             */
+
+            if (!state_transitioned)
+            {
+                if (ufsm_transition (m, region, -1, &state_transitioned))
+                {
                     event_consumed = true;
-                if (!state_transitioned)
-                    if (ufsm_transition (m, r, -1, &state_transitioned))
-                        event_consumed = true;
-                if (!r->next && event_consumed)
-                    break;
+                }
             }
         }
     }

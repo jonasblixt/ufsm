@@ -141,6 +141,7 @@ struct ufsm_machine {
     bool terminated;
 
     void *stack_data[UFSM_STACK_SIZE];
+    void *stack_data2[UFSM_STACK_SIZE];
     void *completion_stack_data[UFSM_COMPLETION_STACK_SIZE];
     uint32_t queue_data[UFSM_QUEUE_SIZE];
     uint32_t defer_queue_data[UFSM_DEFER_QUEUE_SIZE];
@@ -150,6 +151,7 @@ struct ufsm_machine {
 
     struct ufsm_state *parent_state;
     struct ufsm_stack stack;
+    struct ufsm_stack stack2;
     struct ufsm_stack completion_stack;
 
     struct ufsm_region *region;

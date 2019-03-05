@@ -15,9 +15,9 @@ TESTS += test_terminate
 TESTS += test_conref
 TESTS += test_transition_prio
 TESTS += test_do
-#TESTS += test_argouml
 TESTS += test_choice2
 TESTS += test_ev_repeat_orth
+TESTS += test_nested_composits
 
 CC ?= gcc
 UFSMIMPORT ?= ufsmimport
@@ -140,4 +140,8 @@ test_choice2: $(OBJS) test_choice2_input.c test_choice2.o
 test_ev_repeat_orth: $(OBJS) test_ev_repeat_orth_input.c test_ev_repeat_orth.o
 	@echo LINK $@
 	@$(CC) $@.c gen/test_ev_repeat_orth_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+
+test_nested_composits: $(OBJS) test_nested_composits_input.c test_nested_composits.o
+	@echo LINK $@
+	@$(CC) $@.c gen/test_nested_composits_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 

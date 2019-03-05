@@ -1,4 +1,4 @@
-![](https://github.com/jonpe960/ufsm/raw/master/doc/logo.png)
+![](/doc/logo.png)
 
 [![Coverity](https://scan.coverity.com/projects/15860/badge.svg)](https://scan.coverity.com/projects/jonpe960-ufsm)
 [![Build Status](https://travis-ci.org/jonpe960/ufsm.svg?branch=master)](https://travis-ci.org/jonpe960/ufsm)
@@ -148,15 +148,15 @@ This is a mixture of different tests, most notably:
  - Shallow history
  - Orthogonal regions
 
-![](https://github.com/jonpe960/ufsm/raw/master/doc/test_xmi_machine1.png)
+![](/doc/test_xmi_machine1.png)
 Top level state machine
 
-![](https://github.com/jonpe960/ufsm/raw/master/doc/test_xmi_machine2.png)
+![](/doc/test_xmi_machine2.png)
 Sub statemachine
 
 ## Deep history
 
-![](https://github.com/jonpe960/ufsm/raw/master/doc/test_deephistory.png)
+![](/doc/test_deephistory.png)
 
 This example illustrates the deep history pseudostate. In this example, the
 machine is initialised and events are sent to enter the D substate. At this
@@ -168,7 +168,7 @@ the machine will be in state A, C and D.
 
 ## Compound transitions
 
-![](https://github.com/jonpe960/ufsm/raw/master/doc/test_compound_transition.png)
+![](/doc/test_compound_transition.png)
 
 This statechart is taken from the UML standard - see chapter 14.2.3.9.6 for a 
 complete description.
@@ -179,26 +179,29 @@ executes the following: xS11; t1; xS1; t2; eT1; eT11; t3; eT111
 
 ## Fork
 
-![](https://github.com/jonpe960/ufsm/raw/master/doc/test_fork.png)
+![](/doc/test_fork.png)
 
 This example demonstrates the use of a fork pseudostate to enter more than
 one state in different, orthogonal regions.
 
 ## Connection references
 
-![](https://github.com/jonpe960/ufsm/raw/master/doc/test_conref_1.png)
+![](/doc/test_conref_1.png)
 
-![](https://github.com/jonpe960/ufsm/raw/master/doc/test_conref_2.png)
+![](/doc/test_conref_2.png)
 
 Using connection references, it is possible to transition into a specific state
  of a sub statemachine.
 
 ## Event deferral
 
-![](https://github.com/jonpe960/ufsm/raw/master/doc/test_defer.png)
+![](/doc/test_defer.png)
 
 ## Junction
 
-![](https://github.com/jonpe960/ufsm/raw/master/doc/test_junction.png)
+![](/doc/test_junction.png)
 
+## Nested composit states
+
+![](/doc/test_nested_composits.png)
 
