@@ -246,11 +246,11 @@ static ufsm_status_t ufsm_enter_parent_states(struct ufsm_machine *m,
     err = ufsm_stack_push(&m->stack, r);
     c++;
 
-    while (ps && r != ancestor && err == UFSM_OK)
+    while (ps && (r != ancestor) && (err == UFSM_OK))
     {
         pr = ps->parent_region;
 
-        if (pr == ancestor || pr == NULL)
+        if ((pr == ancestor) || (pr == NULL))
             break;
 
         err = ufsm_stack_push(&m->stack, pr);
@@ -369,6 +369,7 @@ static ufsm_status_t ufsm_leave_nested_states(struct ufsm_machine *m,
 {
     struct ufsm_region *r = NULL;
     uint32_t c = 0;
+    uint32_t sibling_counter = 0;
     ufsm_status_t err = UFSM_OK;
 
     if (!s->region || !s->region->current)
@@ -376,8 +377,16 @@ static ufsm_status_t ufsm_leave_nested_states(struct ufsm_machine *m,
 
     r = s->region;
 
+process_siblings:
+
     do 
     {
+        if (r->next)
+        {
+            err = ufsm_stack_push(&m->stack2, r->next);
+            sibling_counter++;
+        }
+
         c++;
         err = ufsm_stack_push(&m->stack, r);
 
@@ -386,6 +395,18 @@ static ufsm_status_t ufsm_leave_nested_states(struct ufsm_machine *m,
 
         r = r->current->region;
     } while (r);
+
+    if (sibling_counter)
+    {
+        sibling_counter--;
+        err = ufsm_stack_pop(&m->stack2, (void **) &r);
+
+        if (err != UFSM_OK)
+            return err;
+
+        goto process_siblings;
+    }
+
 
     for (uint32_t i = 0; i < c; i++) 
     { 

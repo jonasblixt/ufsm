@@ -205,3 +205,7 @@ Using connection references, it is possible to transition into a specific state
 
 ![](/doc/test_nested_composits.png)
 
+## Nested composit states2
+
+![](/doc/test_nested_composits2.png)
+
