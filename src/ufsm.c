@@ -981,10 +981,16 @@ static bool ufsm_transition_has_trigger(struct ufsm_machine *m,
                                         struct ufsm_transition *t,
                                         uint32_t ev)
 {
-    for (struct ufsm_trigger *tt = t->trigger; tt; tt = tt->next)
+    if (t->trigger == NULL)
+        return false;
+
+    struct ufsm_trigger *tt = t->trigger;
+
+    while (tt->name != NULL)
     {
         if (ev == tt->trigger)
             return true;
+        tt++;
     }
 
     return false;

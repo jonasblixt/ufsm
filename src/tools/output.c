@@ -256,6 +256,10 @@ static void ufsm_gen_regions(struct ufsm_region *region)
                     fprintf(fp_c, "  .name = \"%s\",\n", tt->name);
                     fprintf(fp_c, "},\n");
                 }
+                    fprintf(fp_c, " {\n");
+                    fprintf(fp_c, "  .trigger = -1,\n");
+                    fprintf(fp_c, "  .name = NULL,\n");
+                    fprintf(fp_c, "},\n");
                 fprintf(fp_c,"};\n");
             }
 
