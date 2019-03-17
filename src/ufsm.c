@@ -64,7 +64,7 @@ static ufsm_status_t ufsm_process_completion(struct ufsm_machine *m,
     for (struct ufsm_transition *t = s->parent_region->transition; 
                                                 t; t = t->next)
     {
-        if (t->source == s && t->trigger == -1) {
+        if (t->source == s && t->trigger == NULL) {
             err = ufsm_make_transition(m, t, s->parent_region);
             break;
         }
@@ -81,7 +81,7 @@ static ufsm_status_t ufsm_completion_handler(struct ufsm_machine *m,
     for (struct ufsm_transition *t = s->parent_region->transition; 
                                             t; t = t->next)
     {
-        if ((t->source == s) && (t->trigger == -1)) 
+        if ((t->source == s) && (t->trigger == NULL)) 
         {
             err = ufsm_stack_push(&m->completion_stack, s);
             if (err == UFSM_OK)
@@ -586,7 +586,7 @@ static ufsm_status_t ufsm_process_final_state(struct ufsm_machine *m,
  
         for (struct ufsm_transition *tf = transition; tf; tf = tf->next) 
         {
-            if (tf->trigger == -1 &&
+            if (tf->trigger == NULL &&
                 tf->source == parent_state) 
             {
 
@@ -977,6 +977,18 @@ process_sibling:
     return err;
 }
 
+static bool ufsm_transition_has_trigger(struct ufsm_machine *m,
+                                        struct ufsm_transition *t,
+                                        uint32_t ev)
+{
+    for (struct ufsm_trigger *tt = t->trigger; tt; tt = tt->next)
+    {
+        if (ev == tt->trigger)
+            return true;
+    }
+
+    return false;
+}
 
 static bool ufsm_transition(struct ufsm_machine *m, struct ufsm_region *r,
                                              int32_t ev,
@@ -988,7 +1000,8 @@ static bool ufsm_transition(struct ufsm_machine *m, struct ufsm_region *r,
 
     for (struct ufsm_transition *t = r->transition; t; t = t->next) 
     {
-        if (t->defer && (t->trigger == ev) && (t->source == r->current)) 
+        if (t->defer && ufsm_transition_has_trigger(m,t,ev)
+                                && (t->source == r->current)) 
         {
             err = ufsm_queue_put(&m->defer_queue, ev);
         
@@ -996,7 +1009,8 @@ static bool ufsm_transition(struct ufsm_machine *m, struct ufsm_region *r,
                 break;
 
         } 
-        else if ((t->trigger == ev) && (t->source == current_state)) 
+        else if (ufsm_transition_has_trigger(m,t,ev) 
+                            && (t->source == current_state)) 
         {
             event_consumed = true;
         

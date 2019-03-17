@@ -83,11 +83,25 @@ static struct ufsm_action action1 =
     .next = NULL,
 };
 
+static struct ufsm_trigger a_trigger =
+{
+    .name = "EV_A",
+    .trigger = EV_A,
+    .next = NULL,
+};
+
+static struct ufsm_trigger b_trigger =
+{
+    .name = "EV_B",
+    .trigger = EV_B,
+    .next = NULL,
+};
+
 
 static struct ufsm_transition simple_transition_B = 
 {
     .name = "EV_B",
-    .trigger = EV_B,
+    .trigger = &b_trigger,
     .kind = UFSM_TRANSITION_EXTERNAL,
     .source = &A,
     .dest = &B,
@@ -98,7 +112,7 @@ static struct ufsm_transition simple_transition_B =
 static struct ufsm_transition simple_transition_A = 
 {
     .name = "EV_A",
-    .trigger = EV_A,
+    .trigger = &a_trigger,
     .kind = UFSM_TRANSITION_EXTERNAL,
     .source = &B,
     .dest = &A,
@@ -112,7 +126,7 @@ static struct ufsm_transition simple_transition_INIT =
     .name = "Init",
     .kind = UFSM_TRANSITION_EXTERNAL,
     .source = &simple_INIT,
-    .trigger = UFSM_NO_TRIGGER,
+    .trigger = NULL,
     .dest = &A,
     .next = &simple_transition_A,
 };

@@ -242,6 +242,23 @@ static void ufsm_gen_regions(struct ufsm_region *region)
         fprintf (fp_c,"};\n");
 
         for (struct ufsm_transition *t = r->transition; t; t = t->next) {
+
+            if (t->trigger)
+            {
+                fprintf(fp_c, "static struct ufsm_trigger %s_triggers[] = {\n",
+                            id_to_decl(t->id));
+
+                for (struct ufsm_trigger *tt = t->trigger;tt;tt=tt->next)
+                {
+                    fprintf(fp_c, "{\n");
+                    fprintf(fp_c, "  .trigger = %i,\n", 
+                                ev_name_to_index(tt->name));
+                    fprintf(fp_c, "  .name = \"%s\",\n", tt->name);
+                    fprintf(fp_c, "},\n");
+                }
+                fprintf(fp_c,"};\n");
+            }
+
             fprintf(fp_c, "static struct ufsm_transition %s = {\n",
                                id_to_decl(t->id));
             if (flag_strip) {
@@ -252,14 +269,16 @@ static void ufsm_gen_regions(struct ufsm_region *region)
                 fprintf(fp_c, "  .name = \"\",\n");
             }
 
-            if (t->trigger_name != NULL) {
-                fprintf(fp_c, "  .trigger = %i,\n",
-                                        ev_name_to_index(t->trigger_name));
-                fprintf(fp_c, "  .trigger_name = \"%s\",\n",t->trigger_name);
-            } else {
-                fprintf(fp_c, "  .trigger = -1,\n");
-                fprintf(fp_c, "  .trigger_name = \"\",\n");
+            if (t->trigger != NULL) 
+            {
+                fprintf(fp_c, "  .trigger = %s_triggers,\n",
+                                id_to_decl(t->id));
+            } 
+            else 
+            {
+                fprintf(fp_c, "  .trigger = NULL,\n");
             }
+
             fprintf(fp_c, "  .kind = %i,\n",t->kind);
             if (t->action) {
                 if (strcmp(t->action->name, "ufsm_defer") == 0) {

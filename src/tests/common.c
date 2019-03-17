@@ -5,11 +5,19 @@ void debug_transition (struct ufsm_transition *t)
 {
 #if UFSM_TESTS_VERBOSE == true
 
-    printf ("    | Transition | %s {%s} --> %s {%s} T=%i\n", t->source->name,
+    printf ("    | Transition | %s {%s} --> %s {%s} T=", t->source->name,
                                             ufsm_state_kinds[t->source->kind],
                                             t->dest->name,
-                                            ufsm_state_kinds[t->dest->kind],
-                                            t->trigger);
+                                            ufsm_state_kinds[t->dest->kind]);
+
+    for (struct ufsm_trigger *tt = t->trigger;tt;tt=tt->next)
+    {
+        printf ("%s ", tt->name);
+    }
+
+    if (t->trigger == NULL)
+        printf ("ANONYMOUS");
+    printf("\n");
 #endif
 }
 

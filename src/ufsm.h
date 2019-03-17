@@ -187,13 +187,19 @@ struct ufsm_doact {
     struct ufsm_doact *next;
 };
 
+struct ufsm_trigger
+{
+    const char *name;
+    uint32_t trigger;
+    struct ufsm_trigger *next;
+};
+
 struct ufsm_transition {
     const char *id;
     const char *name;
-    const char *trigger_name;
-    int32_t trigger;
     bool defer;
     enum ufsm_transition_kind kind;
+    struct ufsm_trigger *trigger;
     struct ufsm_action *action;
     struct ufsm_guard *guard;
     struct ufsm_state *source;

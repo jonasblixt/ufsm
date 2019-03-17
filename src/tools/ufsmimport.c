@@ -360,12 +360,24 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
             struct ufsm_action *action_last = NULL;
             struct ufsm_guard *guard = NULL;
             struct ufsm_guard *guard_last = NULL;
+            struct ufsm_trigger *u_trigger = NULL;
+            struct ufsm_trigger *u_trigger_last = NULL;
 
-            for (xmlNode *trigger = s_node->children; trigger; trigger = trigger->next) {
-                if (is_type(trigger, "uml:Trigger")) {
-                    t->trigger_name = (const char*) get_attr(trigger, "name");
-                } else if (is_type(trigger, "uml:Activity") ||
-                    is_type(trigger, "uml:OpaqueBehavior")) {
+            for (xmlNode *trigger = s_node->children; trigger; 
+                                            trigger = trigger->next) 
+            {
+                if (is_type(trigger, "uml:Trigger")) 
+                {
+                    u_trigger = malloc(sizeof(struct ufsm_trigger));
+                    u_trigger->name = (const char*) get_attr(trigger, "name");
+                    u_trigger->next = NULL;
+                    if (u_trigger_last)
+                        u_trigger_last->next = u_trigger;
+                    u_trigger_last = u_trigger;
+                } 
+                else if (is_type(trigger, "uml:Activity") ||
+                            is_type(trigger, "uml:OpaqueBehavior")) 
+                {
                     action = malloc (sizeof (struct ufsm_action));
                     bzero(action, sizeof(struct ufsm_action));
                     action->name = (const char*) get_attr(trigger, "name");
@@ -375,7 +387,9 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
                         action_last->next = action;
                     action_last = action;
                     if (v) printf (" /%s ", action->name);
-                } else if (is_type(trigger, "uml:Constraint")) {
+                } 
+                else if (is_type(trigger, "uml:Constraint")) 
+                {
                     guard = malloc(sizeof(struct ufsm_guard));
                     bzero(guard, sizeof(struct ufsm_guard));
                     guard->name = (const char*) get_attr(trigger, "specification");
@@ -397,6 +411,7 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
             }
             t->action = action_last;
             t->guard = guard_last;
+            t->trigger = u_trigger_last;
             
             struct ufsm_region *trans_region = state_belongs_to(m, src);
 
