@@ -657,7 +657,7 @@ static ufsm_status_t ufsm_process_join(struct ufsm_machine *m,
         {
             if (dt->source == dest) 
             {
-                err = ufsm_push_rt_pair(m, act_region, dt);
+                err = ufsm_push_rt_pair(m, dest->parent_region, dt);
 
                 if (err != UFSM_OK)
                     break;
