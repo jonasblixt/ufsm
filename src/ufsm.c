@@ -8,7 +8,7 @@
  */
 
 #include "ufsm.h"
-#include <stdio.h>
+
 const char *ufsm_transition_kinds[] =
 {
     "External",
