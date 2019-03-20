@@ -8,7 +8,7 @@
  */
 
 #include "ufsm.h"
-
+#include <stdio.h>
 const char *ufsm_transition_kinds[] =
 {
     "External",
@@ -364,91 +364,6 @@ static ufsm_status_t ufsm_leave_parent_states(struct ufsm_machine *m,
     return UFSM_OK;
 }
  
-static ufsm_status_t ufsm_leave_nested_states(struct ufsm_machine *m,
-                                        struct ufsm_state *s)
-{
-    struct ufsm_region *r = NULL;
-    uint32_t c = 0;
-    uint32_t sibling_counter = 0;
-    ufsm_status_t err = UFSM_OK;
-
-    if (!s->region || !s->region->current)
-        return UFSM_OK;
-
-    r = s->region;
-
-process_siblings:
-
-    do 
-    {
-        if (r->next)
-        {
-            err = ufsm_stack_push(&m->stack2, r->next);
-            sibling_counter++;
-        }
-
-        c++;
-        err = ufsm_stack_push(&m->stack, r);
-
-        if (err != UFSM_OK)
-            break;
-
-        r = r->current->region;
-    } while (r);
-
-    if (sibling_counter)
-    {
-        sibling_counter--;
-        err = ufsm_stack_pop(&m->stack2, (void **) &r);
-
-        if (err != UFSM_OK)
-            return err;
-
-        goto process_siblings;
-    }
-
-
-    for (uint32_t i = 0; i < c; i++) 
-    { 
-        err = ufsm_stack_pop(&m->stack, (void **) &r);
-
-        if (err != UFSM_OK)
-            break;
-
-        for (struct ufsm_region *sr = r; sr; sr = sr->next)
-        {
-            if (sr->current) 
-            {
-                ufsm_leave_state(m, sr->current);
-
-                if (sr->has_history)
-                    sr->history = r->current;
-                sr->current = NULL;
-            }
-        }
-    }
-    return err;
-}
-
-static ufsm_status_t ufsm_init_region_history(struct ufsm_machine *m,
-                                         struct ufsm_region *regions) 
-{
-    ufsm_status_t err = UFSM_ERROR_NO_INIT_REGION;
-
-    if (regions->has_history && regions->history) 
-    {
-        regions->current = regions->history;
-
-        if (m->debug_enter_region)
-            m->debug_enter_region(regions);
-
-        ufsm_enter_state(m, regions->current);
-        err = UFSM_OK;
-    }
-
-    return err;
-}
-
 inline static ufsm_status_t ufsm_push_sr_pair(struct ufsm_machine *m,
                                          struct ufsm_region *r,
                                          struct ufsm_state *s)
@@ -476,6 +391,106 @@ inline static ufsm_status_t ufsm_pop_sr_pair(struct ufsm_machine *m,
 
     return err;
 }
+
+static ufsm_status_t ufsm_find_active_regions(struct ufsm_machine *m, 
+                                              struct ufsm_region *r_in,
+                                              uint32_t *c)
+{
+    ufsm_status_t err = UFSM_OK;
+    struct ufsm_state *s = NULL;
+    struct ufsm_region *r = r_in;
+    uint32_t region_counter = 0;
+
+process_next_region:
+
+    for (; r; r = r->next)
+    {
+        s = r->current;
+
+        if (s) 
+        {
+            err = ufsm_push_sr_pair(m, r, s);
+
+            if (err != UFSM_OK)
+                break;
+
+            *c = *c + 1;
+
+            if (s->region)
+            {
+                err = ufsm_stack_push(&m->stack2, s->region);
+                region_counter++;
+            }
+        }
+    }
+
+    if (region_counter)
+    {
+        region_counter--;
+        err = ufsm_stack_pop(&m->stack2, (void **)&r);
+
+        if (err != UFSM_OK)
+            return err;
+
+        goto process_next_region;
+    }
+
+    return err;
+}
+
+static ufsm_status_t ufsm_leave_nested_states(struct ufsm_machine *m,
+                                              struct ufsm_state *s)
+{
+    struct ufsm_region *r = NULL;
+    struct ufsm_state *s2 = NULL;
+    uint32_t c = 0;
+    ufsm_status_t err = UFSM_OK;
+
+    if (!s->region || !s->region->current)
+        return UFSM_OK;
+
+    err = ufsm_find_active_regions(m, s->region, &c);
+
+    if (err != UFSM_OK)
+        return err;
+
+    for (uint32_t i = 0; i < c; i++) 
+    { 
+        err = ufsm_pop_sr_pair(m, &r, &s2);
+
+        if (err != UFSM_OK)
+            break;
+
+        ufsm_leave_state(m, s2);
+
+        if (r->has_history)
+            r->history = r->current;
+
+        r->current = NULL;
+    }
+
+    return err;
+}
+
+static ufsm_status_t ufsm_init_region_history(struct ufsm_machine *m,
+                                         struct ufsm_region *regions) 
+{
+    ufsm_status_t err = UFSM_ERROR_NO_INIT_REGION;
+
+    if (regions->has_history && regions->history) 
+    {
+        regions->current = regions->history;
+
+        if (m->debug_enter_region)
+            m->debug_enter_region(regions);
+
+        ufsm_enter_state(m, regions->current);
+        err = UFSM_OK;
+    }
+
+    return err;
+}
+
 
 inline static ufsm_status_t ufsm_push_rt_pair(struct ufsm_machine *m,
                                          struct ufsm_region *r,
@@ -926,56 +941,6 @@ ufsm_status_t ufsm_init_machine(struct ufsm_machine *m)
     return err;
 }
 
-static ufsm_status_t ufsm_find_active_regions(struct ufsm_machine *m, 
-                                              uint32_t *c)
-{
-    ufsm_status_t err = UFSM_OK;
-    struct ufsm_region *r = m->region;
-    struct ufsm_state *s = NULL;
-    uint32_t sibling_counter = 0;
-
-process_sibling:
-
-    while (r) 
-    {
-        s = r->current;
-    
-        /**
-         * If this region has 'sibblings' in a composite state,
-         *  save the first sibling on stack2 for later processing.
-         */
-        if (r->next)
-        {
-            err = ufsm_stack_push(&m->stack2, r->next);
-            sibling_counter++;
-        }
-
-        if (s) 
-        {
-            err = ufsm_push_sr_pair(m, r, s);
-            if (err != UFSM_OK)
-                break;
-            
-            *c = *c + 1;
-            r = s->region;
-        } else {
-            break;
-        }
-    }
-    
-    if (sibling_counter)
-    {
-        sibling_counter--;
-        err = ufsm_stack_pop(&m->stack2, (void **)&r);
-
-        if (err != UFSM_OK)
-            return err;
-
-        goto process_sibling;
-    }
-
-    return err;
-}
 
 static bool ufsm_transition_has_trigger(struct ufsm_machine *m,
                                         struct ufsm_transition *t,
@@ -1029,7 +994,6 @@ static bool ufsm_transition(struct ufsm_machine *m, struct ufsm_region *r,
                 if (!r->next) 
                     break;
             } 
-        
         }
     }
     
@@ -1056,10 +1020,9 @@ ufsm_status_t ufsm_process (struct ufsm_machine *m, int32_t ev)
     if (m->debug_event)
         m->debug_event(ev);
    
-    ufsm_find_active_regions(m, &region_count);
+    ufsm_find_active_regions(m,m->region, &region_count);
 
     bool state_transitioned = false;
-
     for (uint32_t i = 0; i < region_count; i++) 
     {
         err = ufsm_pop_sr_pair(m, &region, &s);
@@ -1075,19 +1038,6 @@ ufsm_status_t ufsm_process (struct ufsm_machine *m, int32_t ev)
             if (ufsm_transition (m, region, ev, &state_transitioned))
             {
                 event_consumed = true;
-            }
-
-            /*
-             * If it was not possible to transition from active state 's'
-             *  in region 'region'. Try to invoke an anonymous transition.
-             */
-
-            if (!state_transitioned)
-            {
-                if (ufsm_transition (m, region, -1, &state_transitioned))
-                {
-                    event_consumed = true;
-                }
             }
         }
     }

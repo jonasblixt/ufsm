@@ -16,7 +16,8 @@ void debug_transition (struct ufsm_transition *t)
     }
 
     if (t->trigger == NULL)
-        printf ("ANONYMOUS");
+        printf ("COMPLETION");
+
     printf("\n");
 #endif
 }

@@ -56,7 +56,7 @@ int main(void)
     test_init(m);
     ufsm_init_machine(m);
 
-    assert (!flag_finalD &&
+    assert ("step1" && !flag_finalD &&
             !flag_gA &&
             !flag_g2 &&
             !flag_eD &&
@@ -73,7 +73,7 @@ int main(void)
     gA_val = false;
     test_process(m, EV);
 
-    assert (!flag_finalD &&
+    assert ("step2" && !flag_finalD &&
             flag_gA &&
             flag_g2 &&
             !flag_eD &&
@@ -89,7 +89,7 @@ int main(void)
     reset_flags();
     test_process(m, EV);
 
-    assert (!flag_finalD &&
+    assert ("step3" && !flag_finalD &&
             !flag_gA &&
             !flag_g2 &&
             !flag_eD &&
@@ -102,7 +102,7 @@ int main(void)
             !flag_eAB &&
             flag_xAB);
 
-    assert (ab_exit_cnt == 1);
+    assert ("step4" && ab_exit_cnt == 1);
 
     ufsm_reset_machine(m);
     ufsm_init_machine(m);
@@ -113,7 +113,7 @@ int main(void)
     test_process(m, EV);
 
 
-    assert (!flag_finalD &&
+    assert ("step5" && !flag_finalD &&
             flag_gA &&
             !flag_g2 &&
             !flag_eD &&
