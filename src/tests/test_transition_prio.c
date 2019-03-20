@@ -5,7 +5,7 @@
 #include "common.h"
 
 static bool flag_eA,flag_xA,flag_eB,flag_xB,flag_eC,flag_xC,flag_eD,flag_xD,
-            flag_eE, flag_eF, flag_eG, flag_xG, flag_eH, flag_xH;
+            flag_eE, flag_eF, flag_xF, flag_eG, flag_xG, flag_eH, flag_xH;
 
 static void reset_flags(void)
 {
@@ -19,6 +19,7 @@ static void reset_flags(void)
     flag_xD = false;
     flag_eE = false;
     flag_eF = false;
+    flag_xF = false;
     flag_eG = false;
     flag_xG = false;
     flag_eH = false;
@@ -33,6 +34,9 @@ void eA(void)
 void xA(void)
 {
     flag_xA = true;
+
+    assert ("xC" && flag_xD && flag_xC && flag_xH && flag_xB
+                 && flag_xA && flag_xF);
 }
 
 void eB(void)
@@ -43,6 +47,9 @@ void eB(void)
 void xB(void)
 {
     flag_xB = true;
+
+    assert ("xB" && flag_xD && !flag_xC && flag_xH && flag_xB && !flag_xC
+                 && !flag_xA && flag_xF);
 }
 
 void eC(void)
@@ -54,6 +61,8 @@ void xC(void)
 {
     flag_xC = true;
 
+    assert ("xC" && flag_xD && flag_xC && flag_xH && flag_xB
+                 && !flag_xA && flag_xF);
 }
 
 void eD(void)
@@ -64,6 +73,9 @@ void eD(void)
 void xD(void)
 {
     flag_xD = true;
+
+    assert ("xD" && flag_xD && !flag_xC && !flag_xH && !flag_xB && !flag_xC
+                 && !flag_xA && flag_xF);
 }
 
 void eE(void)
@@ -75,6 +87,14 @@ void eF(void)
 {
     flag_eF = true;
     assert ("eF" && !flag_eH);
+}
+
+void xF(void)
+{
+    flag_xF = true;
+
+    assert ("xF" && !flag_xD && !flag_xC && !flag_xH && !flag_xB && !flag_xC
+                 && !flag_xA);
 }
 
 void eG(void)
@@ -97,6 +117,10 @@ void eH(void)
 void xH(void)
 {
     flag_xH = true;
+
+    assert ("xH" && flag_xD && !flag_xC && flag_xH && !flag_xB && !flag_xC
+                 && !flag_xA && flag_xF);
+
 }
 
 int main(void) 
@@ -111,29 +135,10 @@ int main(void)
                     && !flag_xG && !flag_eH && !flag_xH);
                     
     test_process(m, EV);
-/*
-    test_process(m, EV1);
 
-    assert ("step1" && !flag_eE &&
-            !flag_eD);
-
-    test_process(m, EV2);
-
-    assert ("step2" && !flag_eE &&
-            !flag_eD);
-
-    test_process(m, EV2);
-
-    assert ("step3" && !flag_eE &&
-            flag_eD);
-    ufsm_reset_machine(m);
     reset_flags();
-    ufsm_init_machine(m);
-    test_process(m, EV1);
-    test_process(m, EV1);
 
-    assert ("step4" && flag_eE &&
-            !flag_eD);
-*/
+    test_process(m, EV2);
+
     return 0;
 }
