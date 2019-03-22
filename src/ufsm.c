@@ -418,6 +418,7 @@ process_next_region:
 
         if (s)
         {
+            s->cant_exit = false;
             err = ufsm_push_sr_pair(m, r, s);
 
             if (err != UFSM_OK)
@@ -613,6 +614,8 @@ static ufsm_status_t ufsm_process_final_state(struct ufsm_machine *m,
             if (tf->trigger == NULL &&
                 tf->source == parent_state)
             {
+
+                parent_state->cant_exit = false;
 
                 err = ufsm_push_rt_pair(m, parent_state->parent_region, tf);
 
@@ -816,6 +819,9 @@ static ufsm_status_t ufsm_make_transition(struct ufsm_machine *m,
             break;
         }
 
+        if (act_t->source->cant_exit)
+            continue;
+
         if (m->debug_transition)
             m->debug_transition(act_t);
 
@@ -970,7 +976,7 @@ static bool ufsm_transition_has_trigger(struct ufsm_machine *m,
 }
 
 static bool ufsm_transition(struct ufsm_machine *m, struct ufsm_region *r,
-                            int32_t ev, bool *state_transitioned)
+                            int32_t ev)
 {
     bool event_consumed = false;
     ufsm_status_t err = UFSM_OK;
@@ -990,17 +996,29 @@ static bool ufsm_transition(struct ufsm_machine *m, struct ufsm_region *r,
         else if (ufsm_transition_has_trigger(m,t,ev)
                             && (t->source == current_state))
         {
-            event_consumed = true;
-
             uint32_t e = ufsm_make_transition(m, t, r);
+
+            struct ufsm_region *r2 = r;
+
+            while (r2 && (ev != -1) && e == UFSM_OK)
+            {
+                if (r2->parent_state)
+                {
+                    r2->parent_state->cant_exit = true;
+                    r2 = r2->parent_state->parent_region;
+                }
+                else
+                    r2 = NULL;
+            }
+
+            event_consumed = true;
 
             if (e == UFSM_OK)
             {
-                *state_transitioned = true;
-
                 if (!r->next)
                     break;
             }
+
         }
     }
 
@@ -1015,9 +1033,9 @@ ufsm_status_t ufsm_process (struct ufsm_machine *m, int32_t ev)
     struct ufsm_region *region = NULL;
     struct ufsm_state *s = NULL;
     bool event_consumed = false;
+
     if (m->terminated)
         return UFSM_ERROR_MACHINE_TERMINATED;
-
 
     ufsm_process_completion_events(m);
 
@@ -1029,7 +1047,6 @@ ufsm_status_t ufsm_process (struct ufsm_machine *m, int32_t ev)
 
     ufsm_find_active_regions(m,m->region, &region_count);
 
-    bool state_transitioned = false;
     for (uint32_t i = 0; i < region_count; i++)
     {
         err = ufsm_pop_sr_pair(m, &region, &s);
@@ -1042,10 +1059,8 @@ ufsm_status_t ufsm_process (struct ufsm_machine *m, int32_t ev)
          * */
         if (region->current == s)
         {
-            if (ufsm_transition (m, region, ev, &state_transitioned))
-            {
+            if (ufsm_transition (m, region, ev))
                 event_consumed = true;
-            }
         }
     }
 
@@ -1057,7 +1072,7 @@ ufsm_status_t ufsm_process (struct ufsm_machine *m, int32_t ev)
 
 
 static ufsm_status_t ufsm_reset_region(struct ufsm_machine *m,
-                                  struct ufsm_region *regions)
+                                       struct ufsm_region *regions)
 {
     ufsm_status_t err = UFSM_OK;
     struct ufsm_region *r = NULL;

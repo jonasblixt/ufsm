@@ -20,6 +20,7 @@ TESTS += test_ev_repeat_orth
 TESTS += test_nested_composits
 TESTS += test_nested_composits2
 TESTS += test_join2
+TESTS += test_transition_conflict
 
 CC ?= gcc
 UFSMIMPORT ?= ufsmimport
@@ -30,9 +31,8 @@ ifdef COVERAGE
 LDFLAGS = -lgcov
 endif
 
-
-CFLAGS  = -O2 -Wall -Wextra -pedantic-errors -std=c99 -fprofile-arcs -ftest-coverage -Wno-unused-parameter
-
+CFLAGS  = -O2 -Wall -Wextra -pedantic-errors -std=c99
+CFLAGS += -fprofile-arcs -ftest-coverage -Wno-unused-parameter
 CFLAGS += -I.. -I. -I gen/ -DUFSM_TESTS_VERBOSE=$(UFSM_TESTS_VERBOSE)
 
 C_SRCS = ../ufsm.c ../ufsm_stack.c ../ufsm_queue.c common.c
@@ -49,7 +49,7 @@ all: $(TESTS)
 	@$(CC) -c $(CFLAGS) $< -o $@
 
 %.c : %.xmi
-	@echo UFSMIMPORT $< 
+	@echo UFSMIMPORT $<
 	@mkdir -p gen
 	@$(UFSMIMPORT) $< $(patsubst %.xmi, %, $(<)) -c gen/
 
@@ -57,7 +57,7 @@ clean:
 	@$(foreach TEST,$(TESTS), rm -f $(TEST);)
 	@rm -rf gen/
 	@rm -f *.o
-	@rm -f *.gcda 
+	@rm -f *.gcda
 	@rm -f *.gcno
 	@rm -f *.gcov
 
@@ -155,3 +155,6 @@ test_join2: $(OBJS) test_join2_input.c test_join2.o
 	@echo LINK $@
 	@$(CC) $@.c gen/test_join2_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
+test_transition_conflict: $(OBJS) test_transition_conflict_input.c test_transition_conflict.o
+	@echo LINK $@
+	@$(CC) $@.c gen/test_transition_conflict_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@

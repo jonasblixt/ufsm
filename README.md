@@ -209,3 +209,25 @@ Using connection references, it is possible to transition into a specific state
 
 ![](/doc/test_nested_composits2.png)
 
+## Join2
+
+![](/doc/test_join2.png)
+
+## Conflicting transitions
+
+Transitions are said to be in conflict if the intersection of the states that
+they exit is not empty. Consider the following example:
+
+![](/doc/conflicting_transitions.png)
+
+If the state machine is initialized and receieves EV1, state B will be entered.
+The transition back to A from B and the transition from the top state to C is in
+conflict because they both will cause state B to exit.
+
+The UML standard states that conflicting transitions with lower priority in the
+active state configuration will not be executed.
+
+In the above example that would result in the transition from B to A when EV2
+is sent and if an additional EV2 is sent, state A and top states would exit and
+transition to state C.
+

@@ -86,6 +86,7 @@ static void ufsm_gen_regions(struct ufsm_region *region);
 static void ufsm_gen_states(struct ufsm_state *state)
 {
     fprintf(fp_c,"static struct ufsm_state %s = {\n",id_to_decl(state->id));
+
     if (flag_strip) {
          fprintf (fp_c,"  .id     = \"\", \n");
          fprintf (fp_c,"  .name   = \"\", \n");

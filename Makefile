@@ -1,7 +1,7 @@
 
 all:
 	@make -C src/tools
-	@UFSMIMPORT=../tools/ufsmimport make -C src/tests
+	@UFSMIMPORT=../tools/ufsmimport make UFSM_TESTS_VERBOSE=true -C src/tests
 clean:
 	@make -C src/tools clean
 	@make -C src/tests clean
