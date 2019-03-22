@@ -34,7 +34,7 @@ uint32_t ufsm_stack_pop(struct ufsm_stack *stack, void **item)
 {
     if(!stack->pos)
         return UFSM_ERROR_STACK_UNDERFLOW;
-    
+
     stack->pos--;
 
     *item = stack->data[stack->pos];

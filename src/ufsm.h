@@ -15,7 +15,7 @@
 
 /* Error codes */
 
-enum ufsm_status_codes 
+enum ufsm_status_codes
 {
     UFSM_OK,
     UFSM_ERROR,
@@ -85,7 +85,7 @@ typedef void (*ufsm_debug_enter_state_t) (struct ufsm_state *s);
 typedef void (*ufsm_debug_exit_state_t) (struct ufsm_state *s);
 typedef void (*ufsm_debug_reset_t) (struct ufsm_machine *m);
 
-enum ufsm_transition_kind 
+enum ufsm_transition_kind
 {
     UFSM_TRANSITION_EXTERNAL,
     UFSM_TRANSITION_INTERNAL,
@@ -94,7 +94,7 @@ enum ufsm_transition_kind
 
 extern const char *ufsm_errors[];
 
-enum ufsm_state_kind 
+enum ufsm_state_kind
 {
     UFSM_STATE_SIMPLE,
     UFSM_STATE_INIT,
@@ -112,14 +112,14 @@ enum ufsm_state_kind
 
 extern const char *ufsm_state_kinds[];
 
-struct ufsm_stack 
+struct ufsm_stack
 {
     uint32_t no_of_elements;
     void **data;
     uint32_t pos;
 };
 
-struct ufsm_queue 
+struct ufsm_queue
 {
     uint32_t no_of_elements;
     uint32_t s;
@@ -131,7 +131,7 @@ struct ufsm_queue
     ufsm_queue_cb_t unlock;
 };
 
-struct ufsm_machine 
+struct ufsm_machine
 {
     const char *id;
     const char *name;
@@ -164,7 +164,7 @@ struct ufsm_machine
     struct ufsm_machine *next;
 };
 
-struct ufsm_action 
+struct ufsm_action
 {
     const char *id;
     const char *name;
@@ -172,7 +172,7 @@ struct ufsm_action
     struct ufsm_action *next;
 };
 
-struct ufsm_guard 
+struct ufsm_guard
 {
     const char *id;
     const char *name;
@@ -180,7 +180,7 @@ struct ufsm_guard
     struct ufsm_guard *next;
 };
 
-struct ufsm_entry_exit 
+struct ufsm_entry_exit
 {
     const char *id;
     const char *name;
@@ -188,7 +188,7 @@ struct ufsm_entry_exit
     struct ufsm_entry_exit *next;
 };
 
-struct ufsm_doact 
+struct ufsm_doact
 {
     const char *id;
     const char *name;
@@ -204,7 +204,7 @@ struct ufsm_trigger
     struct ufsm_trigger *next;
 };
 
-struct ufsm_transition 
+struct ufsm_transition
 {
     const char *id;
     const char *name;
@@ -218,7 +218,7 @@ struct ufsm_transition
     struct ufsm_transition *next;
 };
 
-struct ufsm_region 
+struct ufsm_region
 {
     const char *id;
     const char *name;
@@ -231,7 +231,7 @@ struct ufsm_region
     struct ufsm_region *next;
 };
 
-struct ufsm_state 
+struct ufsm_state
 {
     const char *id;
     const char *name;
