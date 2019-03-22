@@ -64,6 +64,7 @@ struct ufsm_action;
 struct ufsm_guard;
 struct ufsm_transition;
 struct ufsm_region;
+struct ufsm_entry_exit;
 
 typedef bool (*ufsm_guard_func_t) (void);
 typedef void (*ufsm_action_func_t) (void);
@@ -83,6 +84,7 @@ typedef void (*ufsm_debug_guard_t) (struct ufsm_guard *guard, bool result);
 typedef void (*ufsm_debug_action_t) (struct ufsm_action *action);
 typedef void (*ufsm_debug_enter_state_t) (struct ufsm_state *s);
 typedef void (*ufsm_debug_exit_state_t) (struct ufsm_state *s);
+typedef void (*ufsm_debug_entry_exit_t) (struct ufsm_entry_exit *f);
 typedef void (*ufsm_debug_reset_t) (struct ufsm_machine *m);
 
 enum ufsm_transition_kind
@@ -144,22 +146,19 @@ struct ufsm_machine
     ufsm_debug_enter_state_t debug_enter_state;
     ufsm_debug_exit_state_t debug_exit_state;
     ufsm_debug_reset_t debug_reset;
+    ufsm_debug_entry_exit_t debug_entry_exit;
     bool terminated;
-
     void *stack_data[UFSM_STACK_SIZE];
     void *stack_data2[UFSM_STACK_SIZE];
     void *completion_stack_data[UFSM_COMPLETION_STACK_SIZE];
     uint32_t queue_data[UFSM_QUEUE_SIZE];
     uint32_t defer_queue_data[UFSM_DEFER_QUEUE_SIZE];
-
     struct ufsm_queue queue;
     struct ufsm_queue defer_queue;
-
     struct ufsm_state *parent_state;
     struct ufsm_stack stack;
     struct ufsm_stack stack2;
     struct ufsm_stack completion_stack;
-
     struct ufsm_region *region;
     struct ufsm_machine *next;
 };
@@ -250,16 +249,15 @@ ufsm_status_t ufsm_init_machine(struct ufsm_machine *m);
 ufsm_status_t ufsm_reset_machine(struct ufsm_machine *m);
 ufsm_status_t ufsm_process (struct ufsm_machine *m, int32_t ev);
 ufsm_status_t ufsm_stack_init(struct ufsm_stack *stack,
-                            uint32_t no_of_elements,
-                            void **stack_data);
+                              uint32_t no_of_elements,
+                              void **stack_data);
 ufsm_status_t ufsm_stack_push(struct ufsm_stack *stack, void *item);
 ufsm_status_t ufsm_stack_pop(struct ufsm_stack *stack, void **item);
-
 ufsm_status_t ufsm_queue_init(struct ufsm_queue *q, uint32_t no_of_elements,
-                                               uint32_t *data);
-
+                              uint32_t *data);
 ufsm_status_t ufsm_queue_put(struct ufsm_queue *q, uint32_t ev);
 ufsm_status_t ufsm_queue_get(struct ufsm_queue *q, uint32_t *ev);
 struct ufsm_queue * ufsm_get_queue(struct ufsm_machine *m);
+void ufsm_debug_machine(struct ufsm_machine *m);
 
 #endif

@@ -105,7 +105,11 @@ static ufsm_status_t ufsm_enter_state(struct ufsm_machine *m,
         m->debug_enter_state(s);
 
     for (struct ufsm_entry_exit *e = s->entry; e; e = e->next)
+    {
+        if (m->debug_entry_exit)
+            m->debug_entry_exit(e);
         e->f();
+    }
 
     if (s->kind == UFSM_STATE_SIMPLE)
         state_completed = true;
@@ -152,7 +156,11 @@ inline static void ufsm_leave_state(struct ufsm_machine *m,
         d->f_stop();
 
     for (struct ufsm_entry_exit *e = s->exit; e; e = e->next)
+    {
+        if (m->debug_entry_exit)
+            m->debug_entry_exit(e);
         e->f();
+    }
 }
 
 
