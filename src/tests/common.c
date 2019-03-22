@@ -1,14 +1,65 @@
 #include <stdio.h>
 #include "common.h"
 
+static char *state_simple = "Simple State";
+static char *state_composite = "Composite State";
+static char *state_submachine = "Submachine State";
+
+static char * get_state_type(struct ufsm_state *s)
+{
+    char * result = (char *) ufsm_state_kinds[s->kind];
+
+    if (s->kind == UFSM_STATE_SIMPLE)
+    {
+        result = state_simple;
+
+        if (s->region)
+            result = state_composite;
+        if (s->submachine)
+            result = state_submachine;
+    }
+
+    return result;
+}
+
 void debug_transition (struct ufsm_transition *t)
 {
 #if UFSM_TESTS_VERBOSE == true
 
+
+    char *source_type, *dest_type;
+
+
+    source_type = (char *)ufsm_state_kinds[t->source->kind];
+    dest_type = (char *)ufsm_state_kinds[t->dest->kind];
+
+    if (t->source->kind == UFSM_STATE_SIMPLE)
+    {
+        source_type = state_simple;
+
+        if (t->source->region)
+            source_type = state_composite;
+
+        if (t->source->submachine)
+            source_type = state_submachine;
+    }
+
+
+    if (t->dest->kind == UFSM_STATE_SIMPLE)
+    {
+        dest_type = state_simple;
+
+        if (t->dest->region)
+            dest_type = state_composite;
+
+        if (t->dest->submachine)
+            dest_type = state_submachine;
+    }
+
     printf ("    | Transition | %s {%s} --> %s {%s} T=", t->source->name,
-                                            ufsm_state_kinds[t->source->kind],
+                                            source_type,
                                             t->dest->name,
-                                            ufsm_state_kinds[t->dest->kind]);
+                                            dest_type);
 
     for (struct ufsm_trigger *tt = t->trigger;tt;tt=tt->next)
     {
@@ -60,14 +111,14 @@ void debug_guard(struct ufsm_guard *g, bool result)
 void debug_enter_state(struct ufsm_state *s)
 {
 #if UFSM_TESTS_VERBOSE == true
-    printf ("    | S enter    | %s {%s}\n", s->name,ufsm_state_kinds[s->kind]);
+    printf ("    | S enter    | %s {%s}\n", s->name,get_state_type(s));
 #endif
 }
 
 void debug_exit_state(struct ufsm_state *s)
 {
 #if UFSM_TESTS_VERBOSE == true
-    printf ("    | S exit     | %s {%s}\n", s->name,ufsm_state_kinds[s->kind]);
+    printf ("    | S exit     | %s {%s}\n", s->name,get_state_type(s));
 #endif
 }
 

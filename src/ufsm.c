@@ -64,7 +64,8 @@ static ufsm_status_t ufsm_process_completion(struct ufsm_machine *m,
     for (struct ufsm_transition *t = s->parent_region->transition; 
                                                 t; t = t->next)
     {
-        if (t->source == s && t->trigger == NULL) {
+        if ((t->source == s) && (t->trigger == NULL)) 
+        {
             err = ufsm_make_transition(m, t, s->parent_region);
             break;
         }
@@ -119,10 +120,13 @@ static ufsm_status_t ufsm_enter_state(struct ufsm_machine *m,
     { 
         for (struct ufsm_region *r = s->region; r; r = r->next) 
         {
-            if (r->current) {
+            if (r->current) 
+            {
                 if (r->current->kind != UFSM_STATE_FINAL)
                     state_completed = false;
-            } else {
+            } 
+            else 
+            {
                 state_completed = false;
             }
         }
@@ -293,7 +297,8 @@ static struct ufsm_region * ufsm_least_common_ancestor(struct ufsm_region *r1,
     while (lca) 
     {
         lca2 = r2;
-        do {
+        do 
+        {
             if (lca == lca2) 
                 return lca;
             
@@ -301,6 +306,7 @@ static struct ufsm_region * ufsm_least_common_ancestor(struct ufsm_region *r1,
                 break;
             
             lca2 = lca2->parent_state->parent_region;
+
         } while(lca2);
 
         if (lca->parent_state == NULL)
@@ -355,7 +361,9 @@ static ufsm_status_t ufsm_leave_parent_states(struct ufsm_machine *m,
                 states_to_leave = true;
             }
 
-        } else {
+        } 
+        else 
+        {
             states_to_leave = false;
         }
         
@@ -379,8 +387,8 @@ inline static ufsm_status_t ufsm_push_sr_pair(struct ufsm_machine *m,
 }
 
 inline static ufsm_status_t ufsm_pop_sr_pair(struct ufsm_machine *m,
-                                        struct ufsm_region **r,
-                                        struct ufsm_state **s)
+                                             struct ufsm_region **r,
+                                             struct ufsm_state **s)
 {
     ufsm_status_t err = UFSM_OK;
 
