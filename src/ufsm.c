@@ -285,7 +285,7 @@ static ufsm_status_t ufsm_enter_parent_states(struct ufsm_machine *m,
 
         ps = pr->parent_state;
 
-        if (ps)
+        if (ps && ps->parent_region->current != ps)
         {
             ufsm_set_current_state (ps->parent_region, ps);
 
