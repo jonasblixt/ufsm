@@ -285,7 +285,7 @@ static ufsm_status_t ufsm_enter_parent_states(struct ufsm_machine *m,
 
         ps = pr->parent_state;
 
-        if (ps)
+        if (ps && ps->parent_region->current != ps)
         {
             ufsm_set_current_state (ps->parent_region, ps);
 
@@ -968,19 +968,13 @@ static bool ufsm_transition_has_trigger(struct ufsm_machine *m,
                                         struct ufsm_transition *t,
                                         uint32_t ev)
 {
-    if (t->trigger == NULL)
-        return false;
+	for (struct ufsm_trigger *tt = t->trigger; tt; tt = tt->next)
+	{
+		if (ev == tt->trigger)
+			return true;
+	}
 
-    struct ufsm_trigger *tt = t->trigger;
-
-    while (tt->name != NULL)
-    {
-        if (ev == tt->trigger)
-            return true;
-        tt++;
-    }
-
-    return false;
+	return false;
 }
 
 static bool ufsm_transition(struct ufsm_machine *m, struct ufsm_region *r,
