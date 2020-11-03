@@ -20,7 +20,7 @@ TESTS += test_guards_actions
 #TESTS += test_nested_composits
 #TESTS += test_nested_composits2
 #TESTS += test_join2
-TESTS += test_transition_conflict
+# TESTS += test_transition_conflict
 
 CC ?= gcc
 UFSMIMPORT ?= src/tools/ufsmimport

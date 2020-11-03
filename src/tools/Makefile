@@ -2,9 +2,9 @@ TARGET = ufsmimport
 PREFIX ?= /usr
 CC ?= gcc
 
-LDFLAGS = $(shell xml2-config --libs)
+LDFLAGS = $(shell pkg-config --libs sotc json-c uuid)
 CFLAGS  = -Wall -std=c99
-CFLAGS += -I.. -I. $(shell xml2-config --cflags)
+CFLAGS += -I.. -I. $(shell pkg-config sotc --cflags sotc json-c uuid)
 
 C_SRCS  = ufsmimport.c output.c
 
