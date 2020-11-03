@@ -37,9 +37,9 @@ void q_unlock(void)
 
 int main(void)
 {
-    uint32_t err = UFSM_OK;
-    uint32_t data[4];
-    uint32_t i = 0;
+    int err = UFSM_OK;
+    int data[4];
+    int i = 0;
     struct ufsm_machine *m = get_StateMachine1();
 
     struct ufsm_queue *q = ufsm_get_queue(m);

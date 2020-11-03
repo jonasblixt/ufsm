@@ -44,14 +44,12 @@ static struct ufsm_trigger b_trigger =
 {
     .name = "EV_B",
     .trigger = EV_B,
-    .next = NULL,
 };
 
 static struct ufsm_trigger a_trigger =
 {
     .name = "EV_A",
     .trigger = EV_A,
-    .next = NULL,
 };
 
 
@@ -59,14 +57,12 @@ static struct ufsm_trigger c_trigger =
 {
     .name = "EV_C",
     .trigger = EV_C,
-    .next = NULL,
 };
 
 static struct ufsm_trigger d_trigger =
 {
     .name = "EV_D",
     .trigger = EV_D,
-    .next = NULL,
 };
 
 static struct ufsm_transition simple_transition_B = 

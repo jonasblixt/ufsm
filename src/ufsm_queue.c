@@ -9,9 +9,9 @@
 
 #include <ufsm.h>
 
-uint32_t ufsm_queue_put(struct ufsm_queue *q, uint32_t ev)
+int ufsm_queue_put(struct ufsm_queue *q, int ev)
 {
-    uint32_t err = UFSM_OK;
+    int err = UFSM_OK;
 
     if (q->lock)
         q->lock();
@@ -37,9 +37,9 @@ uint32_t ufsm_queue_put(struct ufsm_queue *q, uint32_t ev)
     return err;
 }
 
-uint32_t ufsm_queue_get(struct ufsm_queue *q, uint32_t *ev)
+int ufsm_queue_get(struct ufsm_queue *q, int *ev)
 {
-    uint32_t err = UFSM_OK;
+    int err = UFSM_OK;
 
     if (q->lock)
         q->lock();
@@ -62,8 +62,8 @@ uint32_t ufsm_queue_get(struct ufsm_queue *q, uint32_t *ev)
     return err;
 }
 
-uint32_t ufsm_queue_init(struct ufsm_queue *q, uint32_t no_of_elements,
-                                               uint32_t *data)
+int ufsm_queue_init(struct ufsm_queue *q, int no_of_elements,
+                                               int *data)
 {
     q->head = 0;
     q->tail = 0;

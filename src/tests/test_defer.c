@@ -14,8 +14,8 @@ void final(void)
 int main(void) 
 {
     struct ufsm_machine *m = get_StateMachine1();
-    uint32_t err = UFSM_OK;
-    uint32_t ev;
+    int err = UFSM_OK;
+    int ev;
 
     test_init(m);
     ufsm_init_machine(m);

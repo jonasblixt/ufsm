@@ -185,24 +185,11 @@ static uint32_t parse_state(xmlNode *n, struct ufsm_machine *m,
     s->parent_region = r;
 
     if (v) printf ("    S %-25s %s %i\n",s->name,s->id, deep_history);
-
-    if (get_attr(n,"submachine")) {
-        s->submachine = ufsmimport_get_machine(root_machine,
-                            (const char*) get_attr(n,"submachine"));   
-        //if (s->submachine->region)
-        //    s->submachine->region->parent_state = s;
-    }
-
-    /* TODO: Should deep history propagate to sub statemachines? */
-    if (s->submachine)
-        if (v) printf ("      o-o M %-19s %s\n",s->submachine->name, s->submachine->id);
     
     struct ufsm_entry_exit *entry = NULL;
     struct ufsm_entry_exit *entry_last = NULL;
     struct ufsm_entry_exit *exits = NULL;
     struct ufsm_entry_exit *exits_last = NULL;
-    struct ufsm_doact *doact = NULL;
-    struct ufsm_doact *doact_last = NULL;
 
     /* Parse regions */
     for (xmlNode *r_sub = n->children; r_sub; r_sub = r_sub->next) {
@@ -235,14 +222,6 @@ static uint32_t parse_state(xmlNode *n, struct ufsm_machine *m,
             exits->id = (const char *) get_attr(r_sub, "id");
             exits->next = exits_last;
             exits_last = exits;
-        } else if (strcmp((char *) r_sub->name, "doActivity") == 0) {
-            doact = malloc(sizeof(struct ufsm_doact));
-            bzero(doact, sizeof(struct ufsm_doact));
-            doact->name = (const char*) get_attr(r_sub,"name");
-            doact->id = (const char *) get_attr(r_sub, "id");
-            doact->next = doact_last;
-            doact_last = doact;
-            
         } else if(strcmp((char *) r_sub->name, "text") == 0) {
             /* Do nothing */
         } else if(strcmp((char *) r_sub->name, "connection") == 0) {
@@ -269,7 +248,6 @@ static uint32_t parse_state(xmlNode *n, struct ufsm_machine *m,
  
     }
     s->entry = entry_last;
-    s->doact = doact_last;
     s->exit = exits_last;
     s->region = state_region_last;
 
@@ -370,7 +348,6 @@ static uint32_t parse_transition(xmlNode *n, struct ufsm_machine *m,
                 {
                     u_trigger = malloc(sizeof(struct ufsm_trigger));
                     u_trigger->name = (const char*) get_attr(trigger, "name");
-                    u_trigger->next = u_trigger_last;
                     u_trigger_last = u_trigger;
                 } 
                 else if (is_type(trigger, "uml:Activity") ||

@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include "common.h"
 
-void test_process(struct ufsm_machine *m, uint32_t ev)
+void test_process(struct ufsm_machine *m, int ev)
 {
-    uint32_t err = UFSM_OK;
+    int err = UFSM_OK;
 
     err = ufsm_process(m,ev);
 
@@ -19,7 +19,7 @@ void test_process(struct ufsm_machine *m, uint32_t ev)
     assert (m->stack.pos == 0);
 
     struct ufsm_queue *q = ufsm_get_queue(m);
-    uint32_t q_ev;
+    int q_ev;
 
     /* Process queued events */
     while (ufsm_queue_get(q, &q_ev) == UFSM_OK)

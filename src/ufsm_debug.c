@@ -3,7 +3,6 @@
 
 static char *state_simple = "Simple State";
 static char *state_composite = "Composite State";
-static char *state_submachine = "Submachine State";
 
 static char * get_state_type(struct ufsm_state *s)
 {
@@ -15,8 +14,6 @@ static char * get_state_type(struct ufsm_state *s)
 
         if (s->region)
             result = state_composite;
-        if (s->submachine)
-            result = state_submachine;
     }
 
     return result;
@@ -36,9 +33,6 @@ static void debug_transition (struct ufsm_transition *t)
 
         if (t->source->region)
             source_type = state_composite;
-
-        if (t->source->submachine)
-            source_type = state_submachine;
     }
 
 
@@ -48,9 +42,6 @@ static void debug_transition (struct ufsm_transition *t)
 
         if (t->dest->region)
             dest_type = state_composite;
-
-        if (t->dest->submachine)
-            dest_type = state_submachine;
     }
 
     printf ("    | Transition | %s {%s} --> %s {%s} T=", t->source->name,
@@ -58,9 +49,8 @@ static void debug_transition (struct ufsm_transition *t)
                                             t->dest->name,
                                             dest_type);
 
-    for (struct ufsm_trigger *tt = t->trigger;tt;tt=tt->next)
-    {
-        printf ("%s ", tt->name);
+    if (t->trigger) {
+        printf ("%s ", t->trigger->name);
     }
 
     if (t->trigger == NULL)
@@ -79,7 +69,7 @@ static void debug_leave_region(struct ufsm_region *r)
     printf ("    | R exit     | %s, H=%i\n", r->name, r->has_history);
 }
 
-static void debug_event(uint32_t ev)
+static void debug_event(int ev)
 {
     printf (" %-3i|            |\n",ev);
 }

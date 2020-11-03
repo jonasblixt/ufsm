@@ -87,14 +87,12 @@ static struct ufsm_trigger a_trigger =
 {
     .name = "EV_A",
     .trigger = EV_A,
-    .next = NULL,
 };
 
 static struct ufsm_trigger b_trigger =
 {
     .name = "EV_B",
     .trigger = EV_B,
-    .next = NULL,
 };
 
 

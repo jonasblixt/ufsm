@@ -37,8 +37,6 @@ static struct ufsm_guard *guard_first;
 static struct ufsm_guard **guard_list = &guard_first;
 static struct ufsm_action *action_first;
 static struct ufsm_action **action_list = &action_first;
-static struct ufsm_doact *doact_first;
-static struct ufsm_doact **doact_list = &doact_first;
 
 static char * id_to_decl(const char *id)
 {
@@ -113,13 +111,6 @@ static void ufsm_gen_states(struct ufsm_state *state)
     else
         fprintf(fp_c,"  .entry = NULL,\n");
 
-
-    if (state->doact)
-        fprintf(fp_c,"  .doact = &%s,\n",id_to_decl(state->doact->id));
-    else
-        fprintf(fp_c,"  .doact = NULL,\n");
-
-
     if (state->exit)
         fprintf(fp_c,"  .exit = &%s,\n",id_to_decl(state->exit->id));
     else
@@ -127,14 +118,9 @@ static void ufsm_gen_states(struct ufsm_state *state)
 
     if (state->region) {
         fprintf(fp_c,"  .region = &%s,\n",id_to_decl(state->region->id));
-    } else if (state->submachine) {
-        state->submachine->region->parent_state = state;
-        fprintf(fp_c,"  .region = &%s,\n",id_to_decl(state->submachine->region->id));
     } else {
         fprintf(fp_c,"  .region = NULL,\n");
     }
-
-    fprintf(fp_c,"  .submachine = NULL,\n");
 
     if (state->next)
         fprintf(fp_c,"  .next = &%s,\n",id_to_decl(state->next->id));
@@ -181,50 +167,6 @@ static void ufsm_gen_states(struct ufsm_state *state)
             eelist = &(*eelist)->next;
         }
 
-
-    }
-
-
-    for (struct ufsm_doact *d = state->doact; d; d = d->next) {
-        fprintf(fp_c, "static struct ufsm_doact %s = {\n",
-                        id_to_decl(d->id));
-        if (flag_strip) {
-             fprintf (fp_c,"  .id     = \"\", \n");
-             fprintf (fp_c,"  .name   = \"\", \n");
-        } else {
-            fprintf(fp_c, "  .id = \"%s\",\n", d->id);
-            fprintf(fp_c, "  .name = \"%s\",\n",d->name);
-        }
-
-        fprintf(fp_c, "  .f_start = &%s_start,\n", d->name);
-        fprintf(fp_c, "  .f_stop = &%s_stop,\n", d->name);
-
-
-        if (d->next)
-            fprintf (fp_c, "  .next = &%s,\n", id_to_decl(d->next->id));
-        else
-            fprintf (fp_c, "  .next = NULL,\n");
-
-
-        fprintf(fp_c, "};\n");
-
-        bool found_duplicate = false;
-
-        for (struct ufsm_doact *da = doact_first; da; da = da->next)
-        {
-            if (strcmp(da->name,d->name) == 0)
-            {
-                found_duplicate = true;
-                break;
-            }
-        }
-
-        if (!found_duplicate)
-        {
-            (*doact_list) = malloc(sizeof(struct ufsm_doact));
-            memcpy ((*doact_list), d, sizeof(struct ufsm_doact));
-            doact_list = &(*doact_list)->next;
-        }
 
     }
 
@@ -310,18 +252,17 @@ static void ufsm_gen_regions(struct ufsm_region *region)
                 fprintf(fp_c, "static struct ufsm_trigger %s_triggers[] = {\n",
                             id_to_decl(t->id));
 
-                for (struct ufsm_trigger *tt = t->trigger;tt;tt=tt->next)
-                {
-                    fprintf(fp_c, "{\n");
-                    fprintf(fp_c, "  .trigger = %i,\n",
-                                ev_name_to_index(tt->name));
-                    fprintf(fp_c, "  .name = \"%s\",\n", tt->name);
-                    fprintf(fp_c, "},\n");
-                }
-                    fprintf(fp_c, " {\n");
-                    fprintf(fp_c, "  .trigger = -1,\n");
-                    fprintf(fp_c, "  .name = NULL,\n");
-                    fprintf(fp_c, "},\n");
+                struct ufsm_trigger *tt = t->trigger;
+
+                fprintf(fp_c, "{\n");
+                fprintf(fp_c, "  .trigger = %i,\n",
+                            ev_name_to_index(tt->name));
+                fprintf(fp_c, "  .name = \"%s\",\n", tt->name);
+                fprintf(fp_c, "},\n");
+                fprintf(fp_c, " {\n");
+                fprintf(fp_c, "  .trigger = -1,\n");
+                fprintf(fp_c, "  .name = NULL,\n");
+                fprintf(fp_c, "},\n");
                 fprintf(fp_c,"};\n");
             }
 
@@ -347,38 +288,28 @@ static void ufsm_gen_regions(struct ufsm_region *region)
 
             fprintf(fp_c, "  .kind = %i,\n",t->kind);
             if (t->action) {
-                if (strcmp(t->action->name, "ufsm_defer") == 0)
+                fprintf(fp_c, "  .action = &%s,\n", id_to_decl(t->action->id));
+
+                bool found_duplicate = false;
+
+                for (struct ufsm_action *aa = action_first; aa; aa = aa->next)
                 {
-                    fprintf(fp_c, "  .action = NULL,\n");
-                    fprintf(fp_c, "  .defer = true,\n");
+                    if (strcmp(aa->name,t->action->name) == 0)
+                    {
+                        found_duplicate = true;
+                        break;
+                    }
                 }
-                else
+
+                if (!found_duplicate)
                 {
-                    fprintf(fp_c, "  .action = &%s,\n", id_to_decl(t->action->id));
-                    fprintf(fp_c, "  .defer = false,\n");
-
-                    bool found_duplicate = false;
-
-                    for (struct ufsm_action *aa = action_first; aa; aa = aa->next)
-                    {
-                        if (strcmp(aa->name,t->action->name) == 0)
-                        {
-                            found_duplicate = true;
-                            break;
-                        }
-                    }
-
-                    if (!found_duplicate)
-                    {
-                        (*action_list) = malloc(sizeof(struct ufsm_action));
-                        memcpy ((*action_list), t->action, sizeof(struct ufsm_action));
-                        action_list = &(*action_list)->next;
-                    }
+                    (*action_list) = malloc(sizeof(struct ufsm_action));
+                    memcpy ((*action_list), t->action, sizeof(struct ufsm_action));
+                    action_list = &(*action_list)->next;
                 }
 
             } else {
                 fprintf(fp_c, "  .action = NULL,\n");
-                fprintf(fp_c, "  .defer = false,\n");
             }
             if (t->guard)
             {
@@ -415,8 +346,6 @@ static void ufsm_gen_regions(struct ufsm_region *region)
                fprintf(fp_c, "  .next = NULL,\n");
             fprintf(fp_c, "};\n");
             for (struct ufsm_action *a = t->action; a; a = a->next) {
-                if (strcmp(a->name, "ufsm_defer") == 0)
-                    continue;
                 fprintf(fp_c, "static struct ufsm_action %s = {\n",
                             id_to_decl(a->id));
                 if (flag_strip) {
@@ -497,10 +426,6 @@ static void ufsm_gen_states_decl(struct ufsm_state *state)
         fprintf(fp_c, "static struct ufsm_entry_exit %s;\n",
                         id_to_decl(e->id));
 
-    for (struct ufsm_doact *e = state->doact; e; e = e->next)
-        fprintf(fp_c, "static struct ufsm_doact %s;\n",
-                        id_to_decl(e->id));
-
     for (struct ufsm_entry_exit *e = state->exit; e; e = e->next)
         fprintf(fp_c, "static struct ufsm_entry_exit %s;\n",
                         id_to_decl(e->id));
@@ -519,9 +444,8 @@ static void ufsm_gen_regions_decl(struct ufsm_region *region)
 
             for (struct ufsm_action *a = t->action; a; a = a->next)
             {
-                if (! (strcmp(a->name, "ufsm_defer") == 0))
-                    fprintf(fp_c, "static struct ufsm_action %s;\n",
-                            id_to_decl(a->id));
+                fprintf(fp_c, "static struct ufsm_action %s;\n",
+                        id_to_decl(a->id));
             }
 
             for (struct ufsm_guard *g = t->guard; g; g = g->next)
@@ -599,11 +523,6 @@ bool ufsm_gen_output(struct ufsm_machine *root, char *output_name,
         fprintf(fp_h, "void %s(void);\n", ee->name);
     for (struct ufsm_guard *gg = guard_first; gg; gg = gg->next)
         fprintf(fp_h, "bool %s(void);\n",gg->name);
-    for (struct ufsm_doact *da = doact_first; da; da = da->next)
-    {
-        fprintf(fp_h, "void %s_start(struct ufsm_machine *m, struct ufsm_state *s, ufsm_doact_cb_t cb);\n", da->name);
-        fprintf(fp_h, "void %s_stop(void);\n", da->name);
-    }
 
     for (struct ufsm_action *aa = action_first; aa; aa = aa->next)
         fprintf(fp_h, "void %s(void);\n",aa->name);
