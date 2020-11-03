@@ -14,14 +14,17 @@
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
-#include <libxml/parser.h>
-#include <libxml/tree.h>
 #include <ufsm.h>
+//#include <sotc/model.h>
+//#include <sotc/stack.h>
 
 #include "output.h"
 
+static int v = 0;
+
+#ifdef __NOPE
+
 static struct ufsm_machine *root_machine;
-static uint32_t v = 0;
 static bool flag_strip = false;
 
 struct ufsmimport_connection_map {
@@ -601,102 +604,113 @@ static xmlNode * get_first_statemachine(xmlNode *node)
    return result;
 }
 
+#endif
+
+static void display_version(void)
+{
+    printf("ufsm-import: VERSION\n");
+}
+
+static void display_usage(void)
+{
+    display_version();
+    printf("\nUsage:\n");
+    printf("    ufsmimport [options]\n\n");
+    printf("Options:\n");
+    printf("        -i, --input <input filename>            - Input filename\n");
+    printf("        -o, --output <output filename>          - Output filename\n");
+    printf("        -v, --verbose                           - Verbose\n");
+    printf("        -c, --prefix <output dir>               - Output prefix\n");
+    printf("        -s, --strip=<level>                     - Strip output\n");
+    printf("\n");
+    printf("Strip levels:\n");
+    printf("    0 - Nothing is stripped\n");
+    printf("    1 - UUID references stripped, this is the default\n");
+    printf("    2 - Strip UUID's and text labels\n");
+}
+
 int main(int argc, char **argv)
 {
     extern char *optarg;
-    extern int optind, opterr, optopt;
-    char c;
-    uint32_t err = UFSM_OK;
-    char *output_prefix = NULL;
-    char *output_name = NULL;
-    xmlDocPtr doc;
-    xmlNode *root_element;
-    xmlNode *root_machine_element;
+    int opt;
+    int long_index = 0;
+    int rc = UFSM_OK;
+    const char *output_prefix = NULL;
+    const char *output_filename = NULL;
+    const char *input_filename = NULL;
+    int strip_level = 1;
 
-    if (argc < 3) {
-        printf ("Usage: ufsmimport <input.xmi> <output name> [options]\n");
-        printf ("                              -v          - Verbose\n");
-        printf ("                              -c prefix/  - Output prefix\n");
-        printf ("                              -s          - Strip output\n");
 
+    struct option long_options[] =
+    {
+        {"help",      no_argument,       0,  'h' },
+        {"version",   no_argument,       0,  'V' },
+        {"verbose",   no_argument,       0,  'v' },
+        {"input",     required_argument, 0,  'i' },
+        {"output",    required_argument, 0,  'o' },
+        {"prefix",    required_argument, 0,  'c' },
+        {"strip",     optional_argument, 0,  's' },
+        {0,           0,                 0,   0  }
+    };
+
+    if (argc < 2) {
+        display_usage();
         exit(0);
     }
 
-    doc = xmlReadFile(argv[1], NULL, 0);
-    output_name = argv[2];
-
-    while ((c = getopt(argc-2, argv+2, "svc:")) != -1) {
-        switch (c) {
+    while ((opt = getopt_long(argc, argv, "hVvi:o:c:s:",
+                   long_options, &long_index )) != -1)
+    {
+        switch (opt) {
             case 'c':
                 output_prefix = optarg;
             break;
             case 'v':
                 v++;
             break;
+            case 'V':
+                display_version();
+                exit(0);
+                break;
+            break;
             case 's':
-                flag_strip = true;
+                if (optarg) {
+                    strip_level = (int) strtol(optarg, NULL, 10);
+                }
+            break;
+            case 'h':
+                display_usage();
+                exit(0);
+            break;
+            case 'i':
+                input_filename = optarg;
+            break;
+            case 'o':
+                output_filename = optarg;
             break;
             default:
-                abort();
+                display_usage();
+                exit(-1);
         }
     }
 
-    if (doc == NULL) {
-        printf ("Could not read file\n");
-        return -1;
+    if (!input_filename) {
+        fprintf(stderr, "Error: No input filename\n");
+        rc = -UFSM_ERROR;
+        goto err_out;
     }
 
-
-    if (v) printf ("o Reading...\n");
-
-    root_element = xmlDocGetRootElement(doc);
-
-    /* XMI identifier */
-    if (strcmp((char *) root_element->name, "XMI") != 0) {
-        printf ("Error: Not an XMI file\n");
-        return -1;
-    }
-    if (v) printf (" XMI v%s\n",get_attr(root_element,"version"));
-
-    /* Exporter info */
-    root_element = root_element->children;
-    root_element = root_element->next;
-
-    if (v) printf (" Exporter: %s, exporter version: %s\n",
-                get_attr(root_element, "exporter"),
-                get_attr(root_element, "exporterVersion"));
-
-    root_machine_element = get_first_statemachine(root_element);
-
-    root_machine = ufsmimport_pass1 (root_machine_element);
-
-    if (!root_machine) {
-        printf ("Error: Pass 1 failed, found no root machine\n");
-        return UFSM_ERROR;
+    if (!output_filename) {
+        fprintf(stderr, "Error: No output filename\n");
+        rc = -UFSM_ERROR;
+        goto err_out;
     }
 
-    err = ufsmimport_pass2(root_machine_element, root_machine);
-    if (err != UFSM_OK) {
-        printf ("Error: pass2 failed with error code '%i'\n",err);
-        return err;
+    if (v) {
+        printf("Input '%s'\n", input_filename);
+        printf("Output '%s'\n", output_filename);
+        printf("Strip level = %i\n", strip_level);
     }
-
-    err = ufsmimport_pass3(root_machine_element, root_machine);
-
-
-    if (err != UFSM_OK) {
-        printf ("Error: pass3 failed with error code '%i'\n",err);
-        return err;
-    }
-
-
-    if (output_prefix == NULL) {
-        output_prefix = malloc(2);
-        *output_prefix = 0;
-    }
-
-    if (v) printf ("Output prefix: %s\n", output_prefix);
-    ufsm_gen_output(root_machine, output_name, output_prefix,v,flag_strip);
-
-    return err;
+err_out:
+    return rc;
 }

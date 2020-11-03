@@ -1,29 +1,29 @@
 TESTS  = test_simple
 TESTS += test_simple_substate
 TESTS += test_guards_actions
-TESTS += test_compound_transition
-# TESTS += test_xmi_machine
-TESTS += test_deephistory
-TESTS += test_fork
-TESTS += test_join
-TESTS += test_stack
-TESTS += test_choice
-TESTS += test_queue
-TESTS += test_junction
-# TESTS += test_defer
-TESTS += test_terminate
-# TESTS += test_conref
-TESTS += test_transition_prio
-# TESTS += test_do
-TESTS += test_choice2
-TESTS += test_ev_repeat_orth
-TESTS += test_nested_composits
-TESTS += test_nested_composits2
-TESTS += test_join2
+#TESTS += test_compound_transition
+# #TESTS += test_xmi_machine
+#TESTS += test_deephistory
+#TESTS += test_fork
+#TESTS += test_join
+#TESTS += test_stack
+#TESTS += test_choice
+#TESTS += test_queue
+#TESTS += test_junction
+# #TESTS += test_defer
+#TESTS += test_terminate
+# #TESTS += test_conref
+#TESTS += test_transition_prio
+# #TESTS += test_do
+#TESTS += test_choice2
+#TESTS += test_ev_repeat_orth
+#TESTS += test_nested_composits
+#TESTS += test_nested_composits2
+#TESTS += test_join2
 TESTS += test_transition_conflict
 
 CC ?= gcc
-UFSMIMPORT ?= ufsmimport
+UFSMIMPORT ?= src/tools/ufsmimport
 
 UFSM_TESTS_VERBOSE ?= false
 
@@ -48,10 +48,10 @@ all: $(TESTS)
 	@echo CC $<
 	@$(CC) -c $(CFLAGS) $< -o $@
 
-%.c : %.xmi
+%.c : %.sotc
 	@echo UFSMIMPORT $<
 	@mkdir -p gen
-	@$(UFSMIMPORT) $< $(patsubst %.xmi, %, $(<)) -c gen/
+	@$(UFSMIMPORT) $< $(patsubst %.sotc, %, $(<)) -c gen/
 
 clean:
 	@$(foreach TEST,$(TESTS), rm -f $(TEST);)
