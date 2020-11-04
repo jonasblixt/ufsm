@@ -15,6 +15,6 @@
 #include <ufsm.h>
 
 int ufsm_gen_output(struct sotc_model *model, const char *output_filename,
+                     const char *output_path,
                      int verbose, int strip_level);
-
 #endif

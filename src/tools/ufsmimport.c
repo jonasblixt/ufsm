@@ -83,6 +83,7 @@ int main(int argc, char **argv)
     int rc = UFSM_OK;
     const char *output_filename = NULL;
     const char *input_filename = NULL;
+    const char *path_prefix = "";
     int strip_level = 1;
     struct sotc_model *model;
 
@@ -93,6 +94,7 @@ int main(int argc, char **argv)
         {"verbose",   no_argument,       0,  'v' },
         {"input",     required_argument, 0,  'i' },
         {"output",    required_argument, 0,  'o' },
+        {"prefix",    required_argument, 0,  'p' },
         {"strip",     optional_argument, 0,  's' },
         {0,           0,                 0,   0  }
     };
@@ -102,7 +104,7 @@ int main(int argc, char **argv)
         exit(0);
     }
 
-    while ((opt = getopt_long(argc, argv, "hVvi:o:s:",
+    while ((opt = getopt_long(argc, argv, "hVvi:o:s:p:",
                    long_options, &long_index )) != -1)
     {
         switch (opt) {
@@ -113,6 +115,10 @@ int main(int argc, char **argv)
                 display_version();
                 exit(0);
                 break;
+            break;
+            case 'p':
+                if (optarg)
+                    path_prefix = optarg;
             break;
             case 's':
                 if (optarg) {
@@ -160,7 +166,15 @@ int main(int argc, char **argv)
         goto err_out;
     }
 
-    rc = ufsm_gen_output(model, output_filename, v, strip_level);
+    size_t tmp_path_str_len = strlen(output_filename) + 3 +
+                              strlen(path_prefix);
+
+    char *tmp_path_str = malloc(tmp_path_str_len);
+    snprintf(tmp_path_str, tmp_path_str_len, "%s/%s", path_prefix,
+                                                      output_filename);
+
+    rc = ufsm_gen_output(model, output_filename, tmp_path_str, v, strip_level);
+    free(tmp_path_str);
 
     sotc_model_free(model);
 err_out:

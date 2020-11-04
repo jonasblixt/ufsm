@@ -14,6 +14,10 @@
 #include <strings.h>
 #include <ufsm.h>
 
+#include <sotc/sotc.h>
+#include <sotc/model.h>
+#include <sotc/stack.h>
+
 #include "output.h"
 
 #ifdef __NOPE
@@ -464,6 +468,65 @@ bool ufsm_gen_machine_decl (struct ufsm_machine *m)
 
 #endif
 
+static void uu_to_str(uuid_t uu, char *output)
+{
+    uuid_unparse(uu, output);
+
+    for (int n = 0; n < 37; n++) {
+        if (output[n] == '-')
+            output[n] = '_';
+    }
+}
+
+static int generate_c_file(struct sotc_model *model,
+                                const char *filename, FILE *fp)
+{
+    int rc = 0;
+    struct sotc_region *r, *r2;
+    struct sotc_state *s;
+    static struct sotc_stack *stack;
+    char uu_str[37];
+
+    fprintf(fp, "#include \"%s.h\"\n\n", filename);
+
+    rc = sotc_stack_init(&stack, SOTC_MAX_R_S);
+
+    if (rc != SOTC_OK)
+        return rc;
+
+    /* Pass 1: Forward declare states and regions */
+    rc = sotc_stack_push(stack, (void *) model->root);
+
+    fprintf(fp, "/* Forward declaration of states and regions */\n");
+    while (sotc_stack_pop(stack, (void *) &r) == SOTC_OK)
+    {
+        uu_to_str(r->id, uu_str);
+        fprintf(fp, "const struct r_%s; /* Region: %s */\n", uu_str, r->name);
+        for (s = r->state; s; s = s->next)
+        {
+            uu_to_str(s->id, uu_str);
+            fprintf(fp, "const struct s_%s; /* State: %s */\n", uu_str, s->name);
+            for (r2 = s->regions; r2; r2 = r2->next)
+            {
+                sotc_stack_push(stack, (void *) r2);
+            }
+        }
+    }
+
+    /* Triggers */
+    fprintf(fp, "\n/* Triggers */\n");
+
+    for (struct sotc_trigger *t = model->triggers; t; t = t->next) {
+        uu_to_str(t->id, uu_str);
+        fprintf(fp, "const struct ufsm_trigger trigger_%s = {\n", uu_str);
+        fprintf(fp, "    .name = \"%s\",\n", t->name);
+        fprintf(fp, "    .trigger = %s,\n", t->name);
+        fprintf(fp, "};\n\n");
+    }
+
+    sotc_stack_free(stack);
+    return rc;
+}
 static int generate_header_file(struct sotc_model *model,
                                 const char *filename, FILE *fp)
 {
@@ -542,6 +605,7 @@ static void generate_file_header(FILE *fp)
 }
 
 int ufsm_gen_output(struct sotc_model *model, const char *output_filename,
+                     const char *output_path,
                      int verbose, int strip_level)
 {
     int rc = 0;
@@ -549,9 +613,9 @@ int ufsm_gen_output(struct sotc_model *model, const char *output_filename,
     FILE *fp_h = NULL;
 
     /* Open file handles for 'output_filename'.[ch] */
-    size_t output_filename_len = strlen(output_filename) + 3;
+    size_t output_filename_len = strlen(output_path) + 3;
     char *fn_str = malloc(output_filename_len);
-    sprintf(fn_str, "%s.c", output_filename);
+    sprintf(fn_str, "%s.c", output_path);
 
     fp_c = fopen(fn_str, "w");
 
@@ -561,7 +625,7 @@ int ufsm_gen_output(struct sotc_model *model, const char *output_filename,
         return -1;
     }
 
-    sprintf(fn_str, "%s.h", output_filename);
+    sprintf(fn_str, "%s.h", output_path);
     fp_h = fopen(fn_str, "w");
 
     if (fp_h == NULL) {
@@ -585,7 +649,13 @@ int ufsm_gen_output(struct sotc_model *model, const char *output_filename,
         goto err_close_fps_out;
     }
 
-    fprintf(fp_c,"#include \"%s.h\"\n", output_filename);
+    rc = generate_c_file(model, output_filename, fp_c);
+
+    if (rc != 0) {
+        fprintf(stderr, "Error: Could not generate header file '%s.h'\n",
+                                output_filename);
+        goto err_close_fps_out;
+    }
 
 err_close_fps_out:
     fclose(fp_c);
