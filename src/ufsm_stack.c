@@ -20,12 +20,12 @@ int ufsm_stack_init(struct ufsm_stack *stack,
     return UFSM_OK;
 }
 
-int ufsm_stack_push(struct ufsm_stack *stack, void *item)
+int ufsm_stack_push(struct ufsm_stack *stack, const void *item)
 {
     if (stack->pos >= stack->no_of_elements)
         return UFSM_ERROR_STACK_OVERFLOW;
 
-    stack->data[stack->pos++] = item;
+    stack->data[stack->pos++] = (void *) item;
 
     return UFSM_OK;
 }

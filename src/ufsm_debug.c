@@ -4,7 +4,7 @@
 static char *state_simple = "Simple State";
 static char *state_composite = "Composite State";
 
-static char * get_state_type(struct ufsm_state *s)
+static char * get_state_type(const struct ufsm_state *s)
 {
     char * result = (char *) ufsm_state_kinds[s->kind];
 
@@ -19,7 +19,7 @@ static char * get_state_type(struct ufsm_state *s)
     return result;
 }
 
-static void debug_transition (struct ufsm_transition *t)
+static void debug_transition (const struct ufsm_transition *t)
 {
     char *source_type, *dest_type;
 
@@ -59,12 +59,12 @@ static void debug_transition (struct ufsm_transition *t)
     printf("\n");
 }
 
-static void debug_enter_region(struct ufsm_region *r)
+static void debug_enter_region(const struct ufsm_region *r)
 {
     printf ("    | R enter    | %s, H=%i\n", r->name, r->has_history);
 }
 
-static void debug_leave_region(struct ufsm_region *r)
+static void debug_leave_region(const struct ufsm_region *r)
 {
     printf ("    | R exit     | %s, H=%i\n", r->name, r->has_history);
 }
@@ -74,22 +74,22 @@ static void debug_event(int ev)
     printf (" %-3i|            |\n",ev);
 }
 
-static void debug_action(struct ufsm_action *a)
+static void debug_action(const struct ufsm_action *a)
 {
     printf ("    | Action     | %s()\n",a->name);
 }
 
-static void debug_guard(struct ufsm_guard *g, bool result) 
+static void debug_guard(const struct ufsm_guard *g, bool result) 
 {
     printf ("    | Guard      | %s() = %i\n", g->name, result);
 }
 
-static void debug_enter_state(struct ufsm_state *s)
+static void debug_enter_state(const struct ufsm_state *s)
 {
     printf ("    | S enter    | %s {%s}\n", s->name,get_state_type(s));
 }
 
-static void debug_exit_state(struct ufsm_state *s)
+static void debug_exit_state(const struct ufsm_state *s)
 {
     printf ("    | S exit     | %s {%s}\n", s->name,get_state_type(s));
 }
@@ -99,7 +99,7 @@ static void debug_reset(struct ufsm_machine *m)
     printf (" -- | RESET      | %s\n", m->name);
 }
 
-static void debug_entry_exit(struct ufsm_entry_exit *e)
+static void debug_entry_exit(const struct ufsm_entry_exit *e)
 {
     printf ("    | Call       | %s\n", e->name);
 }

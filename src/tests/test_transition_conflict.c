@@ -2,7 +2,6 @@
 #include <assert.h>
 #include <ufsm.h>
 #include <test_transition_conflict_input.h>
-#include "common.h"
 
 static bool flag_eA, flag_xA, flag_xB, flag_eC;
 
@@ -33,26 +32,25 @@ void eC(void)
 {
     flag_eC = true;
 }
-
 int main(void)
 {
-    struct ufsm_machine *m = get_StateMachine1();
+    struct test_transition_conflict_machine machine;
+    ufsm_debug_machine(&machine.machine);
     reset_flags();
-    test_init(m);
-    ufsm_init_machine(m);
+
+    test_transition_conflict_machine_initialize(&machine, NULL);
 
     assert("Init" && flag_eA && !flag_xA && !flag_xB && !flag_eC);
 
-    test_process(m, EV1);
+    test_transition_conflict_machine_process(&machine, EV1);
 
     assert("Step1" && flag_eA && flag_xA && !flag_xB && !flag_eC);
     reset_flags();
-
-    test_process(m, EV2);
+    test_transition_conflict_machine_process(&machine, EV2);
 
     assert("Step2" && flag_eA && !flag_xA && flag_xB && !flag_eC);
 
-    test_process(m, EV2);
+    test_transition_conflict_machine_process(&machine, EV2);
 
     assert("Step3" && flag_eA && flag_xA && flag_xB && flag_eC);
 

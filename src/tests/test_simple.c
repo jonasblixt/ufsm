@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <ufsm.h>
-#include "common.h"
-
 
 enum events {
     EV_A,
@@ -11,31 +9,8 @@ enum events {
 
 static struct ufsm_state A;
 static struct ufsm_region region1;
-
-static struct ufsm_state simple_INIT =
-{
-    .name = "Init",
-    .kind = UFSM_STATE_INIT,
-    .parent_region = &region1,
-    .next = &A
-};
-
-static struct ufsm_state B = 
-{
-    .name = "State B",
-    .kind = UFSM_STATE_SIMPLE,
-    .parent_region = &region1,
-    .next = NULL,
-};
-
-static struct ufsm_state A = 
-{
-    .name = "State A",
-    .kind = UFSM_STATE_SIMPLE,
-    .parent_region = &region1,
-    .next = &B,
-};
-
+static struct ufsm_state simple_INIT;
+static struct ufsm_state A, B;
 
 static struct ufsm_trigger b_trigger =
 {
@@ -48,7 +23,6 @@ static struct ufsm_trigger a_trigger =
     .name = "EV_A",
     .trigger = EV_A,
 };
-
 
 static struct ufsm_transition simple_transition_B = 
 {
@@ -66,12 +40,11 @@ static struct ufsm_transition simple_transition_A =
     .kind = UFSM_TRANSITION_EXTERNAL,
     .source = &B,
     .dest = &A,
-    .next = &simple_transition_B
+    .next = NULL
 };
 
 static struct ufsm_transition simple_transition_INIT = 
 {
-    .name = "Init",
     .kind = UFSM_TRANSITION_EXTERNAL,
     .source = &simple_INIT,
     .trigger = NULL,
@@ -79,35 +52,76 @@ static struct ufsm_transition simple_transition_INIT =
     .next = &simple_transition_A,
 };
 
+static struct ufsm_state simple_INIT =
+{
+    .name = "Init",
+    .kind = UFSM_STATE_INIT,
+    .parent_region = &region1,
+    .transition = &simple_transition_INIT,
+    .next = &A
+};
+
+static struct ufsm_state B = 
+{
+    .name = "State B",
+    .kind = UFSM_STATE_SIMPLE,
+    .transition = &simple_transition_B,
+    .parent_region = &region1,
+    .next = NULL,
+};
+
+static struct ufsm_state A = 
+{
+    .name = "State A",
+    .kind = UFSM_STATE_SIMPLE,
+    .transition = &simple_transition_A,
+    .parent_region = &region1,
+    .next = &B,
+};
+
+
+
+
+
 static struct ufsm_region region1 = 
 {
     .state = &simple_INIT,
-    .transition = &simple_transition_INIT,
     .next = NULL
 };
+
+void *stack1[UFSM_STACK_SIZE];
+void *stack2[UFSM_STACK_SIZE];
+struct ufsm_region_data r_data[10];
+struct ufsm_state_data s_data[10];
 
 static struct ufsm_machine m  = 
 {
     .name = "Simple Test Machine",
     .region = &region1,
+    .stack_data = stack1,
+    .stack_data2 = stack2,
+    .r_data = r_data,
+    .s_data = s_data,
+    .no_of_regions = 10,
+    .no_of_states = 10,
 };
 
 int main(void) {
     uint32_t err;
 
-    test_init(&m);
+    ufsm_debug_machine(&m);
 
     err = ufsm_init_machine(&m);
     assert (err == UFSM_OK && "Initializing");
-    assert (m.region->current == &A);
+    assert (m.r_data[m.region->index].current == &A);
     err = ufsm_process(&m, EV_B);
-    assert (m.region->current == &B && err == UFSM_OK);
+    assert (m.r_data[m.region->index].current == &B && err == UFSM_OK);
     err = ufsm_process(&m, EV_A);
-    assert (m.region->current == &A && err == UFSM_OK);
+    assert (m.r_data[m.region->index].current == &A && err == UFSM_OK);
     err = ufsm_process(&m, EV_B);
-    assert (m.region->current == &B && err == UFSM_OK);
+    assert (m.r_data[m.region->index].current == &B && err == UFSM_OK);
     err = ufsm_process(&m, EV_B);
-    assert (m.region->current == &B && err == UFSM_ERROR_EVENT_NOT_PROCESSED);
+    assert (m.r_data[m.region->index].current == &B && err == UFSM_ERROR_EVENT_NOT_PROCESSED);
 
     return 0;
 }

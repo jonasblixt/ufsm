@@ -31,11 +31,11 @@ ifdef COVERAGE
 LDFLAGS = -lgcov
 endif
 
-CFLAGS  = -O2 -Wall -Wextra -pedantic-errors -std=c99
+CFLAGS  = -O0 -g -Wall -Wextra -std=c99 -no-pie
 CFLAGS += -fprofile-arcs -ftest-coverage -Wno-unused-parameter
 CFLAGS += -I.. -I. -I gen/ -DUFSM_TESTS_VERBOSE=$(UFSM_TESTS_VERBOSE)
 
-C_SRCS = ../ufsm.c ../ufsm_stack.c ../ufsm_queue.c ../ufsm_debug.c common.c
+C_SRCS = ../ufsm.c ../ufsm_stack.c ../ufsm_queue.c ../ufsm_debug.c
 OBJS = $(C_SRCS:.c=.o)
 
 all: $(TESTS)

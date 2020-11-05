@@ -170,7 +170,7 @@ int main(int argc, char **argv)
                               strlen(path_prefix);
 
     char *tmp_path_str = malloc(tmp_path_str_len);
-    snprintf(tmp_path_str, tmp_path_str_len, "%s/%s", path_prefix,
+    snprintf(tmp_path_str, tmp_path_str_len, "%s%s", path_prefix,
                                                       output_filename);
 
     rc = ufsm_gen_output(model, output_filename, tmp_path_str, v, strip_level);
