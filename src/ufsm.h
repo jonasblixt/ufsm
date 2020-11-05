@@ -60,9 +60,9 @@ struct ufsm_transition;
 struct ufsm_region;
 struct ufsm_entry_exit;
 
-typedef bool (*ufsm_guard_func_t) (void);
-typedef void (*ufsm_action_func_t) (void);
-typedef void (*ufsm_entry_exit_func_t) (void);
+typedef bool (*ufsm_guard_func_t) (void *context);
+typedef void (*ufsm_action_func_t) (void *context);
+typedef void (*ufsm_entry_exit_func_t) (void *context);
 typedef void (*ufsm_queue_cb_t) (void);
 
 /* Debug callbacks */
@@ -126,33 +126,33 @@ struct ufsm_queue
 struct ufsm_action
 {
     const char *name;
-    ufsm_action_func_t f;
-    struct ufsm_action *next;
+    const ufsm_action_func_t f;
+    const struct ufsm_action *next;
 };
 
 struct ufsm_guard
 {
     const char *name;
-    ufsm_guard_func_t f;
-    struct ufsm_guard *next;
+    const ufsm_guard_func_t f;
+    const struct ufsm_guard *next;
 };
 
 struct ufsm_entry_exit
 {
     const char *name;
-    ufsm_entry_exit_func_t f;
-    struct ufsm_entry_exit *next;
+    const ufsm_entry_exit_func_t f;
+    const struct ufsm_entry_exit *next;
 };
 
 struct ufsm_trigger
 {
     const char *name;
-    int trigger;
+    const int trigger;
 };
 
 struct ufsm_transition
 {
-    enum ufsm_transition_kind kind;
+    const enum ufsm_transition_kind kind;
     const struct ufsm_trigger *trigger;
     const struct ufsm_action *action;
     const struct ufsm_guard *guard;
@@ -163,9 +163,9 @@ struct ufsm_transition
 
 struct ufsm_region
 {
-    unsigned int index;
+    const unsigned int index;
     const char *name;
-    bool has_history;
+    const bool has_history;
     const struct ufsm_state *state;
     const struct ufsm_state *parent_state;
     const struct ufsm_region *next;
@@ -173,9 +173,9 @@ struct ufsm_region
 
 struct ufsm_state
 {
-    unsigned int index;
+    const unsigned int index;
     const char *name;
-    enum ufsm_state_kind kind;
+    const enum ufsm_state_kind kind;
     const struct ufsm_transition *transition;
     const struct ufsm_entry_exit *entry;
     const struct ufsm_entry_exit *exit;
@@ -226,7 +226,7 @@ struct ufsm_machine
     void *context;
 };
 
-int ufsm_init_machine(struct ufsm_machine *m);
+int ufsm_init_machine(struct ufsm_machine *m, void *context);
 int ufsm_reset_machine(struct ufsm_machine *m);
 int ufsm_process (struct ufsm_machine *m, int ev);
 int ufsm_stack_init(struct ufsm_stack *stack, int no_of_elements, void **stack_data);

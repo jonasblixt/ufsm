@@ -121,7 +121,7 @@ static int ufsm_enter_state(struct ufsm_machine *m, const struct ufsm_state *s)
     {
         if (m->debug_entry_exit)
             m->debug_entry_exit(e);
-        e->f();
+        e->f(m->context);
     }
 
     /* If it's a normal state, first asume that it can complete */
@@ -160,7 +160,7 @@ inline static void ufsm_leave_state(struct ufsm_machine *m,
     {
         if (m->debug_entry_exit)
             m->debug_entry_exit(e);
-        e->f();
+        e->f(m->context);
     }
 }
 
@@ -181,7 +181,7 @@ inline static bool ufsm_test_guards(struct ufsm_machine *m,
 
     for (const struct ufsm_guard *g = t->guard; g; g = g->next)
     {
-        bool guard_result = g->f();
+        bool guard_result = g->f(m->context);
 
         if (m->debug_guard)
             m->debug_guard(g, guard_result);
@@ -201,7 +201,7 @@ inline static void ufsm_execute_actions(struct ufsm_machine *m,
         if (m->debug_action)
             m->debug_action(a);
 
-        a->f();
+        a->f(m->context);
     }
 }
 
@@ -906,7 +906,7 @@ static int ufsm_process_completion_events(struct ufsm_machine *m)
     return err;
 }
 
-int ufsm_init_machine(struct ufsm_machine *m)
+int ufsm_init_machine(struct ufsm_machine *m, void *context)
 {
     int err = UFSM_OK;
 
@@ -916,6 +916,7 @@ int ufsm_init_machine(struct ufsm_machine *m)
                     UFSM_COMPLETION_STACK_SIZE, m->completion_stack_data);
     ufsm_queue_init(&(m->queue), UFSM_QUEUE_SIZE, m->queue_data);
     m->terminated = false;
+    m->context = context;
 
     for (unsigned int n = 0; n < m->no_of_states; n++) {
         m->s_data[n].cant_exit = false;

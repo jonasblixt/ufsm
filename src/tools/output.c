@@ -313,7 +313,7 @@ static int generate_c_file(struct sotc_model *model,
 
     for (struct sotc_trigger *t = model->triggers; t; t = t->next) {
         uu_to_str(t->id, uu_str);
-        fprintf(fp, "struct ufsm_trigger trigger_%s = {\n", uu_str);
+        fprintf(fp, "const struct ufsm_trigger trigger_%s = {\n", uu_str);
         fprintf(fp, "    .name = \"%s\",\n", t->name);
         fprintf(fp, "    .trigger = %s,\n", t->name);
         fprintf(fp, "};\n\n");
@@ -356,7 +356,7 @@ static int generate_c_file(struct sotc_model *model,
     fprintf(fp, "    machine->machine.no_of_states = %i;\n", model->no_of_states);
     uu_to_str(model->root->id, uu_str);
     fprintf(fp, "    machine->machine.region = &r_%s;\n", uu_str);
-    fprintf(fp, "    return ufsm_init_machine(&machine->machine);\n");
+    fprintf(fp, "    return ufsm_init_machine(&machine->machine, ctx);\n");
     fprintf(fp, "}\n");
 
     fprintf(fp, "int %s_machine_reset(struct %s_machine *machine)\n",
@@ -402,7 +402,7 @@ static int generate_header_file(struct sotc_model *model,
         fprintf(fp, "/* Entry action function prototypes */\n");
 
         for (struct sotc_action *a = model->entries; a; a = a->next) {
-            fprintf(fp, "void %s(void);\n", a->name);
+            fprintf(fp, "void %s(void *context);\n", a->name);
         }
 
         fprintf(fp, "\n");
@@ -413,7 +413,7 @@ static int generate_header_file(struct sotc_model *model,
         fprintf(fp, "/* Exit action function prototypes */\n");
 
         for (struct sotc_action *a = model->exits; a; a = a->next) {
-            fprintf(fp, "void %s(void);\n", a->name);
+            fprintf(fp, "void %s(void *context);\n", a->name);
         }
 
         fprintf(fp, "\n");
@@ -424,7 +424,7 @@ static int generate_header_file(struct sotc_model *model,
         fprintf(fp, "/* Guard function prototypes */\n");
 
         for (struct sotc_action *a = model->guards; a; a = a->next) {
-            fprintf(fp, "bool %s(void);\n", a->name);
+            fprintf(fp, "bool %s(void *context);\n", a->name);
         }
 
         fprintf(fp, "\n");
@@ -435,7 +435,7 @@ static int generate_header_file(struct sotc_model *model,
         fprintf(fp, "/* Action function prototypes */\n");
 
         for (struct sotc_action *a = model->actions; a; a = a->next) {
-            fprintf(fp, "void %s(void);\n", a->name);
+            fprintf(fp, "void %s(void *context);\n", a->name);
         }
 
         fprintf(fp, "\n");

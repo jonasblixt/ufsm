@@ -212,7 +212,7 @@ int main(void)
 
     ufsm_debug_machine(&m);
 
-    err = ufsm_init_machine(&m);
+    err = ufsm_init_machine(&m, NULL);
     assert (err == UFSM_OK && "Initializing");
     c = m.r_data[m.region->index].current;
 

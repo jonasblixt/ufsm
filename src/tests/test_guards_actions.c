@@ -21,17 +21,17 @@ static void reset_test_flags(void) {
     guard2_ret_val = true;
 }
 
-static bool guard1_f(void) {
+static bool guard1_f(void *ctx) {
     flag_guard1_called = true;
     return true;
 }
 
-static bool guard2_f(void) {
+static bool guard2_f(void *ctx) {
     flag_guard2_called = true;
     return guard2_ret_val;
 }
 
-static void action1_f(void) {
+static void action1_f(void *ctx) {
     flag_action1_called = true;
 }
 
@@ -105,6 +105,7 @@ static struct ufsm_transition simple_transition_INIT =
 
 static struct ufsm_state simple_INIT =
 {
+    .index = 0,
     .name = "Init",
     .kind = UFSM_STATE_INIT,
     .transition = &simple_transition_INIT,
@@ -114,6 +115,7 @@ static struct ufsm_state simple_INIT =
 
 static struct ufsm_state B = 
 {
+    .index = 1,
     .name = "State B",
     .kind = UFSM_STATE_SIMPLE,
     .transition = &simple_transition_A,
@@ -123,6 +125,7 @@ static struct ufsm_state B =
 
 static struct ufsm_state A = 
 {
+    .index = 2,
     .name = "State A",
     .kind = UFSM_STATE_SIMPLE,
     .transition = &simple_transition_B,
@@ -133,6 +136,7 @@ static struct ufsm_state A =
 
 static struct ufsm_region region1 = 
 {
+    .index = 0,
     .state = &simple_INIT,
     .next = NULL
 };
@@ -163,7 +167,7 @@ int main(void)
 
     reset_test_flags();
     ufsm_debug_machine(&m);
-    err = ufsm_init_machine(&m);
+    err = ufsm_init_machine(&m, NULL);
     assert (err == UFSM_OK && "Initializing");
 
     c = m.r_data[m.region->index].current;

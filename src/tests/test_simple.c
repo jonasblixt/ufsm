@@ -54,6 +54,7 @@ static struct ufsm_transition simple_transition_INIT =
 
 static struct ufsm_state simple_INIT =
 {
+    .index = 0,
     .name = "Init",
     .kind = UFSM_STATE_INIT,
     .parent_region = &region1,
@@ -63,6 +64,7 @@ static struct ufsm_state simple_INIT =
 
 static struct ufsm_state B = 
 {
+    .index = 1,
     .name = "State B",
     .kind = UFSM_STATE_SIMPLE,
     .transition = &simple_transition_B,
@@ -72,6 +74,7 @@ static struct ufsm_state B =
 
 static struct ufsm_state A = 
 {
+    .index = 2,
     .name = "State A",
     .kind = UFSM_STATE_SIMPLE,
     .transition = &simple_transition_A,
@@ -79,12 +82,9 @@ static struct ufsm_state A =
     .next = &B,
 };
 
-
-
-
-
 static struct ufsm_region region1 = 
 {
+    .index = 0,
     .state = &simple_INIT,
     .next = NULL
 };
@@ -111,7 +111,7 @@ int main(void) {
 
     ufsm_debug_machine(&m);
 
-    err = ufsm_init_machine(&m);
+    err = ufsm_init_machine(&m, NULL);
     assert (err == UFSM_OK && "Initializing");
     assert (m.r_data[m.region->index].current == &A);
     err = ufsm_process(&m, EV_B);

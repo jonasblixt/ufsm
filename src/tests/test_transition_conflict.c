@@ -13,22 +13,22 @@ static void reset_flags(void)
     flag_eC = false;
 }
 
-void eA(void)
+void eA(void *ctx)
 {
     flag_eA = true;
 }
 
-void xA(void)
+void xA(void *ctx)
 {
     flag_xA = true;
 }
 
-void xB(void)
+void xB(void *ctx)
 {
     flag_xB = true;
 }
 
-void eC(void)
+void eC(void *ctx)
 {
     flag_eC = true;
 }
