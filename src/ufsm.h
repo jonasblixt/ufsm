@@ -25,8 +25,6 @@ enum ufsm_status_codes
     UFSM_ERROR_LCA_NOT_FOUND,
     UFSM_ERROR_STACK_OVERFLOW,
     UFSM_ERROR_STACK_UNDERFLOW,
-    UFSM_ERROR_QUEUE_EMPTY,
-    UFSM_ERROR_QUEUE_FULL,
     UFSM_ERROR_MACHINE_TERMINATED,
 };
 
@@ -38,14 +36,6 @@ extern const char *ufsm_errors[];
 
 #ifndef UFSM_STACK_SIZE
     #define UFSM_STACK_SIZE 128
-#endif
-
-#ifndef UFSM_COMPLETION_STACK_SIZE
-    #define UFSM_COMPLETION_STACK_SIZE 16
-#endif
-
-#ifndef UFSM_QUEUE_SIZE
-    #define UFSM_QUEUE_SIZE 16
 #endif
 
 #ifndef NULL
@@ -63,7 +53,6 @@ struct ufsm_entry_exit;
 typedef bool (*ufsm_guard_func_t) (void *context);
 typedef void (*ufsm_action_func_t) (void *context);
 typedef void (*ufsm_entry_exit_func_t) (void *context);
-typedef void (*ufsm_queue_cb_t) (void);
 
 /* Debug callbacks */
 typedef void (*ufsm_debug_event_t) (int ev);
@@ -109,18 +98,6 @@ struct ufsm_stack
     int no_of_elements;
     void **data;
     int pos;
-};
-
-struct ufsm_queue
-{
-    int no_of_elements;
-    int s;
-    int head;
-    int tail;
-    int *data;
-    ufsm_queue_cb_t on_data;
-    ufsm_queue_cb_t lock;
-    ufsm_queue_cb_t unlock;
 };
 
 struct ufsm_action
@@ -186,12 +163,13 @@ struct ufsm_state
 
 struct ufsm_region_data
 {
-    struct ufsm_state *current;
-    struct ufsm_state *history;
+    const struct ufsm_state *current;
+    const struct ufsm_state *history;
 };
 
 struct ufsm_state_data
 {
+    const struct ufsm_state *state;
     bool cant_exit;
     bool completed;
 };
@@ -210,14 +188,10 @@ struct ufsm_machine
     ufsm_debug_reset_t debug_reset;
     ufsm_debug_entry_exit_t debug_entry_exit;
     bool terminated;
-    void *completion_stack_data[UFSM_COMPLETION_STACK_SIZE];
-    int queue_data[UFSM_QUEUE_SIZE];
-    struct ufsm_queue queue;
     struct ufsm_stack stack;
-    void *stack_data;
     struct ufsm_stack stack2;
     void *stack_data2;
-    struct ufsm_stack completion_stack;
+    void *stack_data;
     const struct ufsm_region *region;
     unsigned int no_of_regions;
     struct ufsm_region_data *r_data;
@@ -232,10 +206,6 @@ int ufsm_process (struct ufsm_machine *m, int ev);
 int ufsm_stack_init(struct ufsm_stack *stack, int no_of_elements, void **stack_data);
 int ufsm_stack_push(struct ufsm_stack *stack, const void *item);
 int ufsm_stack_pop(struct ufsm_stack *stack, void **item);
-int ufsm_queue_init(struct ufsm_queue *q, int no_of_elements, int *data);
-int ufsm_queue_put(struct ufsm_queue *q, int ev);
-int ufsm_queue_get(struct ufsm_queue *q, int *ev);
-struct ufsm_queue * ufsm_get_queue(struct ufsm_machine *m);
 void ufsm_debug_machine(struct ufsm_machine *m);
 
 #endif

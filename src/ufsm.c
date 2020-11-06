@@ -42,19 +42,7 @@ const char *ufsm_errors[] =
     "No least common ancestor found",
     "Stack overflow",
     "Stack underflow",
-    "Queue empty",
-    "Queue full",
     "Machine has terminated",
-};
-
-struct internal_state {
-    bool cant_exit;
-    bool completion;
-};
-
-struct internal_region {
-    struct ufsm_state *current;
-    struct ufsm_state *history;
 };
 
 inline static const struct ufsm_state* ufsm_get_current_state(struct ufsm_machine *m,
@@ -99,9 +87,8 @@ static int ufsm_completion_handler(struct ufsm_machine *m,
 
     for (const struct ufsm_transition *t = s->transition; t; t = t->next) {
         if (t->trigger == NULL) {
-            err = ufsm_stack_push(&m->completion_stack, s);
-            if (err == UFSM_OK)
-                err = ufsm_queue_put(&m->queue, UFSM_COMPLETION_EVENT);
+            m->s_data[s->index].state = (struct ufsm_state *) s;
+            m->s_data[s->index].completed = true;
         }
     }
 
@@ -893,15 +880,18 @@ static int ufsm_make_transition(struct ufsm_machine *m,
 static int ufsm_process_completion_events(struct ufsm_machine *m)
 {
     int err = UFSM_OK;
-    struct ufsm_state *completed_state;
+    const struct ufsm_state *completed_state;
 
-
-    while (ufsm_stack_pop(&m->completion_stack,
-                            (void **) &completed_state) == UFSM_OK)
+    for (unsigned int n = 0; n < m->no_of_states; n++)
     {
-        err = ufsm_process_completion(m, completed_state);
-        if (err != UFSM_OK)
-            return err;
+        if (m->s_data[n].completed) {
+            completed_state = m->s_data[n].state;
+            err = ufsm_process_completion(m, completed_state);
+            if (err != UFSM_OK)
+                return err;
+
+            m->s_data[n].completed = false;
+        }
     }
     return err;
 }
@@ -912,14 +902,12 @@ int ufsm_init_machine(struct ufsm_machine *m, void *context)
 
     ufsm_stack_init(&(m->stack), UFSM_STACK_SIZE, m->stack_data);
     ufsm_stack_init(&(m->stack2), UFSM_STACK_SIZE, m->stack_data2);
-    ufsm_stack_init(&(m->completion_stack),
-                    UFSM_COMPLETION_STACK_SIZE, m->completion_stack_data);
-    ufsm_queue_init(&(m->queue), UFSM_QUEUE_SIZE, m->queue_data);
     m->terminated = false;
     m->context = context;
 
     for (unsigned int n = 0; n < m->no_of_states; n++) {
         m->s_data[n].cant_exit = false;
+        m->s_data[n].completed = false;
     }
 
     for (unsigned int n = 0; n < m->no_of_regions; n++) {
@@ -953,20 +941,20 @@ static inline bool ufsm_transition_has_trigger(const struct ufsm_transition *t, 
     return false;
 }
 
-static bool ufsm_transition(struct ufsm_machine *m, const struct ufsm_region *r,
+static int ufsm_transition(struct ufsm_machine *m, const struct ufsm_region *r,
                             int ev)
 {
-    bool event_consumed = false;
-    struct ufsm_state *current_state = m->r_data[r->index].current;
+    int rc;
+    const struct ufsm_state *current_state = m->r_data[r->index].current;
 
     for (const struct ufsm_state *s = r->state; s; s = s->next) {
         for (const struct ufsm_transition *t = s->transition; t; t = t->next) {
             if (ufsm_transition_has_trigger(t, ev) && (t->source == current_state)) {
-                int e = ufsm_make_transition(m, t, r);
+                rc = ufsm_make_transition(m, t, r);
 
                 struct ufsm_region *r2 = (struct ufsm_region *) r;
 
-                while (r2 && (ev != -1) && e == UFSM_OK) {
+                while (r2 && (ev != -1) && rc == UFSM_OK) {
                     if (r2->parent_state) {
                         m->s_data[r2->parent_state->index].cant_exit = true;
                         r2 = (struct ufsm_region *) r2->parent_state->parent_region;
@@ -975,18 +963,15 @@ static bool ufsm_transition(struct ufsm_machine *m, const struct ufsm_region *r,
                         r2 = NULL;
                 }
 
-                event_consumed = true;
-
-                if (e == UFSM_OK) {
+                if (rc == UFSM_OK) {
                     if (!r->next)
                         break;
                 }
-
             }
         }
     }
 
-    return event_consumed;
+    return UFSM_OK;
 }
 
 
@@ -996,12 +981,9 @@ int ufsm_process (struct ufsm_machine *m, int ev)
     int region_count = 0;
     struct ufsm_region *region = NULL;
     struct ufsm_state *s = NULL;
-    bool event_consumed = false;
 
     if (m->terminated)
         return UFSM_ERROR_MACHINE_TERMINATED;
-
-    ufsm_process_completion_events(m);
 
     if (ev == -1)
         return UFSM_OK;
@@ -1015,22 +997,24 @@ int ufsm_process (struct ufsm_machine *m, int ev)
     {
         err = ufsm_pop_sr_pair(m, &region, &s);
 
-        if (err != UFSM_OK)
-            break;
-
+        if (err != UFSM_OK) {
+            goto err_out;
+        }
         /* First ensure that the active state has not
          * changed
          * */
         if (m->r_data[region->index].current == s)
         {
-            if (ufsm_transition (m, region, ev))
-                event_consumed = true;
+            err = ufsm_transition (m, region, ev);
+            if (err != UFSM_OK) {
+                goto err_out;
+            }
         }
     }
 
-    if (!event_consumed && err == UFSM_OK)
-        err = UFSM_ERROR_EVENT_NOT_PROCESSED;
+    err = ufsm_process_completion_events(m);
 
+err_out:
     return err;
 }
 
@@ -1073,9 +1057,4 @@ int ufsm_reset_machine(struct ufsm_machine *m)
         ufsm_reset_region(m, r);
 
     return UFSM_OK;
-}
-
-struct ufsm_queue * ufsm_get_queue(struct ufsm_machine *m)
-{
-    return &m->queue;
 }

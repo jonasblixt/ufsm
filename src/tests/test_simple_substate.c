@@ -208,7 +208,7 @@ static struct ufsm_machine m  =
 int main(void)
 {
     int err;
-    struct ufsm_state *c, *c2;
+    const struct ufsm_state *c, *c2;
 
     ufsm_debug_machine(&m);
 

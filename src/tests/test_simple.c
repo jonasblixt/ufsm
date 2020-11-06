@@ -120,8 +120,6 @@ int main(void) {
     assert (m.r_data[m.region->index].current == &A && err == UFSM_OK);
     err = ufsm_process(&m, EV_B);
     assert (m.r_data[m.region->index].current == &B && err == UFSM_OK);
-    err = ufsm_process(&m, EV_B);
-    assert (m.r_data[m.region->index].current == &B && err == UFSM_ERROR_EVENT_NOT_PROCESSED);
 
     return 0;
 }
