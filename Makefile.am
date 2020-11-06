@@ -2,7 +2,10 @@
 SUBDIRS = libufsm-core \
           libufsm-model \
           ufsm-generate \
-          ufsm-compose
+          ufsm-compose \
+          test \
+          test/model \
+          test/core
 
 EXTRA_DIST = LICENSE README.rst
 

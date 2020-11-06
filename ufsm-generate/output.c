@@ -270,6 +270,7 @@ static void sanitize_machine_name(char *name)
 
     replace_char(name, '-', '_');
     replace_char(name, ' ', '_');
+    replace_char(name, '.', '_');
 }
 
 static int generate_c_file(struct ufsmm_model *model,
@@ -387,12 +388,17 @@ static int generate_header_file(struct ufsmm_model *model,
                                 unsigned int stack2_elements,
                                 FILE *fp)
 {
-    fprintf(fp, "#ifndef UFSM_MACHINE_%s_H_\n", filename);
-    fprintf(fp, "#define UFSM_MACHINE_%s_H_\n\n", filename);
+    char *sane_machine_name = malloc(strlen(model->name) + 1);
+    strcpy(sane_machine_name, model->name);
+
+    sanitize_machine_name(sane_machine_name);
+
+    fprintf(fp, "#ifndef UFSM_MACHINE_%s_H_\n", sane_machine_name);
+    fprintf(fp, "#define UFSM_MACHINE_%s_H_\n\n", sane_machine_name);
     fprintf(fp, "#include <stdint.h>\n");
     fprintf(fp, "#include <stddef.h>\n");
     fprintf(fp, "#include <stdbool.h>\n");
-    fprintf(fp, "#include <ufsm.h>\n\n");
+    fprintf(fp, "#include <ufsm/core/ufsm.h>\n\n");
 
     /* Triggers */
     if (model->triggers) {
@@ -452,10 +458,6 @@ static int generate_header_file(struct ufsmm_model *model,
 
     /* Machine API */
 
-    char *sane_machine_name = malloc(strlen(model->name) + 1);
-    strcpy(sane_machine_name, model->name);
-
-    sanitize_machine_name(sane_machine_name);
 
     fprintf(fp, "struct %s_machine {\n", sane_machine_name);
     fprintf(fp, "    struct ufsm_machine machine;\n");

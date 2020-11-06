@@ -1,5 +1,5 @@
 {
-    "kind": "SOTC Model",
+    "kind": "uFSM Model",
     "version": 1,
     "name": "test_empty_root",
     "region": {

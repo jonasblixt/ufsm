@@ -1,9 +1,9 @@
 #include <stdio.h>
-#include <sotc/sotc.h>
+#include <ufsm/model/ufsmm.h>
 #include <stdarg.h>
 #include "common.h"
 
-int sotc_debug(enum sotc_debug_level debug_level,
+int ufsmm_debug(enum ufsmm_debug_level debug_level,
               const char *func_name,
               const char *fmt, ...)
 {

@@ -81,7 +81,10 @@ AC_CONFIG_FILES([Makefile
                 libufsm-model/Makefile
                 libufsm-model/ufsm-model.pc
                 ufsm-generate/Makefile
-                ufsm-compose/Makefile])
+                ufsm-compose/Makefile
+                test/Makefile
+                test/model/Makefile
+                test/core/Makefile])
 
 dnl Dependencies build
 dnl AC_CONFIG_SUBDIRS([deps/dep1])

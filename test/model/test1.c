@@ -1,22 +1,22 @@
 #include <string.h>
-#include <sotc/sotc.h>
-#include <sotc/model.h>
+#include <ufsm/model/ufsmm.h>
+#include <ufsm/model/model.h>
 #include <json.h>
-#include "nala.h"
+#include "../nala.h"
 #include "common.h"
 
 TEST(version)
 {
-    printf("SOTC Library version: %s\n", sotc_library_version());
+    printf("uFSM Library version: %s\n", ufsmm_library_version());
 }
 
 TEST(load_model)
 {
     int rc;
-    struct sotc_model *model;
+    struct ufsmm_model *model;
 
-    rc = sotc_model_load(SOTC_TEST_SRC"test1.sotc", &model);
-    ASSERT_EQ(rc, SOTC_OK);
+    rc = ufsmm_model_load(UFSMM_TEST_SRC"test1.ufsm", &model);
+    ASSERT_EQ(rc, UFSMM_OK);
 
     printf("Model load %i\n", rc);
 
@@ -26,6 +26,6 @@ TEST(load_model)
     }
 
 
-    rc = sotc_model_free(model);
-    ASSERT_EQ(rc, SOTC_OK);
+    rc = ufsmm_model_free(model);
+    ASSERT_EQ(rc, UFSMM_OK);
 }

@@ -4,19 +4,15 @@ COMMON_TEST_CFLAGS = -I $(top_srcdir)/include \
                      -fsanitize=address \
                      $(JSONC_CFLAGS) \
                      $(UUID_CFLAGS) \
-                     -DSOTC_TEST_SRC=\"$(abs_top_srcdir)/test/\" \
+                     -DUFSMM_TEST_SRC=\"$(abs_top_srcdir)/test/model/\" \
                      -no-pie -g -O0 \
                      -fno-omit-frame-pointer
 
-COMMON_TEST_LDADD = libnala.la \
-                    $(top_builddir)/lib/libsotc.la \
+COMMON_TEST_LDADD = ../libnala.la \
+                    $(top_builddir)/libufsm-model/libufsm-model.la \
                     $(JSONC_LIBS) \
                     $(UUID_LIBS)
 
-check_LTLIBRARIES = libnala.la
-
-libnala_la_SOURCES = nala.c
-libnala_la_CFLAGS = $(COMMON_TEST_CFLAGS)
 
 check_PROGRAMS = test1 \
                  test_stack \

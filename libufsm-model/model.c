@@ -738,7 +738,7 @@ int ufsmm_model_write(const char *filename, struct ufsmm_model *model)
     /* Create the model root object */
 
     jr = json_object_new_object();
-    json_object *jr_kind = json_object_new_string("UFSMM Model");
+    json_object *jr_kind = json_object_new_string("uFSM Model");
     json_object *jr_version = json_object_new_int(model->version);
     json_object *jr_name = json_object_new_string(model->name);
 
@@ -1433,9 +1433,11 @@ int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model)
 
             s->branch_concurrency_count = pr_count;
 
-            if (pr->parent_state) {
-                s->branch_concurrency_count += 
-                        pr->parent_state->branch_concurrency_count;
+            if (pr) {
+                if (pr->parent_state) {
+                    s->branch_concurrency_count += 
+                            pr->parent_state->branch_concurrency_count;
+                }
             }
 
             if (s->branch_concurrency_count > max_concurrent_states) {
