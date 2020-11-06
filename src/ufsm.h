@@ -203,9 +203,6 @@ struct ufsm_machine
 int ufsm_init_machine(struct ufsm_machine *m, void *context);
 int ufsm_reset_machine(struct ufsm_machine *m);
 int ufsm_process (struct ufsm_machine *m, int ev);
-int ufsm_stack_init(struct ufsm_stack *stack, int no_of_elements, void **stack_data);
-int ufsm_stack_push(struct ufsm_stack *stack, const void *item);
-int ufsm_stack_pop(struct ufsm_stack *stack, void **item);
 void ufsm_debug_machine(struct ufsm_machine *m);
 
 #endif
