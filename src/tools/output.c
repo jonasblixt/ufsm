@@ -274,7 +274,10 @@ static void sanitize_machine_name(char *name)
 }
 
 static int generate_c_file(struct sotc_model *model,
-                                const char *filename, FILE *fp)
+                                const char *filename,
+                                unsigned int stack_elements,
+                                unsigned int stack2_elements,
+                                FILE *fp)
 {
     int rc = 0;
     struct sotc_region *r, *r2;
@@ -344,18 +347,22 @@ static int generate_c_file(struct sotc_model *model,
 
     sanitize_machine_name(sane_machine_name);
 
+
     fprintf(fp, "/* Machine API */\n");
     fprintf(fp, "int %s_machine_initialize(struct %s_machine *machine, void *ctx)\n",
                     sane_machine_name, sane_machine_name);
     fprintf(fp, "{\n");
-    fprintf(fp, "    machine->machine.stack_data = machine->stack_data;\n");
-    fprintf(fp, "    machine->machine.stack_data2 = machine->stack_data2;\n");
     fprintf(fp, "    machine->machine.r_data = machine->region_data;\n");
     fprintf(fp, "    machine->machine.no_of_regions = %i;\n", model->no_of_regions);
     fprintf(fp, "    machine->machine.s_data = machine->state_data;\n");
     fprintf(fp, "    machine->machine.no_of_states = %i;\n", model->no_of_states);
     uu_to_str(model->root->id, uu_str);
     fprintf(fp, "    machine->machine.region = &r_%s;\n", uu_str);
+    fprintf(fp, "    ufsm_stack_init(&(machine->machine.stack), %i, machine->stack_data);\n",
+                        stack_elements);
+    fprintf(fp, "    ufsm_stack_init(&(machine->machine.stack2), %i, machine->stack_data2);\n",
+                        stack2_elements);
+
     fprintf(fp, "    return ufsm_init_machine(&machine->machine, ctx);\n");
     fprintf(fp, "}\n");
 
@@ -376,7 +383,10 @@ static int generate_c_file(struct sotc_model *model,
 }
 
 static int generate_header_file(struct sotc_model *model,
-                                const char *filename, FILE *fp)
+                                const char *filename,
+                                unsigned int stack_elements,
+                                unsigned int stack2_elements,
+                                FILE *fp)
 {
     fprintf(fp, "#ifndef UFSM_MACHINE_%s_H_\n", filename);
     fprintf(fp, "#define UFSM_MACHINE_%s_H_\n\n", filename);
@@ -454,8 +464,8 @@ static int generate_header_file(struct sotc_model *model,
                         model->no_of_regions);
     fprintf(fp, "    struct ufsm_state_data state_data[%i];\n",
                         model->no_of_states);
-    fprintf(fp, "    void *stack_data[UFSM_STACK_SIZE];\n");  /* TODO: Calculate */
-    fprintf(fp, "    void *stack_data2[UFSM_STACK_SIZE];\n"); /* TODO: Calculate */
+    fprintf(fp, "    void *stack_data[%i];\n", stack_elements);
+    fprintf(fp, "    void *stack_data2[%i];\n", stack2_elements);
     fprintf(fp, "};\n\n");
 
     fprintf(fp, "/* Machine API */\n");
@@ -483,6 +493,40 @@ int ufsm_gen_output(struct sotc_model *model, const char *output_filename,
     int rc = 0;
     FILE *fp_c = NULL;
     FILE *fp_h = NULL;
+
+    /* Calculate stack requiremets */
+    int stack2_elements = ufsm_model_calculate_max_orthogonal_regions(model) + 1;
+
+    if (stack2_elements < 0) {
+        fprintf(stderr, "Error: Could not calculate max orthogonal regions\n");
+        return -1;
+    }
+
+    int max_concurrent_states = ufsm_model_calculate_max_concurrent_states(model);
+
+    if (max_concurrent_states < 0) {
+        fprintf(stderr, "Error: Could not calculate max concurrent states\n");
+        return -1;
+    }
+
+    int nested_region_depth = ufsm_model_calculate_nested_region_depth(model);
+
+    if (nested_region_depth < 0) {
+        fprintf(stderr, "Error: Could not calculate nested region depth\n");
+        return -1;
+    }
+
+    int max_transitions = ufsm_model_calculate_max_transitions(model);
+
+    if (max_transitions < 0) {
+        fprintf(stderr, "Error: Could not calculate max source transitions\n");
+        return -1;
+    }
+
+    unsigned int stack_elements  =
+                  max_concurrent_states * 2 +
+                  nested_region_depth +
+                  max_transitions;
 
     /* Open file handles for 'output_filename'.[ch] */
     size_t output_filename_len = strlen(output_path) + 3;
@@ -513,7 +557,8 @@ int ufsm_gen_output(struct sotc_model *model, const char *output_filename,
     generate_file_header(fp_h);
     generate_file_header(fp_c);
 
-    rc = generate_header_file(model, output_filename, fp_h);
+    rc = generate_header_file(model, output_filename, stack_elements,
+                                stack2_elements, fp_h);
 
     if (rc != 0) {
         fprintf(stderr, "Error: Could not generate header file '%s.h'\n",
@@ -521,7 +566,8 @@ int ufsm_gen_output(struct sotc_model *model, const char *output_filename,
         goto err_close_fps_out;
     }
 
-    rc = generate_c_file(model, output_filename, fp_c);
+    rc = generate_c_file(model, output_filename, stack_elements,
+                            stack2_elements, fp_c);
 
     if (rc != 0) {
         fprintf(stderr, "Error: Could not generate header file '%s.h'\n",

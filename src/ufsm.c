@@ -46,7 +46,7 @@ const char *ufsm_errors[] =
 };
 
 
-static int ufsm_stack_init(struct ufsm_stack *stack,
+int ufsm_stack_init(struct ufsm_stack *stack,
                         int no_of_elements,
                         void **stack_data)
 {
@@ -267,6 +267,10 @@ static int ufsm_enter_parent_states(struct ufsm_machine *m,
         return UFSM_OK;
 
     err = ufsm_stack_push(&m->stack, r);
+
+    if (err != UFSM_OK)
+        return err;
+
     c++;
 
     while (ps && (r != ancestor) && (err == UFSM_OK))
@@ -277,6 +281,9 @@ static int ufsm_enter_parent_states(struct ufsm_machine *m,
             break;
 
         err = ufsm_stack_push(&m->stack, pr);
+
+        if (err != UFSM_OK)
+            return err;
 
         c++;
 
@@ -934,8 +941,6 @@ int ufsm_init_machine(struct ufsm_machine *m, void *context)
 {
     int err = UFSM_OK;
 
-    ufsm_stack_init(&(m->stack), UFSM_STACK_SIZE, m->stack_data);
-    ufsm_stack_init(&(m->stack2), UFSM_STACK_SIZE, m->stack_data2);
     m->terminated = false;
     m->context = context;
 
@@ -1009,7 +1014,7 @@ static int ufsm_transition(struct ufsm_machine *m, const struct ufsm_region *r,
 }
 
 
-int ufsm_process (struct ufsm_machine *m, int ev)
+int ufsm_process(struct ufsm_machine *m, int ev)
 {
     int err = UFSM_OK;
     int region_count = 0;

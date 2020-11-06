@@ -152,8 +152,6 @@ static struct ufsm_machine m  =
 {
     .name = "Simple Test Machine",
     .region = &region1,
-    .stack_data = stack1,
-    .stack_data2 = stack2,
     .r_data = r_data,
     .s_data = s_data,
     .no_of_regions = 10,
@@ -164,7 +162,8 @@ int main(void)
 {
     int err;
     const struct ufsm_state *c;
-
+    ufsm_stack_init(&m.stack, UFSM_STACK_SIZE, stack1);
+    ufsm_stack_init(&m.stack2, UFSM_STACK_SIZE, stack2);
     reset_test_flags();
     ufsm_debug_machine(&m);
     err = ufsm_init_machine(&m, NULL);

@@ -190,8 +190,6 @@ struct ufsm_machine
     bool terminated;
     struct ufsm_stack stack;
     struct ufsm_stack stack2;
-    void *stack_data2;
-    void *stack_data;
     const struct ufsm_region *region;
     unsigned int no_of_regions;
     struct ufsm_region_data *r_data;
@@ -204,5 +202,6 @@ int ufsm_init_machine(struct ufsm_machine *m, void *context);
 int ufsm_reset_machine(struct ufsm_machine *m);
 int ufsm_process (struct ufsm_machine *m, int ev);
 void ufsm_debug_machine(struct ufsm_machine *m);
-
+int ufsm_stack_init(struct ufsm_stack *stack, int no_of_elements,
+                                              void **stack_data);
 #endif
