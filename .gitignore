@@ -1,5 +1,8 @@
-src/tests/gen
-src/tools/ufsmimport
-*.gcda
-*.gcno
-*.bak
+Makefile.in
+aclocal.m4
+aminclude_static.am
+autom4te.cache/
+build-aux/
+build/
+configure
+m4/

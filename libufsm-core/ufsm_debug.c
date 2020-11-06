@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <ufsm.h>
+#include <ufsm/core/ufsm.h>
 
 static char *state_simple = "Simple State";
 static char *state_composite = "Composite State";
