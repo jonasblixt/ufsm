@@ -1,6 +1,6 @@
-#ifndef SOTC_MENU_H_
-#define SOTC_MENU_H_
+#ifndef UFSM_COMPOSE_MENU_H_
+#define UFSM_COMPOSE_MENU_H_
 
-int sotc_create_main_menu(void);
+int ufsm_create_main_menu(void);
 
-#endif  // SOTC_MENU_H_
+#endif  // UFSM_COMPOSE_MENU_H_

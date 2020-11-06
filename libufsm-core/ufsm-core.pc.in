@@ -3,7 +3,7 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: sotc
+Name: ufsm-core
 Description: uFSM Core library
 Version: @VERSION@
 

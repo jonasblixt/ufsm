@@ -1,5 +1,5 @@
 {
-  "kind":"SOTC Model",
+  "kind":"uFSM Model",
   "version":0,
   "name":"test_transition_conflict",
   "triggers":[

@@ -361,7 +361,7 @@ static int ufsmm_model_parse(struct ufsmm_model *model)
     bool found_version = false;
     bool found_region = false;
     bool found_name = false;
-    int rc;
+    int rc = 0;
 
     json_object_object_foreach(model->jroot, key, val)
     {
@@ -378,7 +378,7 @@ static int ufsmm_model_parse(struct ufsmm_model *model)
         }
         else if (strcmp(key, "kind") == 0)
         {
-            if (strcmp(json_object_get_string(val), "UFSMM Model") == 0)
+            if (strcmp(json_object_get_string(val), "uFSM Model") == 0)
             {
                 found_kind = true;
             }
@@ -422,6 +422,7 @@ static int ufsmm_model_parse(struct ufsmm_model *model)
         }
     }
 
+    L_DEBUG("%i %i %i %i", found_region, found_kind, found_version, found_name);
     if (found_region && found_kind && found_version && found_name)
         return rc;
     else
