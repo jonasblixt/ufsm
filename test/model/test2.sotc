@@ -1,0 +1,41 @@
+{
+    "kind": "SOTC Model",
+    "version": 1,
+    "name": "test2",
+    "region": {
+        "id":"bc446ec4-443a-426c-8c24-1493eb772a63",
+        "name": "Root",
+        "offpage": True,
+        "states": [
+            {
+                "id":"caec3cb4-f5bb-4aae-9ecb-9154f421a7be",
+                "kind": "state",
+                "name": "A",
+                "region": [],
+                "transition": [],
+            },
+            {
+                "id":"109acf06-f534-4226-9760-79c36eabd87f",
+                "kind": "state",
+                "name": "B",
+                "region": [
+                    {
+                        "id":"dd30a157-d4fd-4f10-a326-44ce6ca77d12",
+                        "name": "Some other region",
+                        "offpage": False,
+                        "states": [
+                            {
+                                "id":"f77a3d7f-512d-406f-9697-1d1ddcbb06b2",
+                                "kind": "state",
+                                "name": "B1",
+                                "region": [],
+                                "transition": [],
+                            },
+                        ],
+                    },
+                ],
+                "transition": [],
+            },
+        ],
+    },
+}

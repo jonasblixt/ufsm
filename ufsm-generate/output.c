@@ -13,11 +13,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <ufsm.h>
-
-#include <sotc/sotc.h>
-#include <sotc/model.h>
-#include <sotc/stack.h>
+#include <ufsm/core/ufsm.h>
+#include <ufsm/model/ufsmm.h>
+#include <ufsm/model/model.h>
+#include <ufsm/model/stack.h>
 
 #include "output.h"
 
@@ -34,7 +33,7 @@ static void uu_to_str(uuid_t uu, char *output)
     }
 }
 
-static void generate_transitions(FILE *fp, struct sotc_state *s)
+static void generate_transitions(FILE *fp, struct ufsmm_state *s)
 {
     char uu_str[37];
 
@@ -42,7 +41,7 @@ static void generate_transitions(FILE *fp, struct sotc_state *s)
         fprintf(fp, "/* Transitions originating from '%s' */\n", s->name);
     }
 
-    for (struct sotc_transition *t = s->transition; t; t = t->next) {
+    for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
         uu_to_str(t->id, uu_str);
         fprintf(fp, "const struct ufsm_transition t_%s = {\n", uu_str);
         fprintf(fp, "    .kind = UFSM_TRANSITION_EXTERNAL,\n");
@@ -83,7 +82,7 @@ static void generate_transitions(FILE *fp, struct sotc_state *s)
     }
 }
 
-static void generate_entry_and_exits(FILE *fp, struct sotc_state *s)
+static void generate_entry_and_exits(FILE *fp, struct ufsmm_state *s)
 {
     char uu_str[37];
 
@@ -91,7 +90,7 @@ static void generate_entry_and_exits(FILE *fp, struct sotc_state *s)
         fprintf(fp, "/* Entry functions for state '%s' */\n", s->name);
     }
 
-    for (struct sotc_action_ref *ar = s->entries; ar; ar = ar->next) {
+    for (struct ufsmm_action_ref *ar = s->entries; ar; ar = ar->next) {
         uu_to_str(ar->id, uu_str);
         fprintf(fp, "const struct ufsm_entry_exit entry_%s = {\n", uu_str);
         fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
@@ -109,7 +108,7 @@ static void generate_entry_and_exits(FILE *fp, struct sotc_state *s)
         fprintf(fp, "/* Exit functions for state '%s' */\n", s->name);
     }
 
-    for (struct sotc_action_ref *ar = s->exits; ar; ar = ar->next) {
+    for (struct ufsmm_action_ref *ar = s->exits; ar; ar = ar->next) {
         uu_to_str(ar->id, uu_str);
         fprintf(fp, "const struct ufsm_entry_exit exit_%s = {\n", uu_str);
         fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
@@ -124,7 +123,7 @@ static void generate_entry_and_exits(FILE *fp, struct sotc_state *s)
     }
 }
 
-static void generate_state_output(FILE *fp, struct sotc_state *s)
+static void generate_state_output(FILE *fp, struct ufsmm_state *s)
 {
     char uu_str[37];
 
@@ -138,40 +137,40 @@ static void generate_state_output(FILE *fp, struct sotc_state *s)
     const char *state_kind = "";
 
     switch (s->kind) {
-        case SOTC_STATE_NORMAL:
+        case UFSMM_STATE_NORMAL:
             state_kind = "UFSM_STATE_SIMPLE";
         break;
-        case SOTC_STATE_INIT:
+        case UFSMM_STATE_INIT:
             state_kind = "UFSM_STATE_INIT";
         break;
-        case SOTC_STATE_FINAL:
+        case UFSMM_STATE_FINAL:
             state_kind = "UFSM_STATE_FINAL";
         break;
-        case SOTC_STATE_SHALLOW_HISTORY:
+        case UFSMM_STATE_SHALLOW_HISTORY:
             state_kind = "UFSM_STATE_SHALLOW_HISTORY";
         break;
-        case SOTC_STATE_DEEP_HISTORY:
+        case UFSMM_STATE_DEEP_HISTORY:
             state_kind = "UFSM_STATE_DEEP_HISTORY";
         break;
-        case SOTC_STATE_EXIT_POINT:
+        case UFSMM_STATE_EXIT_POINT:
             state_kind = "UFSM_STATE_EXIT_POINT";
         break;
-        case SOTC_STATE_ENTRY_POINT:
+        case UFSMM_STATE_ENTRY_POINT:
             state_kind = "UFSM_STATE_ENTRY_POINT";
         break;
-        case SOTC_STATE_JOIN:
+        case UFSMM_STATE_JOIN:
             state_kind = "UFSM_STATE_JOIN";
         break;
-        case SOTC_STATE_FORK:
+        case UFSMM_STATE_FORK:
             state_kind = "UFSM_STATE_FORK";
         break;
-        case SOTC_STATE_CHOICE:
+        case UFSMM_STATE_CHOICE:
             state_kind = "UFSM_STATE_CHOICE";
         break;
-        case SOTC_STATE_JUNCTION:
+        case UFSMM_STATE_JUNCTION:
             state_kind = "UFSM_STATE_JUNCTION";
         break;
-        case SOTC_STATE_TERMINATE:
+        case UFSMM_STATE_TERMINATE:
             state_kind = "UFSM_STATE_TERMINATE";
         break;
         default:
@@ -219,7 +218,7 @@ static void generate_state_output(FILE *fp, struct sotc_state *s)
     fprintf(fp, "};\n\n");
 }
 
-static void generate_region_output(FILE *fp, struct sotc_region *r)
+static void generate_region_output(FILE *fp, struct ufsmm_region *r)
 {
     char uu_str[37];
 
@@ -273,30 +272,30 @@ static void sanitize_machine_name(char *name)
     replace_char(name, ' ', '_');
 }
 
-static int generate_c_file(struct sotc_model *model,
+static int generate_c_file(struct ufsmm_model *model,
                                 const char *filename,
                                 unsigned int stack_elements,
                                 unsigned int stack2_elements,
                                 FILE *fp)
 {
     int rc = 0;
-    struct sotc_region *r, *r2;
-    struct sotc_state *s;
-    static struct sotc_stack *stack;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_state *s;
+    static struct ufsmm_stack *stack;
     char uu_str[37];
 
     fprintf(fp, "#include \"%s.h\"\n\n", filename);
 
-    rc = sotc_stack_init(&stack, SOTC_MAX_R_S);
+    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
 
-    if (rc != SOTC_OK)
+    if (rc != UFSMM_OK)
         return rc;
 
     /* Pass 1: Forward declare states and regions */
-    rc = sotc_stack_push(stack, (void *) model->root);
+    rc = ufsmm_stack_push(stack, (void *) model->root);
 
     fprintf(fp, "/* Forward declaration of states and regions */\n");
-    while (sotc_stack_pop(stack, (void *) &r) == SOTC_OK)
+    while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK)
     {
         uu_to_str(r->id, uu_str);
         fprintf(fp, "const struct ufsm_region r_%s; /* Region: %s */\n", uu_str, r->name);
@@ -306,7 +305,7 @@ static int generate_c_file(struct sotc_model *model,
             fprintf(fp, "const struct ufsm_state s_%s; /* State: %s */\n", uu_str, s->name);
             for (r2 = s->regions; r2; r2 = r2->next)
             {
-                sotc_stack_push(stack, (void *) r2);
+                ufsmm_stack_push(stack, (void *) r2);
             }
         }
     }
@@ -314,7 +313,7 @@ static int generate_c_file(struct sotc_model *model,
     /* Pass 2: Triggers */
     fprintf(fp, "\n/* Triggers */\n");
 
-    for (struct sotc_trigger *t = model->triggers; t; t = t->next) {
+    for (struct ufsmm_trigger *t = model->triggers; t; t = t->next) {
         uu_to_str(t->id, uu_str);
         fprintf(fp, "const struct ufsm_trigger trigger_%s = {\n", uu_str);
         fprintf(fp, "    .name = \"%s\",\n", t->name);
@@ -323,9 +322,9 @@ static int generate_c_file(struct sotc_model *model,
     }
 
     /* Pass 3: The reset */
-    rc = sotc_stack_push(stack, (void *) model->root);
+    rc = ufsmm_stack_push(stack, (void *) model->root);
 
-    while (sotc_stack_pop(stack, (void *) &r) == SOTC_OK)
+    while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK)
     {
         generate_region_output(fp, r);
 
@@ -335,12 +334,12 @@ static int generate_c_file(struct sotc_model *model,
 
             for (r2 = s->regions; r2; r2 = r2->next)
             {
-                sotc_stack_push(stack, (void *) r2);
+                ufsmm_stack_push(stack, (void *) r2);
             }
         }
     }
 
-    sotc_stack_free(stack);
+    ufsmm_stack_free(stack);
 
     char *sane_machine_name = malloc(strlen(model->name) + 1);
     strcpy(sane_machine_name, model->name);
@@ -382,7 +381,7 @@ static int generate_c_file(struct sotc_model *model,
     return rc;
 }
 
-static int generate_header_file(struct sotc_model *model,
+static int generate_header_file(struct ufsmm_model *model,
                                 const char *filename,
                                 unsigned int stack_elements,
                                 unsigned int stack2_elements,
@@ -400,7 +399,7 @@ static int generate_header_file(struct sotc_model *model,
         fprintf(fp, "/* Triggers */\n");
         fprintf(fp, "enum {\n");
 
-        for (struct sotc_trigger *t = model->triggers; t; t = t->next) {
+        for (struct ufsmm_trigger *t = model->triggers; t; t = t->next) {
             fprintf(fp, "    %s,\n", t->name);
         }
 
@@ -411,7 +410,7 @@ static int generate_header_file(struct sotc_model *model,
     if (model->entries) {
         fprintf(fp, "/* Entry action function prototypes */\n");
 
-        for (struct sotc_action *a = model->entries; a; a = a->next) {
+        for (struct ufsmm_action *a = model->entries; a; a = a->next) {
             fprintf(fp, "void %s(void *context);\n", a->name);
         }
 
@@ -422,7 +421,7 @@ static int generate_header_file(struct sotc_model *model,
     if (model->exits) {
         fprintf(fp, "/* Exit action function prototypes */\n");
 
-        for (struct sotc_action *a = model->exits; a; a = a->next) {
+        for (struct ufsmm_action *a = model->exits; a; a = a->next) {
             fprintf(fp, "void %s(void *context);\n", a->name);
         }
 
@@ -433,7 +432,7 @@ static int generate_header_file(struct sotc_model *model,
     if (model->guards) {
         fprintf(fp, "/* Guard function prototypes */\n");
 
-        for (struct sotc_action *a = model->guards; a; a = a->next) {
+        for (struct ufsmm_action *a = model->guards; a; a = a->next) {
             fprintf(fp, "bool %s(void *context);\n", a->name);
         }
 
@@ -444,7 +443,7 @@ static int generate_header_file(struct sotc_model *model,
     if (model->actions) {
         fprintf(fp, "/* Action function prototypes */\n");
 
-        for (struct sotc_action *a = model->actions; a; a = a->next) {
+        for (struct ufsmm_action *a = model->actions; a; a = a->next) {
             fprintf(fp, "void %s(void *context);\n", a->name);
         }
 
@@ -483,10 +482,11 @@ static int generate_header_file(struct sotc_model *model,
 
 static void generate_file_header(FILE *fp)
 {
-    fprintf(fp, "/* Automatically generated by uFSM version x.y.z */\n\n");
+    fprintf(fp, "/* Automatically generated by uFSM version %s */\n\n",
+                    PACKAGE_VERSION);
 }
 
-int ufsm_gen_output(struct sotc_model *model, const char *output_filename,
+int ufsm_gen_output(struct ufsmm_model *model, const char *output_filename,
                      const char *output_path,
                      int verbose, int strip_level)
 {
@@ -495,28 +495,28 @@ int ufsm_gen_output(struct sotc_model *model, const char *output_filename,
     FILE *fp_h = NULL;
 
     /* Calculate stack requiremets */
-    int stack2_elements = ufsm_model_calculate_max_orthogonal_regions(model) + 1;
+    int stack2_elements = ufsmm_model_calculate_max_orthogonal_regions(model) + 1;
 
     if (stack2_elements < 0) {
         fprintf(stderr, "Error: Could not calculate max orthogonal regions\n");
         return -1;
     }
 
-    int max_concurrent_states = ufsm_model_calculate_max_concurrent_states(model);
+    int max_concurrent_states = ufsmm_model_calculate_max_concurrent_states(model);
 
     if (max_concurrent_states < 0) {
         fprintf(stderr, "Error: Could not calculate max concurrent states\n");
         return -1;
     }
 
-    int nested_region_depth = ufsm_model_calculate_nested_region_depth(model);
+    int nested_region_depth = ufsmm_model_calculate_nested_region_depth(model);
 
     if (nested_region_depth < 0) {
         fprintf(stderr, "Error: Could not calculate nested region depth\n");
         return -1;
     }
 
-    int max_transitions = ufsm_model_calculate_max_transitions(model);
+    int max_transitions = ufsmm_model_calculate_max_transitions(model);
 
     if (max_transitions < 0) {
         fprintf(stderr, "Error: Could not calculate max source transitions\n");

@@ -14,16 +14,16 @@
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
-#include <ufsm.h>
-#include <sotc/sotc.h>
-#include <sotc/model.h>
-#include <sotc/stack.h>
+#include <ufsm/core/ufsm.h>
+#include <ufsm/model/ufsmm.h>
+#include <ufsm/model/model.h>
+#include <ufsm/model/stack.h>
 
 #include "output.h"
 
 static int v = 0;
 
-int sotc_debug(enum sotc_debug_level debug_level,
+int ufsmm_debug(enum ufsmm_debug_level debug_level,
               const char *func_name,
               const char *fmt, ...)
 {
@@ -55,7 +55,7 @@ int sotc_debug(enum sotc_debug_level debug_level,
 
 static void display_version(void)
 {
-    printf("ufsm-import: VERSION\n");
+    printf("ufsm-generate %s\n", PACKAGE_VERSION);
 }
 
 static void display_usage(void)
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     const char *input_filename = NULL;
     const char *path_prefix = "";
     int strip_level = 1;
-    struct sotc_model *model;
+    struct ufsmm_model *model;
 
     struct option long_options[] =
     {
@@ -159,9 +159,9 @@ int main(int argc, char **argv)
         printf("Strip level = %i\n", strip_level);
     }
 
-    rc = sotc_model_load(input_filename, &model);
+    rc = ufsmm_model_load(input_filename, &model);
 
-    if (rc != SOTC_OK) {
+    if (rc != UFSMM_OK) {
         fprintf(stderr, "Error: Could not load model '%s'\n", input_filename);
         goto err_out;
     }
@@ -176,7 +176,7 @@ int main(int argc, char **argv)
     rc = ufsm_gen_output(model, output_filename, tmp_path_str, v, strip_level);
     free(tmp_path_str);
 
-    sotc_model_free(model);
+    ufsmm_model_free(model);
 err_out:
     return rc;
 }

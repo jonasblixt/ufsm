@@ -77,7 +77,11 @@ AM_CONDITIONAL([OSX], [test "$build_mac" = "yes"])
 
 AC_CONFIG_FILES([Makefile
                 libufsm-core/Makefile
-                libufsm-core/ufsm-core.pc])
+                libufsm-core/ufsm-core.pc
+                libufsm-model/Makefile
+                libufsm-model/ufsm-model.pc
+                ufsm-generate/Makefile
+                ufsm-compose/Makefile])
 
 dnl Dependencies build
 dnl AC_CONFIG_SUBDIRS([deps/dep1])

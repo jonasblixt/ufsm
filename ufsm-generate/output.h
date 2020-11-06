@@ -10,11 +10,11 @@
 #ifndef UFSM_OUTPUT_H
 #define UFSM_OUTPUT_H
 
-#include <sotc/sotc.h>
-#include <sotc/model.h>
-#include <ufsm.h>
+#include <ufsm/model/ufsmm.h>
+#include <ufsm/model/model.h>
+#include <ufsm/core/ufsm.h>
 
-int ufsm_gen_output(struct sotc_model *model, const char *output_filename,
+int ufsm_gen_output(struct ufsmm_model *model, const char *output_filename,
                      const char *output_path,
                      int verbose, int strip_level);
 #endif

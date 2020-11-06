@@ -1,0 +1,11 @@
+{
+    "kind": "SOTC Model",
+    "version": 1,
+    "name": "test2",
+    "region": {
+        "id":"bc446ec4-443a-426c-8c24-1493eb772a63",
+        "name": "Root",
+        "states": [
+        ],
+    },
+}
