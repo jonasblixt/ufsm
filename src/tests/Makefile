@@ -1,6 +1,7 @@
 TESTS  = test_simple
 TESTS += test_simple_substate
 TESTS += test_guards_actions
+TESTS += test_simple_completion
 # TESTS += test_compound_transition
 # #TESTS += test_xmi_machine
 #TESTS += test_deephistory
@@ -84,6 +85,10 @@ test_deephistory: $(OBJS) test_deephistory_input.c test_deephistory.o
 	@$(CC) $@.c gen/test_deephistory_input.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 test_simple: $(OBJS) test_simple.o
+	@echo LINK $@
+	@$(CC) $@.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+
+test_simple_completion: $(OBJS) test_simple_completion.o
 	@echo LINK $@
 	@$(CC) $@.c $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
