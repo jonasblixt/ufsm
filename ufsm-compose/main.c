@@ -87,27 +87,17 @@ int main(int argc, char **argv)
     menuitem = gtk_menu_item_new_with_mnemonic("_Initial State");
     gtk_menu_shell_append(GTK_MENU_SHELL(place_menu), menuitem);
 
-    rc = ufsmm_state_canvas_init(&state_canvas);
+    GtkWidget *hpane = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+
+    rc = ufsmm_state_canvas_init(window, &state_canvas);
 
     if (rc != UFSMM_OK)
     {
         L_ERR("Could not initialize state drawing canvas");
         goto err_out;
     }
-/*
-    rc = ufsmm_object_tree_init(&object_tree);
 
-    if (rc != UFSMM_OK)
-    {
-        L_ERR("Could not initialize object tree");
-        goto err_out;
-    }
-*/
-    //gtk_widget_set_size_request(object_tree, 300, -1);
 
-    GtkWidget *hpane = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
-
-    //gtk_paned_add1(GTK_PANED(hpane), object_tree);
     gtk_paned_add2(GTK_PANED(hpane), state_canvas);
 
     gtk_box_pack_start(GTK_BOX(center_vbox), hpane, TRUE, TRUE, 0);
@@ -121,7 +111,6 @@ int main(int argc, char **argv)
         goto err_out;
     }
 
-    //ufsmm_object_tree_update(model);
     ufsmm_state_canvas_update(model, NULL);
 
     gtk_widget_show_all(window);

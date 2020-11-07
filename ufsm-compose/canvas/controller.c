@@ -5,6 +5,9 @@
 #include "canvas/controller.h"
 #include "canvas/view.h"
 
+#include "gui/edit_state_dialog.h"
+#include "gui/add_action_dialog.h"
+
 static struct ufsmm_model *model;
 static struct ufsmm_region *current_region;
 static struct ufsmm_state *selected_state = NULL;
@@ -17,6 +20,8 @@ static double sselection_x, sselection_y;
 static double canvas_ox, canvas_oy;
 static bool pan_mode;
 static enum ufsmm_state_resize_selector selected_state_corner;
+static GtkWidget *window;
+
 
 /* Create transition variables */
 static bool add_vertice_flag;
@@ -77,6 +82,7 @@ gboolean keyrelease_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
+    int rc;
     if (event->keyval == GDK_KEY_Escape)
         controller_state = STATE_IDLE;
 
@@ -104,10 +110,12 @@ check_new_state:
     } else if (controller_state == STATE_ADD_STATE1) {
         L_DEBUG("Add new state");
     } else if (controller_state == STATE_ADD_ENTRY) {
-        L_DEBUG("Add entry on state %s", selected_state->name);
+        rc = ufsm_add_entry_action_dialog(GTK_WINDOW(window), model, selected_state);
+        L_DEBUG("Add entry on state %s %i", selected_state->name, rc);
         controller_state = STATE_IDLE;
     } else if (controller_state == STATE_ADD_EXIT) {
-        L_DEBUG("Add exit on state %s", selected_state->name);
+        rc = ufsm_add_exit_action_dialog(GTK_WINDOW(window), model, selected_state);
+        L_DEBUG("Add exit on state %s %i", selected_state->name, rc);
         controller_state = STATE_IDLE;
     } else if (controller_state == STATE_IDLE) {
         if (event->keyval == GDK_KEY_A)
@@ -196,7 +204,7 @@ check_new_state:
         if (event->keyval == GDK_KEY_s)
         {
             printf("Saving...\n");
-            ufsmm_model_write("out.ufsmm", model);
+            ufsmm_model_write("out.ufsm", model);
         }
 
         if (event->keyval == GDK_KEY_space)
@@ -717,6 +725,10 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
     }
 
 
+    if (selected_state && edit_object) {
+        ufsm_edit_state_dialog(GTK_WINDOW(window), model, selected_state);
+    }
+
 controller_out:
     ufsmm_stack_free(stack);
     gtk_widget_queue_draw (widget);
@@ -724,10 +736,11 @@ controller_out:
     return TRUE;
 }
 
-int ufsmm_state_canvas_init(GtkWidget **canvas)
+int ufsmm_state_canvas_init(GtkWidget *parent, GtkWidget **canvas)
 {
     GtkWidget *c = gtk_drawing_area_new();
     (*canvas) = c;
+    window = parent;
 
     gtk_widget_set_events (c, gtk_widget_get_events (c)
                                      | GDK_BUTTON_PRESS_MASK
