@@ -2,8 +2,7 @@
 #define CANVAS_VIEW_H_
 
 #include <stdint.h>
-#include <ufsm/model/ufsmm.h>
-#include <ufsm/model/model.h>
+#include <ufsm/model.h>
 #include <cairo/cairo.h>
 
 enum ufsmm_color {

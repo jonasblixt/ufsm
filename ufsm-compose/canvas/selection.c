@@ -1,4 +1,4 @@
-#include <ufsm/model/model.h>
+#include <ufsm/model.h>
 
 int ufsmm_selection_update(struct ufsmm_state *s, bool append)
 {

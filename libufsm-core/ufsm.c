@@ -7,7 +7,7 @@
  *
  */
 
-#include <ufsm/core/ufsm.h>
+#include <ufsm/ufsm.h>
 
 const char *ufsm_transition_kinds[] =
 {

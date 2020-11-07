@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
-#include <ufsm/core/ufsm.h>
+#include <ufsm/ufsm.h>
 #include "test_transition_conflict.gen.h"
 
 static bool flag_eA, flag_xA, flag_xB, flag_eC;

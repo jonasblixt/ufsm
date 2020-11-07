@@ -11,8 +11,6 @@ COMMON_TEST_LDADD = ../libnala.la \
 %.gen.c %.gen.h: %.ufsm
 	../../ufsm-generate/ufsm-generate --input $^ --output $(@:.c=)
 
-dist_noinst_DATA = test_transition_conflict.ufsm
-
 check_PROGRAMS = test_simple \
                  test_simple_substate \
                  test_simple_completion \
@@ -36,15 +34,14 @@ test_guards_actions_LDADD = $(COMMON_TEST_LDADD)
 test_guards_actions_CFLAGS = $(COMMON_TEST_CFLAGS)
 
 test_transition_conflict_SOURCES = test_transition_conflict.c
-nodist_test_transition_conflict_SOURCES = $(builddir)/test_transition_conflict.gen.c \
-										  $(builddir)/test_transition_conflict.gen.h
+nodist_test_transition_conflict_SOURCES = \
+          $(builddir)/test_transition_conflict.gen.c \
+          $(builddir)/test_transition_conflict.gen.h
 test_transition_conflict_LDADD = $(COMMON_TEST_LDADD)
 test_transition_conflict_CFLAGS = $(COMMON_TEST_CFLAGS)
 
 MOSTLYCLEANFILES = test_transition_conflict.gen.c \
                    test_transition_conflict.gen.h
-
-#BUILT_SOURCES = test_transition_conflict.gen
 
 TESTS = test_simple \
         test_simple_substate \

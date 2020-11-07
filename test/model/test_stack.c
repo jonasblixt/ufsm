@@ -1,6 +1,5 @@
 #include <string.h>
-#include <ufsm/model/ufsmm.h>
-#include <ufsm/model/stack.h>
+#include <ufsm/model.h>
 #include "../nala.h"
 #include "common.h"
 

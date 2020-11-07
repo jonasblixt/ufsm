@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
-#include <ufsm/core/ufsm.h>
+#include <ufsm/ufsm.h>
 
 enum events {
     eTestEvent,

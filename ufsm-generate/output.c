@@ -13,10 +13,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <ufsm/core/ufsm.h>
-#include <ufsm/model/ufsmm.h>
-#include <ufsm/model/model.h>
-#include <ufsm/model/stack.h>
+#include <ufsm/ufsm.h>
+#include <ufsm/model.h>
 
 #include "output.h"
 
@@ -398,7 +396,7 @@ static int generate_header_file(struct ufsmm_model *model,
     fprintf(fp, "#include <stdint.h>\n");
     fprintf(fp, "#include <stddef.h>\n");
     fprintf(fp, "#include <stdbool.h>\n");
-    fprintf(fp, "#include <ufsm/core/ufsm.h>\n\n");
+    fprintf(fp, "#include <ufsm/ufsm.h>\n\n");
 
     /* Triggers */
     if (model->triggers) {

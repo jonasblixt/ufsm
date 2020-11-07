@@ -14,10 +14,8 @@
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
-#include <ufsm/core/ufsm.h>
-#include <ufsm/model/ufsmm.h>
-#include <ufsm/model/model.h>
-#include <ufsm/model/stack.h>
+#include <ufsm/ufsm.h>
+#include <ufsm/model.h>
 
 #include "output.h"
 

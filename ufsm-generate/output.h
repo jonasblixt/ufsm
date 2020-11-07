@@ -10,9 +10,7 @@
 #ifndef UFSM_OUTPUT_H
 #define UFSM_OUTPUT_H
 
-#include <ufsm/model/ufsmm.h>
-#include <ufsm/model/model.h>
-#include <ufsm/core/ufsm.h>
+#include <ufsm/model.h>
 
 int ufsm_gen_output(struct ufsmm_model *model, const char *output_filename,
                      const char *output_path,

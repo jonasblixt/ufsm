@@ -1,8 +1,6 @@
 #include <math.h>
 #include <time.h>
-#include <ufsm/model/ufsmm.h>
-#include <ufsm/model/model.h>
-#include <ufsm/model/stack.h>
+#include <ufsm/model.h>
 
 #include "canvas/controller.h"
 #include "canvas/view.h"

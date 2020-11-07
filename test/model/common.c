@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <ufsm/model/ufsmm.h>
+#include <ufsm/model.h>
 #include <stdarg.h>
 #include "common.h"
 

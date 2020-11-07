@@ -2,8 +2,7 @@
 #define CANVAS_CONTROLLER_H_
 
 #include <gtk/gtk.h>
-#include <ufsm/model/ufsmm.h>
-#include <ufsm/model/model.h>
+#include <ufsm/model.h>
 
 int ufsm_state_canvas_init(GtkWidget **canvas);
 int ufsm_state_canvas_free(GtkWidget *canvas);

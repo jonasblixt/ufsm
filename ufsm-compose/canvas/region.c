@@ -1,7 +1,5 @@
 #include <math.h>
-#include <ufsm/model/ufsmm.h>
-#include <ufsm/model/model.h>
-#include <ufsm/model/stack.h>
+#include <ufsm/model.h>
 
 #include "canvas/view.h"
 

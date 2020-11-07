@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <ufsm/model/ufsmm.h>
-#include <ufsm/model/stack.h>
+#include <ufsm/model.h>
 
 int ufsmm_stack_init(struct ufsmm_stack **stack_pp, size_t no_of_elements)
 {

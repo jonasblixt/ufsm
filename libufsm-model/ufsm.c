@@ -1,4 +1,4 @@
-#include <ufsm/model/ufsmm.h>
+#include <ufsm/model.h>
 #include <stdarg.h>
 
 __attribute__ ((weak)) int ufsmm_debug(enum ufsmm_debug_level debug_level,

@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include <ufsm/model/ufsmm.h>
-#include <ufsm/model/model.h>
-#include <ufsm/model/stack.h>
+#include <ufsm/model.h>
 #include <json.h>
 
 static int push_jr_s_pair(struct ufsmm_stack *stack,

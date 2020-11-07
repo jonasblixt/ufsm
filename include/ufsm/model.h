@@ -1,10 +1,51 @@
 #ifndef INCLUDE_UFSMM_MODEL_H_
 #define INCLUDE_UFSMM_MODEL_H_
 
+#include <stdarg.h>
 #include <stdint.h>
 #include <uuid/uuid.h>
 #include <stdbool.h>
 #include <json.h>
+
+/* This sets the upper limit on how many regions a state can hold
+ * and how many states a region can hold */
+#define UFSMM_MAX_R_S 1024
+
+/* This sets the total amount of states and regions that can be 
+ * allocated */
+#define UFSMM_MAX_OBJECTS (1024*1024)
+
+enum ufsmm_errors
+{
+    UFSMM_OK,
+    UFSMM_ERROR,
+    UFSMM_ERR_IO,
+    UFSMM_ERR_MEM,
+    UFSMM_ERR_PARSE,
+};
+
+enum ufsmm_debug_level
+{
+    UFSMM_L_ERROR,
+    UFSMM_L_INFO,
+    UFSMM_L_DEBUG,
+};
+
+#define L_INFO(...) \
+         do { ufsmm_debug(1, __func__, __VA_ARGS__); } while (0)
+
+#define L_DEBUG(...) \
+         do { ufsmm_debug(2, __func__, __VA_ARGS__); } while (0)
+
+#define L_ERR(...) \
+         do { ufsmm_debug(0, __func__, __VA_ARGS__); } while (0)
+
+struct ufsmm_stack
+{
+    size_t no_of_elements;
+    size_t pos;
+    void *data[];
+};
 
 enum ufsmm_transition_kind
 {
@@ -325,5 +366,19 @@ struct ufsmm_transition_state_condition *
 ufsmm_transition_get_state_conditions(struct ufsmm_transition *t);
 
 int ufsmm_transition_free(struct ufsmm_transition *transition);
+
+/* Misc model library stuff */
+
+int ufsmm_debug(enum ufsmm_debug_level debug_level, const char *func_name,
+                    const char *fmt, ...);
+
+const char *ufsmm_library_version(void);
+
+/* uFSM Model stack API */
+
+int ufsmm_stack_init(struct ufsmm_stack **stack, size_t no_of_elements);
+int ufsmm_stack_free(struct ufsmm_stack *stack);
+int ufsmm_stack_push(struct ufsmm_stack *stack, void *item);
+int ufsmm_stack_pop(struct ufsmm_stack *stack, void **item);
 
 #endif  // INCLUDE_UFSMM_MODEL_H_

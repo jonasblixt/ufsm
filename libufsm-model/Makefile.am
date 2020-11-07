@@ -19,6 +19,4 @@ libufsm_model_la_LIBS = $(JSONC_LIBS) \
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = ufsm-model.pc
 
-pkginclude_HEADERS = $(top_srcdir)/include/ufsm/model/ufsmm.h \
-                     $(top_srcdir)/include/ufsm/model/model.h \
-                     $(top_srcdir)/include/ufsm/model/stack.h
+pkginclude_HEADERS = $(top_srcdir)/include/ufsm/model.h

@@ -11,4 +11,4 @@ libufsm_core_la_LIBS = $(CODE_COVERAGE_LIBS)
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = ufsm-core.pc
 
-pkginclude_HEADERS = $(top_srcdir)/include/ufsm/core/ufsm.h
+pkginclude_HEADERS = $(top_srcdir)/include/ufsm/ufsm.h
