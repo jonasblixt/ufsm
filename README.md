@@ -1,8 +1,8 @@
 ![](/doc/logo.png)
 
-[![Coverity](https://scan.coverity.com/projects/15860/badge.svg)](https://scan.coverity.com/projects/jonpe960-ufsm)
-[![Build Status](https://travis-ci.org/jonasblixt/ufsm.svg?branch=master)](https://travis-ci.org/jonpe960/ufsm)
-[![codecov](https://codecov.io/gh/jonasblixt/ufsm/branch/master/graph/badge.svg)](https://codecov.io/gh/jonpe960/ufsm)
+[![Coverity](https://scan.coverity.com/projects/15860/badge.svg)](https://scan.coverity.com/projects/jonasblixt-ufsm)
+[![Build Status](https://travis-ci.com/jonasblixt/ufsm.svg?branch=master)](https://travis-ci.com/jonasblixt/ufsm)
+[![codecov](https://codecov.io/gh/jonasblixt/ufsm/branch/master/graph/badge.svg)](https://codecov.io/gh/jonasblixt/ufsm)
 [![Donate](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=4XMK2G3TPN3BQ)
 
 uFSM is a statechart library written in C. uFSM is designed without any external 
