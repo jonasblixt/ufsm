@@ -16,17 +16,6 @@ enum
   NUM_COLUMNS
 };
 
-struct list_data_entry entries[] =
-{
-    {0, "test_function", NULL},
-    {0, "pelle", NULL},
-    {0, "kalle", NULL},
-    {0, "start_timer", NULL},
-    {0, "prepare_<b>for</b>_action", NULL},
-    {0, "begin_important_work", NULL},
-    {0, "check_delicate_state", NULL},
-};
-
 static void input_changed(GtkEntry *entry, char *preedit, gpointer user_data)
 {
     const char *text = gtk_entry_get_text(GTK_ENTRY(entry));
@@ -50,7 +39,10 @@ static void cell_data_func (GtkTreeViewColumn *col,
     gchar *label;
     gchar *markuptxt;
 
-    gtk_tree_model_get (model, iter, COLUMN_NAME, &label, -1);
+    const char *text = gtk_entry_get_text(GTK_ENTRY(user_data));
+    L_DEBUG("Input: %s", text);
+
+    gtk_tree_model_get(model, iter, COLUMN_NAME, &label, -1);
     markuptxt = g_strdup_printf("%s", label);
     g_object_set(renderer, "markup", markuptxt, NULL);
     g_free(markuptxt);
@@ -65,11 +57,28 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
     GtkWidget *dialog, *vbox, *content_area;
     GtkWidget *treeview;
     GtkDialogFlags flags;
+    struct ufsmm_action *action;
 
-    if (kind == UFSMM_ACTION_ENTRY)
-        msg = "Add entry action";
-    else
-        msg = "Add exit action";
+    switch (kind) {
+        case UFSMM_ACTION_ENTRY:
+            msg = "Add entry action";
+            action = model->entries;
+        break;
+        case UFSMM_ACTION_EXIT:
+            msg = "Add exit action";
+            action = model->exits;
+        break;
+        case UFSMM_ACTION_GUARD:
+            msg = "Add guard";
+            action = model->guards;
+        break;
+        case UFSMM_ACTION_ACTION:
+            msg = "Add action";
+            action = model->actions;
+        break;
+        default:
+            return -1;
+    }
 
     flags = GTK_DIALOG_MODAL;
     dialog = gtk_dialog_new_with_buttons(msg,
@@ -96,21 +105,20 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
     store = gtk_list_store_new (NUM_COLUMNS,
                                 G_TYPE_UINT,
                                 G_TYPE_STRING,
-                                G_TYPE_OBJECT);
+                                G_TYPE_POINTER);
 
-    /* Populate list with data */
-    for (int i = 0; i < G_N_ELEMENTS(entries); i++) {
+    for (struct ufsmm_action *a = action; a; a = a->next) {
         gtk_list_store_append(store, &iter);
         gtk_list_store_set (store, &iter,
                             COLUMN_MATCH_RATING, 0,
-                            COLUMN_NAME, entries[i].name,
-                            COLUMN_ACTION_REF, entries[i].action,
+                            COLUMN_NAME, a->name,
+                            COLUMN_ACTION_REF, a,
                             -1);
     }
 
-    treeview = gtk_tree_view_new_with_model(store);
-    gtk_tree_view_set_headers_visible(treeview, FALSE);
-    gtk_tree_view_set_enable_search(treeview, FALSE);
+    treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
+    gtk_tree_view_set_enable_search(GTK_TREE_VIEW(treeview), FALSE);
 
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;
@@ -122,8 +130,8 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                                                        NULL);
     gtk_tree_view_column_set_sort_column_id(column, COLUMN_MATCH_RATING);
     gtk_tree_view_column_set_cell_data_func(column, renderer,
-                                            cell_data_func, NULL, NULL);
-    gtk_tree_view_append_column (treeview, column);
+                                            cell_data_func, input, NULL);
+    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
     gtk_box_pack_start(GTK_BOX(vbox), treeview, TRUE, TRUE, 0);
 
