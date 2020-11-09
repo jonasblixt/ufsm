@@ -3,6 +3,7 @@ bin_PROGRAMS = ufsm-compose
 ufsm_compose_SOURCES = main.c \
 			   gui/edit_state_dialog.c \
 			   gui/add_action_dialog.c \
+			   gui/edit_string_dialog.c \
                canvas/view.c \
                canvas/state.c \
                canvas/region.c \

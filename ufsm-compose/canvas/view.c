@@ -38,6 +38,8 @@ int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
         *h = 1190;
         *w = 1684;
         return UFSMM_OK;
+    } else {
+        y_acc += r->parent_state->region_y_offset;
     }
 
     /* Calculate offsets to current state */

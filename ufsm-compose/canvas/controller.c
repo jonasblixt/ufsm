@@ -7,6 +7,7 @@
 
 #include "gui/edit_state_dialog.h"
 #include "gui/add_action_dialog.h"
+#include "gui/edit_string_dialog.h"
 
 static struct ufsmm_model *model;
 static struct ufsmm_region *current_region;
@@ -149,6 +150,9 @@ check_new_state:
         if (event->keyval == GDK_KEY_e) {
             if (selected_state) {
                 L_DEBUG("Edit state");
+
+                ufsm_edit_string_dialog(GTK_WINDOW(window), "Edit state name",
+                                            &selected_state->name);
             } else if (selected_transition) {
                 L_DEBUG("Edit transition");
             }
@@ -598,7 +602,7 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
          L_DEBUG("Region %s selected!", selected_region->name);
          selected_region->focus = true;
          selected_state = NULL;
-    } 
+    }
     /* Check transitions selection */
 
     if (selected_transition) {
@@ -716,7 +720,7 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
         vsx = tsx + ox;
         vsy = tsy + oy;
 
-        L_DEBUG("%f %f, %f %f", px, py, vex, vey); 
+        L_DEBUG("%f %f, %f %f", px, py, vex, vey);
 
         if (point_in_box(px, py, vsx, vsy, 10, 10)) {
             L_DEBUG("Start vertice selected");
@@ -742,7 +746,8 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
 
 
     if (selected_state && edit_object) {
-        ufsm_edit_state_dialog(GTK_WINDOW(window), model, selected_state);
+        ufsm_edit_string_dialog(GTK_WINDOW(window), "Edit state name",
+                                    &selected_state->name);
     }
 
 controller_out:
