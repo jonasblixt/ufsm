@@ -182,8 +182,8 @@ int ufsmm_canvas_render_transition(cairo_t *cr,
 
             /* Dashed rectangle around the text block */
             double tx, ty, th, tw;
-            tx = t->text_block_coords.x;
-            ty = t->text_block_coords.y;
+            tx = t->text_block_coords.x + rx;
+            ty = t->text_block_coords.y + ry;
             th = t->text_block_coords.h;
             tw = t->text_block_coords.w;
 

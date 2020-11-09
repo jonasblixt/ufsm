@@ -34,6 +34,8 @@ static enum ufsmm_side source_side, dest_side;
 static double new_state_sx, new_state_sy;
 static double new_state_ex, new_state_ey;
 
+static struct ufsmm_coords *selected_text_block;
+
 enum ufsmm_controller_state {
     STATE_IDLE,
     STATE_ADD,
@@ -270,6 +272,11 @@ static gboolean motion_notify_event_cb (GtkWidget      *widget,
 
 
         gtk_widget_queue_draw (widget);
+    } else if (selected_transition && selected_text_block) {
+        L_DEBUG("Move text block");
+        selected_text_block->x += dx;
+        selected_text_block->y += dy;
+        gtk_widget_queue_draw (widget);
     } else if (selected_transition &&
                (selected_vertice_kind != UFSMM_TRANSITION_VERTICE_NONE) &&
                (event->state & GDK_BUTTON1_MASK))
@@ -369,6 +376,7 @@ gboolean buttonrelease_cb(GtkWidget *widget, GdkEventButton *event)
 
     ufsmm_canvas_set_selection(false, 0, 0, 0, 0);
     pan_mode = false;
+    selected_text_block = NULL;
     gtk_widget_queue_draw (widget);
     return TRUE;
 }
@@ -449,6 +457,8 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
                 new_transition->source.offset = source_offset;
                 new_transition->dest.side = dest_side;
                 new_transition->dest.offset = dest_offset;
+                new_transition->text_block_coords.w = 200;
+                new_transition->text_block_coords.h = 100;
             }
             controller_state = STATE_IDLE;
         }
@@ -680,9 +690,10 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
                 double tw = t->text_block_coords.w;
                 double th = t->text_block_coords.h;
 
-                if (point_in_box(px, py, tx, ty, tw, th)) {
+                if (point_in_box(px, py, tx+ox, ty+oy, tw, th)) {
                     L_DEBUG("Text-box selected");
                     t_focus = true;
+                    selected_text_block = &t->text_block_coords;
                 }
 
                 if (t_focus) {
@@ -746,6 +757,7 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
 
     } else {
         selected_vertice_kind = UFSMM_TRANSITION_VERTICE_NONE;
+        selected_text_block = NULL;
     }
 
 
