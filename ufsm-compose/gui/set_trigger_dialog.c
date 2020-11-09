@@ -5,11 +5,11 @@ enum
 {
   COLUMN_MATCH_RATING,
   COLUMN_NAME,
-  COLUMN_ACTION_REF,
+  COLUMN_TRIGGER_REF,
   NUM_COLUMNS
 };
 
-struct ufsmm_action *selected_action;
+struct ufsmm_trigger *selected_trigger;
 
 static void input_changed(GtkEntry *entry, gpointer user_data)
 {
@@ -102,8 +102,8 @@ static gboolean view_selection_func(GtkTreeSelection *selection,
         gtk_tree_model_get(model, &iter, COLUMN_NAME, &name, -1);
 
         if (!path_currently_selected) {
-            gtk_tree_model_get(model, &iter, COLUMN_ACTION_REF,
-                                &selected_action, -1);
+            gtk_tree_model_get(model, &iter, COLUMN_TRIGGER_REF,
+                                &selected_trigger, -1);
         }
 
         g_free(name);
@@ -126,7 +126,7 @@ static void list_row_activated_cb(GtkTreeView        *treeview,
        gchar *name;
 
        gtk_tree_model_get(model, &iter, COLUMN_NAME, &name, -1);
-       gtk_tree_model_get(model, &iter, COLUMN_ACTION_REF, &selected_action, -1);
+       gtk_tree_model_get(model, &iter, COLUMN_TRIGGER_REF, &selected_trigger, -1);
 
        g_print ("Selected action '%s'\n", name);
        gtk_dialog_response(GTK_DIALOG(userdata), GTK_RESPONSE_ACCEPT);
@@ -134,44 +134,20 @@ static void list_row_activated_cb(GtkTreeView        *treeview,
     }
 }
 
-static int add_action(GtkWindow *parent, struct ufsmm_model *model,
-                            void *p_input,
-                            enum ufsmm_action_kind kind)
+int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
+                            struct ufsmm_transition *transition)
 {
     int rc;
     const char *msg;
     GtkWidget *dialog, *vbox, *content_area;
     GtkWidget *treeview;
     GtkDialogFlags flags;
-    struct ufsmm_action *action;
-    struct ufsmm_state *state = (struct ufsmm_state *) p_input;
-    struct ufsmm_transition *transition = (struct ufsmm_transition *) p_input;
+    struct ufsmm_trigger *trigger;
 
-    selected_action = NULL;
-
-    switch (kind) {
-        case UFSMM_ACTION_ENTRY:
-            msg = "Add entry action";
-            action = model->entries;
-        break;
-        case UFSMM_ACTION_EXIT:
-            msg = "Add exit action";
-            action = model->exits;
-        break;
-        case UFSMM_ACTION_GUARD:
-            msg = "Add guard";
-            action = model->guards;
-        break;
-        case UFSMM_ACTION_ACTION:
-            msg = "Add action";
-            action = model->actions;
-        break;
-        default:
-            return -1;
-    }
+    selected_trigger = NULL;
 
     flags = GTK_DIALOG_MODAL;
-    dialog = gtk_dialog_new_with_buttons(msg,
+    dialog = gtk_dialog_new_with_buttons("Set trigger",
                                        parent,
                                        flags,
                                        "_OK",
@@ -197,12 +173,12 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                                 G_TYPE_STRING,
                                 G_TYPE_POINTER);
 
-    for (struct ufsmm_action *a = action; a; a = a->next) {
+    for (struct ufsmm_trigger *t = model->triggers; t; t = t->next) {
         gtk_list_store_append(store, &iter);
         gtk_list_store_set (store, &iter,
                             COLUMN_MATCH_RATING, 0,
-                            COLUMN_NAME, a->name,
-                            COLUMN_ACTION_REF, a,
+                            COLUMN_NAME, t->name,
+                            COLUMN_TRIGGER_REF, t,
                             -1);
     }
 
@@ -256,67 +232,18 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 
     int result = gtk_dialog_run(GTK_DIALOG(dialog));
 
-    if (selected_action && (result == GTK_RESPONSE_ACCEPT)) {
-        uuid_t id;
-        uuid_generate_random(id);
-
-        rc = 0;
-
-        switch (kind) {
-            case UFSMM_ACTION_ENTRY:
-                rc = ufsmm_state_add_entry(model, state, id, selected_action->id);
-            break;
-            case UFSMM_ACTION_EXIT:
-                rc = ufsmm_state_add_exit(model, state, id, selected_action->id);
-            break;
-            case UFSMM_ACTION_ACTION:
-                rc = ufsmm_transition_add_action(model, transition, id,
-                                                    selected_action->id);
-            break;
-            case UFSMM_ACTION_GUARD:
-                rc = ufsmm_transition_add_guard(model, transition, id,
-                                                    selected_action->id);
-            break;
-            default:
-                rc = -1;
-            break;
-        }
+    if (selected_trigger && (result == GTK_RESPONSE_ACCEPT)) {
+        rc = ufsmm_transition_set_trigger(model, transition,
+                                            selected_trigger);
     } else if (result == 1) { /* Create new action */
-        uuid_t id;
-        uuid_generate_random(id);
-        const char *action_name = gtk_entry_get_text(GTK_ENTRY(input));
-
-        rc = ufsmm_model_get_action_by_name(model, action_name, kind,
-                                                &selected_action);
-
-        if (rc != UFSMM_OK) {
-            /* Create new action */
-            rc = ufsmm_model_add_action(model, kind, action_name,
-                                            &selected_action);
-        }
+        const char *new_name = gtk_entry_get_text(GTK_ENTRY(input));
+        rc = ufsmm_model_add_trigger(model, new_name, &selected_trigger);
 
         if (rc != UFSMM_OK)
             goto err_out;
 
-        switch (kind) {
-            case UFSMM_ACTION_ENTRY:
-                rc = ufsmm_state_add_entry(model, state, id, selected_action->id);
-            break;
-            case UFSMM_ACTION_EXIT:
-                rc = ufsmm_state_add_exit(model, state, id, selected_action->id);
-            break;
-            case UFSMM_ACTION_ACTION:
-                rc = ufsmm_transition_add_action(model, transition, id,
-                                                    selected_action->id);
-            break;
-            case UFSMM_ACTION_GUARD:
-                rc = ufsmm_transition_add_guard(model, transition, id,
-                                                    selected_action->id);
-            break;
-            default:
-                rc = -1;
-            break;
-        }
+        rc = ufsmm_transition_set_trigger(model, transition,
+                                            selected_trigger);
     } else {
         rc = -1;
     }
@@ -325,28 +252,4 @@ err_out:
     gtk_widget_destroy (dialog);
 
     return rc;
-}
-
-int ufsm_add_entry_action_dialog(GtkWindow *parent, struct ufsmm_model *model,
-                            struct ufsmm_state *state)
-{
-    return add_action(parent, model, state, UFSMM_ACTION_ENTRY);
-}
-
-int ufsm_add_exit_action_dialog(GtkWindow *parent, struct ufsmm_model *model,
-                            struct ufsmm_state *state)
-{
-    return add_action(parent, model, state, UFSMM_ACTION_EXIT);
-}
-
-int ufsm_add_transition_action_dialog(GtkWindow *parent, struct ufsmm_model *model,
-                            struct ufsmm_transition *transition)
-{
-    return add_action(parent, model, transition, UFSMM_ACTION_ACTION);
-}
-
-int ufsm_add_transition_guard_dialog(GtkWindow *parent, struct ufsmm_model *model,
-                            struct ufsmm_transition *transition)
-{
-    return add_action(parent, model, transition, UFSMM_ACTION_GUARD);
 }

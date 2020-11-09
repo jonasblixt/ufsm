@@ -153,9 +153,13 @@ check_new_state:
 
                 ufsm_edit_string_dialog(GTK_WINDOW(window), "Edit state name",
                                             &selected_state->name);
-            } else if (selected_transition) {
-                L_DEBUG("Edit transition");
             }
+        }
+
+        if ((event->keyval == GDK_KEY_t) && selected_transition) {
+            L_DEBUG("Set transition trigger");
+            ufsm_set_trigger_dialog(GTK_WINDOW(window), model,
+                                                selected_transition);
         }
 
         if (event->keyval == GDK_KEY_a)
