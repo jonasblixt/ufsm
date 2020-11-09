@@ -22,6 +22,14 @@
     {
       "name":"eA2",
       "id":"f924e35f-d169-4383-b9be-bf7deba72f4a"
+    },
+    {
+      "name":"start_some_timer",
+      "id":"7d476618-4b39-434b-bb98-7ec8e4f5f79a"
+    },
+    {
+      "name":"begin_important_work",
+      "id":"6f054c60-90ba-425d-84f6-bae1ca17f42a"
     }
   ],
   "exits":[
@@ -32,6 +40,14 @@
     {
       "name":"xA2",
       "id":"3bfebe4b-897b-47a3-b405-465f5de3c74d"
+    },
+    {
+      "name":"stop_some_timer",
+      "id":"f159a775-c7ca-4c94-9967-855179bc454d"
+    },
+    {
+      "name":"end_important_work",
+      "id":"90a7e6c6-9cdb-4dd1-ac83-442aaa64488f"
     }
   ],
   "guards":[
@@ -268,6 +284,94 @@
             "off_page":true,
             "height":80,
             "states":[
+              {
+                "id":"da6ee7a8-2374-4671-830e-da524b6dc090",
+                "name":"New state",
+                "kind":"state",
+                "width":170.0,
+                "height":170.0,
+                "x":90.0,
+                "y":100.0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                  {
+                    "id":"3b12a2c2-d43a-46b9-aab6-491debf170ec",
+                    "source":{
+                      "state":"da6ee7a8-2374-4671-830e-da524b6dc090",
+                      "side":"right",
+                      "offset":39.729362936580884
+                    },
+                    "dest":{
+                      "state":"dae46503-f937-4e6b-9020-b823ca2a367a",
+                      "side":"left",
+                      "offset":39.31698069852942
+                    },
+                    "text-block":{
+                      "x":0.0,
+                      "y":0.0,
+                      "w":0.0,
+                      "h":0.0
+                    },
+                    "vertices":[
+                    ],
+                    "guards":[
+                    ],
+                    "actions":[
+                    ],
+                    "state-condition":[
+                    ]
+                  }
+                ]
+              },
+              {
+                "id":"dae46503-f937-4e6b-9020-b823ca2a367a",
+                "name":"New state",
+                "kind":"state",
+                "width":150.0,
+                "height":210.0,
+                "x":520.0,
+                "y":100.0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                  {
+                    "id":"5fb327d0-272d-4da3-879b-42927ae16317",
+                    "source":{
+                      "state":"dae46503-f937-4e6b-9020-b823ca2a367a",
+                      "side":"left",
+                      "offset":95.480023552389724
+                    },
+                    "dest":{
+                      "state":"da6ee7a8-2374-4671-830e-da524b6dc090",
+                      "side":"right",
+                      "offset":97.012077780330884
+                    },
+                    "text-block":{
+                      "x":0.0,
+                      "y":0.0,
+                      "w":0.0,
+                      "h":0.0
+                    },
+                    "vertices":[
+                    ],
+                    "guards":[
+                    ],
+                    "actions":[
+                    ],
+                    "state-condition":[
+                    ]
+                  }
+                ]
+              }
             ]
           }
         ],

@@ -114,6 +114,7 @@ int ufsmm_canvas_render_transition(cairo_t *cr,
 
         /* Draw text box */
         char text[1024];
+        size_t text_pos = 0;
         cairo_save(cr);
         cairo_set_font_size (cr, 18);
         //cairo_set_source_rgb (cr, 0,0,0);
@@ -122,8 +123,24 @@ int ufsmm_canvas_render_transition(cairo_t *cr,
         enum ufsmm_state_kind source_kind = t->source.state->kind;
 
         if (source_kind == UFSMM_STATE_NORMAL) {
-            snprintf(text, sizeof(text), "%s [%s] / %s",
-                        t->trigger?t->trigger->name:"completion-event", "", "");
+            if (t->trigger) {
+                text_pos = sprintf(&text[text_pos], "%s", t->trigger->name);
+            } else {
+                text_pos = sprintf(&text[text_pos], "trigger-less");
+            }
+
+            text_pos += sprintf(&text[text_pos], " [");
+            for (struct ufsmm_action_ref *ar = t->guard; ar; ar = ar->next) {
+                text_pos += sprintf(&text[text_pos], "%s%s",
+                            ar->act->name, ar->next?", ":"");
+            }
+            text_pos += sprintf(&text[text_pos], "] / ");
+
+            for (struct ufsmm_action_ref *ar = t->action; ar; ar = ar->next) {
+                text_pos += sprintf(&text[text_pos], "%s%s",
+                            ar->act->name, ar->next?", ":"");
+            }
+
         } else if (source_kind == UFSMM_STATE_INIT) {
             snprintf(text, sizeof(text), "/ %s", "");
         }

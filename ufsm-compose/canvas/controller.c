@@ -42,6 +42,8 @@ enum ufsmm_controller_state {
     STATE_ADD_STATE2,
     STATE_ADD_ENTRY,
     STATE_ADD_EXIT,
+    STATE_ADD_ACTION,
+    STATE_ADD_GUARD,
 };
 
 static enum ufsmm_controller_state controller_state;
@@ -97,6 +99,10 @@ check_new_state:
             controller_state = STATE_ADD_EXIT;
         } else if (event->keyval == GDK_KEY_e && selected_state) {
             controller_state = STATE_ADD_ENTRY;
+        } else if (event->keyval == GDK_KEY_a && selected_transition) {
+            controller_state = STATE_ADD_ACTION;
+        } else if (event->keyval == GDK_KEY_g && selected_transition) {
+            controller_state = STATE_ADD_GUARD;
         } else {
             controller_state = STATE_IDLE;
         }
@@ -116,6 +122,16 @@ check_new_state:
     } else if (controller_state == STATE_ADD_EXIT) {
         rc = ufsm_add_exit_action_dialog(GTK_WINDOW(window), model, selected_state);
         L_DEBUG("Add exit on state %s %i", selected_state->name, rc);
+        controller_state = STATE_IDLE;
+    } else if (controller_state == STATE_ADD_ACTION) {
+        rc = ufsm_add_transition_action_dialog(GTK_WINDOW(window), model,
+                                                selected_transition);
+
+        controller_state = STATE_IDLE;
+    } else if (controller_state == STATE_ADD_GUARD) {
+        rc = ufsm_add_transition_guard_dialog(GTK_WINDOW(window), model,
+                                                selected_transition);
+
         controller_state = STATE_IDLE;
     } else if (controller_state == STATE_IDLE) {
         if (event->keyval == GDK_KEY_A)

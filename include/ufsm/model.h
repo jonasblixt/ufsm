@@ -230,6 +230,11 @@ int ufsmm_model_get_action(struct ufsmm_model *model, uuid_t id,
                           enum ufsmm_action_kind kind,
                           struct ufsmm_action **result);
 
+int ufsmm_model_get_action_by_name(struct ufsmm_model *model,
+                          const char *name,
+                          enum ufsmm_action_kind kind,
+                          struct ufsmm_action **result);
+
 int ufsmm_model_add_trigger(struct ufsmm_model *model, const char *name,
                            struct ufsmm_trigger **out);
 int ufsmm_model_delete_trigger(struct ufsmm_model *model, uuid_t id);

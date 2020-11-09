@@ -1108,6 +1108,42 @@ int ufsmm_model_get_action(struct ufsmm_model *model, uuid_t id,
     return -UFSMM_ERROR;
 }
 
+
+int ufsmm_model_get_action_by_name(struct ufsmm_model *model,
+                          const char *name,
+                          enum ufsmm_action_kind kind,
+                          struct ufsmm_action **result)
+{
+    struct ufsmm_action *list = NULL;
+
+    switch (kind) {
+        case UFSMM_ACTION_ACTION:
+            list = model->actions;
+        break;
+        case UFSMM_ACTION_GUARD:
+            list = model->guards;
+        break;
+        case UFSMM_ACTION_ENTRY:
+            list = model->entries;
+        break;
+        case UFSMM_ACTION_EXIT:
+            list = model->exits;
+        break;
+        default:
+            return -UFSMM_ERROR;
+    }
+
+    while (list) {
+        if (strcmp(list->name, name) == 0) {
+            (*result) = list;
+            return UFSMM_OK;
+        }
+
+        list = list->next;
+    }
+
+    return -UFSMM_ERROR;
+}
 int ufsmm_model_add_trigger(struct ufsmm_model *model, const char *name,
                            struct ufsmm_trigger **out)
 {
