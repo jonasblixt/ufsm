@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
-#include <ufsm.h>
-#include <test_deephistory_input.h>
-#include "common.h"
+#include <ufsm/ufsm.h>
+#include "test_deephistory.gen.h"
 
 static bool flag_final = false;
 static bool flag_eB = false;
@@ -37,82 +36,82 @@ static void reset_flags(void)
     flag_xA = false;
 }
 
-void final(void)
+void final(void *ctx)
 {
     flag_final = true;
 }
 
-void eB(void)
+void eB(void *ctx)
 {
     flag_eB = true;
 }
 
-void eA2(void)
+void eA2(void *ctx)
 {
     flag_eA2 = true;
 }
 
-void xA2(void)
+void xA2(void *ctx)
 {
     flag_xA2 = true;
 }
 
-void eA1(void)
+void eA1(void *ctx)
 {
     flag_eA1 = true;
 }
 
-void xA1(void)
+void xA1(void *ctx)
 {
     flag_xA1 = true;
 }
 
-void eE(void)
+void eE(void *ctx)
 {
     flag_eE = true;
 }
 
-void xE(void)
+void xE(void *ctx)
 {
     flag_xE = true;
 }
 
-void eD(void)
+void eD(void *ctx)
 {
     flag_eD = true;
 }
 
-void xD(void)
+void xD(void *ctx)
 {
     flag_xD = true;
 }
 
-void eC(void)
+void eC(void *ctx)
 {
     flag_eC = true;
 }
 
-void xC(void)
+void xC(void *ctx)
 {
     flag_xC = true;
 }
 
-void eA(void)
+void eA(void *ctx)
 {
     flag_eA = true;
 }
 
-void xA(void)
+void xA(void *ctx)
 {
     flag_xA = true;
 }
 
-int main(void) 
+int main(void)
 {
-    struct ufsm_machine *m = get_StateMachine1();
-    
-    test_init(m);
-    ufsm_init_machine(m);
+    struct test_deep_history_machine machine;
+    struct ufsm_machine *m = &machine.machine;
+    ufsm_debug_machine(&machine.machine);
+    test_deep_history_machine_initialize(&machine, NULL);
     assert(!flag_final &&
         flag_eB &&
         !flag_eA2 &&
@@ -129,7 +128,7 @@ int main(void)
         !flag_xA);
 
     reset_flags();
-    test_process(m, EV_A);
+    ufsm_process(m, EV_A);
     assert(!flag_final &&
         !flag_eB &&
         !flag_eA2 &&
@@ -146,9 +145,9 @@ int main(void)
         !flag_xA);
 
 
-    test_process(m, EV_1);
-    test_process(m, EV_1);
-    test_process(m, EV_1);
+    ufsm_process(m, EV_1);
+    ufsm_process(m, EV_1);
+    ufsm_process(m, EV_1);
 
     assert(!flag_final &&
         !flag_eB &&
@@ -166,7 +165,7 @@ int main(void)
         !flag_xA);
 
     reset_flags();
-    test_process(m, EV_B);
+    ufsm_process(m, EV_B);
 
 
     assert(!flag_final &&
@@ -185,7 +184,7 @@ int main(void)
         flag_xA);
 
     reset_flags();
-    test_process(m, EV_A);
+    ufsm_process(m, EV_A);
 
 
     assert(!flag_final &&
@@ -204,7 +203,7 @@ int main(void)
         !flag_xA);
 
     reset_flags();
-    test_process(m, EV_1);
+    ufsm_process(m, EV_1);
 
     assert(!flag_final &&
         !flag_eB &&
@@ -220,10 +219,10 @@ int main(void)
         flag_xC &&
         !flag_eA &&
         !flag_xA);
-    
-    test_process(m ,EV_1);
+
+    ufsm_process(m ,EV_1);
     reset_flags();
-    test_process(m, EV_EXIT);
+    ufsm_process(m, EV_EXIT);
 
     assert(flag_final &&
         !flag_eB &&

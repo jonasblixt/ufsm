@@ -8,6 +8,7 @@
 #include "gui/edit_state_dialog.h"
 #include "gui/add_action_dialog.h"
 #include "gui/edit_string_dialog.h"
+#include "gui/set_trigger_dialog.h"
 
 static struct ufsmm_model *model;
 static struct ufsmm_region *current_region;
@@ -47,6 +48,11 @@ enum ufsmm_controller_state {
     STATE_ADD_EXIT,
     STATE_ADD_ACTION,
     STATE_ADD_GUARD,
+    STATE_ADD_INIT_STATE,
+    STATE_ADD_REGION,
+    STATE_ADD_FINAL,
+    STATE_ADD_SHALLOW_HISTORY,
+    STATE_ADD_DEEP_HISTORY,
 };
 
 static enum ufsmm_controller_state controller_state;
@@ -98,10 +104,20 @@ check_new_state:
             controller_state = STATE_ADD_TRANSITION;
         } else if (event->keyval == GDK_KEY_s) {
             controller_state = STATE_ADD_STATE1;
+        } else if (event->keyval == GDK_KEY_f) {
+            controller_state = STATE_ADD_FINAL;
+        } else if (event->keyval == GDK_KEY_h) {
+            controller_state = STATE_ADD_SHALLOW_HISTORY;
+        } else if (event->keyval == GDK_KEY_y) {
+            controller_state = STATE_ADD_DEEP_HISTORY;
+        } else if (event->keyval == GDK_KEY_i) {
+            controller_state = STATE_ADD_INIT_STATE;
         } else if (event->keyval == GDK_KEY_x && selected_state) {
             controller_state = STATE_ADD_EXIT;
         } else if (event->keyval == GDK_KEY_e && selected_state) {
             controller_state = STATE_ADD_ENTRY;
+        } else if (event->keyval == GDK_KEY_r && selected_state) {
+            controller_state = STATE_ADD_REGION;
         } else if (event->keyval == GDK_KEY_a && selected_transition) {
             controller_state = STATE_ADD_ACTION;
         } else if (event->keyval == GDK_KEY_g && selected_transition) {
@@ -116,6 +132,13 @@ check_new_state:
     } else if (controller_state == STATE_ADD_TRANSITION2) {
         if (event->keyval == GDK_KEY_Shift_L)
             add_vertice_flag = true;
+    } else if (controller_state == STATE_ADD_REGION) {
+        struct ufsmm_region *new_region = NULL;
+        rc = ufsmm_add_region(selected_state, false, &new_region);
+        new_region->name = strdup("New region");
+        L_DEBUG("Created new region");
+        gtk_widget_queue_draw (widget);
+        controller_state = STATE_IDLE;
     } else if (controller_state == STATE_ADD_STATE1) {
         L_DEBUG("Add new state");
     } else if (controller_state == STATE_ADD_ENTRY) {
@@ -143,7 +166,11 @@ check_new_state:
                 L_DEBUG("Ascending to region: %s",
                         current_region->parent_state->parent_region->name);
                 current_region->draw_as_root = false;
-                current_region = current_region->parent_state->parent_region;
+                do {
+                    if (!current_region->parent_state)
+                        break;
+                    current_region = current_region->parent_state->parent_region;
+                } while (!current_region->off_page);
                 current_region->draw_as_root = true;
             }
             gtk_widget_queue_draw (widget);
@@ -155,6 +182,9 @@ check_new_state:
 
                 ufsm_edit_string_dialog(GTK_WINDOW(window), "Edit state name",
                                             &selected_state->name);
+            } else if (selected_region) {
+                ufsm_edit_string_dialog(GTK_WINDOW(window), "Edit region name",
+                                            &selected_region->name);
             }
         }
 
@@ -193,6 +223,12 @@ check_new_state:
             gtk_widget_queue_draw (widget);
         }
 
+        if ((event->keyval == GDK_KEY_O) && selected_region)
+        {
+            L_DEBUG("Setting region to off-page");
+            selected_region->off_page = true;
+            gtk_widget_queue_draw (widget);
+        }
         if (event->keyval == GDK_KEY_z)
         {
             ufsmm_canvas_scale(-0.1);
@@ -488,6 +524,89 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
         }
         controller_state = STATE_IDLE;
         return TRUE;
+    } else if (controller_state == STATE_ADD_INIT_STATE) {
+        new_state_sx = ufsmm_canvas_nearest_grid_point(px);
+        new_state_sy = ufsmm_canvas_nearest_grid_point(py);
+        struct ufsmm_state *new_state = NULL;
+        rc = ufsmm_add_state(selected_region, "Init", &new_state);
+
+        if (rc == UFSMM_OK) {
+            ufsmm_get_region_absolute_coords(selected_region, &x, &y, &w, &h);
+            L_DEBUG("x, y = <%.2f, %.2f>, new_state_xy = <%.2f, %.2f>",
+                        x, y, new_state_sx, new_state_sy);
+            new_state->x = new_state_sx - x + ox;
+            new_state->y = new_state_sy - y + oy;
+            new_state->w = 20;
+            new_state->h = 20;
+            new_state->kind = UFSMM_STATE_INIT;
+            L_DEBUG("Created new state, pr = %s", selected_region->name);
+        } else {
+            L_ERR("Could not create new state");
+        }
+        controller_state = STATE_IDLE;
+    } else if (controller_state == STATE_ADD_FINAL) {
+        L_DEBUG("Adding final state");
+        new_state_sx = ufsmm_canvas_nearest_grid_point(px);
+        new_state_sy = ufsmm_canvas_nearest_grid_point(py);
+        struct ufsmm_state *new_state = NULL;
+        rc = ufsmm_add_state(selected_region, "Final", &new_state);
+
+        if (rc == UFSMM_OK) {
+            ufsmm_get_region_absolute_coords(selected_region, &x, &y, &w, &h);
+            L_DEBUG("x, y = <%.2f, %.2f>, new_state_xy = <%.2f, %.2f>",
+                        x, y, new_state_sx, new_state_sy);
+            new_state->x = new_state_sx - x + ox;
+            new_state->y = new_state_sy - y + oy;
+            new_state->w = 20;
+            new_state->h = 20;
+            new_state->kind = UFSMM_STATE_FINAL;
+            L_DEBUG("Created new state, pr = %s", selected_region->name);
+        } else {
+            L_ERR("Could not create new state");
+        }
+        controller_state = STATE_IDLE;
+    } else if (controller_state == STATE_ADD_SHALLOW_HISTORY) {
+        L_DEBUG("Adding shallow history state");
+        new_state_sx = ufsmm_canvas_nearest_grid_point(px);
+        new_state_sy = ufsmm_canvas_nearest_grid_point(py);
+        struct ufsmm_state *new_state = NULL;
+        rc = ufsmm_add_state(selected_region, "Shallow History", &new_state);
+
+        if (rc == UFSMM_OK) {
+            ufsmm_get_region_absolute_coords(selected_region, &x, &y, &w, &h);
+            L_DEBUG("x, y = <%.2f, %.2f>, new_state_xy = <%.2f, %.2f>",
+                        x, y, new_state_sx, new_state_sy);
+            new_state->x = new_state_sx - x + ox;
+            new_state->y = new_state_sy - y + oy;
+            new_state->w = 20;
+            new_state->h = 20;
+            new_state->kind = UFSMM_STATE_SHALLOW_HISTORY;
+            L_DEBUG("Created new state, pr = %s", selected_region->name);
+        } else {
+            L_ERR("Could not create new state");
+        }
+        controller_state = STATE_IDLE;
+    } else if (controller_state == STATE_ADD_DEEP_HISTORY) {
+        L_DEBUG("Adding deep history state");
+        new_state_sx = ufsmm_canvas_nearest_grid_point(px);
+        new_state_sy = ufsmm_canvas_nearest_grid_point(py);
+        struct ufsmm_state *new_state = NULL;
+        rc = ufsmm_add_state(selected_region, "Deep History", &new_state);
+
+        if (rc == UFSMM_OK) {
+            ufsmm_get_region_absolute_coords(selected_region, &x, &y, &w, &h);
+            L_DEBUG("x, y = <%.2f, %.2f>, new_state_xy = <%.2f, %.2f>",
+                        x, y, new_state_sx, new_state_sy);
+            new_state->x = new_state_sx - x + ox;
+            new_state->y = new_state_sy - y + oy;
+            new_state->w = 20;
+            new_state->h = 20;
+            new_state->kind = UFSMM_STATE_DEEP_HISTORY;
+            L_DEBUG("Created new state, pr = %s", selected_region->name);
+        } else {
+            L_ERR("Could not create new state");
+        }
+        controller_state = STATE_IDLE;
     }
 
 

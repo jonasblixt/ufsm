@@ -39,7 +39,51 @@ static void generate_transitions(FILE *fp, struct ufsmm_state *s)
         fprintf(fp, "/* Transitions originating from '%s' */\n", s->name);
     }
 
+    /* Forward declare transitions */
     for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
+        uu_to_str(t->id, uu_str);
+        fprintf(fp, "const struct ufsm_transition t_%s;\n", uu_str);
+        for (struct ufsmm_action_ref *ar = t->action; ar; ar = ar->next) {
+            uu_to_str(ar->id, uu_str);
+            fprintf(fp, "const struct ufsm_action a_%s;\n", uu_str);
+        }
+        for (struct ufsmm_action_ref *ar = t->guard; ar; ar = ar->next) {
+            uu_to_str(ar->id, uu_str);
+            fprintf(fp, "const struct ufsm_guard g_%s;\n", uu_str);
+        }
+    }
+
+    fprintf(fp, "\n");
+
+    for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
+        for (struct ufsmm_action_ref *ar = t->action; ar; ar = ar->next) {
+            uu_to_str(ar->id, uu_str);
+            fprintf(fp, "const struct ufsm_action a_%s = {\n", uu_str);
+            fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
+            fprintf(fp, "    .f = &%s,\n", ar->act->name);
+            if (ar->next) {
+                uu_to_str(ar->next->id, uu_str);
+                fprintf(fp, "    .next = &a_%s,\n", uu_str);
+            } else {
+                fprintf(fp, "    .next = NULL,\n");
+            }
+            fprintf(fp, "};\n\n");
+        }
+
+        for (struct ufsmm_action_ref *ar = t->guard; ar; ar = ar->next) {
+            uu_to_str(ar->id, uu_str);
+            fprintf(fp, "const struct ufsm_guard g_%s = {\n", uu_str);
+            fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
+            fprintf(fp, "    .f = &%s,\n", ar->act->name);
+            if (ar->next) {
+                uu_to_str(ar->next->id, uu_str);
+                fprintf(fp, "    .next = &g_%s,\n", uu_str);
+            } else {
+                fprintf(fp, "    .next = NULL,\n");
+            }
+            fprintf(fp, "};\n\n");
+        }
+
         uu_to_str(t->id, uu_str);
         fprintf(fp, "const struct ufsm_transition t_%s = {\n", uu_str);
         fprintf(fp, "    .kind = UFSM_TRANSITION_EXTERNAL,\n");
@@ -219,12 +263,44 @@ static void generate_state_output(FILE *fp, struct ufsmm_state *s)
 static void generate_region_output(FILE *fp, struct ufsmm_region *r)
 {
     char uu_str[37];
+    bool region_has_history = false;
+
+    for (struct ufsmm_state *s = r->state; s; s = s->next) {
+        if ((s->kind == UFSMM_STATE_SHALLOW_HISTORY) ||
+            (s->kind == UFSMM_STATE_DEEP_HISTORY)) {
+            region_has_history = true;
+            break;
+        }
+    }
+
+    if(!region_has_history && r->parent_state) {
+        struct ufsmm_region *rr = r->parent_state->parent_region;
+
+        while (rr) {
+            for (struct ufsmm_state *s = rr->state; s; s = s->next) {
+                if ((s->kind == UFSMM_STATE_SHALLOW_HISTORY) ||
+                    (s->kind == UFSMM_STATE_DEEP_HISTORY)) {
+                    region_has_history = true;
+                    break;
+                }
+            }
+
+            if (rr->parent_state)
+                rr = rr->parent_state->parent_region;
+            else
+                break;
+        }
+
+    }
 
     uu_to_str(r->id, uu_str);
     fprintf(fp, "const struct ufsm_region r_%s = {\n", uu_str);
     fprintf(fp, "    .index = %i,\n", region_counter++);
     fprintf(fp, "    .name = \"%s\",\n", r->name);
-    fprintf(fp, "    .has_history = false,\n");
+    if (region_has_history)
+        fprintf(fp, "    .has_history = true,\n");
+    else
+        fprintf(fp, "    .has_history = false,\n");
 
     if (r->state) {
         uu_to_str(r->state->id, uu_str);

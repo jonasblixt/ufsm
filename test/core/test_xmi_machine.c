@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <assert.h>
-#include <ufsm.h>
+#include <ufsm/ufsm.h>
 #include <assert.h>
-#include <test_xmi_machine_input.h>
-#include "common.h"
+#include "test_xmi_machine.gen.h"
 
 static bool flag_eC = false;
 static bool flag_eD = false;
@@ -23,73 +22,76 @@ static void reset_flags(void)
 }
 
 
-bool Guard(void)
+bool Guard(void *ctx)
 {
     return true;
 }
 
-void DoAction(void)
+void DoAction(void *ctx)
 {
 }
 
-void eD(void)
+void eD(void *ctx)
 {
     flag_eD = true;
 }
 
-void eC(void)
+void eC(void *ctx)
 {
     flag_eC = true;
 }
 
-void t1(void)
+void t1(void *ctx)
 {
     flag_t1 = true;
 }
 
-void t2(void)
+void t2(void *ctx)
 {
     flag_t2 = true;
 }
 
-void t3(void)
+void t3(void *ctx)
 {
     flag_t3 = true;
 }
 
-void final(void)
+void final(void *ctx)
 {
     flag_final = true;
 }
 
-int main(void) 
+int main(void)
 {
-    struct ufsm_machine *m = get_StateMachine1();
-    uint32_t err = UFSM_OK;
-    test_init(m);
+    struct test_xmi_machine_machine machine;
+    ufsm_debug_machine(&machine.machine);
 
-    assert (ufsm_init_machine(m) == UFSM_OK);
+    struct ufsm_machine *m = &machine.machine;
+    uint32_t err = UFSM_OK;
+
+    assert (test_xmi_machine_machine_initialize(&machine, NULL) == UFSM_OK);
     assert (flag_eC);
 
-    reset_flags();
-    test_process (m, EV_D);
-    test_process (m, EV_B);
+    ufsm_process (m, EV_D);
+    ufsm_process (m, EV_B);
 
-    test_process (m, EV_E);
-    test_process (m, EV_B);
-    test_process (m, EV_A);
-    assert(flag_eD);
-    
     reset_flags();
-    test_process (m, EV_B);
-    test_process (m, EV_E);
+
+    ufsm_process (m, EV_E);
+    ufsm_process (m, EV_B);
+    ufsm_process (m, EV_A);
+    assert("Should be in state 'D'" && flag_eD);
+
+    reset_flags();
+    ufsm_process (m, EV_B);
+    ufsm_process (m, EV_E);
     assert (!flag_t1 && !flag_t2 && !flag_t3);
     err = ufsm_process (m, EV_E1);
     if (err != UFSM_OK) {
         printf ("Error: %i\n", err);
         assert(0);
     }
-        
+
     assert (flag_t1);
     assert (!flag_t2);
     assert (!flag_t3);

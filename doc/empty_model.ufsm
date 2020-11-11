@@ -1,0 +1,23 @@
+{
+  "kind":"uFSM Model",
+  "version":0,
+  "name":"template",
+  "triggers":[
+  ],
+  "actions":[
+  ],
+  "entries":[
+  ],
+  "exits":[
+  ],
+  "guards":[
+  ],
+  "region":{
+    "id":"1b5e0881-f6a0-4dc4-b226-45d61bcc6ab6",
+    "name":"Root region",
+    "off_page":false,
+    "height":-1,
+    "states":[
+    ]
+  }
+}

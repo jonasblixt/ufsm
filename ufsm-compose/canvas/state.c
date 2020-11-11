@@ -6,6 +6,52 @@
 #include "canvas/view.h"
 
 
+static int render_history_state(cairo_t *cr, struct ufsmm_state *state,
+                                bool deep)
+{
+    double x, y, w, h;
+    double lbl_x, lbl_y;
+    double radius = 10.0;
+    double degrees = M_PI / 180.0;
+    bool clip_text = false;
+    cairo_text_extents_t extents;
+
+    ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
+
+    cairo_save(cr);
+    cairo_new_sub_path(cr);
+    cairo_set_line_width(cr, 4);
+    if (state->focus)
+        ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
+    else
+        ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
+    cairo_translate(cr, x+w/2, y+h/2);
+    cairo_arc(cr, 0, 0, w/2, 0, 2 * M_PI);
+    cairo_stroke_preserve(cr);
+    cairo_close_path(cr);
+    cairo_stroke_preserve(cr);
+    cairo_fill_preserve(cr);
+    ufsmm_color_set(cr, UFSMM_COLOR_BG);
+    cairo_fill(cr);
+    cairo_restore(cr);
+
+    cairo_save(cr);
+    ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
+    cairo_set_line_width(cr, 2);
+    cairo_move_to(cr, x + w/2 - 3, y + h/2 - 5);
+    cairo_line_to(cr, x + w/2 - 3, y + h/2 + 5);
+
+    cairo_move_to(cr, x + w/2 + 3, y + h/2 - 5);
+    cairo_line_to(cr, x + w/2 + 3, y + h/2 + 5);
+
+    cairo_move_to(cr, x + w/2 - 3, y + h/2);
+    cairo_line_to(cr, x + w/2 + 3, y + h/2);
+
+    cairo_stroke(cr);
+    cairo_restore(cr);
+    return 0;
+}
+
 static int render_init_state(cairo_t *cr, struct ufsmm_state *state)
 {
     double x, y, w, h;
@@ -40,6 +86,54 @@ static int render_init_state(cairo_t *cr, struct ufsmm_state *state)
     cairo_stroke(cr);
     cairo_restore(cr);
 */
+    return 0;
+}
+
+static int render_final_state(cairo_t *cr, struct ufsmm_state *state)
+{
+    double x, y, w, h;
+    double lbl_x, lbl_y;
+    double radius = 10.0;
+    double degrees = M_PI / 180.0;
+    bool clip_text = false;
+    cairo_text_extents_t extents;
+
+    ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
+
+    cairo_save(cr);
+    cairo_new_sub_path(cr);
+    cairo_set_line_width(cr, 4);
+    if (state->focus)
+        ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
+    else
+        ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
+    cairo_translate(cr, x+w/2, y+h/2);
+    cairo_arc(cr, 0, 0, w/2, 0, 2 * M_PI);
+    cairo_stroke_preserve(cr);
+    cairo_close_path(cr);
+    cairo_stroke_preserve(cr);
+    cairo_fill_preserve(cr);
+    ufsmm_color_set(cr, UFSMM_COLOR_BG);
+    cairo_fill(cr);
+    cairo_restore(cr);
+
+    cairo_save(cr);
+    cairo_new_sub_path(cr);
+    cairo_set_line_width(cr, 4);
+    if (state->focus)
+        ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
+    else
+        ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
+    cairo_translate(cr, x+w/2, y+h/2);
+    cairo_arc(cr, 0, 0, w/2 - 4, 0, 2 * M_PI);
+    cairo_fill(cr);
+    cairo_close_path(cr);
+    cairo_stroke_preserve(cr);
+    cairo_fill_preserve(cr);
+    ufsmm_color_set(cr, UFSMM_COLOR_BG);
+    cairo_fill(cr);
+    cairo_restore(cr);
+
     return 0;
 }
 
@@ -188,6 +282,15 @@ int ufsmm_canvas_render_state(cairo_t *cr, struct ufsmm_state *state)
         break;
         case UFSMM_STATE_INIT:
             rc = render_init_state(cr, state);
+        break;
+        case UFSMM_STATE_FINAL:
+            rc = render_final_state(cr, state);
+        break;
+        case UFSMM_STATE_SHALLOW_HISTORY:
+            rc = render_history_state(cr, state, false);
+        break;
+        case UFSMM_STATE_DEEP_HISTORY:
+            rc = render_history_state(cr, state, true);
         break;
     }
     return 0;

@@ -29,6 +29,17 @@ int ufsmm_canvas_render_region(cairo_t *cr, struct ufsmm_region *region)
         cairo_rectangle (cr, x, y, w, h);
         cairo_stroke (cr);
         cairo_restore (cr);
+    } else if (region->next) {
+        if (!region->next->focus) {
+            cairo_save(cr);
+            ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
+            cairo_set_dash(cr, dashes, 2, 0);
+            cairo_set_line_width (cr, 2);
+            cairo_move_to(cr, x, y + h);
+            cairo_line_to(cr, x+w, y+h);
+            cairo_stroke(cr);
+            cairo_restore(cr);
+        }
     }
 
     /* Possibly render region 'off-page' symbol */

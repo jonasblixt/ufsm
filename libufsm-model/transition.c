@@ -377,6 +377,8 @@ static int serialize_action_list(struct ufsmm_action_ref *list,
     while (tmp) {
         uuid_unparse(tmp->act->id, uuid_str);
         action = json_object_new_object();
+        json_object_object_add(action, "action-id", json_object_new_string(uuid_str));
+        uuid_unparse(tmp->id, uuid_str);
         json_object_object_add(action, "id", json_object_new_string(uuid_str));
         json_object_array_add(output, action);
         tmp = tmp->next;
@@ -553,11 +555,15 @@ int ufsmm_transition_free(struct ufsmm_transition *transition)
 
     while (list)
     {
+        L_DEBUG("Freeing transition %s --> %s", list->source.state->name,
+                                                list->dest.state->name);
         tmp = list->next;
-        free_action_ref_list(transition->action);
-        free_action_ref_list(transition->guard);
+        L_DEBUG("Freeing actions");
+        free_action_ref_list(list->action);
+        L_DEBUG("Freeing guards");
+        free_action_ref_list(list->guard);
 
-        v = transition->vertices;
+        v = list->vertices;
 
         while (v) {
             v_tmp = v->next;
@@ -565,7 +571,7 @@ int ufsmm_transition_free(struct ufsmm_transition *transition)
             v = v_tmp;
         }
 
-        sc = transition->state_conditions;
+        sc = list->state_conditions;
 
         while (sc) {
             sc_tmp = sc->next;

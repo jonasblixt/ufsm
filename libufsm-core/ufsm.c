@@ -632,19 +632,19 @@ static int ufsm_process_final_state(struct ufsm_machine *m,
             const struct ufsm_state *current = m->r_data[ar->index].current;
             ufsm_leave_state(m, current);
         }
-        for (const struct ufsm_state *s = parent_state->region->state; s; s = s->next) {
-            for (const struct ufsm_transition *tf = s->transition; tf; tf = tf->next) {
-                if (tf->trigger == NULL &&
-                    tf->source == parent_state)
-                {
-                    m->s_data[parent_state->index].cant_exit = false;
-                    err = ufsm_push_rt_pair(m, parent_state->parent_region, tf);
 
-                    if (err != UFSM_OK)
-                        break;
+        for (const struct ufsm_transition *tf = parent_state->transition;
+                                                          tf; tf = tf->next) {
+            if (tf->trigger == NULL &&
+                tf->source == parent_state)
+            {
+                m->s_data[parent_state->index].cant_exit = false;
+                err = ufsm_push_rt_pair(m, parent_state->parent_region, tf);
 
-                    *c = *c + 1;
-                }
+                if (err != UFSM_OK)
+                    break;
+
+                *c = *c + 1;
             }
         }
     }

@@ -809,6 +809,7 @@ int free_action_ref_list(struct ufsmm_action_ref *list)
 
     while (item) {
         tmp = item->next;
+        L_DEBUG("Freeing action %p", item);
         free(item);
         item = tmp;
     }
@@ -897,8 +898,14 @@ int ufsmm_model_free(struct ufsmm_model *model)
             {
                 L_DEBUG("Found state '%s'", s->name);
                 ufsmm_stack_push(free_stack, s);
+                L_DEBUG("Freeing entries for state '%s' <%p>", s->name,
+                                                               s->entries);
                 free_action_ref_list(s->entries);
+                L_DEBUG("Freeing exits for state '%s' <%p>", s->name,
+                                                             s->exits);
                 free_action_ref_list(s->exits);
+
+                L_DEBUG("Freeing transitions for state '%s'", s->name);
                 ufsmm_transition_free(s->transition);
                 free((void *) s->name);
 

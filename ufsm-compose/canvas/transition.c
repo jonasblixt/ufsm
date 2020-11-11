@@ -35,7 +35,9 @@ int transition_calc_begin_end_point(struct ufsmm_state *s,
             default:
             break;
         }
-    } else if (s->kind == UFSMM_STATE_INIT) {
+    } else if ((s->kind == UFSMM_STATE_INIT) || (s->kind == UFSMM_STATE_FINAL) ||
+               (s->kind == UFSMM_STATE_SHALLOW_HISTORY) ||
+               (s->kind == UFSMM_STATE_DEEP_HISTORY)) {
         (*x) = sx + sw/2;
         (*y) = sy + sh;
     }
@@ -121,8 +123,9 @@ int ufsmm_canvas_render_transition(cairo_t *cr,
         ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
 
         enum ufsmm_state_kind source_kind = t->source.state->kind;
-
-        if (source_kind == UFSMM_STATE_NORMAL) {
+        if (source_kind == UFSMM_STATE_INIT) {
+                snprintf(text, sizeof(text), "/ %s", "");
+        } else {
             if (t->trigger) {
                 text_pos = sprintf(&text[text_pos], "%s", t->trigger->name);
             } else {
@@ -140,9 +143,6 @@ int ufsmm_canvas_render_transition(cairo_t *cr,
                 text_pos += sprintf(&text[text_pos], "%s%s",
                             ar->act->name, ar->next?", ":"");
             }
-
-        } else if (source_kind == UFSMM_STATE_INIT) {
-            snprintf(text, sizeof(text), "/ %s", "");
         }
 
         cairo_text_extents (cr, text, &extents);

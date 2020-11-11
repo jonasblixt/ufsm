@@ -14,6 +14,8 @@ int ufsmm_add_region(struct ufsmm_state *state, bool off_page,
 
     memset(region, 0, sizeof(*region));
 
+    region->parent_state = state;
+
     (*out) = region;
 
     uuid_generate_random(region->id);
@@ -22,8 +24,13 @@ int ufsmm_add_region(struct ufsmm_state *state, bool off_page,
         region->prev = state->last_region;
         state->last_region->next = region;
     }
-    if (!state->regions)
+
+    if (!state->regions) {
         state->regions = region;
+        region->h = -1;
+    } else {
+        region->h = 40;
+    }
 
     state->last_region = region;
 

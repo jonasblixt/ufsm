@@ -52,6 +52,10 @@ int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
         y_acc += ps->y + 30.0;
 
         pr = ps->parent_region;
+
+        if (ufsmm_region_is_root_or_offpage(pr))
+            break;
+
     }
 
     /* Iterate through possible sibling regions */
@@ -73,7 +77,7 @@ int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
     *y = y_acc;
 
     if (r->h == -1) {
-        *h = r->parent_state->h - 30.0;
+        *h = r->parent_state->h - 30.0 - r->parent_state->region_y_offset;
     } else {
         *h = r->h;
     }
