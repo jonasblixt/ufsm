@@ -213,6 +213,27 @@ static int render_normal_state(cairo_t *cr, struct ufsmm_state *state)
     for (;entry; entry = entry->next) {
         snprintf(action_str_buf, sizeof(action_str_buf),
                     "e/ %s()", entry->act->name);
+
+        cairo_text_extents(cr, action_str_buf, &extents);
+        entry->x = x + 10;
+        entry->y = y + y_offset - extents.height;
+        entry->w = extents.width;
+        entry->h = extents.height;
+
+/*
+ * Debug selection box for action function
+        cairo_save(cr);
+        ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
+        cairo_set_line_width(cr, 1);
+        cairo_rectangle(cr, entry->x, entry->y, entry->w, entry->h);
+        cairo_stroke(cr);
+        cairo_restore(cr);
+*/
+        if (entry->focus)
+            ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
+        else
+            ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
+
         cairo_move_to(cr, x + 10, y + y_offset);
         cairo_show_text(cr, action_str_buf);
         y_offset += 20;
@@ -222,6 +243,17 @@ static int render_normal_state(cairo_t *cr, struct ufsmm_state *state)
     for (;entry; entry = entry->next) {
         snprintf(action_str_buf, sizeof(action_str_buf),
                     "x/ %s()", entry->act->name);
+
+        cairo_text_extents(cr, action_str_buf, &extents);
+        entry->x = x + 10;
+        entry->y = y + y_offset - extents.height;
+        entry->w = extents.width;
+        entry->h = extents.height;
+
+        if (entry->focus)
+            ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
+        else
+            ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
         cairo_move_to(cr, x + 10, y + y_offset);
         cairo_show_text(cr, action_str_buf);
         y_offset += 20;

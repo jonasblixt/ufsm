@@ -14,12 +14,14 @@ int ufsmm_canvas_render_region(cairo_t *cr, struct ufsmm_region *region)
 
     ufsmm_get_region_absolute_coords(region, &x, &y, &w, &h);
 
-    cairo_save (cr);
-    cairo_set_font_size (cr, 18);
-    ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
-    cairo_move_to (cr, x + 10, y + 25);
-    cairo_show_text (cr, region->name);
-    cairo_restore(cr);
+    if (region->focus || region->off_page) {
+        cairo_save (cr);
+        cairo_set_font_size (cr, 18);
+        ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
+        cairo_move_to (cr, x + 10, y + 25);
+        cairo_show_text (cr, region->name);
+        cairo_restore(cr);
+    }
 
     if (region->focus) {
         cairo_save(cr);

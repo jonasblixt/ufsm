@@ -12,7 +12,6 @@
 
 static struct ufsmm_model *model;
 static struct ufsmm_region *current_region;
-static struct ufsmm_state *selected_state = NULL;
 static struct ufsmm_transition *selected_transition = NULL;
 static enum ufsmm_transition_vertice_kind selected_vertice_kind;
 static struct ufsmm_vertice *selected_transition_vertice = NULL;
@@ -20,8 +19,12 @@ static double selection_start_x, selection_start_y;
 static double sselection_x, sselection_y;
 static double canvas_ox, canvas_oy;
 static bool pan_mode;
-static enum ufsmm_resize_selector selected_state_corner;
 static GtkWidget *window;
+
+/* Selected state variables */
+static struct ufsmm_state *selected_state = NULL;
+static enum ufsmm_resize_selector selected_state_corner;
+static struct ufsmm_action_ref *selected_action_ref = NULL;
 
 /* Selected region variables */
 static struct ufsmm_region *selected_region = NULL;
@@ -85,7 +88,7 @@ static void draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data)
     clock_gettime(CLOCK_MONOTONIC, &ts);
 
     r_time = (ts.tv_sec*1e3 + ts.tv_nsec / 1e6) - r_time;
-    printf("render %ld ms\n", r_time);
+   // printf("render %ld ms\n", r_time);
 }
 
 gboolean keyrelease_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
@@ -207,11 +210,33 @@ check_new_state:
 
         if (event->keyval == GDK_KEY_Delete)
         {
-            if (selected_transition) {
+            if (selected_transition && !selected_action_ref) {
                 if (selected_transition->focus) {
                     L_DEBUG("Deleting transition from source: %s", selected_transition->source.state->name);
                     ufsmm_state_delete_transition(selected_transition);
                     gtk_widget_queue_draw(widget);
+                }
+            } else if (selected_action_ref) {
+                struct ufsmm_action_ref *ar = selected_action_ref;
+                if (ar->focus) {
+                    L_DEBUG("Delete action, kind = %i", ar->act->kind);
+                    if (ar->act->kind == UFSMM_ACTION_ENTRY) {
+                        L_DEBUG("Delete entry '%s' on state '%s'",
+                                ar->act->name, selected_state->name);
+                        ufsmm_state_delete_entry(selected_state, ar->act->id);
+                    } else if (ar->act->kind == UFSMM_ACTION_EXIT) {
+                        L_DEBUG("Delete exit '%s' on state '%s'",
+                                ar->act->name, selected_state->name);
+                        ufsmm_state_delete_exit(selected_state, ar->act->id);
+                    } else if (ar->act->kind == UFSMM_ACTION_GUARD) {
+                        L_DEBUG("Delete guard '%s'", ar->act->name);
+                        ufsmm_transition_delete_guard(selected_transition, ar->act->id);
+                    } else if (ar->act->kind == UFSMM_ACTION_ACTION) {
+                        L_DEBUG("Delete action '%s'", ar->act->name);
+                        ufsmm_transition_delete_action(selected_transition, ar->act->id);
+                    }
+
+                    gtk_widget_queue_draw (widget);
                 }
             } else if (selected_state) {
                 if (selected_state->focus) {
@@ -247,9 +272,9 @@ check_new_state:
             ufsmm_model_write(filename, model);
         }
 
-        if (event->keyval == GDK_KEY_space)
+        if (event->keyval == GDK_KEY_Up)
         {
-            printf("SPACE KEY PRESSED!\n");
+            printf("Key up\n");
             return TRUE;
         }
 
@@ -320,6 +345,12 @@ static gboolean motion_notify_event_cb (GtkWidget      *widget,
             break;
         }
 
+        if (selected_text_block->h < 20)
+            selected_text_block->h = 20;
+
+        if (selected_text_block->w < 50)
+            selected_text_block->w = 50;
+
         gtk_widget_queue_draw (widget);
     } else if (selected_transition &&
                (selected_vertice_kind != UFSMM_TRANSITION_VERTICE_NONE) &&
@@ -329,20 +360,52 @@ static gboolean motion_notify_event_cb (GtkWidget      *widget,
 
         switch (selected_vertice_kind) {
             case UFSMM_TRANSITION_VERTICE_START:
+            {
+                enum ufsmm_side src_side;
+                double src_offset;
+
+                ufsmm_state_get_closest_side(selected_transition->source.state,
+                                             tx_tmp, ty_tmp,
+                                             &src_side,
+                                             &src_offset);
+
+                if (selected_transition->source.side != src_side) {
+                    selected_transition->source.side = src_side;
+                    selected_transition->source.offset = src_offset;
+                }
+
                 if (selected_transition->source.side == UFSMM_SIDE_LEFT ||
                     selected_transition->source.side == UFSMM_SIDE_RIGHT) {
                     selected_transition->source.offset += dy;
                 } else {
                     selected_transition->source.offset += dx;
                 }
+            }
             break;
             case UFSMM_TRANSITION_VERTICE_END:
+            {
+                enum ufsmm_side dest_side;
+                double dest_offset;
+
+                ufsmm_state_get_closest_side(selected_transition->dest.state,
+                                             tx_tmp, ty_tmp,
+                                             &dest_side,
+                                             &dest_offset);
+
+                if (selected_transition->dest.side != dest_side) {
+                    L_DEBUG("Changing side from %i to %i",
+                        selected_transition->dest.side, dest_side);
+                    selected_transition->dest.side = dest_side;
+                    selected_transition->dest.offset = dest_offset;
+                }
+
                 if (selected_transition->dest.side == UFSMM_SIDE_LEFT ||
                     selected_transition->dest.side == UFSMM_SIDE_RIGHT) {
                     selected_transition->dest.offset += dy;
                 } else {
                     selected_transition->dest.offset += dx;
                 }
+            }
             break;
             case UFSMM_TRANSITION_VERTICE:
                 selected_transition_vertice->y += dy;
@@ -366,6 +429,9 @@ static gboolean motion_notify_event_cb (GtkWidget      *widget,
                     selected_region->h = dy;
                 else
                     selected_region->h += dy;
+
+                if (selected_region->h < 50)
+                    selected_region->h = 50;
             break;
             default:
             break;
@@ -418,13 +484,21 @@ static gboolean motion_notify_event_cb (GtkWidget      *widget,
                 selected_state->y += dy;
             break;
         }
+
+        if (selected_state->w < 50)
+            selected_state->w = 50;
+
+        if (selected_state->h < 50)
+            selected_state->h = 50;
+
         selected_state->x = ufsmm_canvas_nearest_grid_point(selected_state->x);
         selected_state->y = ufsmm_canvas_nearest_grid_point(selected_state->y);
         selected_state->w = ufsmm_canvas_nearest_grid_point(selected_state->w);
         selected_state->h = ufsmm_canvas_nearest_grid_point(selected_state->h);
 
         gtk_widget_queue_draw (widget);
-    } else if (selected_state && (event->state & GDK_BUTTON1_MASK)) {
+    } else if (selected_state && (event->state & GDK_BUTTON1_MASK) &&
+               (selected_action_ref == NULL)) {
         printf("move %s --> %f %f\n", selected_state->name, dx, dy);
         ufsmm_canvas_state_translate(selected_state, dx, dy);
         gtk_widget_queue_draw (widget);
@@ -437,10 +511,6 @@ static gboolean motion_notify_event_cb (GtkWidget      *widget,
 
 gboolean buttonrelease_cb(GtkWidget *widget, GdkEventButton *event)
 {
-    printf("%s %f %f\n", __func__,
-                       event->x,
-                       event->y);
-
     ufsmm_canvas_set_selection(false, 0, 0, 0, 0);
     pan_mode = false;
     selected_text_block = NULL;
@@ -460,10 +530,11 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
     bool edit_object = false;
     int rc;
 
-
+/*
     printf("%s %f %f\n", __func__,
                        event->x,
-                       event->y);
+                       event->y);*/
+
     if (event->type == GDK_DOUBLE_BUTTON_PRESS)
         edit_object = true;
 
@@ -487,9 +558,10 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
     if (event->type == GDK_BUTTON_PRESS &&
         event->button == 3) {
         pan_mode = true;
-        L_DEBUG("pan mode");
         return TRUE;
     }
+
+    selected_action_ref = NULL;
 
     if (controller_state == STATE_ADD_TRANSITION) {
         L_DEBUG("Looking for source state at <%f, %f>", px, py);
@@ -546,8 +618,8 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
         if (rc == UFSMM_OK) {
 
             ufsmm_get_region_absolute_coords(selected_region, &x, &y, &w, &h);
-            new_state->x = new_state_sx - x;
-            new_state->y = new_state_sy - y;
+            new_state->x = new_state_sx - (x + ox);
+            new_state->y = new_state_sy - (y + oy);
             new_state->w = new_state_ex - new_state_sx;
             new_state->h = new_state_ey - new_state_sy;
             L_DEBUG("Created new state, pr = %s", selected_region->name);
@@ -566,8 +638,8 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
             ufsmm_get_region_absolute_coords(selected_region, &x, &y, &w, &h);
             L_DEBUG("x, y = <%.2f, %.2f>, new_state_xy = <%.2f, %.2f>",
                         x, y, new_state_sx, new_state_sy);
-            new_state->x = new_state_sx - x + ox;
-            new_state->y = new_state_sy - y + oy;
+            new_state->x = new_state_sx - (x + ox);
+            new_state->y = new_state_sy - (y + oy);
             new_state->w = 20;
             new_state->h = 20;
             new_state->kind = UFSMM_STATE_INIT;
@@ -587,8 +659,8 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
             ufsmm_get_region_absolute_coords(selected_region, &x, &y, &w, &h);
             L_DEBUG("x, y = <%.2f, %.2f>, new_state_xy = <%.2f, %.2f>",
                         x, y, new_state_sx, new_state_sy);
-            new_state->x = new_state_sx - x + ox;
-            new_state->y = new_state_sy - y + oy;
+            new_state->x = new_state_sx - (x + ox);
+            new_state->y = new_state_sy - (y + oy);
             new_state->w = 20;
             new_state->h = 20;
             new_state->kind = UFSMM_STATE_FINAL;
@@ -608,8 +680,8 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
             ufsmm_get_region_absolute_coords(selected_region, &x, &y, &w, &h);
             L_DEBUG("x, y = <%.2f, %.2f>, new_state_xy = <%.2f, %.2f>",
                         x, y, new_state_sx, new_state_sy);
-            new_state->x = new_state_sx - x + ox;
-            new_state->y = new_state_sy - y + oy;
+            new_state->x = new_state_sx - (x + ox);
+            new_state->y = new_state_sy - (y + oy);
             new_state->w = 20;
             new_state->h = 20;
             new_state->kind = UFSMM_STATE_SHALLOW_HISTORY;
@@ -629,8 +701,8 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
             ufsmm_get_region_absolute_coords(selected_region, &x, &y, &w, &h);
             L_DEBUG("x, y = <%.2f, %.2f>, new_state_xy = <%.2f, %.2f>",
                         x, y, new_state_sx, new_state_sy);
-            new_state->x = new_state_sx - x + ox;
-            new_state->y = new_state_sy - y + oy;
+            new_state->x = new_state_sx - (x + ox);
+            new_state->y = new_state_sy - (y + oy);
             new_state->w = 20;
             new_state->h = 20;
             new_state->kind = UFSMM_STATE_DEEP_HISTORY;
@@ -697,7 +769,14 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
                  L_DEBUG("State '%s' selected", s->name);
                  selected_state = s;
                  last_object_state = true;
+
             }
+
+            for (struct ufsmm_action_ref *ar = s->exits; ar; ar = ar->next)
+                ar->focus = false;
+            for (struct ufsmm_action_ref *ar = s->entries; ar; ar = ar->next)
+                ar->focus = false;
+
             for (r2 = s->regions; r2; r2 = r2->next)
             {
                 ufsmm_stack_push(stack, r2);
@@ -730,6 +809,7 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
             x += ox;
             y += oy;
 
+            /* Check re-size boxes */
             if (point_in_box(px, py, x, y, 10, 10)) {
                 L_DEBUG("Top left corner!");
                 selected_state_corner = UFSMM_TOP_LEFT;
@@ -767,6 +847,27 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
             } else {
                 selected_region = NULL;
                 last_object_state = true;
+            }
+
+            /* Check action functions */
+            for (struct ufsmm_action_ref *ar = selected_state->entries; ar; ar = ar->next) {
+                if (point_in_box2(px, py, ar->x + ox, ar->y + oy, ar->w, ar->h)) {
+                    L_DEBUG("%s selected", ar->act->name);
+                    ar->focus = true;
+                    selected_action_ref = ar;
+                } else {
+                    ar->focus = false;
+                }
+            }
+
+            for (struct ufsmm_action_ref *ar = selected_state->exits; ar; ar = ar->next) {
+                if (point_in_box2(px, py, ar->x + ox, ar->y + oy, ar->w, ar->h)) {
+                    L_DEBUG("%s selected", ar->act->name);
+                    ar->focus = true;
+                    selected_action_ref = ar;
+                } else {
+                    ar->focus = false;
+                }
             }
         }
 
@@ -866,9 +967,28 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
                         selected_text_block_corner = UFSMM_NO_SELECTION;
                     }
                 }
+                /* Check guards */
 
+                for (struct ufsmm_action_ref *ar = t->guard; ar; ar = ar->next)
+                    ar->focus = false;
+
+                for (struct ufsmm_action_ref *ar = t->action; ar; ar = ar->next)
+                    ar->focus = false;
+
+                for (struct ufsmm_action_ref *ar = t->guard; ar; ar = ar->next) {
+                    if (point_in_box2(px, py, ar->x + ox, ar->y + oy, ar->w, ar->h)) {
+                        ar->focus = true;
+                        selected_action_ref = ar;
+                    }
+                }
+
+                for (struct ufsmm_action_ref *ar = t->action; ar; ar = ar->next) {
+                    if (point_in_box2(px, py, ar->x + ox, ar->y + oy, ar->w, ar->h)) {
+                        ar->focus = true;
+                        selected_action_ref = ar;
+                    }
+                }
                 if (t_focus) {
-                    printf("Transition is focused!\n");
                     selected_transition = t;
                     if (selected_state)
                         selected_state->focus = false;

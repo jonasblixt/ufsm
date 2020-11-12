@@ -231,7 +231,7 @@ int ufsmm_canvas_pan(double dx, double dy)
 {
     pan_x += dx;
     pan_y += dy;
-    L_DEBUG("pan <%f, %f>", pan_x, pan_y);
+    //L_DEBUG("pan <%f, %f>", pan_x, pan_y);
 }
 
 int ufsmm_canvas_get_offset(double *x, double *y)

@@ -59,7 +59,8 @@ static int pop_r_js_pair(struct ufsmm_stack *stack,
     return ufsmm_stack_pop(stack, (void **) r);
 }
 
-static int parse_action_list(json_object *j_list, struct ufsmm_action **out)
+static int parse_action_list(json_object *j_list, struct ufsmm_action **out,
+                             enum ufsmm_action_kind kind)
 {
     size_t no_of_actions = json_object_array_length(j_list);
     json_object *j_action;
@@ -94,7 +95,7 @@ static int parse_action_list(json_object *j_list, struct ufsmm_action **out)
         if (action == NULL)
             return -UFSMM_ERROR;
         memset(action, 0, sizeof(*action));
-
+        action->kind = kind;
         action->name = strdup(json_object_get_string(j_name));
         uuid_parse(json_object_get_string(j_id), action->id);
 
@@ -387,19 +388,19 @@ static int ufsmm_model_parse(struct ufsmm_model *model)
         }
         else if (strcmp(key, "entries") == 0)
         {
-            rc = parse_action_list(val, &model->entries);
+            rc = parse_action_list(val, &model->entries, UFSMM_ACTION_ENTRY);
         }
         else if (strcmp(key, "exits") == 0)
         {
-            rc = parse_action_list(val, &model->exits);
+            rc = parse_action_list(val, &model->exits, UFSMM_ACTION_EXIT);
         }
         else if (strcmp(key, "actions") == 0)
         {
-            rc = parse_action_list(val, &model->actions);
+            rc = parse_action_list(val, &model->actions, UFSMM_ACTION_ACTION);
         }
         else if (strcmp(key, "guards") == 0)
         {
-            rc = parse_action_list(val, &model->guards);
+            rc = parse_action_list(val, &model->guards, UFSMM_ACTION_GUARD);
         }
         else if (strcmp(key, "triggers") == 0)
         {

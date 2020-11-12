@@ -20,6 +20,18 @@
     {
       "name":"aAction",
       "id":"0fba11f6-799a-47f5-815d-63c2a5c58a6f"
+    },
+    {
+      "name":"aNewAction",
+      "id":"3d0aa2e1-f246-4cde-a978-05690914a070"
+    },
+    {
+      "name":"aAction1",
+      "id":"5d9abd1a-b501-4f15-a7d0-3acd7c481d85"
+    },
+    {
+      "name":"aAction2",
+      "id":"fe70a981-f512-4ddb-9bf4-55fd1786484b"
     }
   ],
   "entries":[
@@ -62,6 +74,14 @@
     {
       "name":"gGuard",
       "id":"73cc6247-09c5-445a-85f7-a2fc7fba3d7c"
+    },
+    {
+      "name":"gGuard1",
+      "id":"38a09156-6fd5-4747-9173-c84daca3cbee"
+    },
+    {
+      "name":"gGuard2",
+      "id":"706f2b5c-aa60-4195-bf4c-602960c8f008"
     }
   ],
   "region":{
@@ -98,16 +118,20 @@
               "offset":140.0
             },
             "text-block":{
-              "x":270.0,
-              "y":140.0,
-              "w":100.0,
-              "h":50.0
+              "x":150.0,
+              "y":130.0,
+              "w":220.0,
+              "h":30.0
             },
             "vertices":[
             ],
             "guards":[
             ],
             "actions":[
+              {
+                "action-id":"3d0aa2e1-f246-4cde-a978-05690914a070",
+                "id":"04bb87cc-d6f4-458e-8d0c-8a290bd47bc2"
+              }
             ],
             "state-condition":[
             ]
@@ -138,7 +162,7 @@
             "action-id":"1725c6b5-1a41-4a82-9831-92feb72dad6a"
           },
           {
-            "id":"1ec98446-e3d7-44df-84a8-f6ca19918ba4",
+            "id":"11621481-5d2a-4d4d-b199-503093457a42",
             "action-id":"3bfebe4b-897b-47a3-b405-465f5de3c74d"
           }
         ],
@@ -159,18 +183,18 @@
               "offset":210.0
             },
             "text-block":{
-              "x":450.0,
-              "y":240.0,
-              "w":140.0,
-              "h":20.0
+              "x":430.0,
+              "y":220.0,
+              "w":360.0,
+              "h":50.0
             },
             "vertices":[
               {
-                "x":650.0,
+                "x":700.0,
                 "y":280.0
               },
               {
-                "x":650.0,
+                "x":700.0,
                 "y":320.0
               }
             ],
@@ -178,9 +202,29 @@
               {
                 "action-id":"73cc6247-09c5-445a-85f7-a2fc7fba3d7c",
                 "id":"28a9dab8-5afc-4e57-a8ac-52b33d218846"
+              },
+              {
+                "action-id":"38a09156-6fd5-4747-9173-c84daca3cbee",
+                "id":"5f180b3d-63c1-4203-9832-76802ffff56c"
+              },
+              {
+                "action-id":"706f2b5c-aa60-4195-bf4c-602960c8f008",
+                "id":"d5594531-8317-4c08-803d-e991cbd07018"
               }
             ],
             "actions":[
+              {
+                "action-id":"3d0aa2e1-f246-4cde-a978-05690914a070",
+                "id":"2c16cb48-b736-41ea-8ddb-301d47e1b762"
+              },
+              {
+                "action-id":"5d9abd1a-b501-4f15-a7d0-3acd7c481d85",
+                "id":"fa4d1c06-0926-41ae-8ba0-c44bcec17e95"
+              },
+              {
+                "action-id":"fe70a981-f512-4ddb-9bf4-55fd1786484b",
+                "id":"5a40d958-3a53-4d73-af63-64547d2a48bb"
+              }
             ],
             "state-condition":[
               {
@@ -203,9 +247,9 @@
               "offset":110.0
             },
             "text-block":{
-              "x":250.0,
+              "x":140.0,
               "y":440.0,
-              "w":130.0,
+              "w":190.0,
               "h":20.0
             },
             "vertices":[
@@ -229,7 +273,7 @@
         "kind":"state",
         "width":380.0,
         "height":320.0,
-        "x":840.0,
+        "x":830.0,
         "y":110.0,
         "entries":[
         ],
@@ -240,7 +284,7 @@
             "id":"75b66945-486d-4dc8-906f-5ad6977ecd7f",
             "name":"B off-page region 2",
             "off_page":true,
-            "height":140,
+            "height":120,
             "states":[
               {
                 "id":"501ddf12-81db-4b40-9cdb-a0104f75df0e",
@@ -315,9 +359,9 @@
                       "offset":30.0
                     },
                     "text-block":{
-                      "x":320.0,
-                      "y":160.0,
-                      "w":120.0,
+                      "x":340.0,
+                      "y":150.0,
+                      "w":110.0,
                       "h":20.0
                     },
                     "vertices":[
@@ -361,9 +405,9 @@
                     },
                     "text-block":{
                       "x":330.0,
-                      "y":310.0,
+                      "y":320.0,
                       "w":130.0,
-                      "h":30.0
+                      "h":20.0
                     },
                     "vertices":[
                     ],
@@ -382,7 +426,7 @@
             "id":"92a4d09c-f3bf-475f-89ff-8efca8fd2cb4",
             "name":"B off-page region 1",
             "off_page":true,
-            "height":130,
+            "height":120,
             "states":[
               {
                 "id":"da6ee7a8-2374-4671-830e-da524b6dc090",
@@ -537,9 +581,9 @@
             },
             "text-block":{
               "x":450.0,
-              "y":330.0,
+              "y":320.0,
               "w":130.0,
-              "h":20.0
+              "h":30.0
             },
             "vertices":[
             ],
@@ -564,22 +608,22 @@
               "offset":80.0
             },
             "text-block":{
-              "x":1310.0,
-              "y":90.0,
+              "x":1120.0,
+              "y":30.0,
               "w":120.0,
               "h":20.0
             },
             "vertices":[
               {
-                "x":1120.0,
+                "x":1110.0,
                 "y":60.0
               },
               {
-                "x":1260.0,
+                "x":1250.0,
                 "y":60.0
               },
               {
-                "x":1260.0,
+                "x":1250.0,
                 "y":190.0
               }
             ],
@@ -640,16 +684,24 @@
                       "offset":50.0
                     },
                     "text-block":{
-                      "x":140.0,
-                      "y":280.0,
-                      "w":120.0,
-                      "h":20.0
+                      "x":30.0,
+                      "y":260.0,
+                      "w":190.0,
+                      "h":50.0
                     },
                     "vertices":[
                     ],
                     "guards":[
+                      {
+                        "action-id":"38a09156-6fd5-4747-9173-c84daca3cbee",
+                        "id":"d52f4620-9a75-45f5-9b62-f2f5704e25b1"
+                      }
                     ],
                     "actions":[
+                      {
+                        "action-id":"0fba11f6-799a-47f5-815d-63c2a5c58a6f",
+                        "id":"9442fc6c-5953-480e-9160-5b2045cd5337"
+                      }
                     ],
                     "state-condition":[
                     ]
@@ -679,16 +731,16 @@
                 "kind":"state",
                 "width":450.0,
                 "height":490.0,
-                "x":396.0,
+                "x":326.0,
                 "y":17.0,
                 "entries":[
                   {
-                    "id":"4a191951-49ed-4298-ab3b-e53120ef059c",
-                    "action-id":"44bf3839-d782-4118-bf58-c33c5ad775c4"
+                    "id":"3a3a47c1-4ca0-4760-8ce9-d2a541a07078",
+                    "action-id":"f924e35f-d169-4383-b9be-bf7deba72f4a"
                   },
                   {
-                    "id":"14695cc2-ab83-4acc-be4e-d3ef97bb2e99",
-                    "action-id":"f924e35f-d169-4383-b9be-bf7deba72f4a"
+                    "id":"c1e7d3a5-5722-45c5-abb4-10c5ef820158",
+                    "action-id":"44bf3839-d782-4118-bf58-c33c5ad775c4"
                   }
                 ],
                 "exits":[
@@ -706,8 +758,8 @@
                         "kind":"state",
                         "width":100.0,
                         "height":100.0,
-                        "x":280.0,
-                        "y":220.0,
+                        "x":320.0,
+                        "y":290.0,
                         "entries":[
                         ],
                         "exits":[
@@ -749,11 +801,15 @@
                         "id":"e0cc137f-7277-4d97-8c66-b882aef8d718",
                         "name":"C32",
                         "kind":"state",
-                        "width":100.0,
+                        "width":180.0,
                         "height":100.0,
                         "x":50.0,
                         "y":140.0,
                         "entries":[
+                          {
+                            "id":"743014e2-c701-4e22-9535-37f8ae8d08cf",
+                            "action-id":"7d476618-4b39-434b-bb98-7ec8e4f5f79a"
+                          }
                         ],
                         "exits":[
                         ],
@@ -766,16 +822,16 @@
                             "source":{
                               "state":"e0cc137f-7277-4d97-8c66-b882aef8d718",
                               "side":"right",
-                              "offset":38.404411764705884
+                              "offset":80.0
                             },
                             "dest":{
                               "state":"3ed4ee62-9a8f-4e9d-8021-7ccc969c2954",
                               "side":"left",
-                              "offset":31.660026999080912
+                              "offset":30.0
                             },
                             "text-block":{
-                              "x":170.0,
-                              "y":140.0,
+                              "x":270.0,
+                              "y":170.0,
                               "w":110.0,
                               "h":20.0
                             },
@@ -820,8 +876,8 @@
                             "text-block":{
                               "x":40.0,
                               "y":200.0,
-                              "w":110.0,
-                              "h":30.0
+                              "w":120.0,
+                              "h":20.0
                             },
                             "vertices":[
                             ],
@@ -836,6 +892,111 @@
                       }
                     ]
                   }
+                ],
+                "transitions":[
+                ]
+              },
+              {
+                "id":"bf78a0c4-34aa-4808-9b76-8289f888dda9",
+                "name":"D",
+                "kind":"state",
+                "width":100.0,
+                "height":90.0,
+                "x":910.0,
+                "y":80.0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                  {
+                    "id":"6f20a28f-ee44-4449-a5af-a3a6d1248fa9",
+                    "source":{
+                      "state":"bf78a0c4-34aa-4808-9b76-8289f888dda9",
+                      "side":"bottom",
+                      "offset":50.0
+                    },
+                    "dest":{
+                      "state":"6a726a54-2b8c-433b-8615-53ea8dfd0c7b",
+                      "side":"top",
+                      "offset":10.0
+                    },
+                    "text-block":{
+                      "x":850.0,
+                      "y":180.0,
+                      "w":90.0,
+                      "h":30.0
+                    },
+                    "vertices":[
+                    ],
+                    "guards":[
+                    ],
+                    "actions":[
+                    ],
+                    "state-condition":[
+                    ]
+                  }
+                ]
+              },
+              {
+                "id":"9b223fc2-92cd-475e-9579-9965770d234f",
+                "name":"Init",
+                "kind":"init",
+                "width":20.0,
+                "height":20.0,
+                "x":110.0,
+                "y":60.0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                  {
+                    "id":"684aaee8-e916-4f99-8527-b7f031d0d561",
+                    "source":{
+                      "state":"9b223fc2-92cd-475e-9579-9965770d234f",
+                      "side":"bottom",
+                      "offset":0.0
+                    },
+                    "dest":{
+                      "state":"f563a16b-d36d-49bf-8106-39b0c0fddcbc",
+                      "side":"top",
+                      "offset":50.0
+                    },
+                    "text-block":{
+                      "x":100.0,
+                      "y":90.0,
+                      "w":50.0,
+                      "h":20.0
+                    },
+                    "vertices":[
+                    ],
+                    "guards":[
+                    ],
+                    "actions":[
+                    ],
+                    "state-condition":[
+                    ]
+                  }
+                ]
+              },
+              {
+                "id":"6a726a54-2b8c-433b-8615-53ea8dfd0c7b",
+                "name":"Final",
+                "kind":"final",
+                "width":20.0,
+                "height":20.0,
+                "x":950.0,
+                "y":210.0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
                 ],
                 "transitions":[
                 ]
