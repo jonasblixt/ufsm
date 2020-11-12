@@ -55,8 +55,9 @@ int ufsm_edit_string_dialog(GtkWindow *parent,
         case GTK_RESPONSE_ACCEPT:
         {
             const char *text = gtk_entry_get_text(GTK_ENTRY(input));
-            if (*output != NULL)
-                free(*output);
+            if (*output != NULL) {
+                free((void *) *output);
+            }
             *output = strdup(text);
             rc = 0;
         }

@@ -204,19 +204,15 @@
                 "id":"28a9dab8-5afc-4e57-a8ac-52b33d218846"
               },
               {
-                "action-id":"38a09156-6fd5-4747-9173-c84daca3cbee",
-                "id":"5f180b3d-63c1-4203-9832-76802ffff56c"
-              },
-              {
                 "action-id":"706f2b5c-aa60-4195-bf4c-602960c8f008",
                 "id":"d5594531-8317-4c08-803d-e991cbd07018"
+              },
+              {
+                "action-id":"38a09156-6fd5-4747-9173-c84daca3cbee",
+                "id":"ede4ff20-4076-4d78-8d11-f94d2fd8ff17"
               }
             ],
             "actions":[
-              {
-                "action-id":"3d0aa2e1-f246-4cde-a978-05690914a070",
-                "id":"2c16cb48-b736-41ea-8ddb-301d47e1b762"
-              },
               {
                 "action-id":"5d9abd1a-b501-4f15-a7d0-3acd7c481d85",
                 "id":"fa4d1c06-0926-41ae-8ba0-c44bcec17e95"
@@ -224,6 +220,10 @@
               {
                 "action-id":"fe70a981-f512-4ddb-9bf4-55fd1786484b",
                 "id":"5a40d958-3a53-4d73-af63-64547d2a48bb"
+              },
+              {
+                "action-id":"0fba11f6-799a-47f5-815d-63c2a5c58a6f",
+                "id":"52ac1fc0-9120-4e9a-bfab-7019d940be4a"
               }
             ],
             "state-condition":[
@@ -258,8 +258,8 @@
             ],
             "actions":[
               {
-                "action-id":"0fba11f6-799a-47f5-815d-63c2a5c58a6f",
-                "id":"91dcf8c6-5869-44e2-a662-439123de7b67"
+                "action-id":"5d9abd1a-b501-4f15-a7d0-3acd7c481d85",
+                "id":"351dd39a-efa8-477c-b09e-bd1b104efb18"
               }
             ],
             "state-condition":[
@@ -900,15 +900,23 @@
                 "id":"bf78a0c4-34aa-4808-9b76-8289f888dda9",
                 "name":"D",
                 "kind":"state",
-                "width":100.0,
-                "height":90.0,
-                "x":910.0,
+                "width":150.0,
+                "height":300.0,
+                "x":860.0,
                 "y":80.0,
                 "entries":[
                 ],
                 "exits":[
                 ],
                 "region":[
+                  {
+                    "id":"e20e54b3-26b3-45a3-aef0-adb4d174d54c",
+                    "name":"New region",
+                    "off_page":false,
+                    "height":220,
+                    "states":[
+                    ]
+                  }
                 ],
                 "transitions":[
                   {
@@ -916,7 +924,7 @@
                     "source":{
                       "state":"bf78a0c4-34aa-4808-9b76-8289f888dda9",
                       "side":"bottom",
-                      "offset":50.0
+                      "offset":100.0
                     },
                     "dest":{
                       "state":"6a726a54-2b8c-433b-8615-53ea8dfd0c7b",
@@ -924,8 +932,8 @@
                       "offset":10.0
                     },
                     "text-block":{
-                      "x":850.0,
-                      "y":180.0,
+                      "x":830.0,
+                      "y":420.0,
                       "w":90.0,
                       "h":30.0
                     },
@@ -991,7 +999,7 @@
                 "width":20.0,
                 "height":20.0,
                 "x":950.0,
-                "y":210.0,
+                "y":410.0,
                 "entries":[
                 ],
                 "exits":[

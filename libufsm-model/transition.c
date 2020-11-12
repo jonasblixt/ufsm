@@ -634,9 +634,34 @@ int ufsmm_transition_add_guard(struct ufsmm_model *model,
     return UFSMM_OK;
 }
 
+static int delete_action_ref(struct ufsmm_action_ref **list, uuid_t id)
+{
+    struct ufsmm_action_ref *tmp, *prev;
+
+    tmp = *list;
+    prev = NULL;
+
+    while (tmp) {
+        if (uuid_compare(tmp->act->id, id) == 0) {
+            if (prev == NULL) {
+                *list = tmp->next;
+                free(tmp);
+                return UFSMM_OK;
+            } else {
+                prev->next = tmp->next;
+                free(tmp);
+                return UFSMM_OK;
+            }
+        }
+
+        prev = tmp;
+        tmp = tmp->next;
+    }
+}
+
 int ufsmm_transition_delete_guard(struct ufsmm_transition *transition, uuid_t id)
 {
-    return UFSMM_OK;
+    return delete_action_ref(&transition->guard, id);
 }
 
 struct ufsmm_action_ref *ufsmm_transition_get_guards(struct ufsmm_transition *t)
@@ -684,7 +709,7 @@ int ufsmm_transition_add_action(struct ufsmm_model *model,
 
 int ufsmm_transition_delete_action(struct ufsmm_transition *transition, uuid_t id)
 {
-    return UFSMM_OK;
+    return delete_action_ref(&transition->action, id);
 }
 
 struct ufsmm_action_ref *ufsmm_transition_get_actions(struct ufsmm_transition *t)

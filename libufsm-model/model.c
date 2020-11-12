@@ -1159,6 +1159,18 @@ int ufsmm_model_add_trigger(struct ufsmm_model *model, const char *name,
     struct ufsmm_trigger *trigger;
     struct ufsmm_trigger *list, **dest;
 
+    /* Check if trigger already exits */
+    list = model->triggers;
+
+    while (list) {
+        if (strcmp(list->name, name) == 0) {
+            (*out) = list;
+            return UFSMM_OK;
+        }
+
+        list = list->next;
+    }
+
     trigger = malloc(sizeof(struct ufsmm_trigger));
 
     if (trigger == NULL)

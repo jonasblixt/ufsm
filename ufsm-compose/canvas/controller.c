@@ -145,6 +145,7 @@ check_new_state:
         struct ufsmm_region *new_region = NULL;
         rc = ufsmm_add_region(selected_state, false, &new_region);
         new_region->name = strdup("New region");
+        new_region->h = 40;
         L_DEBUG("Created new region");
         gtk_widget_queue_draw (widget);
         controller_state = STATE_IDLE;
@@ -540,9 +541,6 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
 
     gtk_widget_grab_focus(widget);
 
-    //selected_state = NULL;
-    //selected_region = NULL;
-
     double px = event->x / ufsmm_canvas_get_scale();
     double py = event->y / ufsmm_canvas_get_scale();
 
@@ -616,7 +614,6 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
         struct ufsmm_state *new_state = NULL;
         rc = ufsmm_add_state(selected_region, "New state", &new_state);
         if (rc == UFSMM_OK) {
-
             ufsmm_get_region_absolute_coords(selected_region, &x, &y, &w, &h);
             new_state->x = new_state_sx - (x + ox);
             new_state->y = new_state_sy - (y + oy);
@@ -1114,5 +1111,6 @@ int ufsmm_state_canvas_update(struct ufsmm_model *model_,
     filename = filename_;
     current_region = model->root;
     current_region->draw_as_root = true;
+    selected_region = model->root;
     return UFSMM_OK;
 }
