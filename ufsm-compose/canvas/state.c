@@ -391,7 +391,7 @@ int ufsmm_state_get_closest_side(struct ufsmm_state *s, double px, double py,
     /* Top segment */
     d = fabs(distance_point_to_seg2(px, py, x, y, x + w, y, &lx, &ly));
     *side = UFSMM_SIDE_TOP;
-    *offset = lx - x;
+    *offset = ufsmm_canvas_nearest_grid_point(lx - x);
 
     /* Right segment */
     d2 = fabs(distance_point_to_seg2(px, py, x + w, y, x + w, y + h, &lx, &ly));
@@ -399,7 +399,7 @@ int ufsmm_state_get_closest_side(struct ufsmm_state *s, double px, double py,
     if (d2 < d) {
         d = d2;
         *side = UFSMM_SIDE_RIGHT;
-        *offset = ly - y;
+        *offset = ufsmm_canvas_nearest_grid_point(ly - y);
     }
 
     /* Bottom segment */
@@ -408,7 +408,7 @@ int ufsmm_state_get_closest_side(struct ufsmm_state *s, double px, double py,
     if (d2 < d) {
         d = d2;
         *side = UFSMM_SIDE_BOTTOM;
-        *offset = lx - x;
+        *offset = ufsmm_canvas_nearest_grid_point(lx - x);
     }
 
     /* Left segment */
@@ -417,7 +417,7 @@ int ufsmm_state_get_closest_side(struct ufsmm_state *s, double px, double py,
     if (d2 < d) {
         d = d2;
         *side = UFSMM_SIDE_LEFT;
-        *offset = ly - y;
+        *offset = ufsmm_canvas_nearest_grid_point(ly - y);
     }
 
     return UFSMM_OK;

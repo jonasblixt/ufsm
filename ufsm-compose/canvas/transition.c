@@ -118,7 +118,7 @@ int ufsmm_canvas_render_transition(cairo_t *cr,
         char text[1024];
         size_t text_pos = 0;
         cairo_save(cr);
-        cairo_set_font_size (cr, 18);
+        cairo_set_font_size (cr, 14);
         //cairo_set_source_rgb (cr, 0,0,0);
         ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
 
@@ -186,6 +186,8 @@ int ufsmm_canvas_render_transition(cairo_t *cr,
             ty = t->text_block_coords.y + ry;
             th = t->text_block_coords.h;
             tw = t->text_block_coords.w;
+
+            L_DEBUG("<%.2f, %.2f>, <%.2f, %.2f>", tx, ty, tx + tw, ty + th);
 
             cairo_save(cr);
             ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);

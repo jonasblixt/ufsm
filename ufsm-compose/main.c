@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <ufsm/model.h>
 
 #include <gtk/gtk.h>
@@ -103,15 +106,22 @@ int main(int argc, char **argv)
     gtk_box_pack_start(GTK_BOX(center_vbox), hpane, TRUE, TRUE, 0);
     gtk_container_add(GTK_CONTAINER(window), center_vbox);
 
-    rc = ufsmm_model_load(argv[1], &model);
+
+    struct stat statbuf;
+
+    if (stat(argv[1], &statbuf) != 0) {
+        rc = ufsmm_model_create(&model, "New model");
+    } else {
+        rc = ufsmm_model_load(argv[1], &model);
+    }
 
     if (rc != UFSMM_OK)
     {
-        printf("Could not load model\n");
+        printf("Could not create or load model\n");
         goto err_out;
     }
 
-    ufsmm_state_canvas_update(model, NULL);
+    ufsmm_state_canvas_update(model, NULL, argv[1]);
 
     gtk_widget_show_all(window);
     gtk_main();

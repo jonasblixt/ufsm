@@ -7,7 +7,8 @@
 int ufsmm_state_canvas_init(GtkWidget *parent, GtkWidget **canvas);
 int ufsmm_state_canvas_free(GtkWidget *canvas);
 int ufsmm_state_canvas_update(struct ufsmm_model *model,
-                             struct ufsmm_region *region);
+                             struct ufsmm_region *region,
+                             const char *filename);
 
 int ufsmm_selection_update(struct ufsmm_state *s, bool append);
 

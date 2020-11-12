@@ -106,6 +106,8 @@ struct ufsmm_action
 struct ufsmm_action_ref
 {
     uuid_t id;
+    bool focus;
+    double x, y, w, h; /* Support variables for the canvas */
     struct ufsmm_action *act;
     struct ufsmm_action_ref *next;
 };

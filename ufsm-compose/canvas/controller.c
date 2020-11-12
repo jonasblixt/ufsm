@@ -13,7 +13,6 @@
 static struct ufsmm_model *model;
 static struct ufsmm_region *current_region;
 static struct ufsmm_state *selected_state = NULL;
-static struct ufsmm_region *selected_region = NULL;
 static struct ufsmm_transition *selected_transition = NULL;
 static enum ufsmm_transition_vertice_kind selected_vertice_kind;
 static struct ufsmm_vertice *selected_transition_vertice = NULL;
@@ -21,9 +20,12 @@ static double selection_start_x, selection_start_y;
 static double sselection_x, sselection_y;
 static double canvas_ox, canvas_oy;
 static bool pan_mode;
-static enum ufsmm_state_resize_selector selected_state_corner;
+static enum ufsmm_resize_selector selected_state_corner;
 static GtkWidget *window;
 
+/* Selected region variables */
+static struct ufsmm_region *selected_region = NULL;
+static enum ufsmm_resize_selector selected_region_corner;
 
 /* Create transition variables */
 static bool add_vertice_flag;
@@ -35,7 +37,11 @@ static enum ufsmm_side source_side, dest_side;
 static double new_state_sx, new_state_sy;
 static double new_state_ex, new_state_ey;
 
+/* Text block variables */
 static struct ufsmm_coords *selected_text_block;
+static enum ufsmm_resize_selector selected_text_block_corner;
+
+static const char *filename;
 
 enum ufsmm_controller_state {
     STATE_IDLE,
@@ -235,38 +241,10 @@ check_new_state:
             gtk_widget_queue_draw (widget);
         }
 
-        if (event->keyval == GDK_KEY_x)
-        {
-            if (selected_state)
-                selected_state->w += 10;
-            gtk_widget_queue_draw (widget);
-        }
-
-        if (event->keyval == GDK_KEY_X)
-        {
-            if (selected_state)
-                selected_state->w -= 10;
-            gtk_widget_queue_draw (widget);
-        }
-
-        if (event->keyval == GDK_KEY_y)
-        {
-            if (selected_state)
-                selected_state->h += 10;
-            gtk_widget_queue_draw (widget);
-        }
-
-        if (event->keyval == GDK_KEY_Y)
-        {
-            if (selected_state)
-                selected_state->h -= 10;
-            gtk_widget_queue_draw (widget);
-        }
-
         if (event->keyval == GDK_KEY_s)
         {
             printf("Saving...\n");
-            ufsmm_model_write("out.ufsm", model);
+            ufsmm_model_write(filename, model);
         }
 
         if (event->keyval == GDK_KEY_space)
@@ -299,7 +277,8 @@ static gboolean motion_notify_event_cb (GtkWidget      *widget,
         return TRUE;
 
     if ((selected_region && (event->state & GDK_BUTTON1_MASK)) &&
-            (selected_state_corner == UFSMM_NO_SELECTION)) {
+            (selected_state_corner == UFSMM_NO_SELECTION) &&
+            (selected_region_corner == UFSMM_NO_SELECTION)) {
         //printf("Multi selection!\n");
         ufsmm_canvas_set_selection(true, (selection_start_x - canvas_ox) / ufsmm_canvas_get_scale(),
                                         (selection_start_y - canvas_oy) / ufsmm_canvas_get_scale(),
@@ -308,10 +287,39 @@ static gboolean motion_notify_event_cb (GtkWidget      *widget,
 
 
         gtk_widget_queue_draw (widget);
-    } else if (selected_transition && selected_text_block) {
+    } else if (selected_transition && selected_text_block &&
+                (selected_text_block_corner == UFSMM_NO_SELECTION)) {
         L_DEBUG("Move text block");
         selected_text_block->x += dx;
         selected_text_block->y += dy;
+        gtk_widget_queue_draw (widget);
+    } else if (selected_transition && selected_text_block &&
+                (selected_text_block_corner != UFSMM_NO_SELECTION)) {
+        switch (selected_text_block_corner) {
+            case UFSMM_TOP_LEFT:
+                selected_text_block->x += dx;
+                selected_text_block->w -= dx;
+                selected_text_block->y += dy;
+                selected_text_block->h -= dy;
+            break;
+            case UFSMM_TOP_RIGHT:
+                selected_text_block->w += dx;
+                selected_text_block->y += dy;
+                selected_text_block->h -= dy;
+            break;
+            case UFSMM_BOT_RIGHT:
+                selected_text_block->w += dx;
+                selected_text_block->h += dy;
+            break;
+            case UFSMM_BOT_LEFT:
+                selected_text_block->x += dx;
+                selected_text_block->w -= dx;
+                selected_text_block->h += dy;
+            break;
+            default:
+            break;
+        }
+
         gtk_widget_queue_draw (widget);
     } else if (selected_transition &&
                (selected_vertice_kind != UFSMM_TRANSITION_VERTICE_NONE) &&
@@ -344,6 +352,24 @@ static gboolean motion_notify_event_cb (GtkWidget      *widget,
             break;
         }
 
+        selected_transition->source.offset = \
+           ufsmm_canvas_nearest_grid_point(selected_transition->source.offset);
+        selected_transition->dest.offset = \
+           ufsmm_canvas_nearest_grid_point(selected_transition->dest.offset);
+
+        gtk_widget_queue_draw (widget);
+    } else if (selected_region && (selected_region_corner != UFSMM_NO_SELECTION)) {
+        L_DEBUG("Region resize");
+        switch (selected_region_corner) {
+            case UFSMM_BOT_MIDDLE:
+                if (selected_region->h == -1)
+                    selected_region->h = dy;
+                else
+                    selected_region->h += dy;
+            break;
+            default:
+            break;
+        }
         gtk_widget_queue_draw (widget);
     } else if (pan_mode) {
         ufsmm_canvas_pan(dx * ufsmm_canvas_get_scale(), dy * ufsmm_canvas_get_scale());
@@ -392,6 +418,11 @@ static gboolean motion_notify_event_cb (GtkWidget      *widget,
                 selected_state->y += dy;
             break;
         }
+        selected_state->x = ufsmm_canvas_nearest_grid_point(selected_state->x);
+        selected_state->y = ufsmm_canvas_nearest_grid_point(selected_state->y);
+        selected_state->w = ufsmm_canvas_nearest_grid_point(selected_state->w);
+        selected_state->h = ufsmm_canvas_nearest_grid_point(selected_state->h);
+
         gtk_widget_queue_draw (widget);
     } else if (selected_state && (event->state & GDK_BUTTON1_MASK)) {
         printf("move %s --> %f %f\n", selected_state->name, dx, dy);
@@ -413,6 +444,7 @@ gboolean buttonrelease_cb(GtkWidget *widget, GdkEventButton *event)
     ufsmm_canvas_set_selection(false, 0, 0, 0, 0);
     pan_mode = false;
     selected_text_block = NULL;
+    selected_region_corner = UFSMM_NO_SELECTION;
     gtk_widget_queue_draw (widget);
     return TRUE;
 }
@@ -609,16 +641,18 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
         controller_state = STATE_IDLE;
     }
 
-
-
-
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
     ufsmm_stack_push(stack, current_region);
+
+    selected_region_corner = UFSMM_NO_SELECTION;
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK)
     {
         r->focus = false;
         ufsmm_get_region_absolute_coords(r, &x, &y, &w, &h);
+
+        if (selected_region_corner != UFSMM_NO_SELECTION)
+            continue;
 
         x += ox;
         y += oy;
@@ -637,7 +671,12 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
         if (selected_region) {
             if (point_in_box(px, py, x + w/2 - 5, y + h - 5, 20, 20)) {
                 L_DEBUG("Region bottom resize box");
+                selected_region_corner = UFSMM_BOT_MIDDLE;
+            } else {
+                selected_region_corner = UFSMM_NO_SELECTION;
             }
+        } else {
+            selected_region_corner = UFSMM_NO_SELECTION;
         }
 
         if (r->off_page && !r->draw_as_root)
@@ -804,15 +843,28 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
 
                 ufsmm_get_region_absolute_coords(t->source.state->parent_region,
                                                    &x, &y, &w, &h);
-                double tx = t->text_block_coords.x + x;
-                double ty = t->text_block_coords.y + y;
+                double tx = t->text_block_coords.x + x + ox;
+                double ty = t->text_block_coords.y + y + oy;
                 double tw = t->text_block_coords.w;
                 double th = t->text_block_coords.h;
 
-                if (point_in_box(px, py, tx+ox, ty+oy, tw, th)) {
-                    L_DEBUG("Text-box selected");
+                if (point_in_box2(px, py, tx - 10, ty - 10, tw + 20, th + 20)) {
+                    L_DEBUG("Text-box selected <%.2f, %.2f> <%.2f, %.2f, %.2f, %.2f>",
+                                px, py, tx, ty, tx + tw, ty + th);
                     t_focus = true;
                     selected_text_block = &t->text_block_coords;
+
+                    if (point_in_box(px, py, tx, ty, 10, 10)) {
+                        selected_text_block_corner = UFSMM_TOP_LEFT;
+                    } else if (point_in_box(px, py, tx + tw, ty, 10, 10)) {
+                        selected_text_block_corner = UFSMM_TOP_RIGHT;
+                    } else if (point_in_box(px, py, tx + tw, ty + th, 10, 10)) {
+                        selected_text_block_corner = UFSMM_BOT_RIGHT;
+                    } else if (point_in_box(px, py, tx, ty + th, 10, 10)) {
+                        selected_text_block_corner = UFSMM_BOT_LEFT;
+                    } else {
+                        selected_text_block_corner = UFSMM_NO_SELECTION;
+                    }
                 }
 
                 if (t_focus) {
@@ -935,9 +987,11 @@ int ufsmm_state_canvas_free(GtkWidget *canvas)
 
 
 int ufsmm_state_canvas_update(struct ufsmm_model *model_,
-                             struct ufsmm_region *region)
+                             struct ufsmm_region *region,
+                             const char *filename_)
 {
     model = model_;
+    filename = filename_;
     current_region = model->root;
     current_region->draw_as_root = true;
     return UFSMM_OK;
