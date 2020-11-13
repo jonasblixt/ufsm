@@ -108,6 +108,9 @@ int ufsmm_canvas_get_offset(double *x, double *y);
 int ufsmm_state_get_at_xy(struct ufsmm_region *r, double px, double py,
                             struct ufsmm_state **out, int *depth);
 
+int ufsmm_region_get_at_xy(struct ufsmm_region *region, double px, double py,
+                            struct ufsmm_region **out, int *depth);
+
 int ufsmm_state_get_closest_side(struct ufsmm_state *s, double px, double py,
                                     enum ufsmm_side *side, double *offset);
 

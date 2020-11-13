@@ -621,3 +621,101 @@ int ufsmm_delete_state(struct ufsmm_state *state)
     ufsmm_stack_free(free_stack);
     return rc;
 }
+
+int ufsmm_state_move_to_region(struct ufsmm_model *model,
+                               struct ufsmm_state *state,
+                               struct ufsmm_region *new_region)
+{
+    /* Same as current pr, ignore */
+    if (state->parent_region == new_region)
+        return -UFSMM_ERROR;
+    /* Ignore if target region is a decendant */
+    if (ufsmm_state_contains_region(model, state, new_region))
+        return -UFSMM_ERROR;
+
+    /* Unlink from source region */
+    if (state->parent_region->last_state == state) {
+        L_DEBUG("Was last, update last_state");
+        state->parent_region->last_state = state->prev;
+    }
+
+    if (state->prev == NULL) { /* First state in source region */
+        L_DEBUG("First in source region");
+        struct ufsmm_state *next = state->next;
+        state->parent_region->state = next;
+
+        if (next == NULL) {
+            L_DEBUG("Source region is now empty");
+            state->parent_region->last_state = NULL;
+        } else {
+            next->prev = NULL;
+            L_DEBUG("state->next = '%s'", next->name);
+        }
+    } else {
+        struct ufsmm_state *prev = state->prev;
+        struct ufsmm_state *next = state->next;
+
+        L_DEBUG("%p %p", prev, next);
+
+        if (prev)
+            L_DEBUG("state->prev = '%s'", prev->name);
+        if (next)
+            L_DEBUG("state->next = '%s'", next->name);
+
+        state->prev->next = next;
+
+        if (next) {
+            state->next->prev = prev;
+        }
+    }
+
+    /* Insert into new region */
+    if (new_region->last_state) {
+        new_region->last_state->next = state;
+        state->prev = new_region->last_state;
+        state->next = NULL;
+        new_region->last_state = state;
+    } else {
+        new_region->last_state = state;
+        new_region->state = state;
+        state->prev = NULL;
+        state->next = NULL;
+    }
+
+    state->parent_region = new_region;
+
+    return UFSMM_OK;
+}
+
+bool ufsmm_state_contains_region(struct ufsmm_model *model,
+                                 struct ufsmm_state *state,
+                                 struct ufsmm_region *region)
+{
+    static struct ufsmm_stack *stack;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_state *s;
+    bool result = false;
+
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+
+    for (r = state->regions; r; r = r->next) {
+        ufsmm_stack_push(stack, r);
+    }
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK)
+    {
+        if (r == region) {
+            result = true;
+            break;
+        }
+
+        for (s = r->state; s; s = s->next) {
+            for (r2 = s->regions; r2; r2 = r2->next) {
+                ufsmm_stack_push(stack, r2);
+            }
+        }
+    }
+
+    ufsmm_stack_free(stack);
+    return result;
+}

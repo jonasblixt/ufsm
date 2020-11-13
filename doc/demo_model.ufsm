@@ -419,6 +419,163 @@
                     ]
                   }
                 ]
+              },
+              {
+                "id":"dd15f6c0-ae43-4e2f-b5dc-c34821392b17",
+                "name":"New state",
+                "kind":"state",
+                "width":470.0,
+                "height":560.0,
+                "x":170.0,
+                "y":450.0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                  {
+                    "id":"eedc53bd-1ade-4e85-b956-840bd198f58a",
+                    "name":"New region",
+                    "off_page":false,
+                    "height":510,
+                    "states":[
+                      {
+                        "id":"f08e4392-1446-47c0-8a05-7da3cea77e8f",
+                        "name":"C",
+                        "kind":"state",
+                        "width":110.0,
+                        "height":80.0,
+                        "x":45.625000000000114,
+                        "y":207.50000000000011,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                          {
+                            "id":"65d8cd0b-6504-4b9b-b743-b347561827d1",
+                            "source":{
+                              "state":"f08e4392-1446-47c0-8a05-7da3cea77e8f",
+                              "side":"right",
+                              "offset":20.0
+                            },
+                            "dest":{
+                              "state":"a59fd5d2-4180-43df-8b54-df4ba2127b85",
+                              "side":"left",
+                              "offset":40.0
+                            },
+                            "text-block":{
+                              "x":155.62500000000011,
+                              "y":117.50000000000011,
+                              "w":100.0,
+                              "h":30.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                            ],
+                            "state-condition":[
+                            ]
+                          },
+                          {
+                            "id":"a6afdae8-23a7-4561-a313-d85e2eb30a12",
+                            "source":{
+                              "state":"f08e4392-1446-47c0-8a05-7da3cea77e8f",
+                              "side":"bottom",
+                              "offset":70.0
+                            },
+                            "dest":{
+                              "state":"8a4f3d54-9869-4c3b-b900-3092c2eb45e5",
+                              "side":"top",
+                              "offset":40.0
+                            },
+                            "text-block":{
+                              "x":95.625000000000114,
+                              "y":317.50000000000011,
+                              "w":100.0,
+                              "h":30.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                            ],
+                            "state-condition":[
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id":"a59fd5d2-4180-43df-8b54-df4ba2127b85",
+                        "name":"A",
+                        "kind":"state",
+                        "width":130.0,
+                        "height":90.0,
+                        "x":295.62500000000011,
+                        "y":117.50000000000011,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                        ]
+                      },
+                      {
+                        "id":"8a4f3d54-9869-4c3b-b900-3092c2eb45e5",
+                        "name":"B",
+                        "kind":"state",
+                        "width":100.0,
+                        "height":70.0,
+                        "x":185.62500000000011,
+                        "y":367.50000000000011,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                          {
+                            "id":"cb97a6a5-f260-4e2d-a342-b3ac480c0c57",
+                            "source":{
+                              "state":"8a4f3d54-9869-4c3b-b900-3092c2eb45e5",
+                              "side":"right",
+                              "offset":30.0
+                            },
+                            "dest":{
+                              "state":"a59fd5d2-4180-43df-8b54-df4ba2127b85",
+                              "side":"bottom",
+                              "offset":40.0
+                            },
+                            "text-block":{
+                              "x":265.62500000000011,
+                              "y":287.50000000000011,
+                              "w":100.0,
+                              "h":30.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                            ],
+                            "state-condition":[
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "transitions":[
+                ]
               }
             ]
           },
@@ -639,10 +796,10 @@
         "id":"46a45159-8a77-43f1-8555-312c64ca4d0e",
         "name":"C",
         "kind":"state",
-        "width":1120.0,
+        "width":490.0,
         "height":560.0,
-        "x":120.0,
-        "y":480.0,
+        "x":110.0,
+        "y":500.0,
         "entries":[
         ],
         "exits":[
@@ -725,184 +882,13 @@
                 ]
               },
               {
-                "id":"f8bdd1ba-60c7-42d0-9c9c-53f38ed50462",
-                "name":"C3",
-                "kind":"state",
-                "width":450.0,
-                "height":490.0,
-                "x":326.0,
-                "y":17.0,
-                "entries":[
-                  {
-                    "id":"3a3a47c1-4ca0-4760-8ce9-d2a541a07078",
-                    "action-id":"f924e35f-d169-4383-b9be-bf7deba72f4a"
-                  },
-                  {
-                    "id":"c1e7d3a5-5722-45c5-abb4-10c5ef820158",
-                    "action-id":"44bf3839-d782-4118-bf58-c33c5ad775c4"
-                  }
-                ],
-                "exits":[
-                ],
-                "region":[
-                  {
-                    "id":"821371f6-a22c-4970-9d7e-e33c8101e89d",
-                    "name":"Yet another region",
-                    "off_page":false,
-                    "height":370,
-                    "states":[
-                      {
-                        "id":"3ed4ee62-9a8f-4e9d-8021-7ccc969c2954",
-                        "name":"C31",
-                        "kind":"state",
-                        "width":100.0,
-                        "height":100.0,
-                        "x":320.0,
-                        "y":290.0,
-                        "entries":[
-                        ],
-                        "exits":[
-                        ],
-                        "region":[
-                        ],
-                        "transitions":[
-                          {
-                            "id":"04b47931-548a-4d6c-81c9-39f253fd149e",
-                            "trigger":"7c62f0ae-0695-40c5-b080-104a7bc370e9",
-                            "source":{
-                              "state":"3ed4ee62-9a8f-4e9d-8021-7ccc969c2954",
-                              "side":"left",
-                              "offset":75.362060546875
-                            },
-                            "dest":{
-                              "state":"4c786c14-ff23-4ac3-927f-8c868de8b3bb",
-                              "side":"right",
-                              "offset":78.847670611213232
-                            },
-                            "text-block":{
-                              "x":170.0,
-                              "y":270.0,
-                              "w":110.0,
-                              "h":20.0
-                            },
-                            "vertices":[
-                            ],
-                            "guards":[
-                            ],
-                            "actions":[
-                            ],
-                            "state-condition":[
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "id":"e0cc137f-7277-4d97-8c66-b882aef8d718",
-                        "name":"C32",
-                        "kind":"state",
-                        "width":180.0,
-                        "height":100.0,
-                        "x":50.0,
-                        "y":140.0,
-                        "entries":[
-                          {
-                            "id":"743014e2-c701-4e22-9535-37f8ae8d08cf",
-                            "action-id":"7d476618-4b39-434b-bb98-7ec8e4f5f79a"
-                          }
-                        ],
-                        "exits":[
-                        ],
-                        "region":[
-                        ],
-                        "transitions":[
-                          {
-                            "id":"81b67550-5043-4603-a332-2b4748c2708b",
-                            "trigger":"8cae81f9-1e69-464b-9a66-2077c76d4965",
-                            "source":{
-                              "state":"e0cc137f-7277-4d97-8c66-b882aef8d718",
-                              "side":"right",
-                              "offset":80.0
-                            },
-                            "dest":{
-                              "state":"3ed4ee62-9a8f-4e9d-8021-7ccc969c2954",
-                              "side":"left",
-                              "offset":30.0
-                            },
-                            "text-block":{
-                              "x":270.0,
-                              "y":170.0,
-                              "w":110.0,
-                              "h":20.0
-                            },
-                            "vertices":[
-                            ],
-                            "guards":[
-                            ],
-                            "actions":[
-                            ],
-                            "state-condition":[
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "id":"4c786c14-ff23-4ac3-927f-8c868de8b3bb",
-                        "name":"C33",
-                        "kind":"state",
-                        "width":100.0,
-                        "height":100.0,
-                        "x":50.0,
-                        "y":310.0,
-                        "entries":[
-                        ],
-                        "exits":[
-                        ],
-                        "region":[
-                        ],
-                        "transitions":[
-                          {
-                            "id":"6ea435ff-c711-4824-ab37-162b32f447ee",
-                            "source":{
-                              "state":"4c786c14-ff23-4ac3-927f-8c868de8b3bb",
-                              "side":"top",
-                              "offset":50.15544577205884
-                            },
-                            "dest":{
-                              "state":"e0cc137f-7277-4d97-8c66-b882aef8d718",
-                              "side":"bottom",
-                              "offset":49.912310431985304
-                            },
-                            "text-block":{
-                              "x":40.0,
-                              "y":200.0,
-                              "w":120.0,
-                              "h":20.0
-                            },
-                            "vertices":[
-                            ],
-                            "guards":[
-                            ],
-                            "actions":[
-                            ],
-                            "state-condition":[
-                            ]
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ],
-                "transitions":[
-                ]
-              },
-              {
                 "id":"bf78a0c4-34aa-4808-9b76-8289f888dda9",
                 "name":"D",
                 "kind":"state",
                 "width":150.0,
-                "height":300.0,
-                "x":860.0,
-                "y":80.0,
+                "height":160.0,
+                "x":250.0,
+                "y":100.0,
                 "entries":[
                 ],
                 "exits":[
@@ -912,8 +898,25 @@
                     "id":"e20e54b3-26b3-45a3-aef0-adb4d174d54c",
                     "name":"New region",
                     "off_page":false,
-                    "height":220,
+                    "height":120,
                     "states":[
+                      {
+                        "id":"9a9820e5-8872-42d4-8773-d9e5b06f55d4",
+                        "name":"T",
+                        "kind":"state",
+                        "width":90.0,
+                        "height":80.0,
+                        "x":25.454545454545496,
+                        "y":24.545454545454618,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                        ]
+                      }
                     ]
                   }
                 ],
@@ -923,16 +926,16 @@
                     "source":{
                       "state":"bf78a0c4-34aa-4808-9b76-8289f888dda9",
                       "side":"bottom",
-                      "offset":100.0
+                      "offset":80.0
                     },
                     "dest":{
                       "state":"6a726a54-2b8c-433b-8615-53ea8dfd0c7b",
                       "side":"top",
-                      "offset":10.0
+                      "offset":-50
                     },
                     "text-block":{
-                      "x":830.0,
-                      "y":420.0,
+                      "x":280.0,
+                      "y":310.0,
                       "w":90.0,
                       "h":30.0
                     },
@@ -997,7 +1000,7 @@
                 "kind":"final",
                 "width":20.0,
                 "height":20.0,
-                "x":950.0,
+                "x":310.0,
                 "y":410.0,
                 "entries":[
                 ],
@@ -1006,6 +1009,177 @@
                 "region":[
                 ],
                 "transitions":[
+                ]
+              }
+            ]
+          }
+        ],
+        "transitions":[
+        ]
+      },
+      {
+        "id":"f8bdd1ba-60c7-42d0-9c9c-53f38ed50462",
+        "name":"C3",
+        "kind":"state",
+        "width":430.0,
+        "height":490.0,
+        "x":660.0,
+        "y":520.0,
+        "entries":[
+          {
+            "id":"3a3a47c1-4ca0-4760-8ce9-d2a541a07078",
+            "action-id":"f924e35f-d169-4383-b9be-bf7deba72f4a"
+          },
+          {
+            "id":"c1e7d3a5-5722-45c5-abb4-10c5ef820158",
+            "action-id":"44bf3839-d782-4118-bf58-c33c5ad775c4"
+          }
+        ],
+        "exits":[
+        ],
+        "region":[
+          {
+            "id":"821371f6-a22c-4970-9d7e-e33c8101e89d",
+            "name":"Yet another region",
+            "off_page":false,
+            "height":370,
+            "states":[
+              {
+                "id":"3ed4ee62-9a8f-4e9d-8021-7ccc969c2954",
+                "name":"C31",
+                "kind":"state",
+                "width":100.0,
+                "height":100.0,
+                "x":320.0,
+                "y":290.0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                  {
+                    "id":"04b47931-548a-4d6c-81c9-39f253fd149e",
+                    "trigger":"7c62f0ae-0695-40c5-b080-104a7bc370e9",
+                    "source":{
+                      "state":"3ed4ee62-9a8f-4e9d-8021-7ccc969c2954",
+                      "side":"left",
+                      "offset":75.362060546875
+                    },
+                    "dest":{
+                      "state":"4c786c14-ff23-4ac3-927f-8c868de8b3bb",
+                      "side":"right",
+                      "offset":78.847670611213232
+                    },
+                    "text-block":{
+                      "x":170.0,
+                      "y":270.0,
+                      "w":110.0,
+                      "h":20.0
+                    },
+                    "vertices":[
+                    ],
+                    "guards":[
+                    ],
+                    "actions":[
+                    ],
+                    "state-condition":[
+                    ]
+                  }
+                ]
+              },
+              {
+                "id":"e0cc137f-7277-4d97-8c66-b882aef8d718",
+                "name":"C32",
+                "kind":"state",
+                "width":180.0,
+                "height":100.0,
+                "x":50.0,
+                "y":140.0,
+                "entries":[
+                  {
+                    "id":"743014e2-c701-4e22-9535-37f8ae8d08cf",
+                    "action-id":"7d476618-4b39-434b-bb98-7ec8e4f5f79a"
+                  }
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                  {
+                    "id":"81b67550-5043-4603-a332-2b4748c2708b",
+                    "trigger":"8cae81f9-1e69-464b-9a66-2077c76d4965",
+                    "source":{
+                      "state":"e0cc137f-7277-4d97-8c66-b882aef8d718",
+                      "side":"right",
+                      "offset":80.0
+                    },
+                    "dest":{
+                      "state":"3ed4ee62-9a8f-4e9d-8021-7ccc969c2954",
+                      "side":"left",
+                      "offset":30.0
+                    },
+                    "text-block":{
+                      "x":270.0,
+                      "y":170.0,
+                      "w":110.0,
+                      "h":20.0
+                    },
+                    "vertices":[
+                    ],
+                    "guards":[
+                    ],
+                    "actions":[
+                    ],
+                    "state-condition":[
+                    ]
+                  }
+                ]
+              },
+              {
+                "id":"4c786c14-ff23-4ac3-927f-8c868de8b3bb",
+                "name":"C33",
+                "kind":"state",
+                "width":100.0,
+                "height":100.0,
+                "x":50.0,
+                "y":310.0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                  {
+                    "id":"6ea435ff-c711-4824-ab37-162b32f447ee",
+                    "source":{
+                      "state":"4c786c14-ff23-4ac3-927f-8c868de8b3bb",
+                      "side":"top",
+                      "offset":50.15544577205884
+                    },
+                    "dest":{
+                      "state":"e0cc137f-7277-4d97-8c66-b882aef8d718",
+                      "side":"bottom",
+                      "offset":49.912310431985304
+                    },
+                    "text-block":{
+                      "x":40.0,
+                      "y":200.0,
+                      "w":120.0,
+                      "h":20.0
+                    },
+                    "vertices":[
+                    ],
+                    "guards":[
+                    ],
+                    "actions":[
+                    ],
+                    "state-condition":[
+                    ]
+                  }
                 ]
               }
             ]

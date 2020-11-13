@@ -79,3 +79,61 @@ int ufsmm_canvas_render_region(cairo_t *cr, struct ufsmm_region *region)
 
     return 0;
 }
+
+int ufsmm_region_get_at_xy(struct ufsmm_region *region, double px, double py,
+                            struct ufsmm_region **out, int *depth)
+{
+    int d = 0;
+    static struct ufsmm_stack *stack;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_state *s;
+    bool found_region = false;
+    double x, y, w, h;
+    double ox, oy;
+
+    if (!region)
+        return -UFSMM_ERROR;
+
+    ufsmm_canvas_get_offset(&ox, &oy);
+
+    ox = ox / ufsmm_canvas_get_scale();
+    oy = oy / ufsmm_canvas_get_scale();
+
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_push(stack, region);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK)
+    {
+        if (r->off_page && !r->draw_as_root)
+            continue;
+        d++;
+
+        ufsmm_get_region_absolute_coords(r, &x, &y, &w, &h);
+
+        x += ox;
+        y += oy;
+
+        if ( (px > (x-5)) && (px < (x + w + 5)) &&
+             (py > (y-5)) && (py < (y + h + 5))) {
+
+             (*out) = r;
+             found_region = true;
+        }
+
+        for (s = r->state; s; s = s->next) {
+            for (r2 = s->regions; r2; r2 = r2->next) {
+                ufsmm_stack_push(stack, r2);
+            }
+        }
+    }
+
+    ufsmm_stack_free(stack);
+
+    if (depth != NULL)
+        (*depth) = d;
+
+    if (found_region)
+        return UFSMM_OK;
+    else
+        return -UFSMM_ERROR;
+}

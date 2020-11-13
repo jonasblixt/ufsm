@@ -507,7 +507,29 @@ static gboolean motion_notify_event_cb (GtkWidget      *widget,
         gtk_widget_queue_draw (widget);
     } else if (selected_state && (event->state & GDK_BUTTON1_MASK) &&
                (selected_action_ref == NULL)) {
+
+        struct ufsmm_region *new_pr;
+        double x, y, w, h;
+        double ox, oy;
+        int rc;
         printf("move %s --> %f %f\n", selected_state->name, dx, dy);
+
+        rc = ufsmm_region_get_at_xy(current_region, tx_tmp, ty_tmp, &new_pr, NULL);
+
+        if (rc == UFSMM_OK && (selected_state->parent_region != new_pr)) {
+            if (ufsmm_state_move_to_region(model, selected_state, new_pr) == UFSMM_OK) {
+                L_DEBUG("Re-parent '%s' to region: %s", selected_state->name,
+                                                        new_pr->name);
+                ufsmm_canvas_get_offset(&ox, &oy);
+
+                ox = ox / ufsmm_canvas_get_scale();
+                oy = oy / ufsmm_canvas_get_scale();
+                ufsmm_get_region_absolute_coords(new_pr, &x, &y, &w, &h);
+                selected_state->x = tx_tmp - (x + ox);
+                selected_state->y = ty_tmp - (y + oy);
+            }
+        }
+
         ufsmm_canvas_state_translate(selected_state, dx, dy);
         gtk_widget_queue_draw (widget);
     }
@@ -619,8 +641,10 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
                 new_transition->source.offset = source_offset;
                 new_transition->dest.side = dest_side;
                 new_transition->dest.offset = dest_offset;
-                new_transition->text_block_coords.w = 200;
-                new_transition->text_block_coords.h = 100;
+                new_transition->text_block_coords.x = source_state->x;
+                new_transition->text_block_coords.y = source_state->y;
+                new_transition->text_block_coords.w = 100;
+                new_transition->text_block_coords.h = 30;
                 new_transition->vertices = new_transition_vertice;
             }
             controller_state = STATE_IDLE;

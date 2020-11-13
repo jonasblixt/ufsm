@@ -330,6 +330,13 @@ int ufsmm_state_set_xy(struct ufsmm_state *s, double x, double y);
 int ufsmm_state_get_size(struct ufsmm_state *s, double *x, double *y);
 int ufsmm_state_get_xy(struct ufsmm_state *s, double *x, double *y);
 
+bool ufsmm_state_contains_region(struct ufsmm_model *model,
+                                 struct ufsmm_state *state,
+                                 struct ufsmm_region *region);
+
+int ufsmm_state_move_to_region(struct ufsmm_model *model,
+                               struct ufsmm_state *state,
+                               struct ufsmm_region *new_region);
 
 const char * ufsmm_model_name(struct ufsmm_model *model);
 
