@@ -568,7 +568,6 @@
         "transitions":[
           {
             "id":"8b69f757-89e4-4812-9347-70db25f20a75",
-            "trigger":"7c62f0ae-0695-40c5-b080-104a7bc370e9",
             "source":{
               "state":"13b4423c-396e-4ed6-8310-5e34af82f40b",
               "side":"left",

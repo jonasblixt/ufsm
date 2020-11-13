@@ -128,7 +128,7 @@ static void list_row_activated_cb(GtkTreeView        *treeview,
        gtk_tree_model_get(model, &iter, COLUMN_NAME, &name, -1);
        gtk_tree_model_get(model, &iter, COLUMN_TRIGGER_REF, &selected_trigger, -1);
 
-       g_print ("Selected action '%s'\n", name);
+       g_print ("Selected trigger '%s'\n", name);
        gtk_dialog_response(GTK_DIALOG(userdata), GTK_RESPONSE_ACCEPT);
        g_free(name);
     }
@@ -172,6 +172,14 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
                                 G_TYPE_UINT,
                                 G_TYPE_STRING,
                                 G_TYPE_POINTER);
+
+    /* Addd 'trigger-less' trigger */
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set (store, &iter,
+                        COLUMN_MATCH_RATING, 0,
+                        COLUMN_NAME, "trigger-less",
+                        COLUMN_TRIGGER_REF, NULL,
+                        -1);
 
     for (struct ufsmm_trigger *t = model->triggers; t; t = t->next) {
         gtk_list_store_append(store, &iter);
@@ -232,7 +240,7 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
 
     int result = gtk_dialog_run(GTK_DIALOG(dialog));
 
-    if (selected_trigger && (result == GTK_RESPONSE_ACCEPT)) {
+    if (result == GTK_RESPONSE_ACCEPT) {
         rc = ufsmm_transition_set_trigger(model, transition,
                                             selected_trigger);
     } else if (result == 1) { /* Create new action */

@@ -12,9 +12,6 @@
 
 static struct ufsmm_model *model;
 static struct ufsmm_region *current_region;
-static struct ufsmm_transition *selected_transition = NULL;
-static enum ufsmm_transition_vertice_kind selected_vertice_kind;
-static struct ufsmm_vertice *selected_transition_vertice = NULL;
 static double selection_start_x, selection_start_y;
 static double sselection_x, sselection_y;
 static double canvas_ox, canvas_oy;
@@ -35,6 +32,11 @@ static bool add_vertice_flag;
 static struct ufsmm_state *source_state, *dest_state;
 static double source_offset, dest_offset;
 static enum ufsmm_side source_side, dest_side;
+static struct ufsmm_vertice *new_transition_vertice;
+static struct ufsmm_vertice *new_transition_vertice_last;
+static struct ufsmm_transition *selected_transition = NULL;
+static enum ufsmm_transition_vertice_kind selected_vertice_kind;
+static struct ufsmm_vertice *selected_transition_vertice = NULL;
 
 /* Create state variables */
 static double new_state_sx, new_state_sy;
@@ -187,7 +189,12 @@ check_new_state:
         }
 
         if (event->keyval == GDK_KEY_e) {
-            if (selected_state) {
+            if (selected_action_ref) {
+                L_DEBUG("Edit '%s'", selected_action_ref->act->name);
+
+                ufsm_edit_string_dialog(GTK_WINDOW(window), "Edit action function",
+                                            &selected_action_ref->act->name);
+            } else if (selected_state) {
                 L_DEBUG("Edit state");
 
                 ufsm_edit_string_dialog(GTK_WINDOW(window), "Edit state name",
@@ -574,10 +581,27 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
         } else {
             controller_state = STATE_IDLE;
         }
+        new_transition_vertice = NULL;
+
         return TRUE;
     } else if (controller_state == STATE_ADD_TRANSITION2) {
         if (add_vertice_flag) {
             L_DEBUG("Add vertice at <%f, %f>", px, py);
+
+            if (new_transition_vertice == NULL) {
+                new_transition_vertice = malloc(sizeof(*new_transition_vertice));
+                new_transition_vertice_last = new_transition_vertice;
+            } else {
+                new_transition_vertice_last->next = malloc(sizeof(*new_transition_vertice));
+                new_transition_vertice_last = new_transition_vertice_last->next;
+            }
+
+            ufsmm_get_region_absolute_coords(selected_region, &x, &y, &w, &h);
+            new_transition_vertice_last->x = 
+                ufsmm_canvas_nearest_grid_point(px) - (x + ox);
+            new_transition_vertice_last->y =
+                ufsmm_canvas_nearest_grid_point(py) - (y + oy);
+
         } else {
             L_DEBUG("Looking for dest state at <%f, %f>", px, py);
 
@@ -597,6 +621,7 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
                 new_transition->dest.offset = dest_offset;
                 new_transition->text_block_coords.w = 200;
                 new_transition->text_block_coords.h = 100;
+                new_transition->vertices = new_transition_vertice;
             }
             controller_state = STATE_IDLE;
         }
