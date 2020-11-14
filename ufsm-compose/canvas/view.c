@@ -32,6 +32,9 @@ int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
     double x_acc = 0.0;
     double y_acc = 0.0;
 
+    if (r == NULL)
+        return -UFSMM_ERROR;
+
     if (r->draw_as_root) {
         *x = 0;
         *y = 0;

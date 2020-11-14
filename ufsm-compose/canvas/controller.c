@@ -612,10 +612,12 @@ gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
 
             if (new_transition_vertice == NULL) {
                 new_transition_vertice = malloc(sizeof(*new_transition_vertice));
+                memset(new_transition_vertice, 0, sizeof(*new_transition_vertice));
                 new_transition_vertice_last = new_transition_vertice;
             } else {
                 new_transition_vertice_last->next = malloc(sizeof(*new_transition_vertice));
                 new_transition_vertice_last = new_transition_vertice_last->next;
+                memset(new_transition_vertice_last, 0, sizeof(*new_transition_vertice_last));
             }
 
             ufsmm_get_region_absolute_coords(selected_region, &x, &y, &w, &h);
