@@ -249,7 +249,7 @@ check_new_state:
             } else if (selected_state) {
                 if (selected_state->focus) {
                     L_DEBUG("Deleting state '%s'", selected_state->name);
-                    ufsmm_delete_state(selected_state);
+                    ufsmm_model_delete_state(model, selected_state);
                     selected_state = NULL;
                     gtk_widget_queue_draw(widget);
                 }

@@ -566,7 +566,7 @@ int ufsmm_state_delete_transition(struct ufsmm_transition *transition)
         s->transition = transition->next;
     }
 
-    return ufsmm_transition_free(transition);
+    return ufsmm_transition_free_one(transition);
 }
 
 int ufsmm_state_get_transitions(struct ufsmm_state *state,
@@ -574,52 +574,6 @@ int ufsmm_state_get_transitions(struct ufsmm_state *state,
 {
     (*transitions) = state->transition;
     return UFSMM_OK;
-}
-
-int ufsmm_delete_state(struct ufsmm_state *state)
-{
-    int rc;
-    struct ufsmm_state *prev = state->prev;
-    struct ufsmm_state *next = state->next;
-    struct ufsmm_region *pr = state->parent_region;
-    struct ufsmm_state *s;
-    struct ufsmm_stack *stack, *free_stack;
-
-    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
-
-    if (rc != UFSMM_OK)
-        return rc;
-
-    rc = ufsmm_stack_init(&free_stack, UFSMM_MAX_R_S);
-
-    if (rc != UFSMM_OK)
-        return rc;
-
-    if (prev == NULL) {
-        pr->state = next;
-    } else {
-        prev->next = next;
-    }
-
-    ufsmm_stack_push(stack, state);
-
-    while (ufsmm_stack_pop(stack, (void **) &s) == UFSMM_OK) {
-        ufsmm_stack_push(free_stack, (void *) s);
-        free_action_ref_list(s->entries);
-        free_action_ref_list(s->exits);
-        ufsmm_transition_free(s->transition);
-        free((void *) s->name);
-        for (struct ufsmm_region *r = s->regions; r; r = r->next) {
-            ufsmm_stack_push(free_stack, (void *) r);
-            for (struct ufsmm_state *sr = r->state; sr; sr = sr->next) {
-                ufsmm_stack_push(stack, (void *) sr);
-            }
-        }
-    }
-
-    ufsmm_stack_free(stack);
-    ufsmm_stack_free(free_stack);
-    return rc;
 }
 
 int ufsmm_state_move_to_region(struct ufsmm_model *model,

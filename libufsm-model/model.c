@@ -1511,3 +1511,222 @@ int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model)
     else
         return max_concurrent_states;
 }
+
+static int internal_delete(struct ufsmm_model *model,
+                           struct ufsmm_region *region,
+                           struct ufsmm_state *state)
+{
+    int rc;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_state *s, *s2;
+    static struct ufsmm_stack *stack, *stack2, *stack3;
+
+    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+
+    if (rc != UFSMM_OK) {
+        L_ERR("Could not init stack");
+        return -UFSMM_ERROR;
+    }
+
+    rc = ufsmm_stack_init(&stack2, UFSMM_MAX_R_S);
+
+    if (rc != UFSMM_OK) {
+        L_ERR("Could not init stack");
+        ufsmm_stack_free(stack);
+        return -UFSMM_ERROR;
+    }
+
+    rc = ufsmm_stack_init(&stack3, UFSMM_MAX_R_S);
+
+    if (rc != UFSMM_OK) {
+        L_ERR("Could not init stack");
+        ufsmm_stack_free(stack);
+        ufsmm_stack_free(stack2);
+        return -UFSMM_ERROR;
+    }
+
+    if (region) {
+        L_DEBUG("Deleting region '%s'", region->name);
+        rc = ufsmm_stack_push(stack, (void *) region);
+
+        if (rc != UFSMM_OK)
+            goto err_out;
+    } else if (state) {
+        L_DEBUG("Deleting state '%s'", state->name);
+        ufsmm_stack_push(stack2, (void *) state);
+        for (r = state->regions; r; r = r->next) {
+            rc = ufsmm_stack_push(stack, (void *) r);
+
+            if (rc != UFSMM_OK)
+                goto err_out;
+        }
+    } else {
+        rc = -1;
+        goto err_out;
+    }
+
+    /* Pass 1: Delete transitions */
+    L_DEBUG("Deleting source transitions");
+    if (state) {
+        L_DEBUG("Deleting transitions originating from '%s'", state->name);
+        for (struct ufsmm_transition *t = state->transition; t; t = t->next) {
+            rc = ufsmm_stack_push(stack3, (void *) t);
+            if (rc != UFSMM_OK)
+                goto err_out;
+        }
+    }
+    while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
+        for (s = r->state; s; s = s->next) {
+            L_DEBUG("Deleting transitions originating from '%s'", s->name);
+            for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
+                rc = ufsmm_stack_push(stack3, (void *) t);
+                if (rc != UFSMM_OK)
+                    goto err_out;
+            }
+
+            ufsmm_stack_push(stack2, (void *) s);
+
+            for (r2 = s->regions; r2; r2 = r2->next) {
+                ufsmm_stack_push(stack, (void *) r2);
+            }
+        }
+    }
+
+    struct ufsmm_transition *t_tmp;
+
+    while (ufsmm_stack_pop(stack3, (void **) &t_tmp) == UFSMM_OK) {
+        L_DEBUG("Deleting transition from '%s' to '%s'",
+                        t_tmp->source.state->name, t_tmp->dest.state->name);
+        rc = ufsmm_state_delete_transition(t_tmp);
+        if (rc != UFSMM_OK)
+            goto err_out;
+    }
+
+    /* Delete transitions if their destination is in a state we want to delete.
+     * At this point 'stack2' contains all the states we want to delete
+     **/
+
+    L_DEBUG("Deleting dest transitions");
+
+    while (ufsmm_stack_pop(stack2, (void *) &s2) == UFSMM_OK) {
+        rc = ufsmm_stack_push(stack, (void *) model->root);
+
+        if (rc != UFSMM_OK)
+            goto err_out;
+
+        while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
+            for (s = r->state; s; s = s->next) {
+                for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
+                    if (t->dest.state == s2) {
+                        rc = ufsmm_stack_push(stack3, (void *) t);
+                        if (rc != UFSMM_OK)
+                            goto err_out;
+                    }
+                }
+
+                for (r2 = s->regions; r2; r2 = r2->next) {
+                    ufsmm_stack_push(stack, (void *) r2);
+                }
+            }
+        }
+    }
+
+    while (ufsmm_stack_pop(stack3, (void **) &t_tmp) == UFSMM_OK) {
+        L_DEBUG("Deleting transition from '%s' to '%s'",
+                        t_tmp->source.state->name, t_tmp->dest.state->name);
+        rc = ufsmm_state_delete_transition(t_tmp);
+        if (rc != UFSMM_OK)
+            goto err_out;
+    }
+
+    L_DEBUG("Transitions deleted");
+
+    /* Pass 2: Delete states and regions, */
+    if (region) {
+        rc = ufsmm_stack_push(stack, (void *) region);
+
+        if (rc != UFSMM_OK)
+            goto err_out;
+
+        rc = ufsmm_stack_push(stack3, (void *) region);
+
+        if (rc != UFSMM_OK)
+            goto err_out;
+
+    } else if (state) {
+
+        rc = ufsmm_stack_push(stack2, (void *) state);
+
+        if (rc != UFSMM_OK)
+            goto err_out;
+
+        for (r = state->regions; r; r = r->next) {
+            rc = ufsmm_stack_push(stack, (void *) r);
+
+            if (rc != UFSMM_OK)
+                goto err_out;
+
+            rc = ufsmm_stack_push(stack3, (void *) r);
+
+            if (rc != UFSMM_OK)
+                goto err_out;
+        }
+    } else {
+        rc = -1;
+        goto err_out;
+    }
+
+    /* Populate 'stack2' with the states we want to delete 
+     * Populate 'stack3' with th regions we want to delete
+     * */
+    while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
+        for (s = r->state; s; s = s->next) {
+            ufsmm_stack_push(stack2, (void *) s);
+
+            for (r2 = s->regions; r2; r2 = r2->next) {
+                ufsmm_stack_push(stack, (void *) r2);
+                ufsmm_stack_push(stack3, (void *) r2);
+            }
+        }
+    }
+
+    while (ufsmm_stack_pop(stack2, (void *) &s) == UFSMM_OK) {
+        L_DEBUG("Deleting state: %s", s->name);
+        free_action_ref_list(s->entries);
+        free_action_ref_list(s->exits);
+        free((void *) s->name);
+
+        if (s->prev)
+            s->prev->next = s->next;
+        else
+            s->parent_region->state = s->next;
+
+        free(s);
+    }
+
+    while (ufsmm_stack_pop(stack3, (void *) &r) == UFSMM_OK) {
+        L_DEBUG("Deleting region: %s", r->name);
+        free((void *) r->name);
+        free(r);
+    }
+
+    L_DEBUG("Done");
+
+err_out:
+    ufsmm_stack_free(stack);
+    ufsmm_stack_free(stack2);
+    ufsmm_stack_free(stack3);
+    return rc;
+}
+
+int ufsmm_model_delete_region(struct ufsmm_model *model,
+                              struct ufsmm_region *region)
+{
+    return internal_delete(model, region, NULL);
+}
+
+int ufsmm_model_delete_state(struct ufsmm_model *model,
+                             struct ufsmm_state *state)
+{
+    return internal_delete(model, NULL, state);
+}

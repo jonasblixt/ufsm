@@ -586,6 +586,54 @@ int ufsmm_transition_free(struct ufsmm_transition *transition)
     return UFSMM_OK;
 }
 
+int ufsmm_transition_free_one(struct ufsmm_transition *transition)
+{
+    struct ufsmm_vertice *v, *v_tmp;
+    struct ufsmm_state *source;
+    struct ufsmm_transition_state_condition *sc, *sc_tmp;
+
+    if (transition == NULL)
+        return UFSMM_OK;
+
+    L_DEBUG("Freeing transition %s --> %s", transition->source.state->name,
+                                            transition->dest.state->name);
+    source = transition->source.state;
+
+    if (transition->prev) {
+        transition->prev->next = transition->next;
+    } else {
+        source->transition = transition->next;
+    }
+
+    if (transition->next)
+        transition->next->prev = transition->prev;
+
+    L_DEBUG("Freeing actions");
+    free_action_ref_list(transition->action);
+    L_DEBUG("Freeing guards");
+    free_action_ref_list(transition->guard);
+
+    v = transition->vertices;
+
+    while (v) {
+        v_tmp = v->next;
+        free(v);
+        v = v_tmp;
+    }
+
+    sc = transition->state_conditions;
+
+    while (sc) {
+        sc_tmp = sc->next;
+        free(sc);
+        sc = sc_tmp;
+    }
+
+    free(transition);
+
+    return UFSMM_OK;
+}
+
 int ufsmm_transition_set_trigger(struct ufsmm_model *model,
                                 struct ufsmm_transition *transition,
                                 struct ufsmm_trigger *trigger)

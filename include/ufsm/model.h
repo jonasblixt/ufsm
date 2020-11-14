@@ -264,6 +264,12 @@ struct ufsmm_trigger * ufsmm_model_get_trigger_from_uuid(struct ufsmm_model *mod
                                                        uuid_t id);
 int free_action_ref_list(struct ufsmm_action_ref *list);
 
+int ufsmm_model_delete_region(struct ufsmm_model *model,
+                              struct ufsmm_region *region);
+
+int ufsmm_model_delete_state(struct ufsmm_model *model,
+                             struct ufsmm_state *state);
+
 /* Region api */
 int ufsmm_add_region(struct ufsmm_state *state, bool off_page,
                      struct ufsmm_region **out);
@@ -281,8 +287,6 @@ int ufsmm_region_set_height(struct ufsmm_region *r, double h);
 int ufsmm_region_get_height(struct ufsmm_region *r, double *h);
 
 /* State api */
-
-int ufsmm_delete_state(struct ufsmm_state *state);
 
 int ufsmm_add_state(struct ufsmm_region *region, const char *name,
                     struct ufsmm_state **out);
@@ -375,6 +379,8 @@ int ufsmm_transition_add_state_condition(struct ufsmm_model *model,
 
 int ufsmm_transition_delete_state_condition(struct ufsmm_transition *transition,
                                             uuid_t id);
+
+int ufsmm_transition_free_one(struct ufsmm_transition *transition);
 
 struct ufsmm_transition_state_condition *
 ufsmm_transition_get_state_conditions(struct ufsmm_transition *t);
