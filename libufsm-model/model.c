@@ -1707,6 +1707,12 @@ static int internal_delete(struct ufsmm_model *model,
     while (ufsmm_stack_pop(stack3, (void *) &r) == UFSMM_OK) {
         L_DEBUG("Deleting region: %s", r->name);
         free((void *) r->name);
+
+        if (r->prev)
+            r->prev->next = r->next;
+        else if (r->parent_state)
+            r->parent_state->regions = r->next;
+
         free(r);
     }
 

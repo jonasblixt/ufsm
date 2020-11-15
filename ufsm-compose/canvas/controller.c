@@ -253,6 +253,20 @@ check_new_state:
                     selected_state = NULL;
                     gtk_widget_queue_draw(widget);
                 }
+            } else if (selected_region) {
+                if ((!selected_region->draw_as_root) &&
+                            (!selected_region->off_page)) {
+                    struct ufsmm_region *pr = NULL;
+                    if (selected_region->parent_state) {
+                        pr = selected_region->parent_state->parent_region;
+                    } else {
+                        pr = model->root;
+                    }
+
+                    ufsmm_model_delete_region(model, selected_region);
+                    selected_region = pr;
+                    gtk_widget_queue_draw(widget);
+                }
             }
         }
 
