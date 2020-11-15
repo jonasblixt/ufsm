@@ -418,6 +418,12 @@ static gboolean motion_notify_event_cb (GtkWidget      *widget,
             case UFSMM_TRANSITION_VERTICE:
                 selected_transition_vertice->y += dy;
                 selected_transition_vertice->x += dx;
+
+                selected_transition_vertice->y =
+                    ufsmm_canvas_nearest_grid_point(selected_transition_vertice->y);
+
+                selected_transition_vertice->x =
+                    ufsmm_canvas_nearest_grid_point(selected_transition_vertice->x);
             break;
             default:
             break;
