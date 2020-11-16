@@ -70,7 +70,7 @@ typedef bool (*ufsm_guard_func_t) (void);
 typedef void (*ufsm_action_func_t) (void);
 typedef void (*ufsm_entry_exit_func_t) (void);
 typedef void (*ufsm_queue_cb_t) (void);
-typedef uint32_t (*ufsm_doact_cb_t) (struct ufsm_machine *m, struct ufsm_state *s);
+typedef ufsm_status_t (*ufsm_doact_cb_t) (struct ufsm_machine *m, struct ufsm_state *s);
 typedef void (*ufsm_doact_func_t) (struct ufsm_machine *m,
                                    struct ufsm_state *s,
                                    ufsm_doact_cb_t cb);
