@@ -107,7 +107,9 @@ static int ufsm_process_completion(struct ufsm_machine *m,
         if (t->trigger == NULL)
         {
             err = ufsm_make_transition(m, t, s->parent_region);
-            break;
+
+            if (err == UFSM_OK)
+                break;
         }
     }
 
@@ -184,7 +186,6 @@ inline static void ufsm_leave_state(struct ufsm_machine *m,
         e->f(m->context);
     }
 }
-
 
 inline static void ufsm_set_current_state(struct ufsm_machine *m,
                                           const struct ufsm_region *r,
@@ -476,7 +477,7 @@ static int ufsm_leave_nested_states(struct ufsm_machine *m,
     int c = 0;
     int err = UFSM_OK;
 
-    const struct ufsm_state *current  = ufsm_get_current_state(m, s->region);
+    const struct ufsm_state *current = ufsm_get_current_state(m, s->region);
     if (!s->region || !current)
         return UFSM_OK;
 
@@ -926,12 +927,14 @@ static int ufsm_process_completion_events(struct ufsm_machine *m)
     for (unsigned int n = 0; n < m->no_of_states; n++)
     {
         if (m->s_data[n].completed) {
+            m->s_data[n].completed = false;
             completed_state = m->s_data[n].state;
+
             err = ufsm_process_completion(m, completed_state);
+
             if (err != UFSM_OK)
                 return err;
 
-            m->s_data[n].completed = false;
         }
     }
     return err;
