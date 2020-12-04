@@ -92,14 +92,7 @@ int main(int argc, char **argv)
 
     GtkWidget *hpane = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
 
-    rc = ufsmm_state_canvas_init(window, &state_canvas);
-
-    if (rc != UFSMM_OK)
-    {
-        L_ERR("Could not initialize state drawing canvas");
-        goto err_out;
-    }
-
+    state_canvas = ufsmm_canvas_new();
 
     gtk_paned_add2(GTK_PANED(hpane), state_canvas);
 
@@ -121,15 +114,14 @@ int main(int argc, char **argv)
         goto err_out;
     }
 
-    ufsmm_state_canvas_update(model, NULL, argv[1]);
+    //ufsmm_state_canvas_update(model, NULL, argv[1]);
+    ufsmm_canvas_load_model(state_canvas, model);
 
     gtk_widget_show_all(window);
     gtk_main();
 
-
     printf("Clean-up...\n");
     ufsmm_model_free(model);
-
 
 err_out:
     return rc;

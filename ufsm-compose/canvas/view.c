@@ -4,13 +4,11 @@
 
 #include "canvas/view.h"
 
-static double scale = 1.7;
 static double selection_sx;
 static double selection_sy;
 static double selection_ex;
 static double selection_ey;
 static bool draw_selection;
-static double pan_x, pan_y;
 
 bool ufsmm_region_is_root_or_offpage(struct ufsmm_region *r)
 {
@@ -122,23 +120,7 @@ int ufsmm_get_state_absolute_coords(struct ufsmm_state *s, double *x,
     return 0;
 }
 
-int ufsmm_canvas_scale(double scale_change)
-{
-    scale += scale_change;
-
-    if (scale < 0.1)
-        scale = 0.1;
-
-    printf("scale = %f\n", scale);
-}
-
-double ufsmm_canvas_get_scale(void)
-{
-    return scale;
-}
-
-int ufsmm_canvas_render(cairo_t *cr, struct ufsmm_region *root,
-                        int width, int height)
+int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
 {
     int rc;
     double x, y, w, h;
@@ -146,10 +128,10 @@ int ufsmm_canvas_render(cairo_t *cr, struct ufsmm_region *root,
     struct ufsmm_state *s;
     static struct ufsmm_stack *stack;
 
-    cairo_translate(cr, pan_x, pan_y);
-    cairo_scale(cr, scale, scale);
+    cairo_translate(canvas->cr, canvas->ox, canvas->oy);
+    cairo_scale(canvas->cr, canvas->scale, canvas->scale);
 
-    ufsmm_canvas_render_grid(cr, 1684, 1190);
+    ufsmm_canvas_render_grid(canvas->cr, 1684, 1190);
 
     rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
 
@@ -157,18 +139,18 @@ int ufsmm_canvas_render(cairo_t *cr, struct ufsmm_region *root,
         return rc;
 
     /* Pass 1: draw states, regions etc*/
-    rc = ufsmm_stack_push(stack, (void *) root);
+    rc = ufsmm_stack_push(stack, (void *) canvas->current_region);
 
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK)
     {
-        ufsmm_canvas_render_region(cr, r);
+        ufsmm_canvas_render_region(canvas, r);
 
         if (r->off_page && (!r->draw_as_root))
             continue;
 
         for (s = r->state; s; s = s->next)
         {
-            ufsmm_canvas_render_state(cr, s);
+            ufsmm_canvas_render_state(canvas, s);
 
             for (r2 = s->regions; r2; r2 = r2->next)
             {
@@ -178,13 +160,13 @@ int ufsmm_canvas_render(cairo_t *cr, struct ufsmm_region *root,
     }
 
     /* Pass 2: draw transitions */
-    rc = ufsmm_stack_push(stack, (void *) root);
+    rc = ufsmm_stack_push(stack, (void *) canvas->current_region);
 
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK)
     {
         for (s = r->state; s; s = s->next)
         {
-            ufsmm_canvas_render_transition(cr, s->transition);
+            ufsmm_canvas_render_transition(canvas->cr, s->transition);
             for (r2 = s->regions; r2; r2 = r2->next)
             {
                 if (r2->off_page)
@@ -203,17 +185,17 @@ int ufsmm_canvas_render(cairo_t *cr, struct ufsmm_region *root,
                        20.0};  /* skip */
 
     if (draw_selection) {
-        cairo_save(cr);
+        cairo_save(canvas->cr);
         //cairo_set_source_rgb (cr, 0.4, 0.4, 0.4);
-        ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
-        cairo_set_dash (cr, dashes, 2, 0);
-        cairo_set_line_width (cr, 1);
-        cairo_rectangle (cr, selection_sx,
+        ufsmm_color_set(canvas->cr, UFSMM_COLOR_ACCENT);
+        cairo_set_dash (canvas->cr, dashes, 2, 0);
+        cairo_set_line_width (canvas->cr, 1);
+        cairo_rectangle (canvas->cr, selection_sx,
                              selection_sy,
                              selection_ex - selection_sx,
                              selection_ey - selection_sy);
-        cairo_stroke (cr);
-        cairo_restore (cr);
+        cairo_stroke (canvas->cr);
+        cairo_restore (canvas->cr);
     }
     return rc;
 }
@@ -228,19 +210,6 @@ int ufsmm_canvas_set_selection(bool active, double sx,
     selection_sy = sy;
     selection_ex = ex;
     selection_ey = ey;
-}
-
-int ufsmm_canvas_pan(double dx, double dy)
-{
-    pan_x += dx;
-    pan_y += dy;
-    //L_DEBUG("pan <%f, %f>", pan_x, pan_y);
-}
-
-int ufsmm_canvas_get_offset(double *x, double *y)
-{
-    (*x) = pan_x;
-    (*y) = pan_y;
 }
 
 double distance_point_to_seg2(double px, double py,

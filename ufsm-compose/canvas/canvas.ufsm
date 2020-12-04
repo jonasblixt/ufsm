@@ -1,7 +1,7 @@
 {
   "kind":"uFSM Model",
   "version":0,
-  "name":"New model",
+  "name":"canvas",
   "triggers":[
     {
       "name":"eLMBDown",
@@ -98,6 +98,34 @@
     {
       "name":"eKey_shift_up",
       "id":"477900d8-124e-45b9-99d9-4e2aca45fe1d"
+    },
+    {
+      "name":"eKey_i_down",
+      "id":"312affef-dc71-4190-93b8-b8b3f2623d71"
+    },
+    {
+      "name":"eKey_f_down",
+      "id":"5436ff7d-0fcb-4cfb-bd94-e82f14913849"
+    },
+    {
+      "name":"eSaveModel",
+      "id":"6ef41bf3-e96c-467e-8d44-ca20342a8c3f"
+    },
+    {
+      "name":"eEnableScale",
+      "id":"e229b0c4-18ec-4b88-82ab-d4b8bea28c37"
+    },
+    {
+      "name":"eDisableScale",
+      "id":"94c820d7-bb72-43f0-be6a-09ccf6ad8134"
+    },
+    {
+      "name":"eScrollUp",
+      "id":"c3bf0ec6-1fa5-480b-a7ca-71c9b0a124de"
+    },
+    {
+      "name":"eScrollDown",
+      "id":"bbc53dc1-e6ff-4a0f-85eb-b3d9d82ade5c"
     }
   ],
   "actions":[
@@ -248,6 +276,30 @@
     {
       "name":"canvas_add_transition_vertice",
       "id":"4110bd55-137e-47c0-a970-6ce79c4a1d43"
+    },
+    {
+      "name":"canvas_create_init_state",
+      "id":"e2420580-bdd7-4ea6-b917-e55cd29b9631"
+    },
+    {
+      "name":"canvas_create_final_state",
+      "id":"2d573fe9-2671-4208-880b-e42c01eb7a0b"
+    },
+    {
+      "name":"canvas_save_model",
+      "id":"6393b17f-6823-43e0-ad03-ebe767fd81cb"
+    },
+    {
+      "name":"canvas_inc_scale",
+      "id":"df9610a5-59c0-4083-9b92-21707f6dc7f7"
+    },
+    {
+      "name":"canvas_store_offset",
+      "id":"fade869b-99e6-417b-abe0-aad7c74bca86"
+    },
+    {
+      "name":"canvas_dec_scale",
+      "id":"f1885b45-d833-4e88-ab48-b4f8277c47af"
     }
   ],
   "entries":[
@@ -479,9 +531,9 @@
               "offset":30.0
             },
             "text-block":{
-              "x":610.0,
-              "y":280.0,
-              "w":100.0,
+              "x":540.0,
+              "y":260.0,
+              "w":270.0,
               "h":30.0
             },
             "vertices":[
@@ -489,6 +541,10 @@
             "guards":[
             ],
             "actions":[
+              {
+                "action-id":"fade869b-99e6-417b-abe0-aad7c74bca86",
+                "id":"75d67fbb-4c7b-49d3-8dca-37738d7ea3b9"
+              }
             ],
             "state-condition":[
             ]
@@ -522,81 +578,69 @@
             ]
           },
           {
-            "id":"1fa962e5-0fab-4797-afb8-2da06faa5024",
-            "trigger":"59f70ac3-315a-41c6-97db-06fbafd06f02",
+            "id":"dc093791-23cf-44ee-9a7f-be11c3af735e",
+            "trigger":"6ef41bf3-e96c-467e-8d44-ca20342a8c3f",
             "source":{
               "state":"9bc407ce-cf13-4456-b060-9742ec032659",
-              "side":"left",
-              "offset":200.0
+              "side":"right",
+              "offset":220.0
             },
             "dest":{
               "state":"9bc407ce-cf13-4456-b060-9742ec032659",
-              "side":"left",
-              "offset":170.0
+              "side":"right",
+              "offset":250.0
             },
             "text-block":{
-              "x":420.0,
-              "y":470.0,
-              "w":230.0,
+              "x":1070.0,
+              "y":520.0,
+              "w":270.0,
               "h":30.0
             },
             "vertices":[
               {
-                "x":670.0,
-                "y":500.0
+                "x":1050.0,
+                "y":520.0
               },
               {
-                "x":670.0,
-                "y":470.0
+                "x":1050.0,
+                "y":550.0
               }
             ],
             "guards":[
             ],
             "actions":[
               {
-                "action-id":"57dcc7ff-1907-4ac6-a112-2144bc932cb7",
-                "id":"b226ac7d-d2b4-4e40-befc-e6834a124ca2"
+                "action-id":"6393b17f-6823-43e0-ad03-ebe767fd81cb",
+                "id":"0d8610a3-0667-4da7-967c-b6aaa115bb00"
               }
             ],
             "state-condition":[
             ]
           },
           {
-            "id":"1e2ae6a8-4119-46b5-af4a-31879ddda0f6",
-            "trigger":"4768a897-3963-4965-94d4-d2975eaffe26",
+            "id":"09dd9b8a-6758-4c30-ab8a-2301cecb65c0",
+            "trigger":"e229b0c4-18ec-4b88-82ab-d4b8bea28c37",
             "source":{
               "state":"9bc407ce-cf13-4456-b060-9742ec032659",
               "side":"left",
-              "offset":260.0
+              "offset":200.0
             },
             "dest":{
-              "state":"9bc407ce-cf13-4456-b060-9742ec032659",
-              "side":"left",
-              "offset":230.0
+              "state":"d192cdf5-2e61-4224-a429-b90403b1ec0e",
+              "side":"right",
+              "offset":20.0
             },
             "text-block":{
-              "x":410.0,
-              "y":530.0,
-              "w":240.0,
+              "x":600.0,
+              "y":460.0,
+              "w":100.0,
               "h":30.0
             },
             "vertices":[
-              {
-                "x":670.0,
-                "y":560.0
-              },
-              {
-                "x":670.0,
-                "y":530.0
-              }
             ],
             "guards":[
             ],
             "actions":[
-              {
-                "action-id":"4f728897-6cc3-48ab-a4e3-d6e50d20d412",
-                "id":"73cd1cbe-7082-4227-a248-0c7699ae50e9"
-              }
             ],
             "state-condition":[
             ]
@@ -3248,7 +3292,7 @@
                         "name":"Add",
                         "kind":"state",
                         "width":100.0,
-                        "height":180.0,
+                        "height":250.0,
                         "x":320.0,
                         "y":150.0,
                         "entries":[
@@ -3326,6 +3370,70 @@
                             "guards":[
                             ],
                             "actions":[
+                            ],
+                            "state-condition":[
+                            ]
+                          },
+                          {
+                            "id":"89301021-c37c-471f-9519-109ebe6b9279",
+                            "trigger":"312affef-dc71-4190-93b8-b8b3f2623d71",
+                            "source":{
+                              "state":"09ed5b3c-d326-46bc-8ae1-f1377e942207",
+                              "side":"right",
+                              "offset":120.0
+                            },
+                            "dest":{
+                              "state":"9e7cfc8f-eaad-49e7-af0c-62ef54a95902",
+                              "side":"left",
+                              "offset":10.0
+                            },
+                            "text-block":{
+                              "x":440.0,
+                              "y":220.0,
+                              "w":190.0,
+                              "h":40.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                              {
+                                "action-id":"e2420580-bdd7-4ea6-b917-e55cd29b9631",
+                                "id":"89ec3eeb-3329-45f8-9a5b-a6abd25629d5"
+                              }
+                            ],
+                            "state-condition":[
+                            ]
+                          },
+                          {
+                            "id":"3fb4e833-40b4-4c00-9194-2c31895aad58",
+                            "trigger":"5436ff7d-0fcb-4cfb-bd94-e82f14913849",
+                            "source":{
+                              "state":"09ed5b3c-d326-46bc-8ae1-f1377e942207",
+                              "side":"right",
+                              "offset":190.0
+                            },
+                            "dest":{
+                              "state":"251f5542-7682-4cbb-bcdf-658d352b4ac7",
+                              "side":"left",
+                              "offset":20.0
+                            },
+                            "text-block":{
+                              "x":430.0,
+                              "y":290.0,
+                              "w":200.0,
+                              "h":50.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                              {
+                                "action-id":"2d573fe9-2671-4208-880b-e42c01eb7a0b",
+                                "id":"30af2f21-7f3f-4fac-858c-bb50b7e773fa"
+                              }
                             ],
                             "state-condition":[
                             ]
@@ -3528,7 +3636,7 @@
                         "id":"5577a77a-a350-4e46-b546-d8e30a5a4218",
                         "name":"New transition",
                         "kind":"state",
-                        "width":550.0,
+                        "width":710.0,
                         "height":410.0,
                         "x":730.0,
                         "y":320.0,
@@ -3620,38 +3728,6 @@
                                 ],
                                 "transitions":[
                                   {
-                                    "id":"0a4dd48f-5b23-4de4-bf78-fc16469557f0",
-                                    "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
-                                    "source":{
-                                      "state":"fc6399d1-c9b5-4a38-88d7-755d83db66e7",
-                                      "side":"right",
-                                      "offset":40.0
-                                    },
-                                    "dest":{
-                                      "state":"4bc349e7-ed14-49e2-a5c6-5e279183799f",
-                                      "side":"left",
-                                      "offset":10.0
-                                    },
-                                    "text-block":{
-                                      "x":570.0,
-                                      "y":40.0,
-                                      "w":300.0,
-                                      "h":30.0
-                                    },
-                                    "vertices":[
-                                    ],
-                                    "guards":[
-                                    ],
-                                    "actions":[
-                                      {
-                                        "action-id":"4eb2fcfb-eaf1-4156-820e-d57131d842fb",
-                                        "id":"ac4c01b6-0522-4706-b0d1-b28a2f3c0c8d"
-                                      }
-                                    ],
-                                    "state-condition":[
-                                    ]
-                                  },
-                                  {
                                     "id":"75bf6d51-b12a-4965-88af-8322eed7532b",
                                     "trigger":"ff3ba5c8-93e8-430e-b37a-8196a4be36fa",
                                     "source":{
@@ -3723,6 +3799,42 @@
                                     "guards":[
                                     ],
                                     "actions":[
+                                    ],
+                                    "state-condition":[
+                                    ]
+                                  },
+                                  {
+                                    "id":"64d6ffc5-cd5f-421b-94d9-6f492e0d4d95",
+                                    "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                    "source":{
+                                      "state":"fc6399d1-c9b5-4a38-88d7-755d83db66e7",
+                                      "side":"right",
+                                      "offset":70.0
+                                    },
+                                    "dest":{
+                                      "state":"4bc349e7-ed14-49e2-a5c6-5e279183799f",
+                                      "side":"top",
+                                      "offset":10.0
+                                    },
+                                    "text-block":{
+                                      "x":540.0,
+                                      "y":50.0,
+                                      "w":210.0,
+                                      "h":60.0
+                                    },
+                                    "vertices":[
+                                      {
+                                        "x":1360.0,
+                                        "y":520.0
+                                      }
+                                    ],
+                                    "guards":[
+                                    ],
+                                    "actions":[
+                                      {
+                                        "action-id":"4eb2fcfb-eaf1-4156-820e-d57131d842fb",
+                                        "id":"3c18613e-bd66-4136-aedc-f696012bbd48"
+                                      }
                                     ],
                                     "state-condition":[
                                     ]
@@ -3817,21 +3929,99 @@
                                     ]
                                   }
                                 ]
+                              },
+                              {
+                                "id":"4bc349e7-ed14-49e2-a5c6-5e279183799f",
+                                "name":"Final",
+                                "kind":"final",
+                                "width":20.0,
+                                "height":20.0,
+                                "x":620.0,
+                                "y":280.0,
+                                "entries":[
+                                ],
+                                "exits":[
+                                ],
+                                "region":[
+                                ],
+                                "transitions":[
+                                ]
                               }
                             ]
                           }
                         ],
                         "transitions":[
+                          {
+                            "id":"37ba5277-6ab7-4a89-aa5c-c86356d2d835",
+                            "source":{
+                              "state":"5577a77a-a350-4e46-b546-d8e30a5a4218",
+                              "side":"right",
+                              "offset":250.0
+                            },
+                            "dest":{
+                              "state":"61e6d20a-06ae-484d-b503-b553a57076fb",
+                              "side":"left",
+                              "offset":0.0
+                            },
+                            "text-block":{
+                              "x":1470.0,
+                              "y":520.0,
+                              "w":100.0,
+                              "h":30.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                            ],
+                            "state-condition":[
+                            ]
+                          }
                         ]
                       },
                       {
-                        "id":"4bc349e7-ed14-49e2-a5c6-5e279183799f",
+                        "id":"61e6d20a-06ae-484d-b503-b553a57076fb",
                         "name":"Final",
                         "kind":"final",
                         "width":20.0,
                         "height":20.0,
-                        "x":1600.0,
-                        "y":480.0,
+                        "x":1550.0,
+                        "y":560.0,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                        ]
+                      },
+                      {
+                        "id":"9e7cfc8f-eaad-49e7-af0c-62ef54a95902",
+                        "name":"Final",
+                        "kind":"final",
+                        "width":20.0,
+                        "height":20.0,
+                        "x":642.14285714285711,
+                        "y":264.28571428571433,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                        ]
+                      },
+                      {
+                        "id":"251f5542-7682-4cbb-bcdf-658d352b4ac7",
+                        "name":"Final",
+                        "kind":"final",
+                        "width":20.0,
+                        "height":20.0,
+                        "x":632.60869565217399,
+                        "y":336.52173913043481,
                         "entries":[
                         ],
                         "exits":[
@@ -4032,6 +4222,139 @@
             "guards":[
             ],
             "actions":[
+            ],
+            "state-condition":[
+            ]
+          }
+        ]
+      },
+      {
+        "id":"d192cdf5-2e61-4224-a429-b90403b1ec0e",
+        "name":"Scale",
+        "kind":"state",
+        "width":300.0,
+        "height":110.0,
+        "x":280.0,
+        "y":480.0,
+        "entries":[
+        ],
+        "exits":[
+        ],
+        "region":[
+        ],
+        "transitions":[
+          {
+            "id":"2414b1c9-ade6-4cca-8af7-08c564240324",
+            "trigger":"c3bf0ec6-1fa5-480b-a7ca-71c9b0a124de",
+            "source":{
+              "state":"d192cdf5-2e61-4224-a429-b90403b1ec0e",
+              "side":"left",
+              "offset":30.0
+            },
+            "dest":{
+              "state":"d192cdf5-2e61-4224-a429-b90403b1ec0e",
+              "side":"top",
+              "offset":40.0
+            },
+            "text-block":{
+              "x":10.0,
+              "y":450.0,
+              "w":230.0,
+              "h":30.0
+            },
+            "vertices":[
+              {
+                "x":250.0,
+                "y":510.0
+              },
+              {
+                "x":250.0,
+                "y":440.0
+              },
+              {
+                "x":320.0,
+                "y":440.0
+              }
+            ],
+            "guards":[
+            ],
+            "actions":[
+              {
+                "action-id":"df9610a5-59c0-4083-9b92-21707f6dc7f7",
+                "id":"a252ea9f-f2ba-413c-b730-01c00fa84297"
+              }
+            ],
+            "state-condition":[
+            ]
+          },
+          {
+            "id":"763b0c37-a490-406d-99f0-dcfc5890f740",
+            "trigger":"94c820d7-bb72-43f0-be6a-09ccf6ad8134",
+            "source":{
+              "state":"d192cdf5-2e61-4224-a429-b90403b1ec0e",
+              "side":"right",
+              "offset":70.0
+            },
+            "dest":{
+              "state":"9bc407ce-cf13-4456-b060-9742ec032659",
+              "side":"left",
+              "offset":250.0
+            },
+            "text-block":{
+              "x":600.0,
+              "y":520.0,
+              "w":100.0,
+              "h":30.0
+            },
+            "vertices":[
+            ],
+            "guards":[
+            ],
+            "actions":[
+            ],
+            "state-condition":[
+            ]
+          },
+          {
+            "id":"2c1bc37e-b4a7-44a9-9fb3-15de5f3fc9ac",
+            "trigger":"bbc53dc1-e6ff-4a0f-85eb-b3d9d82ade5c",
+            "source":{
+              "state":"d192cdf5-2e61-4224-a429-b90403b1ec0e",
+              "side":"left",
+              "offset":80.0
+            },
+            "dest":{
+              "state":"d192cdf5-2e61-4224-a429-b90403b1ec0e",
+              "side":"bottom",
+              "offset":40.0
+            },
+            "text-block":{
+              "x":0.0,
+              "y":600.0,
+              "w":260.0,
+              "h":30.0
+            },
+            "vertices":[
+              {
+                "x":250.0,
+                "y":560.0
+              },
+              {
+                "x":250.0,
+                "y":630.0
+              },
+              {
+                "x":320.0,
+                "y":630.0
+              }
+            ],
+            "guards":[
+            ],
+            "actions":[
+              {
+                "action-id":"f1885b45-d833-4e88-ab48-b4f8277c47af",
+                "id":"1b1dc80d-75ad-43c3-8f1c-2c43750bdc18"
+              }
             ],
             "state-condition":[
             ]

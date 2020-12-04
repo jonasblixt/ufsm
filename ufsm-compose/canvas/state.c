@@ -6,7 +6,8 @@
 #include "canvas/view.h"
 
 
-static int render_history_state(cairo_t *cr, struct ufsmm_state *state,
+static int render_history_state(struct ufsmm_canvas *canvas,
+                                struct ufsmm_state *state,
                                 bool deep)
 {
     double x, y, w, h;
@@ -15,6 +16,7 @@ static int render_history_state(cairo_t *cr, struct ufsmm_state *state,
     double degrees = M_PI / 180.0;
     bool clip_text = false;
     cairo_text_extents_t extents;
+    cairo_t *cr = canvas->cr;
 
     ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
 
@@ -52,7 +54,8 @@ static int render_history_state(cairo_t *cr, struct ufsmm_state *state,
     return 0;
 }
 
-static int render_init_state(cairo_t *cr, struct ufsmm_state *state)
+static int render_init_state(struct ufsmm_canvas *canvas,
+                             struct ufsmm_state *state)
 {
     double x, y, w, h;
     double lbl_x, lbl_y;
@@ -60,6 +63,7 @@ static int render_init_state(cairo_t *cr, struct ufsmm_state *state)
     double degrees = M_PI / 180.0;
     bool clip_text = false;
     cairo_text_extents_t extents;
+    cairo_t *cr = canvas->cr;
 
     ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
 
@@ -89,7 +93,8 @@ static int render_init_state(cairo_t *cr, struct ufsmm_state *state)
     return 0;
 }
 
-static int render_final_state(cairo_t *cr, struct ufsmm_state *state)
+static int render_final_state(struct ufsmm_canvas *canvas,
+                              struct ufsmm_state *state)
 {
     double x, y, w, h;
     double lbl_x, lbl_y;
@@ -97,6 +102,7 @@ static int render_final_state(cairo_t *cr, struct ufsmm_state *state)
     double degrees = M_PI / 180.0;
     bool clip_text = false;
     cairo_text_extents_t extents;
+    cairo_t *cr = canvas->cr;
 
     ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
 
@@ -137,7 +143,8 @@ static int render_final_state(cairo_t *cr, struct ufsmm_state *state)
     return 0;
 }
 
-static int render_normal_state(cairo_t *cr, struct ufsmm_state *state)
+static int render_normal_state(struct ufsmm_canvas *canvas,
+                               struct ufsmm_state *state)
 {
     double x, y, w, h;
     double rx, ry, rw, rh;
@@ -146,6 +153,8 @@ static int render_normal_state(cairo_t *cr, struct ufsmm_state *state)
     double degrees = M_PI / 180.0;
     bool clip_text = false;
     cairo_text_extents_t extents;
+    cairo_t *cr = canvas->cr;
+
 
     ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
 
@@ -304,25 +313,26 @@ static int render_normal_state(cairo_t *cr, struct ufsmm_state *state)
     state->region_y_offset = y_offset - 30.0;
 }
 
-int ufsmm_canvas_render_state(cairo_t *cr, struct ufsmm_state *state)
+int ufsmm_canvas_render_state(struct ufsmm_canvas *canvas,
+                              struct ufsmm_state *state)
 {
     int rc;
 
     switch (state->kind) {
         case UFSMM_STATE_NORMAL:
-            rc = render_normal_state(cr, state);
+            rc = render_normal_state(canvas, state);
         break;
         case UFSMM_STATE_INIT:
-            rc = render_init_state(cr, state);
+            rc = render_init_state(canvas, state);
         break;
         case UFSMM_STATE_FINAL:
-            rc = render_final_state(cr, state);
+            rc = render_final_state(canvas, state);
         break;
         case UFSMM_STATE_SHALLOW_HISTORY:
-            rc = render_history_state(cr, state, false);
+            rc = render_history_state(canvas, state, false);
         break;
         case UFSMM_STATE_DEEP_HISTORY:
-            rc = render_history_state(cr, state, true);
+            rc = render_history_state(canvas, state, true);
         break;
     }
     return 0;
@@ -348,8 +358,10 @@ int ufsmm_canvas_state_translate(struct ufsmm_state *s, double dx, double dy)
     }
 }
 
-int ufsmm_state_get_at_xy(struct ufsmm_region *region, double px, double py,
-                            struct ufsmm_state **out, int *depth)
+int ufsmm_state_get_at_xy(struct ufsmm_canvas *canvas,
+                          struct ufsmm_region *region,
+                          double px, double py,
+                          struct ufsmm_state **out, int *depth)
 {
     int d = 0;
     static struct ufsmm_stack *stack;
@@ -358,11 +370,10 @@ int ufsmm_state_get_at_xy(struct ufsmm_region *region, double px, double py,
     bool found_state = false;
     double x, y, w, h;
     double ox, oy;
+    cairo_t *cr = canvas->cr;
 
-    ufsmm_canvas_get_offset(&ox, &oy);
-
-    ox = ox / ufsmm_canvas_get_scale();
-    oy = oy / ufsmm_canvas_get_scale();
+    ox = canvas->ox / canvas->scale;
+    oy = canvas->oy / canvas->scale;
 
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
     ufsmm_stack_push(stack, region);
@@ -403,8 +414,9 @@ int ufsmm_state_get_at_xy(struct ufsmm_region *region, double px, double py,
         return -UFSMM_ERROR;
 }
 
-int ufsmm_state_get_closest_side(struct ufsmm_state *s, double px, double py,
-                                    enum ufsmm_side *side, double *offset)
+int ufsmm_state_get_closest_side(struct ufsmm_canvas *canvas,
+                                 struct ufsmm_state *s, double px, double py,
+                                 enum ufsmm_side *side, double *offset)
 {
     double x, y, w, h;
     double ox, oy;
@@ -412,10 +424,9 @@ int ufsmm_state_get_closest_side(struct ufsmm_state *s, double px, double py,
     double lx, ly;
 
     ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
-    ufsmm_canvas_get_offset(&ox, &oy);
 
-    ox = ox / ufsmm_canvas_get_scale();
-    oy = oy / ufsmm_canvas_get_scale();
+    ox = canvas->ox / canvas->scale;
+    oy = canvas->oy / canvas->scale;
 
     x += ox;
     y += oy;

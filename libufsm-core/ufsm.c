@@ -102,10 +102,8 @@ static int ufsm_process_completion(struct ufsm_machine *m,
 {
     int err = UFSM_OK;
 
-    for (const struct ufsm_transition *t = s->transition; t; t = t->next)
-    {
-        if (t->trigger == NULL)
-        {
+    for (const struct ufsm_transition *t = s->transition; t; t = t->next) {
+        if (t->trigger == NULL) {
             err = ufsm_make_transition(m, t, s->parent_region);
 
             if (err == UFSM_OK)
@@ -140,8 +138,7 @@ static int ufsm_enter_state(struct ufsm_machine *m, const struct ufsm_state *s)
     if (m->debug_enter_state)
         m->debug_enter_state(s);
 
-    for (const struct ufsm_entry_exit *e = s->entry; e; e = e->next)
-    {
+    for (const struct ufsm_entry_exit *e = s->entry; e; e = e->next) {
         if (m->debug_entry_exit)
             m->debug_entry_exit(e);
         e->f(m->context);
@@ -179,8 +176,7 @@ inline static void ufsm_leave_state(struct ufsm_machine *m,
     if (s == NULL)
         return;
 
-    for (const struct ufsm_entry_exit *e = s->exit; e; e = e->next)
-    {
+    for (const struct ufsm_entry_exit *e = s->exit; e; e = e->next) {
         if (m->debug_entry_exit)
             m->debug_entry_exit(e);
         e->f(m->context);
@@ -201,8 +197,7 @@ inline static bool ufsm_test_guards(struct ufsm_machine *m,
 {
     bool result = true;
 
-    for (const struct ufsm_guard *g = t->guard; g; g = g->next)
-    {
+    for (const struct ufsm_guard *g = t->guard; g; g = g->next) {
         bool guard_result = g->f(m->context);
 
         if (m->debug_guard)
@@ -218,8 +213,7 @@ inline static bool ufsm_test_guards(struct ufsm_machine *m,
 inline static void ufsm_execute_actions(struct ufsm_machine *m,
                                         const struct ufsm_transition *t)
 {
-    for (const struct ufsm_action *a = t->action; a; a = a->next)
-    {
+    for (const struct ufsm_action *a = t->action; a; a = a->next) {
         if (m->debug_action)
             m->debug_action(a);
 
@@ -241,12 +235,10 @@ inline static void ufsm_update_history(struct ufsm_machine *m,
 static const struct ufsm_transition *ufsm_get_first_state (const struct ufsm_region *region)
 {
 
-    for (const struct ufsm_state *s = region->state; s; s = s->next)
-    {
+    for (const struct ufsm_state *s = region->state; s; s = s->next) {
         if (ufsm_state_is(s, UFSM_STATE_INIT) ||
             ufsm_state_is(s, UFSM_STATE_SHALLOW_HISTORY) ||
-            ufsm_state_is(s, UFSM_STATE_DEEP_HISTORY))
-        {
+            ufsm_state_is(s, UFSM_STATE_DEEP_HISTORY)) {
             return s->transition;
         }
     }
@@ -274,8 +266,7 @@ static int ufsm_enter_parent_states(struct ufsm_machine *m,
 
     c++;
 
-    while (ps && (r != ancestor) && (err == UFSM_OK))
-    {
+    while (ps && (r != ancestor) && (err == UFSM_OK)) {
         pr = ps->parent_region;
 
         if ((pr == ancestor) || (pr == NULL))
@@ -291,8 +282,7 @@ static int ufsm_enter_parent_states(struct ufsm_machine *m,
         ps = pr->parent_state;
     }
 
-    for (int i = 0; i < c; i++)
-    {
+    for (int i = 0; i < c; i++) {
         err = ufsm_stack_pop(&m->stack, (void **) &pr);
 
         if (err != UFSM_OK)
@@ -304,8 +294,7 @@ static int ufsm_enter_parent_states(struct ufsm_machine *m,
         ps = pr->parent_state;
 
         const struct ufsm_state *current = ufsm_get_current_state(m, ps->parent_region);
-        if (ps && current != ps)
-        {
+        if (ps && current != ps) {
             ufsm_set_current_state(m, ps->parent_region, ps);
 
             if (pr != ancestor)
@@ -322,11 +311,9 @@ static const struct ufsm_region * ufsm_least_common_ancestor(const struct ufsm_r
     const struct ufsm_region *lca = r1;
     const struct ufsm_region *lca2 = r2;
 
-    while (lca)
-    {
+    while (lca) {
         lca2 = r2;
-        do
-        {
+        do {
             if (lca == lca2)
                 return lca;
 
@@ -370,31 +357,25 @@ static int ufsm_leave_parent_states(struct ufsm_machine *m,
     if (!ancestor)
         return UFSM_ERROR_LCA_NOT_FOUND;
 
-    while (states_to_leave)
-    {
+    while (states_to_leave) {
         if (ancestor == rl)
             break;
 
         if (m->debug_leave_region)
             m->debug_leave_region(rl);
 
-        if (rl->parent_state)
-        {
+        if (rl->parent_state) {
             ufsm_leave_state(m, rl->parent_state);
             m->r_data[rl->index].current = NULL;
 
-            if (rl->parent_state->parent_region)
-            {
+            if (rl->parent_state->parent_region) {
                 rl = rl->parent_state->parent_region;
                 states_to_leave = true;
             }
 
-        }
-        else
-        {
+        } else {
             states_to_leave = false;
         }
-
     }
 
     return UFSM_OK;
@@ -486,8 +467,7 @@ static int ufsm_leave_nested_states(struct ufsm_machine *m,
     if (err != UFSM_OK)
         return err;
 
-    for (int i = 0; i < c; i++)
-    {
+    for (int i = 0; i < c; i++) {
         err = ufsm_pop_sr_pair(m, &r, &s2);
 
         if (err != UFSM_OK)
@@ -511,8 +491,7 @@ static int ufsm_init_region_history(struct ufsm_machine *m,
 
     const struct ufsm_state *history = m->r_data[regions->index].history;
 
-    if (regions->has_history && history)
-    {
+    if (regions->has_history && history) {
         m->r_data[regions->index].current = (struct ufsm_state *) history;
 
         if (m->debug_enter_region)
@@ -561,8 +540,7 @@ static int ufsm_process_regions(struct ufsm_machine *m,
     int err = UFSM_OK;
     const struct ufsm_region *r = dest->region;
 
-    for (const struct ufsm_region *s_r = r; s_r; s_r = s_r->next)
-    {
+    for (const struct ufsm_region *s_r = r; s_r; s_r = s_r->next) {
         const struct ufsm_transition *init_t = ufsm_get_first_state(s_r);
 
         if (init_t == NULL) {
@@ -586,10 +564,8 @@ static int ufsm_process_entry_exit_points(struct ufsm_machine *m,
     int err = UFSM_OK;
 
     for (const struct ufsm_state *s = dest->parent_region->state; s; s = s->next) {
-        for (const struct ufsm_transition *te = s->transition; te; te = te->next)
-        {
-            if (te->source == dest)
-            {
+        for (const struct ufsm_transition *te = s->transition; te; te = te->next) {
+            if (te->source == dest) {
                 err = ufsm_push_rt_pair(m, te->dest->parent_region, te);
 
                 if (err != UFSM_OK)
@@ -613,20 +589,18 @@ static int ufsm_process_final_state(struct ufsm_machine *m,
 
     m->r_data[act_region->index].current = (struct ufsm_state *) dest;
 
-    if (dest->kind == UFSM_STATE_FINAL && parent_state)
-    {
+    if (dest->kind == UFSM_STATE_FINAL && parent_state) {
         super_exit = true;
-        for (const struct ufsm_region *ar = parent_state->region; ar; ar = ar->next)
-        {
+        for (const struct ufsm_region *ar = parent_state->region; ar; ar = ar->next) {
             const struct ufsm_state *current = m->r_data[ar->index].current;
-            if (current)
+            if (current) {
                 if (current->kind != UFSM_STATE_FINAL)
                     super_exit = false;
+            }
         }
     }
 
-    if (super_exit && parent_state)
-    {
+    if (super_exit && parent_state) {
         const struct ufsm_region *parent_region = parent_state->region;
 
         for (const struct ufsm_region *ar = parent_region; ar; ar = ar->next) {
@@ -636,9 +610,7 @@ static int ufsm_process_final_state(struct ufsm_machine *m,
 
         for (const struct ufsm_transition *tf = parent_state->transition;
                                                           tf; tf = tf->next) {
-            if (tf->trigger == NULL &&
-                tf->source == parent_state)
-            {
+            if (tf->trigger == NULL && tf->source == parent_state) {
                 m->s_data[parent_state->index].cant_exit = false;
                 err = ufsm_push_rt_pair(m, parent_state->parent_region, tf);
 
@@ -661,10 +633,8 @@ static int ufsm_process_fork(struct ufsm_machine *m,
     int err = UFSM_OK;
 
     for (const struct ufsm_state *s = act_region->state; s; s = s->next) {
-        for (const struct ufsm_transition *tf = s->transition; tf; tf = tf->next)
-        {
-            if (tf->source == dest)
-            {
+        for (const struct ufsm_transition *tf = s->transition; tf; tf = tf->next) {
+            if (tf->source == dest) {
                 err = ufsm_push_rt_pair(m, act_region, tf);
 
                 if (err != UFSM_OK)
@@ -694,20 +664,16 @@ static int ufsm_process_join(struct ufsm_machine *m,
     orth_region = (struct ufsm_region *) src->parent_region->parent_state->region;
 
     m->r_data[src->parent_region->index].current = (struct ufsm_state *) dest;
-    for (const struct ufsm_region *dr = orth_region; dr; dr = dr->next)
-    {
+    for (const struct ufsm_region *dr = orth_region; dr; dr = dr->next) {
         const struct ufsm_state *current = m->r_data[dr->index].current;
         if (current != dest)
             exec_join = false;
     }
 
-    if (exec_join)
-    {
-
+    if (exec_join) {
         for (const struct ufsm_state *s = dest->parent_region->state; s; s = s->next) {
             for (const struct ufsm_transition *dt = s->transition; dt; dt = dt->next) {
-                if (dt->source == dest)
-                {
+                if (dt->source == dest) {
                     err = ufsm_push_rt_pair(m, dest->parent_region, dt);
 
                     if (err != UFSM_OK)
@@ -782,8 +748,7 @@ static void ufsm_load_history(struct ufsm_machine *m,
 {
 
     if (ufsm_state_is(src, UFSM_STATE_SHALLOW_HISTORY) ||
-        ufsm_state_is(src, UFSM_STATE_DEEP_HISTORY))
-    {
+        ufsm_state_is(src, UFSM_STATE_DEEP_HISTORY)) {
         if (m->r_data[src->parent_region->index].history) {
             *dest = m->r_data[src->parent_region->index].history;
         }
@@ -808,8 +773,7 @@ static int ufsm_make_transition(struct ufsm_machine *m,
     if (err != UFSM_OK)
         return err;
 
-    while (transition_count && (err == UFSM_OK))
-    {
+    while (transition_count && (err == UFSM_OK)) {
         err = ufsm_pop_rt_pair(m, &act_region, &act_t);
 
         if (err != UFSM_OK)
@@ -822,8 +786,7 @@ static int ufsm_make_transition(struct ufsm_machine *m,
 
         ufsm_load_history(m, src, &dest);
 
-        if (!ufsm_test_guards(m, act_t))
-        {
+        if (!ufsm_test_guards(m, act_t)) {
             err = UFSM_ERROR_EVENT_NOT_PROCESSED;
             break;
         }
@@ -834,8 +797,7 @@ static int ufsm_make_transition(struct ufsm_machine *m,
         if (m->debug_transition)
             m->debug_transition(act_t);
 
-        if (t->kind == UFSM_TRANSITION_EXTERNAL)
-        {
+        if (t->kind == UFSM_TRANSITION_EXTERNAL) {
             /* If we are in a composite state make sure to
              *  exit all nested states
              **/
@@ -855,8 +817,7 @@ static int ufsm_make_transition(struct ufsm_machine *m,
         ufsm_execute_actions(m, act_t);
 
         if ((t->kind == UFSM_TRANSITION_EXTERNAL) &&
-            (src->parent_region != dest->parent_region))
-        {
+            (src->parent_region != dest->parent_region)) {
             err = ufsm_enter_parent_states(m, lca_region, dest->parent_region);
 
             if (err != UFSM_OK)
@@ -865,15 +826,13 @@ static int ufsm_make_transition(struct ufsm_machine *m,
         }
 
         /* Decode destination state kind */
-        switch(dest->kind)
-        {
+        switch(dest->kind) {
             case UFSM_STATE_SHALLOW_HISTORY:
             case UFSM_STATE_DEEP_HISTORY:
             case UFSM_STATE_SIMPLE:
                 ufsm_update_history(m, dest);
                 m->r_data[act_region->index].current = (struct ufsm_state*) dest;
-                if (t->kind == UFSM_TRANSITION_EXTERNAL)
-                {
+                if (t->kind == UFSM_TRANSITION_EXTERNAL) {
                     ufsm_enter_state(m, dest);
                     err = ufsm_process_regions(m, dest, &transition_count);
                 }
@@ -918,14 +877,12 @@ static int ufsm_make_transition(struct ufsm_machine *m,
     return err;
 }
 
-
 static int ufsm_process_completion_events(struct ufsm_machine *m)
 {
     int err = UFSM_OK;
     const struct ufsm_state *completed_state;
 
-    for (unsigned int n = 0; n < m->no_of_states; n++)
-    {
+    for (unsigned int n = 0; n < m->no_of_states; n++) {
         if (m->s_data[n].completed) {
             m->s_data[n].completed = false;
             completed_state = m->s_data[n].state;
@@ -934,7 +891,6 @@ static int ufsm_process_completion_events(struct ufsm_machine *m)
 
             if (err != UFSM_OK)
                 return err;
-
         }
     }
     return err;
@@ -957,8 +913,7 @@ int ufsm_init_machine(struct ufsm_machine *m, void *context)
         m->r_data[n].history = NULL;
     }
 
-    for (const struct ufsm_region *r = m->region; r; r = r->next)
-    {
+    for (const struct ufsm_region *r = m->region; r; r = r->next) {
         const struct ufsm_transition *rt = ufsm_get_first_state(r);
 
         err = ufsm_make_transition(m, rt, r);
@@ -972,7 +927,6 @@ int ufsm_init_machine(struct ufsm_machine *m, void *context)
 
     return err;
 }
-
 
 static inline bool ufsm_transition_has_trigger(const struct ufsm_transition *t, int ev)
 {
@@ -1035,8 +989,7 @@ int ufsm_process(struct ufsm_machine *m, int ev)
 
     ufsm_find_active_regions(m,m->region, &region_count);
 
-    for (int i = 0; i < region_count; i++)
-    {
+    for (int i = 0; i < region_count; i++) {
         err = ufsm_pop_sr_pair(m, &region, &s);
 
         if (err != UFSM_OK) {
@@ -1045,8 +998,7 @@ int ufsm_process(struct ufsm_machine *m, int ev)
         /* First ensure that the active state has not
          * changed
          * */
-        if (m->r_data[region->index].current == s)
-        {
+        if (m->r_data[region->index].current == s) {
             err = ufsm_transition (m, region, ev);
             if (err != UFSM_OK) {
                 goto err_out;

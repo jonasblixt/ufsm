@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <ufsm/model.h>
 #include <cairo/cairo.h>
+#include "controller.h"
 
 enum ufsmm_color {
     UFSMM_COLOR_BG,
@@ -67,13 +68,15 @@ inline bool point_in_box2(double px, double py,
 
 int ufsmm_color_set(cairo_t *cr, enum ufsmm_color color);
 
-int ufsmm_canvas_render(cairo_t *cr, struct ufsmm_region *root,
-                        int widht, int height);
+int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height);
 int ufsmm_canvas_render_grid(cairo_t *cr, int width, int height);
-int ufsmm_canvas_render_state(cairo_t *cr, struct ufsmm_state *state);
-int ufsmm_canvas_render_region(cairo_t *cr, struct ufsmm_region *region);
+int ufsmm_canvas_render_state(struct ufsmm_canvas *canvas,
+                              struct ufsmm_state *state);
+
+int ufsmm_canvas_render_region(struct ufsmm_canvas *canvas,
+                               struct ufsmm_region *region);
+
 int ufsmm_canvas_render_transition(cairo_t *cr, struct ufsmm_transition *t);
-int ufsmm_canvas_scale(double zoom_change);
 double ufsmm_canvas_get_scale(void);
 
 int ufsmm_get_state_absolute_coords(struct ufsmm_state *s, double *x,
@@ -104,15 +107,18 @@ int ufsmm_canvas_pan(double dx, double dy);
 
 int ufsmm_canvas_get_offset(double *x, double *y);
 
+int ufsmm_state_get_at_xy(struct ufsmm_canvas *canvas,
+                          struct ufsmm_region *region,
+                          double px, double py,
+                          struct ufsmm_state **out, int *depth);
 
-int ufsmm_state_get_at_xy(struct ufsmm_region *r, double px, double py,
-                            struct ufsmm_state **out, int *depth);
+int ufsmm_region_get_at_xy(struct ufsmm_canvas *canvas,
+                           struct ufsmm_region *region, double px, double py,
+                           struct ufsmm_region **out, int *depth);
 
-int ufsmm_region_get_at_xy(struct ufsmm_region *region, double px, double py,
-                            struct ufsmm_region **out, int *depth);
-
-int ufsmm_state_get_closest_side(struct ufsmm_state *s, double px, double py,
-                                    enum ufsmm_side *side, double *offset);
+int ufsmm_state_get_closest_side(struct ufsmm_canvas *canvas,
+                                 struct ufsmm_state *s, double px, double py,
+                                 enum ufsmm_side *side, double *offset);
 
 double distance_point_to_seg(double px, double py,
                             double sx, double sy,

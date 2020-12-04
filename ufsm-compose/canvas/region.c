@@ -3,11 +3,13 @@
 
 #include "canvas/view.h"
 
-int ufsmm_canvas_render_region(cairo_t *cr, struct ufsmm_region *region)
+int ufsmm_canvas_render_region(struct ufsmm_canvas *canvas,
+                               struct ufsmm_region *region)
 {
     double x, y, w, h;
     double dashes[] = {10.0,  /* ink */
                        10.0};  /* skip */
+    cairo_t *cr = canvas->cr;
 
     if (region->draw_as_root)
         return UFSMM_OK;
@@ -80,8 +82,9 @@ int ufsmm_canvas_render_region(cairo_t *cr, struct ufsmm_region *region)
     return 0;
 }
 
-int ufsmm_region_get_at_xy(struct ufsmm_region *region, double px, double py,
-                            struct ufsmm_region **out, int *depth)
+int ufsmm_region_get_at_xy(struct ufsmm_canvas *canvas,
+                           struct ufsmm_region *region, double px, double py,
+                           struct ufsmm_region **out, int *depth)
 {
     int d = 0;
     static struct ufsmm_stack *stack;
@@ -90,14 +93,13 @@ int ufsmm_region_get_at_xy(struct ufsmm_region *region, double px, double py,
     bool found_region = false;
     double x, y, w, h;
     double ox, oy;
+    cairo_t *cr = canvas->cr;
 
     if (!region)
         return -UFSMM_ERROR;
 
-    ufsmm_canvas_get_offset(&ox, &oy);
-
-    ox = ox / ufsmm_canvas_get_scale();
-    oy = oy / ufsmm_canvas_get_scale();
+    ox = canvas->ox / canvas->scale;
+    oy = canvas->oy / canvas->scale;
 
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
     ufsmm_stack_push(stack, region);

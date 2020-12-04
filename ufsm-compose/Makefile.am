@@ -1,10 +1,10 @@
 bin_PROGRAMS = ufsm-compose
 
 ufsm_compose_SOURCES = main.c \
-			   gui/edit_state_dialog.c \
-			   gui/add_action_dialog.c \
-			   gui/edit_string_dialog.c \
-			   gui/set_trigger_dialog.c \
+               gui/edit_state_dialog.c \
+               gui/add_action_dialog.c \
+               gui/edit_string_dialog.c \
+               gui/set_trigger_dialog.c \
                canvas/view.c \
                canvas/state.c \
                canvas/region.c \
@@ -12,7 +12,9 @@ ufsm_compose_SOURCES = main.c \
                canvas/grid.c \
                canvas/color.c \
                canvas/selection.c \
-               canvas/controller.c
+               canvas/logic/canvas.c \
+               canvas/new_controller.c \
+			   canvas/pan_and_scale.c
 
 
 ufsm_compose_CFLAGS = -I$(top_srcdir)/include \
