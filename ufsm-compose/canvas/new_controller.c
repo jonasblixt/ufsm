@@ -436,16 +436,15 @@ static gboolean motion_notify_event_cb(GtkWidget      *widget,
     struct ufsmm_canvas *priv = 
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
-
-    double px = ufsmm_canvas_nearest_grid_point(event->x / priv->scale);
-    double py = ufsmm_canvas_nearest_grid_point(event->y / priv->scale);
-
-    if ((priv->px != px) || (priv->py != py)) {
+    double px = event->x / priv->scale;
+    double py = event->y / priv->scale;
+    //L_DEBUG("px=%.2f, py=%.2f", px, py);
+ //   if ((priv->px != px) || (priv->py != py)) {
         priv->px = px;
         priv->py = py;
 
         ufsm_process(&priv->machine.machine, eMotion);
-    }
+   // }
 
     if (priv->redraw) {
         gtk_widget_queue_draw(priv->widget);
@@ -545,7 +544,7 @@ int ufsmm_canvas_load_model(GtkWidget *widget, struct ufsmm_model *model)
     priv->selected_region = model->root;
     priv->current_region = model->root;
     priv->current_region->draw_as_root = true;
-    priv->scale = 1.7;
+    priv->scale = 1.0;
 
     return 0;
 }

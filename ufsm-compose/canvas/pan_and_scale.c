@@ -10,9 +10,6 @@ void canvas_update_offset(void *context)
     double dx = priv->px - priv->sx;
     double dy = priv->py - priv->sy;
 
-    dx = dx * priv->scale;
-    dy = dy * priv->scale;
-
     priv->ox = priv->tx + dx;
     priv->oy = priv->ty + dy;
 
@@ -31,11 +28,11 @@ void canvas_store_offset(void *context)
 void canvas_inc_scale(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    priv->scale += 0.1;
-    priv->ox += -(priv->px * 0.1);
-    priv->oy += -(priv->py * 0.1);
-    priv->px *= 1.1;
-    priv->py *= 1.1;
+    priv->ox -= priv->px / (priv->scale + 1.0);
+    priv->oy -= priv->py / (priv->scale + 1.0);
+    priv->scale += 1;
+    priv->px = (priv->px * (priv->scale - 1.0)) / priv->scale;
+    priv->py = (priv->py * (priv->scale - 1.0)) / priv->scale;
     priv->redraw = true;
     printf("Zi %.2f <ox, oy> = %.2f, %.2f\n", priv->scale, priv->ox, priv->oy);
 }
@@ -43,11 +40,15 @@ void canvas_inc_scale(void *context)
 void canvas_dec_scale(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    priv->scale -= 0.1;
-    priv->ox += (priv->px * 0.1);
-    priv->oy += (priv->py * 0.1);
-    priv->px *= 0.9;
-    priv->py *= 0.9;
+
+    if (priv->scale <= 1.0)
+        return;
+
+    priv->ox += priv->px / (priv->scale - 1.0);
+    priv->oy += priv->py / (priv->scale - 1.0);
+    priv->scale -= 1.0;
+    priv->px = (priv->px * (priv->scale + 1.0)) / priv->scale;
+    priv->py = (priv->py * (priv->scale + 1.0)) / priv->scale;
     priv->redraw = true;
     printf("Zo %.2f <ox, oy> = %.2f, %.2f\n", priv->scale, priv->ox, priv->oy);
 }

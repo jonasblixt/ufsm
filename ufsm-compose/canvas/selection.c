@@ -17,7 +17,7 @@ void canvas_process_selection(void *context)
     double x, y, w, h;
     double ox, oy;
 
-    L_DEBUG("Checking...");
+    L_DEBUG("Checking... px=%.2f py=%.2f", priv->px, priv->py);
 
     ox = priv->ox / priv->scale;
     oy = priv->oy / priv->scale;
@@ -38,7 +38,7 @@ void canvas_process_selection(void *context)
                 double tsx, tsy, tex, tey;
                 double d;
                 bool t_focus = false;
-                L_DEBUG("Checking transitions from %s", s->name);
+                //L_DEBUG("Checking transitions from %s", s->name);
                 t->focus = false;
                 transition_calc_begin_end_point(s,
                                                 t->source.side,
