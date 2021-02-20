@@ -353,6 +353,7 @@ const struct ufsm_state s_8f355b8a_b35b_413e_aa59_6975b26c60f6 = {
 };
 
 /* Entry functions for state 'Selection' */
+const struct ufsm_entry_exit entry_9bbe200f_f1f8_459f_b964_9bc89915ef0c;
 const struct ufsm_entry_exit entry_9bbe200f_f1f8_459f_b964_9bc89915ef0c = {
     .name = "canvas_process_selection",
     .f = &canvas_process_selection,
@@ -428,6 +429,7 @@ const struct ufsm_state s_3f3cbe39_6420_4c24_b653_9da89a7a08e2 = {
 };
 
 /* Entry functions for state 'Tool' */
+const struct ufsm_entry_exit entry_0d301b08_7729_4387_b04c_00c45e4da83c;
 const struct ufsm_entry_exit entry_0d301b08_7729_4387_b04c_00c45e4da83c = {
     .name = "canvas_show_tool_help",
     .f = &canvas_show_tool_help,
@@ -435,6 +437,7 @@ const struct ufsm_entry_exit entry_0d301b08_7729_4387_b04c_00c45e4da83c = {
 };
 
 /* Exit functions for state 'Tool' */
+const struct ufsm_entry_exit exit_96c4079b_d3e3_480e_a0b0_ec301ede3998;
 const struct ufsm_entry_exit exit_96c4079b_d3e3_480e_a0b0_ec301ede3998 = {
     .name = "canvas_hide_tool_help",
     .f = &canvas_hide_tool_help,
@@ -895,6 +898,7 @@ const struct ufsm_state s_09ed5b3c_d326_46bc_8ae1_f1377e942207 = {
 };
 
 /* Exit functions for state 'New state' */
+const struct ufsm_entry_exit exit_f81544f9_c8bf_4338_b016_265eb5ca6d73;
 const struct ufsm_entry_exit exit_f81544f9_c8bf_4338_b016_265eb5ca6d73 = {
     .name = "canvas_hide_state_hint",
     .f = &canvas_hide_state_hint,
@@ -928,10 +932,12 @@ const struct ufsm_state s_de4a6839_98a3_4ad2_b3e8_afd201ff2526 = {
 };
 
 /* Exit functions for state 'New transition' */
+const struct ufsm_entry_exit exit_ef406f02_bf16_48ff_bc41_0b9439965f70;
+const struct ufsm_entry_exit exit_fb14b1ed_ed67_462b_a08d_6ca461999586;
 const struct ufsm_entry_exit exit_ef406f02_bf16_48ff_bc41_0b9439965f70 = {
     .name = "canvas_hide_transition_hint",
     .f = &canvas_hide_transition_hint,
-    .next = &exit_ef406f02_bf16_48ff_bc41_0b9439965f70,
+    .next = &exit_fb14b1ed_ed67_462b_a08d_6ca461999586,
 };
 
 const struct ufsm_entry_exit exit_fb14b1ed_ed67_462b_a08d_6ca461999586 = {
@@ -1825,16 +1831,19 @@ const struct ufsm_state s_9fa03fc8_a545_4536_9ab4_6bf405dd9780 = {
 };
 
 /* Entry functions for state 'Region' */
+const struct ufsm_entry_exit entry_e149cd17_441b_4525_a60a_2b836f0b4f17;
+const struct ufsm_entry_exit entry_d252a952_4012_4be9_a94d_7da60bcd5691;
+const struct ufsm_entry_exit entry_804d07b6_5fc8_4249_81a2_d661a9b2c16f;
 const struct ufsm_entry_exit entry_e149cd17_441b_4525_a60a_2b836f0b4f17 = {
     .name = "canvas_check_rresize_boxes",
     .f = &canvas_check_rresize_boxes,
-    .next = &entry_e149cd17_441b_4525_a60a_2b836f0b4f17,
+    .next = &entry_d252a952_4012_4be9_a94d_7da60bcd5691,
 };
 
 const struct ufsm_entry_exit entry_d252a952_4012_4be9_a94d_7da60bcd5691 = {
     .name = "canvas_reset_focus",
     .f = &canvas_reset_focus,
-    .next = &entry_d252a952_4012_4be9_a94d_7da60bcd5691,
+    .next = &entry_804d07b6_5fc8_4249_81a2_d661a9b2c16f,
 };
 
 const struct ufsm_entry_exit entry_804d07b6_5fc8_4249_81a2_d661a9b2c16f = {
@@ -1919,6 +1928,7 @@ const struct ufsm_state s_1b2ffdbc_6a1b_4d0b_8724_087d39a819c1 = {
 };
 
 /* Entry functions for state 'Multi select' */
+const struct ufsm_entry_exit entry_80d892d7_8f52_4436_9bb1_b47d81a0b675;
 const struct ufsm_entry_exit entry_80d892d7_8f52_4436_9bb1_b47d81a0b675 = {
     .name = "canvas_begin_mselect",
     .f = &canvas_begin_mselect,
@@ -1926,6 +1936,7 @@ const struct ufsm_entry_exit entry_80d892d7_8f52_4436_9bb1_b47d81a0b675 = {
 };
 
 /* Exit functions for state 'Multi select' */
+const struct ufsm_entry_exit exit_ac79b491_2580_4287_8556_ef15584067a1;
 const struct ufsm_entry_exit exit_ac79b491_2580_4287_8556_ef15584067a1 = {
     .name = "canvas_end_mselect",
     .f = &canvas_end_mselect,
@@ -1965,6 +1976,7 @@ const struct ufsm_state s_c5650f0f_0bdd_4ab5_8b90_d37ba79c7a10 = {
 };
 
 /* Entry functions for state 'Entry selected' */
+const struct ufsm_entry_exit entry_e2efd678_f38f_4508_a7e5_bc6c0b02df09;
 const struct ufsm_entry_exit entry_e2efd678_f38f_4508_a7e5_bc6c0b02df09 = {
     .name = "canvas_focus_entry",
     .f = &canvas_focus_entry,
@@ -2036,22 +2048,26 @@ const struct ufsm_state s_566c339a_2e94_4e8e_847e_507d1a039d8f = {
 };
 
 /* Entry functions for state 'State' */
+const struct ufsm_entry_exit entry_acc71ec2_ac0b_4d98_8097_b18871163fcc;
+const struct ufsm_entry_exit entry_7977a736_1b6d_4516_8f5b_3268f5b58097;
+const struct ufsm_entry_exit entry_0d7b20e4_d89d_4a0b_b82a_008616e8b85f;
+const struct ufsm_entry_exit entry_8244c810_89fb_4003_a572_0ed5c9a880d1;
 const struct ufsm_entry_exit entry_acc71ec2_ac0b_4d98_8097_b18871163fcc = {
     .name = "canvas_check_sresize_boxes",
     .f = &canvas_check_sresize_boxes,
-    .next = &entry_acc71ec2_ac0b_4d98_8097_b18871163fcc,
+    .next = &entry_7977a736_1b6d_4516_8f5b_3268f5b58097,
 };
 
 const struct ufsm_entry_exit entry_7977a736_1b6d_4516_8f5b_3268f5b58097 = {
     .name = "canvas_check_action_func",
     .f = &canvas_check_action_func,
-    .next = &entry_7977a736_1b6d_4516_8f5b_3268f5b58097,
+    .next = &entry_0d7b20e4_d89d_4a0b_b82a_008616e8b85f,
 };
 
 const struct ufsm_entry_exit entry_0d7b20e4_d89d_4a0b_b82a_008616e8b85f = {
     .name = "canvas_reset_focus",
     .f = &canvas_reset_focus,
-    .next = &entry_0d7b20e4_d89d_4a0b_b82a_008616e8b85f,
+    .next = &entry_8244c810_89fb_4003_a572_0ed5c9a880d1,
 };
 
 const struct ufsm_entry_exit entry_8244c810_89fb_4003_a572_0ed5c9a880d1 = {
@@ -2147,22 +2163,26 @@ const struct ufsm_state s_0ca836f8_de8d_42bf_99ed_16a0d40e3541 = {
 };
 
 /* Entry functions for state 'Transition' */
+const struct ufsm_entry_exit entry_ff9ad13a_815a_4ca7_83aa_7a4151ac0633;
+const struct ufsm_entry_exit entry_c0665e05_a20f_4570_a39c_5abcdfda47f2;
+const struct ufsm_entry_exit entry_0b1e92b2_1a7a_408e_a093_dce5176d103e;
+const struct ufsm_entry_exit entry_830247ad_87a3_4aa8_baef_f4d5b3f5983a;
 const struct ufsm_entry_exit entry_ff9ad13a_815a_4ca7_83aa_7a4151ac0633 = {
     .name = "canvas_reset_focus",
     .f = &canvas_reset_focus,
-    .next = &entry_ff9ad13a_815a_4ca7_83aa_7a4151ac0633,
+    .next = &entry_c0665e05_a20f_4570_a39c_5abcdfda47f2,
 };
 
 const struct ufsm_entry_exit entry_c0665e05_a20f_4570_a39c_5abcdfda47f2 = {
     .name = "canvas_focus_transition",
     .f = &canvas_focus_transition,
-    .next = &entry_c0665e05_a20f_4570_a39c_5abcdfda47f2,
+    .next = &entry_0b1e92b2_1a7a_408e_a093_dce5176d103e,
 };
 
 const struct ufsm_entry_exit entry_0b1e92b2_1a7a_408e_a093_dce5176d103e = {
     .name = "canvas_check_transition_vertice",
     .f = &canvas_check_transition_vertice,
-    .next = &entry_0b1e92b2_1a7a_408e_a093_dce5176d103e,
+    .next = &entry_830247ad_87a3_4aa8_baef_f4d5b3f5983a,
 };
 
 const struct ufsm_entry_exit entry_830247ad_87a3_4aa8_baef_f4d5b3f5983a = {
@@ -2322,10 +2342,12 @@ const struct ufsm_state s_bd36e85f_36bd_43c7_a2a7_ce9160d1b64a = {
 };
 
 /* Entry functions for state 'Text block' */
+const struct ufsm_entry_exit entry_dffcc43c_1bcd_4b09_932e_5ea0e8b49814;
+const struct ufsm_entry_exit entry_9401f8de_c1b6_4b76_a376_9d01332fa663;
 const struct ufsm_entry_exit entry_dffcc43c_1bcd_4b09_932e_5ea0e8b49814 = {
     .name = "canvas_check_guard",
     .f = &canvas_check_guard,
-    .next = &entry_dffcc43c_1bcd_4b09_932e_5ea0e8b49814,
+    .next = &entry_9401f8de_c1b6_4b76_a376_9d01332fa663,
 };
 
 const struct ufsm_entry_exit entry_9401f8de_c1b6_4b76_a376_9d01332fa663 = {
@@ -2421,6 +2443,7 @@ const struct ufsm_state s_4b1878b4_404c_407e_8a33_4e2ef72cdae6 = {
 };
 
 /* Entry functions for state 'Guard' */
+const struct ufsm_entry_exit entry_1d3740ba_6206_4de1_8eb5_2f02fe647fa2;
 const struct ufsm_entry_exit entry_1d3740ba_6206_4de1_8eb5_2f02fe647fa2 = {
     .name = "canvas_focus_guard",
     .f = &canvas_focus_guard,
@@ -2460,6 +2483,7 @@ const struct ufsm_state s_6af64093_51b3_4564_be9a_fcb682134262 = {
 };
 
 /* Entry functions for state 'Action' */
+const struct ufsm_entry_exit entry_4f644ac5_d60d_452b_bcf1_1e076eceea32;
 const struct ufsm_entry_exit entry_4f644ac5_d60d_452b_bcf1_1e076eceea32 = {
     .name = "canvas_focus_action",
     .f = &canvas_focus_action,
@@ -2531,6 +2555,7 @@ const struct ufsm_state s_e59611d6_acab_4590_9911_e9d54fc042e2 = {
 };
 
 /* Entry functions for state 'Exit selected' */
+const struct ufsm_entry_exit entry_a6d10177_e5a7_4a5a_b3c7_78e875d504ed;
 const struct ufsm_entry_exit entry_a6d10177_e5a7_4a5a_b3c7_78e875d504ed = {
     .name = "canvas_focus_exit",
     .f = &canvas_focus_exit,

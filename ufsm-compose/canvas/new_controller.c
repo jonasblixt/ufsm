@@ -29,6 +29,7 @@ void canvas_check_action_func(void *context)
 
 void canvas_reset_focus(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
 }
 
 void canvas_focus_state(void *context)
@@ -45,6 +46,13 @@ void canvas_begin_mselect(void *context)
 
 void canvas_focus_transition(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *t = priv->selected_transition;
+
+    L_DEBUG("Transition %s --> %s selected",
+                t->source.state->name, t->dest.state->name);
+    t->focus = true;
+    priv->redraw = true;
 }
 
 void canvas_check_transition_vertice(void *context)
@@ -102,57 +110,6 @@ void canvas_hide_transition_hint(void *context)
 
 void canvas_cleanup_transition(void *context)
 {
-}
-
-/* Guard function prototypes */
-bool canvas_region_selected(void *context)
-{
-    return false;
-}
-
-bool canvas_state_selected(void *context)
-{
-    return false;
-}
-
-bool canvas_state_resize_selected(void *context)
-{
-    return false;
-}
-
-bool canvas_region_resize_selected(void *context)
-{
-    return false;
-}
-
-bool canvas_state_entry_selected(void *context)
-{
-    return false;
-}
-
-bool canvas_transition_selected(void *context)
-{
-    return false;
-}
-
-bool canvas_transition_tvertice_selected(void *context)
-{
-    return false;
-}
-
-bool canvas_transition_svertice_selected(void *context)
-{
-    return false;
-}
-
-bool canvas_transition_text_block_selected(void *context)
-{
-    return false;
-}
-
-bool canvas_transition_dvertice_selected(void *context)
-{
-    return false;
 }
 
 bool canvas_guard_selected(void *context)
@@ -360,6 +317,19 @@ gboolean keyrelease_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eKey_shift_up);
     } else if (event->keyval == GDK_KEY_Control_L) {
         canvas_machine_process(&priv->machine, eDisableScale);
+    } else if (event->keyval == GDK_KEY_A) {
+        if (priv->current_region->parent_state) {
+            L_DEBUG("Ascending to region: %s",
+                    priv->current_region->parent_state->parent_region->name);
+            priv->current_region->draw_as_root = false;
+            do {
+                if (!priv->current_region->parent_state)
+                    break;
+                priv->current_region = priv->current_region->parent_state->parent_region;
+            } while (!priv->current_region->off_page);
+            priv->current_region->draw_as_root = true;
+        }
+        priv->redraw = true;
     }
 
     if (priv->redraw) {
@@ -382,6 +352,16 @@ static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
         ufsm_process(&priv->machine.machine, eEnablePan);
     } else if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
         ufsm_process(&priv->machine.machine, eLMBDown);
+    }
+
+    if (event->type == GDK_DOUBLE_BUTTON_PRESS) {
+        if (priv->selection == UFSMM_SELECTION_REGION) {
+            L_DEBUG("Switching view to region '%s'", priv->selected_region->name);
+            priv->current_region->draw_as_root = false;
+            priv->selected_region->draw_as_root = true;
+            priv->current_region = priv->selected_region;
+            priv->redraw = true;
+        }
     }
 
     if (priv->redraw) {
@@ -414,8 +394,6 @@ static gboolean scroll_event_cb(GtkWidget *widget, GdkEventScroll *event)
     struct ufsmm_canvas *priv = 
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
-    L_DEBUG("%i", event->direction);
-
     if (event->direction == GDK_SCROLL_UP)
         canvas_machine_process(&priv->machine, eScrollUp);
     else if (event->direction == GDK_SCROLL_DOWN)
@@ -438,13 +416,10 @@ static gboolean motion_notify_event_cb(GtkWidget      *widget,
 
     double px = event->x / priv->scale;
     double py = event->y / priv->scale;
-    //L_DEBUG("px=%.2f, py=%.2f", px, py);
- //   if ((priv->px != px) || (priv->py != py)) {
-        priv->px = px;
-        priv->py = py;
+    priv->px = px;
+    priv->py = py;
 
-        ufsm_process(&priv->machine.machine, eMotion);
-   // }
+    ufsm_process(&priv->machine.machine, eMotion);
 
     if (priv->redraw) {
         gtk_widget_queue_draw(priv->widget);

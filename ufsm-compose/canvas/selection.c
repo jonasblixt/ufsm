@@ -2,6 +2,61 @@
 #include "view.h"
 #include "canvas/logic/canvas.h"
 
+/* Guard function prototypes */
+
+bool canvas_state_selected(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    return (priv->selection == UFSMM_SELECTION_STATE);
+}
+
+bool canvas_state_resize_selected(void *context)
+{
+    return false;
+}
+
+bool canvas_region_selected(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    return (priv->selection == UFSMM_SELECTION_REGION);
+}
+
+bool canvas_region_resize_selected(void *context)
+{
+    return false;
+}
+
+bool canvas_state_entry_selected(void *context)
+{
+    return false;
+}
+
+bool canvas_transition_selected(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    return (priv->selection == UFSMM_SELECTION_TRANSITION);
+}
+
+bool canvas_transition_tvertice_selected(void *context)
+{
+    return false;
+}
+
+bool canvas_transition_svertice_selected(void *context)
+{
+    return false;
+}
+
+bool canvas_transition_text_block_selected(void *context)
+{
+    return false;
+}
+
+bool canvas_transition_dvertice_selected(void *context)
+{
+    return false;
+}
+
 void canvas_process_selection(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -10,7 +65,6 @@ void canvas_process_selection(void *context)
     struct ufsmm_state *s;
     struct ufsmm_state *selected_state;
     struct ufsmm_region *selected_region;
-    struct ufsmm_transition *selected_transition;
     struct ufsmm_coords *selected_text_block;
     enum ufsmm_resize_selector selected_text_block_corner;
     struct ufsmm_action_ref *selected_action_ref = NULL;
@@ -19,10 +73,59 @@ void canvas_process_selection(void *context)
 
     L_DEBUG("Checking... px=%.2f py=%.2f", priv->px, priv->py);
 
-    ox = priv->ox / priv->scale;
-    oy = priv->oy / priv->scale;
+    ox = priv->ox;
+    oy = priv->oy;
 
+    priv->selection = UFSMM_SELECTION_NONE;
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+
+    /* Check regions */
+    ufsmm_stack_push(stack, priv->current_region);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        r->focus = false;
+        ufsmm_get_region_absolute_coords(r, &x, &y, &w, &h);
+
+        /*
+        L_DEBUG("r '%s' <%f, %f> %f, %f, %f, %f", r->name,
+                    priv->px + priv->ox,
+                    priv->py + priv->oy,
+                    x, y,
+                    x + w, y + h); */
+
+        if (point_in_box2(priv->px - priv->ox, priv->py - priv->oy,
+                                                    x, y, w, h)) {
+            L_DEBUG("Region '%s' selected", r->name);
+            priv->selection = UFSMM_SELECTION_REGION;
+            priv->selected_region = r;
+        }
+
+        if (r->off_page && !r->draw_as_root)
+            continue;
+
+        for (s = r->state; s; s = s->next) {
+            s->focus = false;
+            ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
+
+            L_DEBUG("s '%s' <%f, %f> %f, %f, %f, %f", s->name,
+                        priv->px + priv->ox,
+                        priv->py + priv->oy,
+                        x, y,
+                        x + w, y + h);
+            if (point_in_box2(priv->px - priv->ox, priv->py - priv->oy,
+                                                        x, y, w, h)) {
+                L_DEBUG("State '%s' selected", s->name);
+                priv->selection = UFSMM_SELECTION_STATE;
+                priv->selected_state = s;
+            }
+
+            for (r2 = s->regions; r2; r2 = r2->next) {
+                ufsmm_stack_push(stack, r2);
+            }
+        }
+    }
+
+    /* Check transitions */
     ufsmm_stack_push(stack, priv->current_region);
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK)
@@ -37,7 +140,6 @@ void canvas_process_selection(void *context)
                 double vsx, vsy, vex, vey;
                 double tsx, tsy, tex, tey;
                 double d;
-                bool t_focus = false;
                 //L_DEBUG("Checking transitions from %s", s->name);
                 t->focus = false;
                 transition_calc_begin_end_point(s,
@@ -62,7 +164,8 @@ void canvas_process_selection(void *context)
 
 
                         if (d < 10.0) {
-                            t_focus = true;
+                            priv->selection = UFSMM_SELECTION_TRANSITION;
+                            priv->selected_transition = t;
                             break;
                         }
                         vsx = v->x + ox;
@@ -77,9 +180,12 @@ void canvas_process_selection(void *context)
                 d = distance_point_to_seg(priv->px, priv->py,
                                           vsx, vsy,
                                           vex, vey);
-                if (d < 10.0)
-                    t_focus = true;
-
+                L_DEBUG("d = %.2f", d);
+                if (d < 10.0) {
+                    priv->selection = UFSMM_SELECTION_TRANSITION;
+                    priv->selected_transition = t;
+                }
+#ifdef __NOPE__
                 ufsmm_get_region_absolute_coords(t->source.state->parent_region,
                                                    &x, &y, &w, &h);
                 double tx = t->text_block_coords.x + x + ox;
@@ -132,12 +238,11 @@ void canvas_process_selection(void *context)
                                 t->source.state->name, t->dest.state->name);
                     t->focus = true;
                     priv->redraw = true;
-                    if (selected_state)
-                        selected_state->focus = false;
-                    if (selected_region)
-                        selected_region->focus = false;
                 }
+
+#endif
             }
+
             for (r2 = s->regions; r2; r2 = r2->next)
             {
 
@@ -147,4 +252,18 @@ void canvas_process_selection(void *context)
     }
 
     ufsmm_stack_free(stack);
+
+    switch (priv->selection) {
+        case UFSMM_SELECTION_REGION:
+            priv->selected_region->focus = true;
+            priv->redraw = true;
+        break;
+        case UFSMM_SELECTION_STATE:
+            priv->selected_state->focus = true;
+            priv->redraw = true;
+        break;
+        default:
+        break;
+    }
 }
+

@@ -884,14 +884,6 @@
                   {
                     "id":"e149cd17-441b-4525-a60a-2b836f0b4f17",
                     "action-id":"328aa7d4-a8a3-4030-b946-6672efaa3e78"
-                  },
-                  {
-                    "id":"d252a952-4012-4be9-a94d-7da60bcd5691",
-                    "action-id":"d34b60d6-cfb1-4e2a-b604-a1a28b94eae5"
-                  },
-                  {
-                    "id":"804d07b6-5fc8-4249-81a2-d661a9b2c16f",
-                    "action-id":"ff97b8f2-264e-4598-9770-ae07977370a8"
                   }
                 ],
                 "exits":[
@@ -1220,14 +1212,6 @@
                   {
                     "id":"7977a736-1b6d-4516-8f5b-3268f5b58097",
                     "action-id":"03eec91f-dcc3-46ed-9f2c-87931aa72740"
-                  },
-                  {
-                    "id":"0d7b20e4-d89d-4a0b-b82a-008616e8b85f",
-                    "action-id":"d34b60d6-cfb1-4e2a-b604-a1a28b94eae5"
-                  },
-                  {
-                    "id":"8244c810-89fb-4003-a572-0ed5c9a880d1",
-                    "action-id":"6a049008-9429-4dc2-897b-75ff05309f0d"
                   }
                 ],
                 "exits":[
@@ -1387,18 +1371,6 @@
                 "x":590.0,
                 "y":800.0,
                 "entries":[
-                  {
-                    "id":"ff9ad13a-815a-4ca7-83aa-7a4151ac0633",
-                    "action-id":"d34b60d6-cfb1-4e2a-b604-a1a28b94eae5"
-                  },
-                  {
-                    "id":"c0665e05-a20f-4570-a39c-5abcdfda47f2",
-                    "action-id":"f5f3b729-1a15-41c5-bea0-9e5f81c7b242"
-                  },
-                  {
-                    "id":"0b1e92b2-1a7a-408e-a093-dce5176d103e",
-                    "action-id":"f9e936b1-feec-4c56-847e-1866cbbedf75"
-                  },
                   {
                     "id":"830247ad-87a3-4aa8-baef-f4d5b3f5983a",
                     "action-id":"1bff94e6-98f4-4544-aca5-f7398726ff13"
@@ -1674,7 +1646,7 @@
                 "name":"Text block",
                 "kind":"state",
                 "width":220.0,
-                "height":90.0,
+                "height":110.0,
                 "x":370.0,
                 "y":1020.0,
                 "entries":[
