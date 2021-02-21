@@ -313,11 +313,7 @@ gboolean keyrelease_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
     struct ufsmm_canvas *priv = 
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
-    if (event->keyval == GDK_KEY_Shift_L) {
-        canvas_machine_process(&priv->machine, eKey_shift_up);
-    } else if (event->keyval == GDK_KEY_Control_L) {
-        canvas_machine_process(&priv->machine, eDisableScale);
-    } else if (event->keyval == GDK_KEY_A) {
+    if (event->keyval == GDK_KEY_A) {
         if (priv->current_region->parent_state) {
             L_DEBUG("Ascending to region: %s",
                     priv->current_region->parent_state->parent_region->name);
@@ -330,6 +326,10 @@ gboolean keyrelease_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
             priv->current_region->draw_as_root = true;
         }
         priv->redraw = true;
+    } else if (event->keyval == GDK_KEY_Shift_L) {
+        canvas_machine_process(&priv->machine, eKey_shift_up);
+    } else if (event->keyval == GDK_KEY_Control_L) {
+        canvas_machine_process(&priv->machine, eDisableScale);
     }
 
     if (priv->redraw) {
@@ -345,8 +345,8 @@ static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
 
-    priv->sx = ufsmm_canvas_nearest_grid_point(event->x / priv->scale);
-    priv->sy = ufsmm_canvas_nearest_grid_point(event->y / priv->scale);
+    priv->sx = ufsmm_canvas_nearest_grid_point(event->x / priv->current_region->scale);
+    priv->sy = ufsmm_canvas_nearest_grid_point(event->y / priv->current_region->scale);
 
     if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
         ufsm_process(&priv->machine.machine, eEnablePan);
@@ -360,6 +360,8 @@ static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
             priv->current_region->draw_as_root = false;
             priv->selected_region->draw_as_root = true;
             priv->current_region = priv->selected_region;
+            if (priv->current_region->scale == 0)
+                priv->current_region->scale = 1.0;
             priv->redraw = true;
         }
     }
@@ -414,8 +416,8 @@ static gboolean motion_notify_event_cb(GtkWidget      *widget,
     struct ufsmm_canvas *priv = 
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
-    double px = event->x / priv->scale;
-    double py = event->y / priv->scale;
+    double px = event->x / priv->current_region->scale;
+    double py = event->y / priv->current_region->scale;
     priv->px = px;
     priv->py = py;
 
@@ -519,7 +521,7 @@ int ufsmm_canvas_load_model(GtkWidget *widget, struct ufsmm_model *model)
     priv->selected_region = model->root;
     priv->current_region = model->root;
     priv->current_region->draw_as_root = true;
-    priv->scale = 1.0;
+    priv->current_region->scale = 1.0;
 
     return 0;
 }

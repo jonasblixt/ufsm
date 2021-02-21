@@ -22,8 +22,8 @@ struct ufsmm_canvas {
     struct ufsmm_state *selected_state;
     struct ufsmm_transition *selected_transition;
     bool redraw;
-    double scale;
-    double ox, oy; /* Canvas offset */
+    //double scale;
+    //double ox, oy; /* Canvas offset */
     double px, py; /* Location of mouse pointer */
     double sx, sy; /* Start coordinates */
     double tx, ty; /* Temporary coordinates */

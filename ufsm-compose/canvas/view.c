@@ -128,8 +128,11 @@ int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
     struct ufsmm_state *s;
     static struct ufsmm_stack *stack;
 
-    cairo_scale(canvas->cr, canvas->scale, canvas->scale);
-    cairo_translate(canvas->cr, canvas->ox, canvas->oy);
+    cairo_scale(canvas->cr, canvas->current_region->scale,
+                            canvas->current_region->scale);
+
+    cairo_translate(canvas->cr, canvas->current_region->ox,
+                                canvas->current_region->oy);
 
     ufsmm_canvas_render_grid(canvas->cr, 1684, 1190);
 

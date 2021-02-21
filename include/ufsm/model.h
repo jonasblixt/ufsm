@@ -174,6 +174,8 @@ struct ufsmm_region
     bool focus;
     bool draw_as_root;
     unsigned int depth;
+    double ox, oy;
+    double scale;
     struct ufsmm_state *state;
     struct ufsmm_state *parent_state;
     struct ufsmm_state *last_state;

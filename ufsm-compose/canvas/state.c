@@ -372,8 +372,8 @@ int ufsmm_state_get_at_xy(struct ufsmm_canvas *canvas,
     double ox, oy;
     cairo_t *cr = canvas->cr;
 
-    ox = canvas->ox / canvas->scale;
-    oy = canvas->oy / canvas->scale;
+    ox = canvas->current_region->ox / canvas->current_region->scale;
+    oy = canvas->current_region->oy / canvas->current_region->scale;
 
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
     ufsmm_stack_push(stack, region);
@@ -425,8 +425,8 @@ int ufsmm_state_get_closest_side(struct ufsmm_canvas *canvas,
 
     ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
 
-    ox = canvas->ox / canvas->scale;
-    oy = canvas->oy / canvas->scale;
+    ox = canvas->current_region->ox / canvas->current_region->scale;
+    oy = canvas->current_region->oy / canvas->current_region->scale;
 
     x += ox;
     y += oy;

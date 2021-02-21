@@ -98,8 +98,8 @@ int ufsmm_region_get_at_xy(struct ufsmm_canvas *canvas,
     if (!region)
         return -UFSMM_ERROR;
 
-    ox = canvas->ox / canvas->scale;
-    oy = canvas->oy / canvas->scale;
+    ox = canvas->current_region->ox / canvas->current_region->scale;
+    oy = canvas->current_region->oy / canvas->current_region->scale;
 
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
     ufsmm_stack_push(stack, region);

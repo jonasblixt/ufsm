@@ -73,8 +73,8 @@ void canvas_process_selection(void *context)
 
     L_DEBUG("Checking... px=%.2f py=%.2f", priv->px, priv->py);
 
-    ox = priv->ox;
-    oy = priv->oy;
+    ox = priv->current_region->ox;
+    oy = priv->current_region->oy;
 
     priv->selection = UFSMM_SELECTION_NONE;
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
@@ -93,7 +93,8 @@ void canvas_process_selection(void *context)
                     x, y,
                     x + w, y + h); */
 
-        if (point_in_box2(priv->px - priv->ox, priv->py - priv->oy,
+        if (point_in_box2(priv->px - priv->current_region->ox,
+                          priv->py - priv->current_region->oy,
                                                     x, y, w, h)) {
             L_DEBUG("Region '%s' selected", r->name);
             priv->selection = UFSMM_SELECTION_REGION;
@@ -108,11 +109,12 @@ void canvas_process_selection(void *context)
             ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
 
             L_DEBUG("s '%s' <%f, %f> %f, %f, %f, %f", s->name,
-                        priv->px + priv->ox,
-                        priv->py + priv->oy,
+                        priv->px + priv->current_region->ox,
+                        priv->py + priv->current_region->oy,
                         x, y,
                         x + w, y + h);
-            if (point_in_box2(priv->px - priv->ox, priv->py - priv->oy,
+            if (point_in_box2(priv->px - priv->current_region->ox,
+                              priv->py - priv->current_region->oy,
                                                         x, y, w, h)) {
                 L_DEBUG("State '%s' selected", s->name);
                 priv->selection = UFSMM_SELECTION_STATE;
