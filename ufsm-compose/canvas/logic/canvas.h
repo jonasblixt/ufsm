@@ -133,11 +133,12 @@ void canvas_save_model(void *context);
 void canvas_inc_scale(void *context);
 void canvas_store_offset(void *context);
 void canvas_dec_scale(void *context);
+void canvas_move_state_begin(void *context);
 
 struct canvas_machine {
     struct ufsm_machine machine;
     struct ufsm_region_data region_data[8];
-    struct ufsm_state_data state_data[60];
+    struct ufsm_state_data state_data[61];
     void *stack_data[10];
     void *stack_data2[2];
 };

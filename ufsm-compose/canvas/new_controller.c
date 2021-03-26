@@ -153,8 +153,50 @@ void canvas_zoom_out(void *context)
 {
 }
 
+void canvas_move_state_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *s = priv->selected_state;
+
+    printf("State MOVE BEGIN\n");
+
+    priv->sx = priv->px - s->x;
+    priv->sy = priv->py - s->y;
+}
+
 void canvas_move_state(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *new_pr;
+    struct ufsmm_state *s = priv->selected_state;
+    struct ufsmm_region *r = priv->current_region;
+    double x, y, w, h;
+    double tx_tmp, ty_tmp;
+    double ox, oy;
+    int rc;
+    printf("move %s --> %f %f\n", s->name, priv->px, priv->py);
+
+    s->x = ufsmm_canvas_nearest_grid_point(priv->px - priv->sx);
+    s->y = ufsmm_canvas_nearest_grid_point(priv->py - priv->sy);
+/*
+    rc = ufsmm_region_get_at_xy(priv->current_region, tx_tmp, ty_tmp, &new_pr, NULL);
+
+    if (rc == UFSMM_OK && (selected_state->parent_region != new_pr)) {
+        if (ufsmm_state_move_to_region(model, selected_state, new_pr) == UFSMM_OK) {
+            L_DEBUG("Re-parent '%s' to region: %s", selected_state->name,
+                                                    new_pr->name);
+            ufsmm_canvas_get_offset(&ox, &oy);
+
+            ox = ox / ufsmm_canvas_get_scale();
+            oy = oy / ufsmm_canvas_get_scale();
+            ufsmm_get_region_absolute_coords(new_pr, &x, &y, &w, &h);
+            selected_state->x = tx_tmp - (x + ox);
+            selected_state->y = ty_tmp - (y + oy);
+        }
+    }
+*/
+    //ufsmm_canvas_state_translate(priv->selected_state, dx, dy);
+    priv->redraw = true;
 }
 
 void canvas_resize_state(void *context)
@@ -449,6 +491,14 @@ static void draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data)
     ufsmm_canvas_render(priv, width, height);
 }
 
+static void debug_event(int ev)
+{
+    if (ev == eMotion)
+        return;
+
+    printf (" %-3i|            |\n",ev);
+}
+
 GtkWidget* ufsmm_canvas_new(void)
 {
     GtkWidget *widget = NULL;
@@ -463,6 +513,8 @@ GtkWidget* ufsmm_canvas_new(void)
     memset(priv, 0, sizeof(*priv));
 
     ufsm_debug_machine(&priv->machine.machine);
+    priv->machine.machine.debug_event = debug_event;
+
     canvas_machine_initialize(&priv->machine, priv);
 
     widget = gtk_drawing_area_new();
