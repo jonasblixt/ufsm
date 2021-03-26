@@ -130,19 +130,17 @@ void canvas_process_selection(void *context)
     /* Check transitions */
     ufsmm_stack_push(stack, priv->current_region);
 
-    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK)
-    {
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
         if (r->off_page && !r->draw_as_root)
             continue;
 
-        for (s = r->state; s; s = s->next)
-        {
+        for (s = r->state; s; s = s->next) {
             for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
                 struct ufsmm_vertice *v;
                 double vsx, vsy, vex, vey;
                 double tsx, tsy, tex, tey;
                 double d;
-                //L_DEBUG("Checking transitions from %s", s->name);
+                L_DEBUG("Checking transitions from %s", s->name);
                 t->focus = false;
                 transition_calc_begin_end_point(s,
                                                 t->source.side,
@@ -164,7 +162,7 @@ void canvas_process_selection(void *context)
                                                   vsx, vsy,
                                                   vex, vey);
 
-
+                        //L_DEBUG("Segment d = %.2f", d);
                         if (d < 10.0) {
                             priv->selection = UFSMM_SELECTION_TRANSITION;
                             priv->selected_transition = t;
@@ -186,7 +184,10 @@ void canvas_process_selection(void *context)
                 if (d < 10.0) {
                     priv->selection = UFSMM_SELECTION_TRANSITION;
                     priv->selected_transition = t;
+                } else {
+                    t->focus = false;
                 }
+
 #ifdef __NOPE__
                 ufsmm_get_region_absolute_coords(t->source.state->parent_region,
                                                    &x, &y, &w, &h);
@@ -262,6 +263,10 @@ void canvas_process_selection(void *context)
         break;
         case UFSMM_SELECTION_STATE:
             priv->selected_state->focus = true;
+            priv->redraw = true;
+        break;
+        case UFSMM_SELECTION_TRANSITION:
+            priv->selected_transition->focus = true;
             priv->redraw = true;
         break;
         default:

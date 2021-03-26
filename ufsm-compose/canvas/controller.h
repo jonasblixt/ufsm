@@ -21,6 +21,7 @@ struct ufsmm_canvas {
     struct ufsmm_region *current_region;
     struct ufsmm_state *selected_state;
     struct ufsmm_transition *selected_transition;
+    struct ufsmm_action_ref *selected_aref;
     bool redraw;
     //double scale;
     //double ox, oy; /* Canvas offset */

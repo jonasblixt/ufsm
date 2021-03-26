@@ -25,6 +25,37 @@ void canvas_check_rresize_boxes(void *context)
 
 void canvas_check_action_func(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *s = priv->selected_state;
+    struct ufsmm_region *r = priv->current_region;
+
+    if (priv->selected_aref != NULL) {
+        priv->selected_aref->focus = false;
+        priv->selected_aref = NULL;
+    }
+
+    if (priv->selection == UFSMM_SELECTION_STATE) {
+        /* Check action functions */
+        for (struct ufsmm_action_ref *ar = s->entries; ar; ar = ar->next) {
+            if (point_in_box2(priv->px, priv->py, ar->x + r->ox, ar->y + r->oy, ar->w, ar->h)) {
+                L_DEBUG("%s selected", ar->act->name);
+                priv->selected_aref = ar;
+                ar->focus = true;
+            } else {
+                ar->focus = false;
+            }
+        }
+
+        for (struct ufsmm_action_ref *ar = s->exits; ar; ar = ar->next) {
+            if (point_in_box2(priv->px, priv->py, ar->x + r->ox, ar->y + r->oy, ar->w, ar->h)) {
+                L_DEBUG("%s selected", ar->act->name);
+                priv->selected_aref = ar;
+                ar->focus = true;
+            } else {
+                ar->focus = false;
+            }
+        }
+    }
 }
 
 void canvas_reset_focus(void *context)
