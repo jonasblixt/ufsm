@@ -21,18 +21,6 @@ enum ufsmm_paper_size {
     UFSMM_PAPER_SIZE_A1,
 };
 
-enum ufsmm_resize_selector {
-    UFSMM_NO_SELECTION,
-    UFSMM_TOP_LEFT,
-    UFSMM_TOP_MIDDLE,
-    UFSMM_TOP_RIGHT,
-    UFSMM_RIGHT_MIDDLE,
-    UFSMM_BOT_RIGHT,
-    UFSMM_BOT_MIDDLE,
-    UFSMM_BOT_LEFT,
-    UFSMM_LEFT_MIDDLE
-};
-
 enum ufsmm_transition_vertice_selector {
     UFSMM_TRANS_NO_SELECTION,
     UFSMM_TRANS_BEGIN,

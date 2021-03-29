@@ -304,6 +304,10 @@
     {
       "name":"canvas_move_state_begin",
       "id":"985d6b6b-d19a-42de-be31-e803e5419364"
+    },
+    {
+      "name":"canvas_resize_state_begin",
+      "id":"1462342b-a1ba-479b-90e7-bd327585d996"
     }
   ],
   "entries":[
@@ -1236,10 +1240,10 @@
                       "offset":40.0
                     },
                     "text-block":{
-                      "x":910.0,
-                      "y":110.0,
-                      "w":330.0,
-                      "h":30.0
+                      "x":890.0,
+                      "y":80.0,
+                      "w":340.0,
+                      "h":50.0
                     },
                     "vertices":[
                     ],
@@ -1250,6 +1254,10 @@
                       }
                     ],
                     "actions":[
+                      {
+                        "action-id":"1462342b-a1ba-479b-90e7-bd327585d996",
+                        "id":"7395f054-fc48-4353-be0b-614eb7499478"
+                      }
                     ],
                     "state-condition":[
                     ]

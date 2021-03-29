@@ -17,6 +17,46 @@ void canvas_show_tool_help(void *context)
 
 void canvas_check_sresize_boxes(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *s = priv->selected_state;
+    struct ufsmm_region *r = priv->current_region;
+    double x, y, w, h;
+    double px = priv->px;
+    double py = priv->py;
+
+    ufsmm_get_state_absolute_coords(priv->selected_state, &x, &y, &w, &h);
+
+    x += r->ox;
+    y += r->oy;
+
+    /* Check re-size boxes */
+    if (point_in_box(px, py, x, y, 10, 10)) {
+        L_DEBUG("Top left corner!");
+        priv->selected_state_corner = UFSMM_TOP_LEFT;
+    } else if (point_in_box(px, py, x + w, y, 10, 10)) {
+        L_DEBUG("Top right corner!");
+        priv->selected_state_corner = UFSMM_TOP_RIGHT;
+    } else if (point_in_box(px, py, x + w/2, y, 10, 10)) {
+        L_DEBUG("Top middle");
+        priv->selected_state_corner = UFSMM_TOP_MIDDLE;
+    } else if (point_in_box(px, py, x, y + h/2, 10, 10)) {
+        L_DEBUG("Left middle");
+        priv->selected_state_corner = UFSMM_LEFT_MIDDLE;
+    } else if (point_in_box(px, py, x, y + h, 10, 10)) {
+        L_DEBUG("Bottom left corner");
+        priv->selected_state_corner = UFSMM_BOT_LEFT;
+    } else if (point_in_box(px, py, x + w/2, y + h, 10, 10)) {
+        L_DEBUG("Bottom middle");
+        priv->selected_state_corner = UFSMM_BOT_MIDDLE;
+    } else if (point_in_box(px, py, x + w, y + h, 10, 10)) {
+        L_DEBUG("Bottom right corner");
+        priv->selected_state_corner = UFSMM_BOT_RIGHT;
+    } else if (point_in_box(px, py, x + w, y + h/2, 10, 10)) {
+        L_DEBUG("Right middle");
+        priv->selected_state_corner = UFSMM_RIGHT_MIDDLE;
+    } else {
+        priv->selected_state_corner = UFSMM_NO_SELECTION;
+    }
 }
 
 void canvas_check_rresize_boxes(void *context)
@@ -230,9 +270,6 @@ void canvas_move_state(void *context)
     priv->redraw = true;
 }
 
-void canvas_resize_state(void *context)
-{
-}
 
 void canvas_resize_region(void *context)
 {
@@ -417,7 +454,6 @@ static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
     struct ufsmm_canvas *priv = 
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
-
     priv->sx = ufsmm_canvas_nearest_grid_point(event->x / priv->current_region->scale);
     priv->sy = ufsmm_canvas_nearest_grid_point(event->y / priv->current_region->scale);
 
@@ -493,6 +529,11 @@ static gboolean motion_notify_event_cb(GtkWidget      *widget,
     double py = event->y / priv->current_region->scale;
     priv->px = px;
     priv->py = py;
+
+    priv->dx = px - priv->sx;
+    priv->dy = py - priv->sy;
+
+    L_DEBUG("dx %.2f dy %.2f", priv->dx, priv->dy);
 
     ufsm_process(&priv->machine.machine, eMotion);
 

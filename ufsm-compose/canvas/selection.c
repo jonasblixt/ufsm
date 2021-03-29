@@ -12,13 +12,84 @@ bool canvas_state_selected(void *context)
 
 bool canvas_state_resize_selected(void *context)
 {
-    return false;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    return (priv->selected_state_corner != UFSMM_NO_SELECTION);
 }
 
 bool canvas_region_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     return (priv->selection == UFSMM_SELECTION_REGION);
+}
+
+void canvas_resize_state_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *s = priv->selected_state;
+    priv->tx = s->x;
+    priv->ty = s->y;
+    priv->tw = s->w;
+    priv->th = s->h;
+}
+
+void canvas_resize_state(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *r = priv->current_region;
+
+    double dy = priv->dy;
+    double dx = priv->dx;
+    struct ufsmm_state *selected_state = priv->selected_state;
+
+    priv->redraw = true;
+
+    switch (priv->selected_state_corner) {
+        case UFSMM_TOP_MIDDLE:
+            selected_state->h = priv->th - dy;
+            selected_state->y = priv->ty + dy;
+        break;
+        case UFSMM_BOT_MIDDLE:
+            selected_state->h = priv->th + dy;
+        break;
+        case UFSMM_TOP_RIGHT:
+            selected_state->h = priv->th - dy;
+            selected_state->w = priv->tw + dx;
+            selected_state->y = priv->ty + dy;
+        break;
+        case UFSMM_RIGHT_MIDDLE:
+            selected_state->w = priv->tw + dx;
+        break;
+        case UFSMM_LEFT_MIDDLE:
+            selected_state->w = priv->tw - dx;
+            selected_state->x = priv->tx + dx;
+        break;
+        case UFSMM_BOT_RIGHT:
+            selected_state->w = priv->tw + dx;
+            selected_state->h = priv->th + dy;
+        break;
+        case UFSMM_BOT_LEFT:
+            selected_state->w = priv->tw - dx;
+            selected_state->x = priv->tx + dx;
+            selected_state->h = priv->th + dy;
+        break;
+        case UFSMM_TOP_LEFT:
+            selected_state->w = priv->tw - dx;
+            selected_state->x = priv->tx + dx;
+            selected_state->h = priv->th - dy;
+            selected_state->y = priv->ty + dy;
+        break;
+    }
+
+    if (selected_state->w < 50)
+        selected_state->w = 50;
+
+    if (selected_state->h < 50)
+        selected_state->h = 50;
+
+    selected_state->x = ufsmm_canvas_nearest_grid_point(selected_state->x);
+    selected_state->y = ufsmm_canvas_nearest_grid_point(selected_state->y);
+    selected_state->w = ufsmm_canvas_nearest_grid_point(selected_state->w);
+    selected_state->h = ufsmm_canvas_nearest_grid_point(selected_state->h);
 }
 
 bool canvas_region_resize_selected(void *context)
@@ -79,7 +150,7 @@ void canvas_process_selection(void *context)
     priv->selection = UFSMM_SELECTION_NONE;
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
 
-    /* Check regions */
+    /* Check states and regions */
     ufsmm_stack_push(stack, priv->current_region);
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
@@ -115,7 +186,7 @@ void canvas_process_selection(void *context)
                         x + w, y + h);
             if (point_in_box2(priv->px - priv->current_region->ox,
                               priv->py - priv->current_region->oy,
-                                                        x, y, w, h)) {
+                                                        x - 5, y - 5, w + 10, h + 10)) {
                 L_DEBUG("State '%s' selected", s->name);
                 priv->selection = UFSMM_SELECTION_STATE;
                 priv->selected_state = s;

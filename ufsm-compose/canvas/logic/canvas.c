@@ -2051,6 +2051,7 @@ const struct ufsm_entry_exit entry_7977a736_1b6d_4516_8f5b_3268f5b58097 = {
 
 /* Transitions originating from 'State' */
 const struct ufsm_transition t_a393faff_3d7b_4919_8ec5_06cf0e54ca7c;
+const struct ufsm_action a_7395f054_fc48_4353_be0b_614eb7499478;
 const struct ufsm_guard g_f9d5b4d4_5ffe_4e1e_add4_11cb3e0782a9;
 const struct ufsm_transition t_c33d6574_3641_428f_862c_25c85ff0ccbf;
 const struct ufsm_guard g_3878b253_54a4_4eee_9185_d88f3f2126d1;
@@ -2058,6 +2059,12 @@ const struct ufsm_transition t_a832561d_14c4_4157_9142_673305be9a55;
 const struct ufsm_guard g_7d572f7b_a690_4072_b499_5bb256f9feb4;
 const struct ufsm_transition t_d6576de2_6011_4513_a900_e25a293dc40d;
 const struct ufsm_action a_b8651742_f7c3_468c_a46e_cce378f71fb4;
+
+const struct ufsm_action a_7395f054_fc48_4353_be0b_614eb7499478 = {
+    .name = "canvas_resize_state_begin",
+    .f = &canvas_resize_state_begin,
+    .next = NULL,
+};
 
 const struct ufsm_guard g_f9d5b4d4_5ffe_4e1e_add4_11cb3e0782a9 = {
     .name = "canvas_state_resize_selected",
@@ -2068,7 +2075,7 @@ const struct ufsm_guard g_f9d5b4d4_5ffe_4e1e_add4_11cb3e0782a9 = {
 const struct ufsm_transition t_a393faff_3d7b_4919_8ec5_06cf0e54ca7c = {
     .kind = UFSM_TRANSITION_EXTERNAL,
     .trigger = NULL,
-    .action = NULL,
+    .action = &a_7395f054_fc48_4353_be0b_614eb7499478,
     .guard = &g_f9d5b4d4_5ffe_4e1e_add4_11cb3e0782a9,
     .source = &s_0ca836f8_de8d_42bf_99ed_16a0d40e3541,
     .dest = &s_566c339a_2e94_4e8e_847e_507d1a039d8f,

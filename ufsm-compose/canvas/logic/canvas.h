@@ -134,6 +134,7 @@ void canvas_inc_scale(void *context);
 void canvas_store_offset(void *context);
 void canvas_dec_scale(void *context);
 void canvas_move_state_begin(void *context);
+void canvas_resize_state_begin(void *context);
 
 struct canvas_machine {
     struct ufsm_machine machine;
