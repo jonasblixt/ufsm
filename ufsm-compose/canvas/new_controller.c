@@ -24,6 +24,9 @@ void canvas_check_sresize_boxes(void *context)
     double px = priv->px;
     double py = priv->py;
 
+    if (s->kind != UFSMM_STATE_NORMAL)
+        return;
+
     ufsmm_get_state_absolute_coords(priv->selected_state, &x, &y, &w, &h);
 
     x += r->ox;
@@ -285,6 +288,13 @@ void canvas_update_mselect(void *context)
 
 void canvas_move_text_block(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *t = priv->selected_transition;
+
+    t->text_block_coords.x = ufsmm_canvas_nearest_grid_point(priv->tx + priv->dx);
+    t->text_block_coords.y = ufsmm_canvas_nearest_grid_point(priv->ty + priv->dy);
+
+    priv->redraw = true;
 }
 
 void canvas_move_tvertice(void *context)
@@ -405,7 +415,20 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
     struct ufsmm_canvas *priv = 
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
-    if (event->keyval == GDK_KEY_Shift_L) {
+    if (event->keyval == GDK_KEY_A) {
+        if (priv->current_region->parent_state) {
+            L_DEBUG("Ascending to region: %s",
+                    priv->current_region->parent_state->parent_region->name);
+            priv->current_region->draw_as_root = false;
+            do {
+                if (!priv->current_region->parent_state)
+                    break;
+                priv->current_region = priv->current_region->parent_state->parent_region;
+            } while (!priv->current_region->off_page);
+            priv->current_region->draw_as_root = true;
+        }
+        priv->redraw = true;
+    } else if (event->keyval == GDK_KEY_Shift_L) {
         canvas_machine_process(&priv->machine, eKey_shift_down);
     } else if (event->keyval == GDK_KEY_Control_L) {
         canvas_machine_process(&priv->machine, eEnableScale);
@@ -423,20 +446,7 @@ gboolean keyrelease_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
     struct ufsmm_canvas *priv = 
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
-    if (event->keyval == GDK_KEY_A) {
-        if (priv->current_region->parent_state) {
-            L_DEBUG("Ascending to region: %s",
-                    priv->current_region->parent_state->parent_region->name);
-            priv->current_region->draw_as_root = false;
-            do {
-                if (!priv->current_region->parent_state)
-                    break;
-                priv->current_region = priv->current_region->parent_state->parent_region;
-            } while (!priv->current_region->off_page);
-            priv->current_region->draw_as_root = true;
-        }
-        priv->redraw = true;
-    } else if (event->keyval == GDK_KEY_Shift_L) {
+    if (event->keyval == GDK_KEY_Shift_L) {
         canvas_machine_process(&priv->machine, eKey_shift_up);
     } else if (event->keyval == GDK_KEY_Control_L) {
         canvas_machine_process(&priv->machine, eDisableScale);
@@ -533,7 +543,7 @@ static gboolean motion_notify_event_cb(GtkWidget      *widget,
     priv->dx = px - priv->sx;
     priv->dy = py - priv->sy;
 
-    L_DEBUG("dx %.2f dy %.2f", priv->dx, priv->dy);
+    //L_DEBUG("dx %.2f dy %.2f", priv->dx, priv->dy);
 
     ufsm_process(&priv->machine.machine, eMotion);
 

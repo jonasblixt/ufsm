@@ -34,5 +34,5 @@ int ufsmm_canvas_render_grid(cairo_t *cr, int width, int height)
 
 double ufsmm_canvas_nearest_grid_point(double in)
 {
-    return (int)(in / 10) * 10;
+    return (int)(round(in / 10)) * 10;
 }

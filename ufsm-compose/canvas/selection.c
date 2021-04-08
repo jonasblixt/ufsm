@@ -120,6 +120,28 @@ bool canvas_transition_svertice_selected(void *context)
 
 bool canvas_transition_text_block_selected(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *t = priv->selected_transition;
+
+    double x, y, w, h, ox, oy;
+
+    ox = priv->current_region->ox;
+    oy = priv->current_region->oy;
+
+    ufsmm_get_region_absolute_coords(t->source.state->parent_region,
+                                       &x, &y, &w, &h);
+    double tx = t->text_block_coords.x + x + ox;
+    double ty = t->text_block_coords.y + y + oy;
+    double tw = t->text_block_coords.w;
+    double th = t->text_block_coords.h;
+
+    if (point_in_box2(priv->px, priv->py, tx - 10, ty - 10, tw + 20, th + 20)) {
+        priv->tx = t->text_block_coords.x;
+        priv->ty = t->text_block_coords.y;
+        priv->tw = t->text_block_coords.w;
+        priv->th = t->text_block_coords.h;
+        return true;
+    }
     return false;
 }
 
@@ -259,7 +281,6 @@ void canvas_process_selection(void *context)
                     t->focus = false;
                 }
 
-#ifdef __NOPE__
                 ufsmm_get_region_absolute_coords(t->source.state->parent_region,
                                                    &x, &y, &w, &h);
                 double tx = t->text_block_coords.x + x + ox;
@@ -270,7 +291,9 @@ void canvas_process_selection(void *context)
                 if (point_in_box2(priv->px, priv->py, tx - 10, ty - 10, tw + 20, th + 20)) {
                     L_DEBUG("Text-box selected <%.2f, %.2f> <%.2f, %.2f, %.2f, %.2f>",
                                 priv->px, priv->py, tx, ty, tx + tw, ty + th);
-                    t_focus = true;
+                    t->focus = true;
+                    priv->selection = UFSMM_SELECTION_TRANSITION;
+                    priv->selected_transition = t;
                     selected_text_block = &t->text_block_coords;
 
                     if (point_in_box(priv->px, priv->py, tx, ty, 10, 10)) {
@@ -285,6 +308,8 @@ void canvas_process_selection(void *context)
                         selected_text_block_corner = UFSMM_NO_SELECTION;
                     }
                 }
+
+#ifdef __NOPE__
                 /* Check guards */
 
                 for (struct ufsmm_action_ref *ar = t->guard; ar; ar = ar->next)
