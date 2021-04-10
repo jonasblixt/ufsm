@@ -35,30 +35,30 @@ void canvas_check_sresize_boxes(void *context)
     /* Check re-size boxes */
     if (point_in_box(px, py, x, y, 10, 10)) {
         L_DEBUG("Top left corner!");
-        priv->selected_state_corner = UFSMM_TOP_LEFT;
+        priv->selected_corner = UFSMM_TOP_LEFT;
     } else if (point_in_box(px, py, x + w, y, 10, 10)) {
         L_DEBUG("Top right corner!");
-        priv->selected_state_corner = UFSMM_TOP_RIGHT;
+        priv->selected_corner = UFSMM_TOP_RIGHT;
     } else if (point_in_box(px, py, x + w/2, y, 10, 10)) {
         L_DEBUG("Top middle");
-        priv->selected_state_corner = UFSMM_TOP_MIDDLE;
+        priv->selected_corner = UFSMM_TOP_MIDDLE;
     } else if (point_in_box(px, py, x, y + h/2, 10, 10)) {
         L_DEBUG("Left middle");
-        priv->selected_state_corner = UFSMM_LEFT_MIDDLE;
+        priv->selected_corner = UFSMM_LEFT_MIDDLE;
     } else if (point_in_box(px, py, x, y + h, 10, 10)) {
         L_DEBUG("Bottom left corner");
-        priv->selected_state_corner = UFSMM_BOT_LEFT;
+        priv->selected_corner = UFSMM_BOT_LEFT;
     } else if (point_in_box(px, py, x + w/2, y + h, 10, 10)) {
         L_DEBUG("Bottom middle");
-        priv->selected_state_corner = UFSMM_BOT_MIDDLE;
+        priv->selected_corner = UFSMM_BOT_MIDDLE;
     } else if (point_in_box(px, py, x + w, y + h, 10, 10)) {
         L_DEBUG("Bottom right corner");
-        priv->selected_state_corner = UFSMM_BOT_RIGHT;
+        priv->selected_corner = UFSMM_BOT_RIGHT;
     } else if (point_in_box(px, py, x + w, y + h/2, 10, 10)) {
         L_DEBUG("Right middle");
-        priv->selected_state_corner = UFSMM_RIGHT_MIDDLE;
+        priv->selected_corner = UFSMM_RIGHT_MIDDLE;
     } else {
-        priv->selected_state_corner = UFSMM_NO_SELECTION;
+        priv->selected_corner = UFSMM_NO_SELECTION;
     }
 }
 
@@ -203,7 +203,8 @@ bool canvas_state_exit_selected(void *context)
 
 bool canvas_textblock_resize_selected(void *context)
 {
-    return false;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    return (priv->selected_corner != UFSMM_NO_SELECTION);
 }
 
 bool canvas_only_state_selected(void *context)
@@ -323,6 +324,69 @@ void canvas_reorder_action_func(void *context)
 
 void canvas_resize_textblock(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *t = priv->selected_transition;
+
+    double dy = priv->dy;
+    double dx = priv->dx;
+
+    switch (priv->selected_corner) {
+        case UFSMM_TOP_RIGHT:
+        {
+            if (t->text_block_coords.w <= 50) {
+                t->text_block_coords.w = 50;
+            } else {
+                t->text_block_coords.w = priv->tw + dx;
+            }
+
+            if ((priv->th - dy) <= 30) {
+                t->text_block_coords.h = 30;
+            } else {
+                t->text_block_coords.h = priv->th - dy;
+                t->text_block_coords.y = priv->ty + dy;
+            }
+        }
+        break;
+        case UFSMM_BOT_RIGHT:
+            t->text_block_coords.w = priv->tw + dx;
+            t->text_block_coords.h = priv->th + dy;
+        break;
+        case UFSMM_BOT_LEFT:
+            t->text_block_coords.w = priv->tw - dx;
+            t->text_block_coords.x = priv->tx + dx;
+            t->text_block_coords.h = priv->th + dy;
+        break;
+        case UFSMM_TOP_LEFT:
+            if (t->text_block_coords.w <= 50) {
+                t->text_block_coords.w = 50;
+            } else {
+                t->text_block_coords.w = priv->tw - dx;
+                t->text_block_coords.x = priv->tx + dx;
+            }
+
+            if ((priv->th - dy) <= 30) {
+                t->text_block_coords.h = 30;
+            } else {
+                t->text_block_coords.h = priv->th - dy;
+                t->text_block_coords.y = priv->ty + dy;
+            }
+        break;
+        default:
+            return;
+    }
+
+    priv->redraw = true;
+
+    if (t->text_block_coords.w < 50)
+        t->text_block_coords.w = 50;
+
+    if (t->text_block_coords.h < 30)
+        t->text_block_coords.h = 30;
+
+    t->text_block_coords.x = ufsmm_canvas_nearest_grid_point(t->text_block_coords.x);
+    t->text_block_coords.y = ufsmm_canvas_nearest_grid_point(t->text_block_coords.y);
+    t->text_block_coords.w = ufsmm_canvas_nearest_grid_point(t->text_block_coords.w);
+    t->text_block_coords.h = ufsmm_canvas_nearest_grid_point(t->text_block_coords.h);
 }
 
 void canvas_add_region(void *context)

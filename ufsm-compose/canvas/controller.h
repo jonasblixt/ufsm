@@ -32,7 +32,7 @@ struct ufsmm_canvas {
     struct ufsmm_region *selected_region;
     struct ufsmm_region *current_region;
     struct ufsmm_state *selected_state;
-    enum ufsmm_resize_selector selected_state_corner;
+    enum ufsmm_resize_selector selected_corner;
     struct ufsmm_transition *selected_transition;
     struct ufsmm_action_ref *selected_aref;
     bool redraw;

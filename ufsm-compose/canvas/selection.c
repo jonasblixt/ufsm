@@ -13,7 +13,7 @@ bool canvas_state_selected(void *context)
 bool canvas_state_resize_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    return (priv->selected_state_corner != UFSMM_NO_SELECTION);
+    return (priv->selected_corner != UFSMM_NO_SELECTION);
 }
 
 bool canvas_region_selected(void *context)
@@ -43,7 +43,7 @@ void canvas_resize_state(void *context)
 
     priv->redraw = true;
 
-    switch (priv->selected_state_corner) {
+    switch (priv->selected_corner) {
         case UFSMM_TOP_MIDDLE:
             selected_state->h = priv->th - dy;
             selected_state->y = priv->ty + dy;
@@ -122,7 +122,7 @@ bool canvas_transition_text_block_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
-
+    bool selected = false;
     double x, y, w, h, ox, oy;
 
     ox = priv->current_region->ox;
@@ -140,9 +140,29 @@ bool canvas_transition_text_block_selected(void *context)
         priv->ty = t->text_block_coords.y;
         priv->tw = t->text_block_coords.w;
         priv->th = t->text_block_coords.h;
-        return true;
+        selected = true;
     }
-    return false;
+
+    if (selected) {
+        if (point_in_box(priv->px, priv->py, tx, ty, 10, 10)) {
+            priv->selected_corner = UFSMM_TOP_LEFT;
+            L_DEBUG("UFSMM_TOP_LEFT");
+        } else if (point_in_box(priv->px, priv->py, tx + tw, ty, 10, 10)) {
+            priv->selected_corner = UFSMM_TOP_RIGHT;
+            L_DEBUG("UFSMM_TOP_RIGHT");
+        } else if (point_in_box(priv->px, priv->py, tx + tw, ty + th, 10, 10)) {
+            priv->selected_corner = UFSMM_BOT_RIGHT;
+            L_DEBUG("UFSMM_BOT_RIGHT");
+        } else if (point_in_box(priv->px, priv->py, tx, ty + th, 10, 10)) {
+            priv->selected_corner = UFSMM_BOT_LEFT;
+            L_DEBUG("UFSMM_BOT_LEFT");
+        } else {
+            priv->selected_corner = UFSMM_NO_SELECTION;
+            L_DEBUG("UFSMM_NO_SELECTION");
+        }
+    }
+
+    return selected;
 }
 
 bool canvas_transition_dvertice_selected(void *context)
