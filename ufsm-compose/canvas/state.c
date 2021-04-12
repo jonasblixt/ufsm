@@ -415,7 +415,7 @@ int ufsmm_state_get_at_xy(struct ufsmm_canvas *canvas,
 }
 
 int ufsmm_state_get_closest_side(struct ufsmm_canvas *canvas,
-                                 struct ufsmm_state *s, double px, double py,
+                                 struct ufsmm_state *s,
                                  enum ufsmm_side *side, double *offset)
 {
     double x, y, w, h;
@@ -423,10 +423,14 @@ int ufsmm_state_get_closest_side(struct ufsmm_canvas *canvas,
     double d, d2;
     double lx, ly;
 
+    ox = canvas->current_region->ox;
+    oy = canvas->current_region->oy;
+
+    double px = canvas->px;
+    double py = canvas->py;
+
     ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
 
-    ox = canvas->current_region->ox / canvas->current_region->scale;
-    oy = canvas->current_region->oy / canvas->current_region->scale;
 
     x += ox;
     y += oy;

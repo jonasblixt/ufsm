@@ -108,14 +108,56 @@ bool canvas_transition_selected(void *context)
     return (priv->selection == UFSMM_SELECTION_TRANSITION);
 }
 
-bool canvas_transition_tvertice_selected(void *context)
+bool canvas_transition_vertice_selected(void *context)
 {
-    return false;
-}
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *t = priv->selected_transition;
+    struct ufsmm_region *r = priv->current_region;
+    double vsx, vsy, vex, vey;
+    double tsx, tsy, tex, tey;
+    double ox = r->ox;
+    double oy = r->oy;
 
-bool canvas_transition_svertice_selected(void *context)
-{
-    return false;
+    priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE_NONE;
+
+    transition_calc_begin_end_point(t->source.state,
+                                    t->source.side,
+                                    t->source.offset,
+                                    &tsx, &tsy);
+    transition_calc_begin_end_point(t->dest.state,
+                                    t->dest.side,
+                                    t->dest.offset,
+                                    &tex, &tey);
+
+    vex = tex + ox;
+    vey = tey + oy;
+
+    vsx = tsx + ox;
+    vsy = tsy + oy;
+
+    if (point_in_box(priv->px, priv->py, vsx, vsy, 10, 10)) {
+        L_DEBUG("Start vertice selected");
+        priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE_START;
+        priv->tx = t->source.offset;
+    }
+
+    for (struct ufsmm_vertice *v = t->vertices; v; v = v->next) {
+        if (point_in_box(priv->px, priv->py, v->x + ox, v->y + oy, 10, 10)) {
+            L_DEBUG("Vertice selected");
+            priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE;
+            priv->selected_transition_vertice_data = v;
+            priv->tx = v->x;
+            priv->ty = v->y;
+        }
+    }
+
+    if (point_in_box(priv->px, priv->py, vex, vey, 10, 10)) {
+        priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE_END;
+        L_DEBUG("End vertice selected");
+        priv->tx = t->dest.offset;
+    }
+
+    return (priv->selected_transition_vertice != UFSMM_TRANSITION_VERTICE_NONE);
 }
 
 bool canvas_transition_text_block_selected(void *context)

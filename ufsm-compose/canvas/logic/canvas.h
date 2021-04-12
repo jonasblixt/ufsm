@@ -88,6 +88,7 @@ bool canvas_action_selected(void *context);
 bool canvas_state_exit_selected(void *context);
 bool canvas_textblock_resize_selected(void *context);
 bool canvas_only_state_selected(void *context);
+bool canvas_transition_vertice_selected(void *context);
 
 /* Action function prototypes */
 void canvas_select_root_region(void *context);
@@ -101,7 +102,7 @@ void canvas_resize_region(void *context);
 void canvas_reorder_entry_func(void *context);
 void canvas_update_mselect(void *context);
 void canvas_move_text_block(void *context);
-void canvas_move_tvertice(void *context);
+void canvas_move_vertice(void *context);
 void canvas_move_svertice(void *context);
 void canvas_move_dvertice(void *context);
 void canvas_reorder_exit_func(void *context);
@@ -139,7 +140,7 @@ void canvas_resize_state_begin(void *context);
 struct canvas_machine {
     struct ufsm_machine machine;
     struct ufsm_region_data region_data[8];
-    struct ufsm_state_data state_data[61];
+    struct ufsm_state_data state_data[59];
     void *stack_data[10];
     void *stack_data2[2];
 };

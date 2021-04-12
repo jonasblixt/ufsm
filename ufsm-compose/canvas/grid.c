@@ -1,3 +1,4 @@
+#include <math.h>
 #include "canvas/view.h"
 
 int ufsmm_canvas_render_grid(cairo_t *cr, int width, int height)

@@ -129,8 +129,95 @@ void canvas_focus_transition(void *context)
     priv->redraw = true;
 }
 
-void canvas_check_transition_vertice(void *context)
+void canvas_move_vertice(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *t = priv->selected_transition;
+
+    double dx = priv->dx;// / priv->current_region->scale;
+    double dy = priv->dy;// / priv->current_region->scale;
+    double tx = priv->tx;// / priv->current_region->scale;
+    priv->redraw = true;
+
+    switch (priv->selected_transition_vertice) {
+        case UFSMM_TRANSITION_VERTICE_START:
+        {
+            enum ufsmm_side src_side;
+            double src_offset;
+
+            ufsmm_state_get_closest_side(priv,
+                                         t->source.state,
+                                         &src_side,
+                                         &src_offset);
+
+            if (t->source.side != src_side) {
+                t->source.side = src_side;
+                t->source.offset = src_offset;
+                /* Reset offset and delta when switching sides */
+                priv->tx = src_offset;
+                priv->sx = priv->px;
+                priv->sy = priv->py;
+                dx = priv->dx;
+                dy = priv->dy;
+                tx = priv->tx;
+            }
+
+            if (t->source.side == UFSMM_SIDE_LEFT ||
+                t->source.side == UFSMM_SIDE_RIGHT) {
+                t->source.offset = ufsmm_canvas_nearest_grid_point(tx + dy);
+            } else {
+                t->source.offset = ufsmm_canvas_nearest_grid_point(tx + dx);
+            }
+        }
+        break;
+        case UFSMM_TRANSITION_VERTICE:
+            priv->selected_transition_vertice_data->y = (priv->ty + dy);
+            priv->selected_transition_vertice_data->x = (priv->tx + dx);
+
+            priv->selected_transition_vertice_data->y =
+                ufsmm_canvas_nearest_grid_point(priv->selected_transition_vertice_data->y);
+
+            priv->selected_transition_vertice_data->x =
+                ufsmm_canvas_nearest_grid_point(priv->selected_transition_vertice_data->x);
+        break;
+        case UFSMM_TRANSITION_VERTICE_END:
+        {
+            enum ufsmm_side dest_side;
+            double dest_offset;
+
+            ufsmm_state_get_closest_side(priv,
+                                         t->dest.state,
+                                         &dest_side,
+                                         &dest_offset);
+
+            if (t->dest.side != dest_side) {
+                L_DEBUG("Changing side from %i to %i",
+                    t->dest.side, dest_side);
+                t->dest.side = dest_side;
+                t->dest.offset = dest_offset;
+
+                /* Reset offset and delta when switching sides */
+                priv->tx = dest_offset;
+                priv->sx = priv->px;
+                priv->sy = priv->py;
+                dx = priv->dx;
+                dy = priv->dy;
+                tx = priv->tx;
+            }
+
+            if (t->dest.side == UFSMM_SIDE_LEFT ||
+                        t->dest.side == UFSMM_SIDE_RIGHT) {
+                t->dest.offset = ufsmm_canvas_nearest_grid_point(tx + dy);
+            } else {
+                t->dest.offset = ufsmm_canvas_nearest_grid_point(tx + dx);
+            }
+        }
+        break;
+        case UFSMM_TRANSITION_VERTICE_NONE:
+        break;
+        default:
+            return;
+    }
 }
 
 void canvas_check_guard(void *context)
@@ -296,18 +383,6 @@ void canvas_move_text_block(void *context)
     t->text_block_coords.y = ufsmm_canvas_nearest_grid_point(priv->ty + priv->dy);
 
     priv->redraw = true;
-}
-
-void canvas_move_tvertice(void *context)
-{
-}
-
-void canvas_move_svertice(void *context)
-{
-}
-
-void canvas_move_dvertice(void *context)
-{
 }
 
 void canvas_reorder_exit_func(void *context)

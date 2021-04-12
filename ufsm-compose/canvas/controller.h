@@ -34,6 +34,8 @@ struct ufsmm_canvas {
     struct ufsmm_state *selected_state;
     enum ufsmm_resize_selector selected_corner;
     struct ufsmm_transition *selected_transition;
+    enum ufsmm_transition_vertice_kind selected_transition_vertice;
+    struct ufsmm_vertice *selected_transition_vertice_data;
     struct ufsmm_action_ref *selected_aref;
     bool redraw;
     double dx, dy;
