@@ -70,9 +70,8 @@ static void render_selection_boxes(cairo_t *cr, struct ufsmm_transition *t)
     double begin_x, begin_y, end_x, end_y;
     const double dashes[] = {10.0,  /* ink */
                              10.0};  /* skip */
-
-    ufsmm_get_region_absolute_coords(t->source.state->parent_region,
-                                    &rx, &ry, &rw, &rh);
+    struct ufsmm_region *pr = t->source.state->parent_region;
+    ufsmm_get_region_absolute_coords(pr, &rx, &ry, &rw, &rh);
 
     transition_calc_begin_end_point(t->source.state,
                          t->source.side,
@@ -91,11 +90,11 @@ static void render_selection_boxes(cairo_t *cr, struct ufsmm_transition *t)
     cairo_move_to (cr, fbx, fby);
 
     for (v = t->vertices; v; v = v->next) {
-        cairo_rectangle (cr, v->x - 5, v->y - 5, 10, 10);
+        cairo_rectangle (cr, rx + v->x - 5, ry + v->y - 5, 10, 10);
         cairo_fill(cr);
-        cairo_move_to (cr, v->x, v->y);
-        fbx = v->x;
-        fby = v->y;
+        cairo_move_to (cr, rx + v->x, ry + v->y);
+        fbx = rx + v->x;
+        fby = ry + v->y;
     }
 
     cairo_rectangle (cr, end_x - 5, end_y - 5, 10, 10);
@@ -329,12 +328,12 @@ int ufsmm_canvas_render_transition(cairo_t *cr,
         cairo_set_line_width (cr, 2.0);
 
         for (v = t->vertices; v; v = v->next) {
-            cairo_line_to(cr, v->x, v->y);
+            cairo_line_to(cr, v->x + rx, v->y + ry);
             ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
             cairo_stroke (cr);
-            cairo_move_to (cr, v->x, v->y);
-            begin_x = v->x;
-            begin_y = v->y;
+            cairo_move_to (cr, v->x + rx, v->y + ry);
+            begin_x = v->x + rx;
+            begin_y = v->y + ry;
         }
 
         cairo_line_to(cr, end_x, end_y);

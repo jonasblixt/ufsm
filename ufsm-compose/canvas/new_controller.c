@@ -338,8 +338,26 @@ void canvas_move_state(void *context)
     int rc;
     printf("move %s --> %f %f\n", s->name, priv->px, priv->py);
 
+    double dx = ufsmm_canvas_nearest_grid_point(priv->px - priv->sx) - s->x;
+    double dy = ufsmm_canvas_nearest_grid_point(priv->py - priv->sy) - s->y;
+
     s->x = ufsmm_canvas_nearest_grid_point(priv->px - priv->sx);
     s->y = ufsmm_canvas_nearest_grid_point(priv->py - priv->sy);
+
+
+    for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
+        if ((t->source.state == s) &&
+            (t->dest.state == s)) {
+
+            t->text_block_coords.x += dx;
+            t->text_block_coords.y += dy;
+
+            for (struct ufsmm_vertice *v = t->vertices; v; v = v->next) {
+                v->x += dx;
+                v->y += dy;
+            }
+        }
+    }
 /*
     rc = ufsmm_region_get_at_xy(priv->current_region, tx_tmp, ty_tmp, &new_pr, NULL);
 

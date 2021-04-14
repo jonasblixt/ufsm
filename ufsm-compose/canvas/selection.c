@@ -117,6 +117,7 @@ bool canvas_transition_vertice_selected(void *context)
     double tsx, tsy, tex, tey;
     double ox = r->ox;
     double oy = r->oy;
+    double rx, ry, rw, rh;
 
     priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE_NONE;
 
@@ -128,6 +129,8 @@ bool canvas_transition_vertice_selected(void *context)
                                     t->dest.side,
                                     t->dest.offset,
                                     &tex, &tey);
+
+    ufsmm_get_region_absolute_coords(t->source.state->parent_region, &rx, &ry, &rw, &rh);
 
     vex = tex + ox;
     vey = tey + oy;
@@ -142,7 +145,7 @@ bool canvas_transition_vertice_selected(void *context)
     }
 
     for (struct ufsmm_vertice *v = t->vertices; v; v = v->next) {
-        if (point_in_box(priv->px, priv->py, v->x + ox, v->y + oy, 10, 10)) {
+        if (point_in_box(priv->px, priv->py, v->x + ox + rx, v->y + oy + ry, 10, 10)) {
             L_DEBUG("Vertice selected");
             priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE;
             priv->selected_transition_vertice_data = v;
@@ -295,6 +298,8 @@ void canvas_process_selection(void *context)
                 double vsx, vsy, vex, vey;
                 double tsx, tsy, tex, tey;
                 double d;
+                double rx, ry, rw, rh;
+
                 L_DEBUG("Checking transitions from %s", s->name);
                 t->focus = false;
                 transition_calc_begin_end_point(s,
@@ -305,13 +310,16 @@ void canvas_process_selection(void *context)
                                                 t->dest.side,
                                                 t->dest.offset,
                                                 &tex, &tey);
+
+                ufsmm_get_region_absolute_coords(r, &rx, &ry, &rw, &rh);
+
                 vsx = tsx + ox;
                 vsy = tsy + oy;
 
                 if (t->vertices) {
                     for (v = t->vertices; v; v = v->next) {
-                        vex = v->x + ox;
-                        vey = v->y + oy;
+                        vex = v->x + ox + rx;
+                        vey = v->y + oy + ry;
 
                         d = distance_point_to_seg(priv->px, priv->py,
                                                   vsx, vsy,
@@ -323,8 +331,8 @@ void canvas_process_selection(void *context)
                             priv->selected_transition = t;
                             break;
                         }
-                        vsx = v->x + ox;
-                        vsy = v->y + oy;
+                        vsx = v->x + ox + rx;
+                        vsy = v->y + oy + ry;
                     }
                     vsx = vex;
                     vsy = vey;
