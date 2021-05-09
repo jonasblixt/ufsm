@@ -69,6 +69,8 @@ const struct ufsm_state s_6af64093_51b3_4564_be9a_fcb682134262; /* State: Guard 
 const struct ufsm_state s_7921f170_0693_4d0b_bc73_b4567901a39b; /* State: Action */
 const struct ufsm_state s_c955e985_b169_4bce_b36a_70d31da164c5; /* State: Exit selected */
 const struct ufsm_state s_df6079eb_9b1d_4ab8_9980_6eb01a8cb3fb; /* State: Resize text block */
+const struct ufsm_state s_5bb316a6_0cd5_4fdc_99d1_f19d74c17ffd; /* State: Move State */
+const struct ufsm_region r_7cd89eb7_af2b_4a61_86ca_40bcd3a7d520; /* Region: New region */
 const struct ufsm_state s_50565759_c7e0_426f_948e_1cbc276a1204; /* State: Move State */
 
 /* Triggers */
@@ -2056,7 +2058,6 @@ const struct ufsm_guard g_3878b253_54a4_4eee_9185_d88f3f2126d1;
 const struct ufsm_transition t_a832561d_14c4_4157_9142_673305be9a55;
 const struct ufsm_guard g_7d572f7b_a690_4072_b499_5bb256f9feb4;
 const struct ufsm_transition t_d6576de2_6011_4513_a900_e25a293dc40d;
-const struct ufsm_action a_b8651742_f7c3_468c_a46e_cce378f71fb4;
 
 const struct ufsm_action a_7395f054_fc48_4353_be0b_614eb7499478 = {
     .name = "canvas_resize_state_begin",
@@ -2112,16 +2113,10 @@ const struct ufsm_transition t_a832561d_14c4_4157_9142_673305be9a55 = {
     .next = &t_d6576de2_6011_4513_a900_e25a293dc40d,
 };
 
-const struct ufsm_action a_b8651742_f7c3_468c_a46e_cce378f71fb4 = {
-    .name = "canvas_move_state_begin",
-    .f = &canvas_move_state_begin,
-    .next = NULL,
-};
-
 const struct ufsm_transition t_d6576de2_6011_4513_a900_e25a293dc40d = {
     .kind = UFSM_TRANSITION_EXTERNAL,
     .trigger = &trigger_060051ac_b9c7_4b85_b478_dcdf54362f21,
-    .action = &a_b8651742_f7c3_468c_a46e_cce378f71fb4,
+    .action = NULL,
     .guard = NULL,
     .source = &s_0ca836f8_de8d_42bf_99ed_16a0d40e3541,
     .dest = &s_50565759_c7e0_426f_948e_1cbc276a1204,
@@ -2480,7 +2475,45 @@ const struct ufsm_state s_df6079eb_9b1d_4ab8_9980_6eb01a8cb3fb = {
     .exit = NULL,
     .region = NULL,
     .parent_region = &r_7dc97c5b_572b_44ac_ae00_ab897e427d21,
-    .next = &s_50565759_c7e0_426f_948e_1cbc276a1204,
+    .next = &s_5bb316a6_0cd5_4fdc_99d1_f19d74c17ffd,
+};
+
+/* Entry functions for state 'Move State' */
+const struct ufsm_entry_exit entry_ee0bb0aa_1621_4e2e_966d_98aeddcdf843;
+const struct ufsm_entry_exit entry_ee0bb0aa_1621_4e2e_966d_98aeddcdf843 = {
+    .name = "canvas_move_state_begin",
+    .f = &canvas_move_state_begin,
+    .next = NULL,
+};
+
+/* Exit functions for state 'Move State' */
+const struct ufsm_entry_exit exit_e9c54775_5b80_4b00_b1f1_03dfa5e5bb2d;
+const struct ufsm_entry_exit exit_e9c54775_5b80_4b00_b1f1_03dfa5e5bb2d = {
+    .name = "canvas_move_state_end",
+    .f = &canvas_move_state_end,
+    .next = NULL,
+};
+
+
+const struct ufsm_state s_5bb316a6_0cd5_4fdc_99d1_f19d74c17ffd = {
+    .index = 58,
+    .name = "Move State",
+    .kind = UFSM_STATE_SIMPLE,
+    .transition = NULL,
+    .entry = &entry_ee0bb0aa_1621_4e2e_966d_98aeddcdf843,
+    .exit = &exit_e9c54775_5b80_4b00_b1f1_03dfa5e5bb2d,
+    .region = &r_7cd89eb7_af2b_4a61_86ca_40bcd3a7d520,
+    .parent_region = &r_7dc97c5b_572b_44ac_ae00_ab897e427d21,
+    .next = NULL,
+};
+
+const struct ufsm_region r_7cd89eb7_af2b_4a61_86ca_40bcd3a7d520 = {
+    .index = 8,
+    .name = "New region",
+    .has_history = false,
+    .state = &s_50565759_c7e0_426f_948e_1cbc276a1204,
+    .parent_state = &s_5bb316a6_0cd5_4fdc_99d1_f19d74c17ffd,
+    .next = NULL,
 };
 
 /* Transitions originating from 'Move State' */
@@ -2504,14 +2537,14 @@ const struct ufsm_transition t_f10bfc6c_4000_40a2_b10b_bfeffc5ba21c = {
 };
 
 const struct ufsm_state s_50565759_c7e0_426f_948e_1cbc276a1204 = {
-    .index = 58,
+    .index = 59,
     .name = "Move State",
     .kind = UFSM_STATE_SIMPLE,
     .transition = &t_f10bfc6c_4000_40a2_b10b_bfeffc5ba21c,
     .entry = NULL,
     .exit = NULL,
     .region = NULL,
-    .parent_region = &r_7dc97c5b_572b_44ac_ae00_ab897e427d21,
+    .parent_region = &r_7cd89eb7_af2b_4a61_86ca_40bcd3a7d520,
     .next = NULL,
 };
 
@@ -2519,9 +2552,9 @@ const struct ufsm_state s_50565759_c7e0_426f_948e_1cbc276a1204 = {
 int canvas_machine_initialize(struct canvas_machine *machine, void *ctx)
 {
     machine->machine.r_data = machine->region_data;
-    machine->machine.no_of_regions = 8;
+    machine->machine.no_of_regions = 9;
     machine->machine.s_data = machine->state_data;
-    machine->machine.no_of_states = 59;
+    machine->machine.no_of_states = 60;
     machine->machine.region = &r_00000000_0000_0000_0000_000000000000;
     ufsm_stack_init(&(machine->machine.stack), 10, machine->stack_data);
     ufsm_stack_init(&(machine->machine.stack2), 2, machine->stack_data2);

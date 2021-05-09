@@ -319,11 +319,31 @@ void canvas_move_state_begin(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_state *s = priv->selected_state;
+    struct ufsmm_region *r = priv->current_region;
+    double x, y, w, h;
 
-    printf("State MOVE BEGIN\n");
+    L_DEBUG("%s: ", __func__);
 
-    priv->sx = priv->px - s->x;
-    priv->sy = priv->py - s->y;
+    //priv->sx = priv->px - s->x;
+    //priv->sy = priv->py - s->y;
+    ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
+
+    /* Store current position and size */
+    priv->tx = s->x;
+    priv->ty = s->y;
+    priv->tw = s->w;
+    priv->th = s->h;
+
+    /* Calculate the pointer offset inside the state */
+    priv->t[0] = priv->px - x - r->ox;
+    priv->t[1] = priv->py - y - r->oy;
+
+    printf("State MOVE BEGIN %.2f, %.2f\n", priv->sx, priv->sy);
+}
+
+void canvas_move_state_end(void *context)
+{
+    L_DEBUG("%s: ", __func__);
 }
 
 void canvas_move_state(void *context)
@@ -336,28 +356,25 @@ void canvas_move_state(void *context)
     double tx_tmp, ty_tmp;
     double ox, oy;
     int rc;
-    printf("move %s --> %f %f\n", s->name, priv->px, priv->py);
+    printf("%s: %s --> %f %f\n", __func__, s->name, priv->px, priv->py);
 
-    double dx = ufsmm_canvas_nearest_grid_point(priv->px - priv->sx) - s->x;
-    double dy = ufsmm_canvas_nearest_grid_point(priv->py - priv->sy) - s->y;
-
-    s->x = ufsmm_canvas_nearest_grid_point(priv->px - priv->sx);
-    s->y = ufsmm_canvas_nearest_grid_point(priv->py - priv->sy);
+    s->x = ufsmm_canvas_nearest_grid_point(priv->tx + priv->dx);
+    s->y = ufsmm_canvas_nearest_grid_point(priv->ty + priv->dy);
 
     /* Move transition vertices on transitions originating from this state */
-    for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
+    /*for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
         if ((t->source.state == s) &&
             (t->dest.state == s)) {
 
-            t->text_block_coords.x += dx;
-            t->text_block_coords.y += dy;
+            t->text_block_coords.x += priv->dx;
+            t->text_block_coords.y += priv->dy;
 
             for (struct ufsmm_vertice *v = t->vertices; v; v = v->next) {
-                v->x += dx;
-                v->y += dy;
+                v->x += priv->dx;
+                v->y += priv->dy;
             }
         }
-    }
+    }*/
 
     /* Check if state is dragged on top of another region, if so, re-parent state */
     rc = ufsmm_region_get_at_xy(priv, priv->current_region,
@@ -366,12 +383,36 @@ void canvas_move_state(void *context)
     if (rc == UFSMM_OK && (s->parent_region != new_pr)) {
         L_DEBUG("Re-parent '%s' to region: %s", s->name, new_pr->name);
 
+
+        ufsmm_get_region_absolute_coords(s->parent_region, &x, &y, &w, &h);
+        double diff_x = x;
+        double diff_y = y;
+        ufsmm_get_region_absolute_coords(new_pr, &x, &y, &w, &h);
+        diff_x -= x;
+        diff_y -= y;
+
         if (ufsmm_state_move_to_region(priv->model, s, new_pr) == UFSMM_OK) {
             ufsmm_get_region_absolute_coords(new_pr, &x, &y, &w, &h);
-            s->x = priv->px - x;
-            s->y = priv->py - y;
-            priv->sx = priv->px - s->x;
-            priv->sy = priv->py - s->y;
+
+            priv->tx = priv->px - x - r->ox - priv->t[0];
+            priv->ty = priv->py - y - r->oy - priv->t[1];
+
+            s->x = ufsmm_canvas_nearest_grid_point(priv->tx + priv->dx);
+            s->y = ufsmm_canvas_nearest_grid_point(priv->ty + priv->dy);
+
+            priv->sx = priv->px;
+            priv->sy = priv->py;
+
+            /* Update vertice coordinates on outgoing transitions */
+            for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
+                t->text_block_coords.x += diff_x;
+                t->text_block_coords.y += diff_y;
+
+                for (struct ufsmm_vertice *v = t->vertices; v; v = v->next) {
+                    v->x += diff_x;
+                    v->y += diff_y;
+                }
+            }
         }
     }
 
@@ -631,13 +672,15 @@ static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
 
     if (event->type == GDK_DOUBLE_BUTTON_PRESS) {
         if (priv->selection == UFSMM_SELECTION_REGION) {
-            L_DEBUG("Switching view to region '%s'", priv->selected_region->name);
-            priv->current_region->draw_as_root = false;
-            priv->selected_region->draw_as_root = true;
-            priv->current_region = priv->selected_region;
-            if (priv->current_region->scale == 0)
-                priv->current_region->scale = 1.0;
-            priv->redraw = true;
+            if (priv->selected_region->off_page) {
+                L_DEBUG("Switching view to region '%s'", priv->selected_region->name);
+                priv->current_region->draw_as_root = false;
+                priv->selected_region->draw_as_root = true;
+                priv->current_region = priv->selected_region;
+                if (priv->current_region->scale == 0)
+                    priv->current_region->scale = 1.0;
+                priv->redraw = true;
+            }
         }
     }
 

@@ -42,6 +42,7 @@ struct ufsmm_canvas {
     double px, py; /* Location of mouse pointer */
     double sx, sy; /* Start coordinates */
     double tx, ty, th, tw; /* Temporary coordinates */
+    double t[10];
     enum ufsmm_selection selection;
     GtkWidget *widget;
     cairo_t *cr;
