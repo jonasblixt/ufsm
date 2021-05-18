@@ -15,6 +15,13 @@ void canvas_show_tool_help(void *context)
 {
 }
 
+void canvas_save(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    L_DEBUG("%s: writing to '%s'", __func__, priv->model->filename);
+    ufsmm_model_write(priv->model->filename, priv->model);
+}
+
 void canvas_check_sresize_boxes(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -629,8 +636,10 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eKey_shift_down);
     } else if (event->keyval == GDK_KEY_Control_L) {
         canvas_machine_process(&priv->machine, eEnableScale);
+    } else if (event->keyval == GDK_KEY_s) {
+        canvas_machine_process(&priv->machine, eKeyDown);
+        canvas_machine_process(&priv->machine, eKey_s_down);
     }
-
     if (priv->redraw) {
         gtk_widget_queue_draw(priv->widget);
         priv->redraw = false;

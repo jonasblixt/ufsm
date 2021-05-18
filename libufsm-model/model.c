@@ -516,6 +516,8 @@ int ufsmm_model_load(const char *filename, struct ufsmm_model **model_pp)
         goto err_free_model;
     }
 
+    model->filename = filename;
+
     return UFSMM_OK;
 
 err_free_json_tok:

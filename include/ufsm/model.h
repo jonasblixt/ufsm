@@ -219,6 +219,7 @@ struct ufsmm_model
     int version;
     unsigned int no_of_regions;
     unsigned int no_of_states;
+    const char *filename;
 };
 
 int ufsmm_model_load(const char *filename, struct ufsmm_model **model);
