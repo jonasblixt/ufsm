@@ -11,6 +11,9 @@ dependencies and uses no dynamic memory allocation or recursion.
 uFSM is designed with embedded applications in mind but can also be used in 
 other environments. 
 
+A rather comprehensive work is is being done on the branch 'ufsm-1.0-dev'. 
+The major work is focused around a graphical editor for state charts. 
+
 Supported UML statechart features:
 
 | Feature              | Implemented | Test case                              |
