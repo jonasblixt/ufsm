@@ -1,7 +1,7 @@
 /**
  * uFSM
  *
- * Copyright (C) 2018 Jonas Persson <jonpe960@gmail.com>
+ * Copyright (C) 2021 Jonas Blixt <jonpe960@gmail.com>
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *

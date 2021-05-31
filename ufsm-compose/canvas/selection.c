@@ -94,7 +94,8 @@ void canvas_resize_state(void *context)
 
 bool canvas_region_resize_selected(void *context)
 {
-    return false;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    return (priv->selected_corner != UFSMM_NO_SELECTION);
 }
 
 bool canvas_state_entry_selected(void *context)

@@ -71,6 +71,28 @@ void canvas_check_sresize_boxes(void *context)
 
 void canvas_check_rresize_boxes(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *r = priv->selected_region;
+    double x, y, w, h;
+    double px = priv->px;
+    double py = priv->py;
+
+    ufsmm_get_region_absolute_coords(r, &x, &y, &w, &h);
+
+    x += priv->current_region->ox;
+    y += priv->current_region->oy;
+
+    L_DEBUG("x=%.2f, y=%.2f, px=%.2f, py=%.2f",x+w/2, y, px, py);
+    /* Check re-size boxes */
+    if (point_in_box(px, py, x + w/2, y, 10, 10)) {
+        L_DEBUG("Top middle");
+        priv->selected_corner = UFSMM_TOP_MIDDLE;
+    } else if (point_in_box(px, py, x + w/2, y + h, 10, 10)) {
+        L_DEBUG("Bottom middle");
+        priv->selected_corner = UFSMM_BOT_MIDDLE;
+    } else {
+        priv->selected_corner = UFSMM_NO_SELECTION;
+    }
 }
 
 void canvas_check_action_func(void *context)
@@ -426,8 +448,37 @@ void canvas_move_state(void *context)
     priv->redraw = true;
 }
 
+void canvas_resize_region_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *r = priv->selected_region;
+    priv->th = r->h;
+}
 
 void canvas_resize_region(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *r = priv->selected_region;
+    priv->redraw = true;
+
+    double dy = priv->dy;
+    double dx = priv->dx;
+
+    switch (priv->selected_corner) {
+        case UFSMM_TOP_MIDDLE:
+            r->h = priv->th - dy;
+        break;
+        case UFSMM_BOT_MIDDLE:
+            r->h = priv->th + dy;
+        break;
+        default:
+        break;
+    }
+
+    r->h = ufsmm_canvas_nearest_grid_point(r->h);
+}
+
+void canvas_resize_region_end(void *context)
 {
 }
 
@@ -636,8 +687,9 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eKey_shift_down);
     } else if (event->keyval == GDK_KEY_Control_L) {
         canvas_machine_process(&priv->machine, eEnableScale);
+    } else if (event->keyval == GDK_KEY_a) {
+        canvas_machine_process(&priv->machine, eKey_a_down);
     } else if (event->keyval == GDK_KEY_s) {
-        canvas_machine_process(&priv->machine, eKeyDown);
         canvas_machine_process(&priv->machine, eKey_s_down);
     }
     if (priv->redraw) {
