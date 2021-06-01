@@ -6,6 +6,11 @@
 #include "view.h"
 #include "canvas/logic/canvas.h"
 
+#include "gui/edit_state_dialog.h"
+#include "gui/add_action_dialog.h"
+#include "gui/edit_string_dialog.h"
+#include "gui/set_trigger_dialog.h"
+
 /* Entry action function prototypes */
 void canvas_update_selection(void *context)
 {
@@ -112,6 +117,7 @@ void canvas_check_action_func(void *context)
             if (point_in_box2(priv->px, priv->py, ar->x + r->ox, ar->y + r->oy, ar->w, ar->h)) {
                 L_DEBUG("%s selected", ar->act->name);
                 priv->selected_aref = ar;
+                priv->selection = UFSMM_SELECTION_ENTRY;
                 ar->focus = true;
             } else {
                 ar->focus = false;
@@ -122,6 +128,7 @@ void canvas_check_action_func(void *context)
             if (point_in_box2(priv->px, priv->py, ar->x + r->ox, ar->y + r->oy, ar->w, ar->h)) {
                 L_DEBUG("%s selected", ar->act->name);
                 priv->selected_aref = ar;
+                priv->selection = UFSMM_SELECTION_EXIT;
                 ar->focus = true;
             } else {
                 ar->focus = false;
@@ -586,10 +593,22 @@ void canvas_add_region(void *context)
 
 void canvas_add_entry(void *context)
 {
+    int rc;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    rc = ufsm_add_entry_action_dialog(GTK_WINDOW(priv->root_window),
+                                        priv->model,
+                                        priv->selected_state);
+    L_DEBUG("Add entry on state %s %i", priv->selected_state->name, rc);
 }
 
 void canvas_add_exit(void *context)
 {
+    int rc;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    rc = ufsm_add_exit_action_dialog(GTK_WINDOW(priv->root_window),
+                                        priv->model,
+                                        priv->selected_state);
+    L_DEBUG("Add exit on state %s %i", priv->selected_state->name, rc);
 }
 
 void canvas_edit_state_name(void *context)
@@ -689,6 +708,12 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eEnableScale);
     } else if (event->keyval == GDK_KEY_a) {
         canvas_machine_process(&priv->machine, eKey_a_down);
+    } else if (event->keyval == GDK_KEY_e) {
+        canvas_machine_process(&priv->machine, eKey_e_down);
+    } else if (event->keyval == GDK_KEY_x) {
+        canvas_machine_process(&priv->machine, eKey_x_down);
+    } else if (event->keyval == GDK_KEY_Delete) {
+        canvas_machine_process(&priv->machine, eDelete);
     } else if (event->keyval == GDK_KEY_s) {
         canvas_machine_process(&priv->machine, eKey_s_down);
     }
@@ -841,7 +866,7 @@ static void debug_event(int ev)
     printf (" %-3i|            |\n",ev);
 }
 
-GtkWidget* ufsmm_canvas_new(void)
+GtkWidget* ufsmm_canvas_new(GtkWidget *parent)
 {
     GtkWidget *widget = NULL;
     struct ufsmm_canvas *priv = NULL;
@@ -855,6 +880,8 @@ GtkWidget* ufsmm_canvas_new(void)
     memset(priv, 0, sizeof(*priv));
 
     ufsm_debug_machine(&priv->machine.machine);
+    /* Override the debug_event to filter out 'eMotion' -event, since
+     * there are so many of them */
     priv->machine.machine.debug_event = debug_event;
 
     canvas_machine_initialize(&priv->machine, priv);
@@ -864,6 +891,7 @@ GtkWidget* ufsmm_canvas_new(void)
     g_object_set_data(G_OBJECT(widget), "canvas private", priv);
 
     priv->widget = widget;
+    priv->root_window = parent;
 
     gtk_widget_set_events (widget, gtk_widget_get_events (widget)
                                      | GDK_BUTTON_PRESS_MASK

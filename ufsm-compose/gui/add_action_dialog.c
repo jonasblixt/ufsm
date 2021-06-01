@@ -150,17 +150,17 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
     selected_action = NULL;
 
     switch (kind) {
-        case UFSMM_ACTION_ENTRY:
-            msg = "Add entry action";
-            action = model->entries;
-        break;
-        case UFSMM_ACTION_EXIT:
-            msg = "Add exit action";
-            action = model->exits;
-        break;
         case UFSMM_ACTION_GUARD:
             msg = "Add guard";
             action = model->guards;
+        break;
+        case UFSMM_ACTION_ENTRY:
+            msg = "Add entry";
+            action = model->actions;
+        break;
+        case UFSMM_ACTION_EXIT:
+            msg = "Add exit";
+            action = model->actions;
         break;
         case UFSMM_ACTION_ACTION:
             msg = "Add action";
@@ -264,10 +264,12 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 
         switch (kind) {
             case UFSMM_ACTION_ENTRY:
-                rc = ufsmm_state_add_entry(model, state, id, selected_action->id);
+                rc = ufsmm_state_add_entry(model, state, id,
+                                                selected_action->id);
             break;
             case UFSMM_ACTION_EXIT:
-                rc = ufsmm_state_add_exit(model, state, id, selected_action->id);
+                rc = ufsmm_state_add_exit(model, state, id,
+                                                selected_action->id);
             break;
             case UFSMM_ACTION_ACTION:
                 rc = ufsmm_transition_add_action(model, transition, id,

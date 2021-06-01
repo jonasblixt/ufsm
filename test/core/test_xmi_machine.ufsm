@@ -64,9 +64,7 @@
     {
       "name":"final",
       "id":"5372f9cf-fe6b-4e7a-81a8-e033f6b5921b"
-    }
-  ],
-  "entries":[
+    },
     {
       "name":"eA",
       "id":"44bf3839-d782-4118-bf58-c33c5ad775c4"
@@ -78,9 +76,7 @@
     {
       "name":"eD",
       "id":"faaa886c-e6d9-4312-b4f5-db9b9252a2a4"
-    }
-  ],
-  "exits":[
+    },
     {
       "name":"xA",
       "id":"1725c6b5-1a41-4a82-9831-92feb72dad6a"

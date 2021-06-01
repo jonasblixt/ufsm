@@ -13,26 +13,6 @@
             "id":"7c62f0ae-0695-40c5-b080-104a7bc370e9",
         },
   ],
-  "entries":[
-        {
-            "name":"eA1",
-            "id":"44bf3839-d782-4118-bf58-c33c5ad775c4"
-        },
-        {
-            "name":"eA2",
-            "id":"f924e35f-d169-4383-b9be-bf7deba72f4a",
-        },
-    ],
-  "exits":[
-        {
-            "name":"xA1",
-            "id":"1725c6b5-1a41-4a82-9831-92feb72dad6a",
-        },
-        {
-            "name":"xA2",
-            "id":"3bfebe4b-897b-47a3-b405-465f5de3c74d",
-        },
-  ],
   "actions":[
         {
             "name":"aFirst",
@@ -41,6 +21,22 @@
         {
             "name":"aSecond",
             "id":"6e5efe2e-3b75-474c-b25e-1c81f6182bb1",
+        },
+        {
+            "name":"eA1",
+            "id":"44bf3839-d782-4118-bf58-c33c5ad775c4"
+        },
+        {
+            "name":"eA2",
+            "id":"f924e35f-d169-4383-b9be-bf7deba72f4a",
+        },
+        {
+            "name":"xA1",
+            "id":"1725c6b5-1a41-4a82-9831-92feb72dad6a",
+        },
+        {
+            "name":"xA2",
+            "id":"3bfebe4b-897b-47a3-b405-465f5de3c74d",
         },
   ],
   "guards":[

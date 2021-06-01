@@ -13,8 +13,6 @@
     }
   ],
   "actions":[
-  ],
-  "entries":[
     {
       "name":"eA",
       "id":"44bf3839-d782-4118-bf58-c33c5ad775c4"
@@ -22,9 +20,7 @@
     {
       "name":"eC",
       "id":"99fb650a-634f-4283-b8c3-44d06a51f4b5"
-    }
-  ],
-  "exits":[
+    },
     {
       "name":"xA",
       "id":"1725c6b5-1a41-4a82-9831-92feb72dad6a"

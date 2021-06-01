@@ -386,14 +386,6 @@ static int ufsmm_model_parse(struct ufsmm_model *model)
                 L_ERR("Unknown model kind (%s)", json_object_get_string(val));
             }
         }
-        else if (strcmp(key, "entries") == 0)
-        {
-            rc = parse_action_list(val, &model->entries, UFSMM_ACTION_ENTRY);
-        }
-        else if (strcmp(key, "exits") == 0)
-        {
-            rc = parse_action_list(val, &model->exits, UFSMM_ACTION_EXIT);
-        }
         else if (strcmp(key, "actions") == 0)
         {
             rc = parse_action_list(val, &model->actions, UFSMM_ACTION_ACTION);
@@ -701,22 +693,6 @@ int ufsmm_model_write(const char *filename, struct ufsmm_model *model)
         goto err_free_out;
     }
 
-    rc = serialize_action_list(model->entries, &j_entries);
-
-    if (rc != UFSMM_OK)
-    {
-        L_ERR("Entries serialization failed");
-        goto err_free_out;
-    }
-
-    rc = serialize_action_list(model->exits, &j_exits);
-
-    if (rc != UFSMM_OK)
-    {
-        L_ERR("Exits serialization failed");
-        goto err_free_out;
-    }
-
     rc = serialize_action_list(model->guards, &j_guards);
 
     if (rc != UFSMM_OK)
@@ -861,18 +837,6 @@ int ufsmm_model_free(struct ufsmm_model *model)
     if (rc != UFSMM_OK)
         return rc;
 
-    L_DEBUG("Freeing entries");
-    rc = free_action_list(model->entries);
-
-    if (rc != UFSMM_OK)
-        return rc;
-
-    L_DEBUG("Freeing exits");
-    rc = free_action_list(model->exits);
-
-    if (rc != UFSMM_OK)
-        return rc;
-
     L_DEBUG("Freeing guards");
     rc = free_action_list(model->guards);
 
@@ -968,14 +932,10 @@ int ufsmm_model_add_action(struct ufsmm_model *model,
     action->name = strdup(name);
 
     switch (kind) {
+        case UFSMM_ACTION_ENTRY:
+        case UFSMM_ACTION_EXIT:
         case UFSMM_ACTION_ACTION:
             dest = &model->actions;
-        break;
-        case UFSMM_ACTION_ENTRY:
-            dest = &model->entries;
-        break;
-        case UFSMM_ACTION_EXIT:
-            dest = &model->exits;
         break;
         case UFSMM_ACTION_GUARD:
             dest = &model->guards;
@@ -1052,25 +1012,11 @@ int ufsmm_model_delete_action(struct ufsmm_model *model, uuid_t id)
     uuid_unparse(id, uuid_str);
     L_DEBUG("Deleting action %s", uuid_str);
 
-    if (action_list_delete(&model->entries, id_tmp) == UFSMM_OK)
-        return UFSMM_OK;
-    if (action_list_delete(&model->exits, id_tmp) == UFSMM_OK)
-        return UFSMM_OK;
     if (action_list_delete(&model->guards, id_tmp) == UFSMM_OK)
         return UFSMM_OK;
     if (action_list_delete(&model->actions, id_tmp) == UFSMM_OK)
         return UFSMM_OK;
     return -UFSMM_ERROR;
-}
-
-struct ufsmm_action* ufsmm_model_get_entries(struct ufsmm_model *model)
-{
-    return model->entries;
-}
-
-struct ufsmm_action* ufsmm_model_get_exits(struct ufsmm_model *model)
-{
-    return model->exits;
 }
 
 struct ufsmm_action* ufsmm_model_get_guards(struct ufsmm_model *model)
@@ -1090,17 +1036,13 @@ int ufsmm_model_get_action(struct ufsmm_model *model, uuid_t id,
     struct ufsmm_action *list = NULL;
 
     switch (kind) {
+        case UFSMM_ACTION_ENTRY:
+        case UFSMM_ACTION_EXIT:
         case UFSMM_ACTION_ACTION:
             list = model->actions;
         break;
         case UFSMM_ACTION_GUARD:
             list = model->guards;
-        break;
-        case UFSMM_ACTION_ENTRY:
-            list = model->entries;
-        break;
-        case UFSMM_ACTION_EXIT:
-            list = model->exits;
         break;
         default:
             return -UFSMM_ERROR;
@@ -1132,12 +1074,6 @@ int ufsmm_model_get_action_by_name(struct ufsmm_model *model,
         break;
         case UFSMM_ACTION_GUARD:
             list = model->guards;
-        break;
-        case UFSMM_ACTION_ENTRY:
-            list = model->entries;
-        break;
-        case UFSMM_ACTION_EXIT:
-            list = model->exits;
         break;
         default:
             return -UFSMM_ERROR;

@@ -5,8 +5,6 @@
   "triggers":[
   ],
   "actions":[
-  ],
-  "entries":[
     {
       "name":"eT111",
       "id":"4f3fb011-e6a9-48df-bfe7-d48de0a00fb9"
@@ -18,9 +16,7 @@
     {
       "name":"eT1",
       "id":"9582bb54-e7a1-4c58-9a00-a51c48dfeb0f"
-    }
-  ],
-  "exits":[
+    },
     {
       "name":"xS1",
       "id":"a58cbb21-7ab4-4183-ac4d-402764461072"

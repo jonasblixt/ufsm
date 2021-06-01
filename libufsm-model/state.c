@@ -398,7 +398,7 @@ int ufsmm_state_add_exit(struct ufsmm_model *model,
     struct ufsmm_action *action;
     int rc;
 
-    rc = ufsmm_model_get_action(model, action_id, UFSMM_ACTION_EXIT, &action);
+    rc = ufsmm_model_get_action(model, action_id, UFSMM_ACTION_ACTION, &action);
 
     if (rc != UFSMM_OK) {
         char uuid_str[37];
@@ -436,7 +436,7 @@ int ufsmm_state_add_entry(struct ufsmm_model *model,
     struct ufsmm_action *action;
     int rc;
 
-    rc = ufsmm_model_get_action(model, action_id, UFSMM_ACTION_ENTRY, &action);
+    rc = ufsmm_model_get_action(model, action_id, UFSMM_ACTION_ACTION, &action);
 
     if (rc != UFSMM_OK) {
         char uuid_str[37];

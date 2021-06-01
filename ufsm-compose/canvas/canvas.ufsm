@@ -312,9 +312,7 @@
     {
       "name":"canvas_save",
       "id":"584b7717-688b-4e30-9f39-0bcd044448fc"
-    }
-  ],
-  "entries":[
+    },
     {
       "name":"canvas_process_selection",
       "id":"38f3fae3-8582-4b9f-aa5b-45dc5b30be80"
@@ -398,9 +396,7 @@
     {
       "name":"canvas_resize_region_begin",
       "id":"969fb8af-6ec1-4166-9990-1243a3ffa457"
-    }
-  ],
-  "exits":[
+    },
     {
       "name":"canvas_hide_tool_help",
       "id":"f8e00b9c-4f43-45d1-a592-e9536b4a6226"
@@ -434,6 +430,8 @@
       "id":"d070bb61-9e93-461a-aa97-9dccf0c07710"
     }
   ],
+  "entries":null,
+  "exits":null,
   "guards":[
     {
       "name":"canvas_region_selected",

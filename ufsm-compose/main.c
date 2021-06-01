@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 
     GtkWidget *hpane = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
 
-    state_canvas = ufsmm_canvas_new();
+    state_canvas = ufsmm_canvas_new(window);
 
     gtk_paned_add2(GTK_PANED(hpane), state_canvas);
 

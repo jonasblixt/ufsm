@@ -11,6 +11,10 @@ enum ufsmm_selection {
     UFSMM_SELECTION_STATE,
     UFSMM_SELECTION_REGION,
     UFSMM_SELECTION_TRANSITION,
+    UFSMM_SELECTION_ENTRY,
+    UFSMM_SELECTION_EXIT,
+    UFSMM_SELECTION_ACTION,
+    UFSMM_SELECTION_GUARD,
     UFSMM_SELECTION_MULTI,
 };
 
@@ -45,10 +49,11 @@ struct ufsmm_canvas {
     double t[10];
     enum ufsmm_selection selection;
     GtkWidget *widget;
+    GtkWidget *root_window;
     cairo_t *cr;
 };
 
-GtkWidget* ufsmm_canvas_new(void);
+GtkWidget* ufsmm_canvas_new(GtkWidget *parent);
 void ufsmm_canvas_free(GtkWidget *widget);
 int ufsmm_canvas_load_model(GtkWidget *widget, struct ufsmm_model *model);
 

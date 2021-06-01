@@ -73,9 +73,9 @@ enum ufsmm_state_kind
 enum ufsmm_action_kind
 {
     UFSMM_ACTION_ACTION,
-    UFSMM_ACTION_GUARD,
     UFSMM_ACTION_ENTRY,
     UFSMM_ACTION_EXIT,
+    UFSMM_ACTION_GUARD,
 };
 
 enum ufsmm_side
@@ -210,8 +210,6 @@ struct ufsmm_model
 {
     json_object *jroot;
     struct ufsmm_region *root;
-    struct ufsmm_action *entries; /* Global list of entry functions */
-    struct ufsmm_action *exits;   /* Global list of exit functions  */
     struct ufsmm_action *guards;  /* Global list of guard functions */
     struct ufsmm_action *actions; /* Global list of action functions */
     struct ufsmm_trigger *triggers;
@@ -254,8 +252,6 @@ int ufsmm_model_calculate_nested_region_depth(struct ufsmm_model *model);
 int ufsmm_model_calculate_max_transitions(struct ufsmm_model *model);
 int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model);
 
-struct ufsmm_action* ufsmm_model_get_entries(struct ufsmm_model *model);
-struct ufsmm_action* ufsmm_model_get_exits(struct ufsmm_model *model);
 struct ufsmm_action* ufsmm_model_get_guards(struct ufsmm_model *model);
 struct ufsmm_action* ufsmm_model_get_actions(struct ufsmm_model *model);
 struct ufsmm_trigger* ufsmm_model_get_triggers(struct ufsmm_model *model);

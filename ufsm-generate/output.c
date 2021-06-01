@@ -496,28 +496,6 @@ static int generate_header_file(struct ufsmm_model *model,
         fprintf(fp, "};\n\n");
     }
 
-    /* Entry action function prototypes */
-    if (model->entries) {
-        fprintf(fp, "/* Entry action function prototypes */\n");
-
-        for (struct ufsmm_action *a = model->entries; a; a = a->next) {
-            fprintf(fp, "void %s(void *context);\n", a->name);
-        }
-
-        fprintf(fp, "\n");
-    }
-
-    /* Exit action function prototypes */
-    if (model->exits) {
-        fprintf(fp, "/* Exit action function prototypes */\n");
-
-        for (struct ufsmm_action *a = model->exits; a; a = a->next) {
-            fprintf(fp, "void %s(void *context);\n", a->name);
-        }
-
-        fprintf(fp, "\n");
-    }
-
     /* Guard function prototypes */
     if (model->guards) {
         fprintf(fp, "/* Guard function prototypes */\n");
