@@ -183,7 +183,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
     content_area = gtk_dialog_get_content_area(GTK_DIALOG (dialog));
 
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-    gtk_container_add(GTK_CONTAINER(content_area), vbox);
+    gtk_box_pack_start(GTK_BOX(content_area), vbox, TRUE, TRUE, 0);
     gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
 
     GtkWidget *input = gtk_entry_new();
