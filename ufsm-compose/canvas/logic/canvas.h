@@ -28,7 +28,6 @@ enum {
     eKey_x_down,
     eKey_a_down,
     eMove,
-    eDelete,
     eKey_s_down,
     eKey_t_down,
     eKey_delete_down,
@@ -42,39 +41,6 @@ enum {
     eScrollUp,
     eScrollDown,
 };
-
-/* Entry action function prototypes */
-void canvas_process_selection(void *context);
-void canvas_show_tool_help(void *context);
-void canvas_check_sresize_boxes(void *context);
-void canvas_check_rresize_boxes(void *context);
-void canvas_check_action_func(void *context);
-void canvas_reset_focus(void *context);
-void canvas_focus_state(void *context);
-void canvas_focus_region(void *context);
-void canvas_begin_mselect(void *context);
-void canvas_focus_transition(void *context);
-void canvas_check_transition_vertice(void *context);
-void canvas_check_guard(void *context);
-void canvas_check_action(void *context);
-void canvas_focus_guard(void *context);
-void canvas_focus_action(void *context);
-void canvas_focus_entry(void *context);
-void canvas_focus_exit(void *context);
-void canvas_check_text_block(void *context);
-void canvas_hide_state_hint(void *context);
-void canvas_move_state_begin(void *context);
-void canvas_resize_region_begin(void *context);
-
-/* Exit action function prototypes */
-void canvas_hide_tool_help(void *context);
-void canvas_end_mselect(void *context);
-void canvas_hide_state_hint(void *context);
-void canvas_show_state_hint(void *context);
-void canvas_hide_transition_hint(void *context);
-void canvas_cleanup_transition(void *context);
-void canvas_move_state_end(void *context);
-void canvas_resize_region_end(void *context);
 
 /* Guard function prototypes */
 bool canvas_region_selected(void *context);
@@ -141,12 +107,41 @@ void canvas_dec_scale(void *context);
 void canvas_move_state_begin(void *context);
 void canvas_resize_state_begin(void *context);
 void canvas_save(void *context);
+void canvas_process_selection(void *context);
+void canvas_show_tool_help(void *context);
+void canvas_check_sresize_boxes(void *context);
+void canvas_check_rresize_boxes(void *context);
+void canvas_check_action_func(void *context);
+void canvas_reset_focus(void *context);
+void canvas_focus_state(void *context);
+void canvas_focus_region(void *context);
+void canvas_begin_mselect(void *context);
+void canvas_focus_transition(void *context);
+void canvas_check_transition_vertice(void *context);
+void canvas_check_guard(void *context);
+void canvas_check_action(void *context);
+void canvas_focus_guard(void *context);
+void canvas_focus_action(void *context);
+void canvas_focus_entry(void *context);
+void canvas_focus_exit(void *context);
+void canvas_check_text_block(void *context);
+void canvas_hide_state_hint(void *context);
+void canvas_move_state_begin(void *context);
+void canvas_resize_region_begin(void *context);
+void canvas_hide_tool_help(void *context);
+void canvas_end_mselect(void *context);
+void canvas_hide_state_hint(void *context);
+void canvas_show_state_hint(void *context);
+void canvas_hide_transition_hint(void *context);
+void canvas_cleanup_transition(void *context);
+void canvas_move_state_end(void *context);
+void canvas_resize_region_end(void *context);
 
 struct canvas_machine {
     struct ufsm_machine machine;
-    struct ufsm_region_data region_data[11];
-    struct ufsm_state_data state_data[61];
-    void *stack_data[11];
+    struct ufsm_region_data region_data[8];
+    struct ufsm_state_data state_data[50];
+    void *stack_data[13];
     void *stack_data2[3];
 };
 

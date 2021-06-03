@@ -321,7 +321,8 @@ bool canvas_action_selected(void *context)
 
 bool canvas_state_exit_selected(void *context)
 {
-    return false;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    return (priv->selection == UFSMM_SELECTION_EXIT);
 }
 
 bool canvas_textblock_resize_selected(void *context)
@@ -629,14 +630,30 @@ void canvas_translate_state(void *context)
 
 void canvas_delete_entry(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *s = priv->selected_state;
+    struct ufsmm_action_ref *ar = priv->selected_aref;
+    L_DEBUG("Deleting entry");
+
+    ufsmm_state_delete_entry(s, ar->act->id);
+    priv->redraw = true;
 }
 
 void canvas_delete_exit(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *s = priv->selected_state;
+    struct ufsmm_action_ref *ar = priv->selected_aref;
+
+    L_DEBUG("Deleting exit");
+
+    ufsmm_state_delete_exit(s, ar->act->id);
+    priv->redraw = true;
 }
 
 void canvas_delete_state(void *context)
 {
+    L_DEBUG("Deleting state");
 }
 
 void canvas_new_state_set_scoords(void *context)
@@ -713,7 +730,7 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
     } else if (event->keyval == GDK_KEY_x) {
         canvas_machine_process(&priv->machine, eKey_x_down);
     } else if (event->keyval == GDK_KEY_Delete) {
-        canvas_machine_process(&priv->machine, eDelete);
+        canvas_machine_process(&priv->machine, eKey_delete_down);
     } else if (event->keyval == GDK_KEY_s) {
         canvas_machine_process(&priv->machine, eKey_s_down);
     }
