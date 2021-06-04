@@ -784,6 +784,13 @@ void canvas_create_transition(void *context)
     priv->redraw = true;
 }
 
+void canvas_toggle_region_offpage(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    priv->selected_region->off_page = !priv->selected_region->off_page;
+    priv->redraw = true;
+}
+
 void canvas_transition_vdel_last(void *context)
 {
 }
@@ -815,6 +822,27 @@ void canvas_add_transition_vertice(void *context)
 
 void canvas_create_init_state(void *context)
 {
+    int rc;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    double x, y, w, h;
+    double new_state_sx = ufsmm_canvas_nearest_grid_point(priv->px);
+    double new_state_sy = ufsmm_canvas_nearest_grid_point(priv->py);
+    struct ufsmm_state *new_state = NULL;
+    rc = ufsmm_add_state(priv->selected_region, "Init", &new_state);
+
+    if (rc == UFSMM_OK) {
+        ufsmm_get_region_absolute_coords(priv->selected_region, &x, &y, &w, &h);
+        L_DEBUG("x, y = <%.2f, %.2f>, new_state_xy = <%.2f, %.2f>",
+                    x, y, new_state_sx, new_state_sy);
+        new_state->x = new_state_sx - (x + priv->current_region->ox);
+        new_state->y = new_state_sy - (y + priv->current_region->oy);
+        new_state->w = 20;
+        new_state->h = 20;
+        new_state->kind = UFSMM_STATE_INIT;
+        L_DEBUG("Created new state, pr = %s", priv->selected_region->name);
+    } else {
+        L_ERR("Could not create new state");
+    }
 }
 
 void canvas_create_final_state(void *context)
@@ -888,10 +916,14 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eEnableScale);
     } else if (event->keyval == GDK_KEY_a) {
         canvas_machine_process(&priv->machine, eKey_a_down);
+    } else if (event->keyval == GDK_KEY_O) {
+        canvas_machine_process(&priv->machine, eKey_O_down);
     } else if (event->keyval == GDK_KEY_r) {
         canvas_machine_process(&priv->machine, eKey_r_down);
     } else if (event->keyval == GDK_KEY_t) {
         canvas_machine_process(&priv->machine, eKey_t_down);
+    } else if (event->keyval == GDK_KEY_i) {
+        canvas_machine_process(&priv->machine, eKey_i_down);
     } else if (event->keyval == GDK_KEY_f) {
         canvas_machine_process(&priv->machine, eKey_f_down);
     } else if (event->keyval == GDK_KEY_g) {

@@ -39,6 +39,7 @@ enum {
     eDisableScale,
     eScrollUp,
     eScrollDown,
+    eKey_O_down,
 };
 
 /* Guard function prototypes */
@@ -137,11 +138,12 @@ void canvas_resize_region_end(void *context);
 void canvas_add_guard(void *context);
 void canvas_set_transition_trigger(void *context);
 void canvas_add_transition_action(void *context);
+void canvas_toggle_region_offpage(void *context);
 
 struct canvas_machine {
     struct ufsm_machine machine;
-    struct ufsm_region_data region_data[9];
-    struct ufsm_state_data state_data[54];
+    struct ufsm_region_data region_data[10];
+    struct ufsm_state_data state_data[57];
     void *stack_data[16];
     void *stack_data2[3];
 };
