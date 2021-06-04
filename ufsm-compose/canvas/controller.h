@@ -36,11 +36,19 @@ struct ufsmm_canvas {
     struct ufsmm_region *selected_region;
     struct ufsmm_region *current_region;
     struct ufsmm_state *selected_state;
+    struct ufsmm_state *new_state;
     enum ufsmm_resize_selector selected_corner;
     struct ufsmm_transition *selected_transition;
     enum ufsmm_transition_vertice_kind selected_transition_vertice;
     struct ufsmm_vertice *selected_transition_vertice_data;
     struct ufsmm_action_ref *selected_aref;
+    /* New transition variables */
+    struct ufsmm_vertice *new_transition_vertice;
+    struct ufsmm_vertice *new_transition_vertice_last;
+    struct ufsmm_state *new_transition_source_state;
+    double new_transition_source_offset;
+    enum ufsmm_side new_transition_source_side;
+    /* Common stuff */
     bool redraw;
     double dx, dy;
     double px, py; /* Location of mouse pointer */

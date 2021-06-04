@@ -13,7 +13,8 @@ bool canvas_state_selected(void *context)
 bool canvas_state_resize_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    return (priv->selected_corner != UFSMM_NO_SELECTION);
+    return (priv->selected_corner != UFSMM_NO_SELECTION) &&
+            (priv->selected_state->kind == UFSMM_STATE_NORMAL);
 }
 
 bool canvas_region_selected(void *context)
@@ -230,6 +231,24 @@ void canvas_process_selection(void *context)
     struct ufsmm_action_ref *selected_action_ref = NULL;
     double x, y, w, h;
     double ox, oy;
+
+    switch (priv->selection) {
+        case UFSMM_SELECTION_REGION:
+            priv->selected_region->focus = false;
+        break;
+        case UFSMM_SELECTION_STATE:
+            priv->selected_state->focus = false;
+        break;
+        case UFSMM_SELECTION_TRANSITION:
+            priv->selected_transition->focus = false;
+        break;
+        case UFSMM_SELECTION_ENTRY:
+        case UFSMM_SELECTION_EXIT:
+            priv->selected_aref->focus = false;
+        break;
+        default:
+        break;
+    }
 
     L_DEBUG("Checking... px=%.2f py=%.2f", priv->px, priv->py);
 

@@ -590,6 +590,13 @@ void canvas_resize_textblock(void *context)
 
 void canvas_add_region(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *new_region = NULL;
+    int rc;
+    rc = ufsmm_add_region(priv->selected_state, false, &new_region);
+    new_region->name = strdup("New region");
+    new_region->h = 40;
+    L_DEBUG("Created new region");
 }
 
 void canvas_add_entry(void *context)
@@ -614,6 +621,17 @@ void canvas_add_exit(void *context)
 
 void canvas_edit_state_name(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    ufsm_edit_string_dialog(GTK_WINDOW(priv->root_window), "Edit state name",
+                                &priv->selected_state->name);
+}
+
+void canvas_add_guard(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    ufsm_add_transition_guard_dialog(GTK_WINDOW(priv->root_window),
+                                            priv->model,
+                                            priv->selected_transition);
 }
 
 void canvas_edit_state_entry(void *context)
@@ -658,10 +676,40 @@ void canvas_delete_state(void *context)
 
 void canvas_new_state_set_scoords(void *context)
 {
+    int rc;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *r = priv->selected_region;
+    struct ufsmm_state *new_state = NULL;
+    rc = ufsmm_add_state(priv->selected_region, "New state", &new_state);
+
+    priv->new_state = new_state;
+
+
+    new_state->x = priv->px;
+    new_state->y = priv->py;
+    L_DEBUG("New state: sx=%.2f, sy=%.2f", new_state->x, new_state->y);
 }
 
 void canvas_create_new_state(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *s = priv->new_state;
+    struct ufsmm_region *r = priv->selected_region;
+    double x, y, w, h;
+    double tx = s->x;
+    double ty = s->y;
+    double ox = priv->current_region->ox;
+    double oy = priv->current_region->oy;
+    ufsmm_get_region_absolute_coords(r, &x, &y, &w, &h);
+    s->x = tx - (x + ox);
+    double y_offset = 0.0;
+
+    if (r->parent_state)
+        y_offset = r->parent_state->region_y_offset;
+    s->y = ty - (y + oy) + y_offset;
+    s->w = priv->px - tx;
+    s->h = priv->py - ty;
+    priv->redraw = true;
 }
 
 void canvas_update_state_hint(void *context)
@@ -670,6 +718,25 @@ void canvas_update_state_hint(void *context)
 
 void canvas_create_transition_start(void *context)
 {
+    int rc;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *cr = priv->current_region;
+    struct ufsmm_state *source_state;
+
+    L_DEBUG("Looking for source state at <%f, %f>", priv->px,
+                                                    priv->py);
+    rc = ufsmm_state_get_at_xy(priv, priv->current_region,
+                                    priv->px,
+                                    priv->py,
+                                    &source_state, NULL);
+
+    if (rc == UFSMM_OK) {
+        L_DEBUG("Found source state: %s", source_state->name);
+        priv->new_transition_source_state = source_state;
+        ufsmm_state_get_closest_side(priv, source_state,
+                                    &priv->new_transition_source_side,
+                                    &priv->new_transition_source_offset);
+    }
 }
 
 void canvas_update_transition_hint(void *context)
@@ -678,6 +745,43 @@ void canvas_update_transition_hint(void *context)
 
 void canvas_create_transition(void *context)
 {
+    int rc;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *cr = priv->current_region;
+    struct ufsmm_state *dest_state;
+    double dest_offset;
+    enum ufsmm_side source_side, dest_side;
+
+    L_DEBUG("Looking for dest state at <%f, %f>", priv->px,
+                                                  priv->py);
+    rc = ufsmm_state_get_at_xy(priv, priv->current_region,
+                                    priv->px,
+                                    priv->py,
+                                    &dest_state, NULL);
+
+    if (rc == UFSMM_OK) {
+        L_DEBUG("Found destination state: %s", dest_state->name);
+
+        ufsmm_state_get_closest_side(priv, dest_state, &dest_side,
+                                    &dest_offset);
+        L_DEBUG("Creating transition %s --> %s", priv->new_transition_source_state->name,
+                                                 dest_state->name);
+        struct ufsmm_transition *new_transition;
+        ufsmm_state_add_transition(priv->new_transition_source_state,
+                                   dest_state, &new_transition);
+        new_transition->source.side = priv->new_transition_source_side;
+        new_transition->source.offset = priv->new_transition_source_offset;
+        new_transition->dest.side = dest_side;
+        new_transition->dest.offset = dest_offset;
+        new_transition->text_block_coords.x = priv->new_transition_source_state->x;
+        new_transition->text_block_coords.y = priv->new_transition_source_state->y;
+        new_transition->text_block_coords.w = 100;
+        new_transition->text_block_coords.h = 30;
+        new_transition->vertices = priv->new_transition_vertice;
+    }
+
+    priv->new_transition_vertice = NULL;
+    priv->redraw = true;
 }
 
 void canvas_transition_vdel_last(void *context)
@@ -686,6 +790,27 @@ void canvas_transition_vdel_last(void *context)
 
 void canvas_add_transition_vertice(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    double x, y, w, h;
+
+    if (priv->new_transition_vertice == NULL) {
+        priv->new_transition_vertice = malloc(sizeof(*priv->new_transition_vertice));
+        memset(priv->new_transition_vertice, 0, sizeof(*priv->new_transition_vertice));
+        priv->new_transition_vertice_last = priv->new_transition_vertice;
+    } else {
+        priv->new_transition_vertice_last->next = malloc(sizeof(*priv->new_transition_vertice));
+        priv->new_transition_vertice_last = priv->new_transition_vertice_last->next;
+        memset(priv->new_transition_vertice_last, 0, sizeof(*priv->new_transition_vertice_last));
+    }
+
+    ufsmm_get_region_absolute_coords(priv->selected_region, &x, &y, &w, &h);
+    priv->new_transition_vertice_last->x =
+        ufsmm_canvas_nearest_grid_point(priv->px) - (x + priv->current_region->ox);
+    priv->new_transition_vertice_last->y =
+        ufsmm_canvas_nearest_grid_point(priv->py) - (y + priv->current_region->oy);
+
+    L_DEBUG("Add vertice at <%f, %f>", priv->new_transition_vertice_last->x,
+                                       priv->new_transition_vertice_last->y);
 }
 
 void canvas_create_init_state(void *context)
@@ -694,12 +819,50 @@ void canvas_create_init_state(void *context)
 
 void canvas_create_final_state(void *context)
 {
+    int rc;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    double x, y, w, h;
+    L_DEBUG("Adding final state");
+    double new_state_sx = ufsmm_canvas_nearest_grid_point(priv->px);
+    double new_state_sy = ufsmm_canvas_nearest_grid_point(priv->py);
+    struct ufsmm_state *new_state = NULL;
+    rc = ufsmm_add_state(priv->selected_region, "Final", &new_state);
+
+    if (rc == UFSMM_OK) {
+        ufsmm_get_region_absolute_coords(priv->selected_region, &x, &y, &w, &h);
+        L_DEBUG("x, y = <%.2f, %.2f>, new_state_xy = <%.2f, %.2f>",
+                    x, y, new_state_sx, new_state_sy);
+        new_state->x = new_state_sx - (x + priv->current_region->ox);
+        new_state->y = new_state_sy - (y + priv->current_region->oy);
+        new_state->w = 20;
+        new_state->h = 20;
+        new_state->kind = UFSMM_STATE_FINAL;
+        priv->redraw = true;
+        L_DEBUG("Created new state, pr = %s", priv->selected_region->name);
+    } else {
+        L_ERR("Could not create new state");
+    }
 }
 
 void canvas_save_model(void *context)
 {
 }
 
+void canvas_set_transition_trigger(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    ufsm_set_trigger_dialog(GTK_WINDOW(priv->root_window), priv->model,
+                                        priv->selected_transition);
+}
+
+void canvas_add_transition_action(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+
+    ufsm_add_transition_action_dialog(GTK_WINDOW(priv->root_window),
+                                            priv->model,
+                                            priv->selected_transition);
+}
 
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
@@ -725,6 +888,14 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eEnableScale);
     } else if (event->keyval == GDK_KEY_a) {
         canvas_machine_process(&priv->machine, eKey_a_down);
+    } else if (event->keyval == GDK_KEY_r) {
+        canvas_machine_process(&priv->machine, eKey_r_down);
+    } else if (event->keyval == GDK_KEY_t) {
+        canvas_machine_process(&priv->machine, eKey_t_down);
+    } else if (event->keyval == GDK_KEY_f) {
+        canvas_machine_process(&priv->machine, eKey_f_down);
+    } else if (event->keyval == GDK_KEY_g) {
+        canvas_machine_process(&priv->machine, eKey_g_down);
     } else if (event->keyval == GDK_KEY_e) {
         canvas_machine_process(&priv->machine, eKey_e_down);
     } else if (event->keyval == GDK_KEY_x) {

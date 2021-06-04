@@ -605,6 +605,7 @@ int ufsmm_model_create(struct ufsmm_model **model_pp, const char *name)
 
     model->root = malloc(sizeof(struct ufsmm_region));
     memset(model->root, 0, sizeof(*model->root));
+    uuid_generate_random(model->root->id);
 
     L_DEBUG("Created model '%s'", name);
 

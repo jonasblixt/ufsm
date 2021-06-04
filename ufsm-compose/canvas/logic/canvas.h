@@ -23,11 +23,11 @@ enum {
     eZoomIn,
     eZoomOut,
     eKey_r_down,
+    eKey_g_down,
     eKey_esc_down,
     eKey_e_down,
     eKey_x_down,
     eKey_a_down,
-    eMove,
     eKey_s_down,
     eKey_t_down,
     eKey_delete_down,
@@ -35,7 +35,6 @@ enum {
     eKey_shift_up,
     eKey_i_down,
     eKey_f_down,
-    eSaveModel,
     eEnableScale,
     eDisableScale,
     eScrollUp,
@@ -100,7 +99,6 @@ void canvas_transition_vdel_last(void *context);
 void canvas_add_transition_vertice(void *context);
 void canvas_create_init_state(void *context);
 void canvas_create_final_state(void *context);
-void canvas_save_model(void *context);
 void canvas_inc_scale(void *context);
 void canvas_store_offset(void *context);
 void canvas_dec_scale(void *context);
@@ -136,12 +134,15 @@ void canvas_hide_transition_hint(void *context);
 void canvas_cleanup_transition(void *context);
 void canvas_move_state_end(void *context);
 void canvas_resize_region_end(void *context);
+void canvas_add_guard(void *context);
+void canvas_set_transition_trigger(void *context);
+void canvas_add_transition_action(void *context);
 
 struct canvas_machine {
     struct ufsm_machine machine;
-    struct ufsm_region_data region_data[8];
-    struct ufsm_state_data state_data[50];
-    void *stack_data[13];
+    struct ufsm_region_data region_data[9];
+    struct ufsm_state_data state_data[54];
+    void *stack_data[16];
     void *stack_data2[3];
 };
 

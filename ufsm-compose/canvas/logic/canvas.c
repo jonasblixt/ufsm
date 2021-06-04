@@ -34,11 +34,7 @@ const struct ufsm_state s_50565759_c7e0_426f_948e_1cbc276a1204; /* State: Move S
 const struct ufsm_region r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2; /* Region: Tool controller */
 const struct ufsm_state s_ee8b0968_9dd9_4249_bdc8_cfb8795dc5d8; /* State: Init */
 const struct ufsm_state s_960d3c90_38ca_4b40_ba58_3fa52185d2c2; /* State: Tools */
-const struct ufsm_state s_d5563896_3314_42c4_af48_de144f157b2e; /* State: Final */
-const struct ufsm_state s_ed5c60cd_007c_45e9_bbf2_b28b9bee2f65; /* State: Final */
-const struct ufsm_state s_79b42026_e0d8_4aea_bf1b_b131d28f76c2; /* State: Final */
 const struct ufsm_state s_4f8688ed_1d77_4105_a8c3_32d2a01b4323; /* State: Final */
-const struct ufsm_state s_d00443ac_2597_4673_82b0_e9b6349e5700; /* State: Add */
 const struct ufsm_state s_9dcc0d0a_9027_433a_98a9_6484ee801210; /* State: Edit */
 const struct ufsm_state s_57bf38bf_9f31_452c_ae58_04890f81958a; /* State: Final */
 const struct ufsm_state s_8962e8ae_4db8_4d87_b944_36c1e883fc43; /* State: Final */
@@ -46,13 +42,22 @@ const struct ufsm_state s_a2a6cb0d_06ba_4737_8da9_15e5abf19fe2; /* State: Delete
 const struct ufsm_state s_4fa41c00_4c8a_427b_aab9_084185816cf2; /* State: Final */
 const struct ufsm_state s_a4974753_4d25_4df5_b50d_c2c54682884a; /* State: Final */
 const struct ufsm_state s_5eb13eb8_b839_4876_9195_15171db9d107; /* State: Final */
+const struct ufsm_state s_c390bbe5_375d_4f96_80fb_1014da2717d4; /* State: FinalTrigger */
+const struct ufsm_state s_36c58958_3a41_4b90_b455_9258ad6400ab; /* State: Add actions */
+const struct ufsm_region r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0; /* Region: New region */
 const struct ufsm_state s_981f9378_69f5_43fe_b5dc_9d20146f8512; /* State: New state */
-const struct ufsm_state s_de4a6839_98a3_4ad2_b3e8_afd201ff2526; /* State: Final */
-const struct ufsm_state s_5577a77a_a350_4e46_b546_d8e30a5a4218; /* State: New transition */
+const struct ufsm_state s_de4a6839_98a3_4ad2_b3e8_afd201ff2526; /* State: FinalNewState */
 const struct ufsm_state s_61e6d20a_06ae_484d_b503_b553a57076fb; /* State: Final */
+const struct ufsm_state s_5577a77a_a350_4e46_b546_d8e30a5a4218; /* State: New transition */
+const struct ufsm_state s_1c628dd0_8520_464f_b8ef_d1d21750c188; /* State: FinalAddAction */
 const struct ufsm_state s_9e7cfc8f_eaad_49e7_af0c_62ef54a95902; /* State: Final */
+const struct ufsm_state s_2b0e86d1_1dd3_44ea_b8ce_4f55378130ac; /* State: FinalGuard */
 const struct ufsm_state s_251f5542_7682_4cbb_bcdf_658d352b4ac7; /* State: Final */
-const struct ufsm_state s_a3597828_1b7e_4269_ba3a_1c77e960c864; /* State: Final */
+const struct ufsm_state s_d5563896_3314_42c4_af48_de144f157b2e; /* State: Final */
+const struct ufsm_state s_ed5c60cd_007c_45e9_bbf2_b28b9bee2f65; /* State: Final */
+const struct ufsm_state s_79b42026_e0d8_4aea_bf1b_b131d28f76c2; /* State: Final */
+const struct ufsm_state s_d00443ac_2597_4673_82b0_e9b6349e5700; /* State: Add */
+const struct ufsm_state s_7abb5fd1_094d_4aee_90e6_00a01d8375f0; /* State: Init */
 const struct ufsm_region r_399603a6_1dcf_4977_9a02_948ace6516e8; /* Region: New region */
 const struct ufsm_state s_0aba8ad4_38a9_4738_9804_0ea11c158a5b; /* State: Start */
 const struct ufsm_state s_fc6399d1_c9b5_4a38_88d7_755d83db66e7; /* State: End */
@@ -128,6 +133,11 @@ const struct ufsm_trigger trigger_faf24206_d5cc_4593_8f94_2951717e6154 = {
     .trigger = eKey_r_down,
 };
 
+const struct ufsm_trigger trigger_696c9837_5d54_4336_a903_61eeb02b6953 = {
+    .name = "eKey_g_down",
+    .trigger = eKey_g_down,
+};
+
 const struct ufsm_trigger trigger_14ee1854_d31e_4144_bd11_005095ca8d93 = {
     .name = "eKey_esc_down",
     .trigger = eKey_esc_down,
@@ -146,11 +156,6 @@ const struct ufsm_trigger trigger_6153e3ce_a758_469e_b559_b8f06b691d7a = {
 const struct ufsm_trigger trigger_a5bd1392_5461_489e_ad96_12bec38ed212 = {
     .name = "eKey_a_down",
     .trigger = eKey_a_down,
-};
-
-const struct ufsm_trigger trigger_abdf4bb1_e569_4bc1_b984_8b08b5366cf4 = {
-    .name = "eMove",
-    .trigger = eMove,
 };
 
 const struct ufsm_trigger trigger_8026ece2_dd00_44e8_8613_a68197aaec7c = {
@@ -188,11 +193,6 @@ const struct ufsm_trigger trigger_5436ff7d_0fcb_4cfb_bd94_e82f14913849 = {
     .trigger = eKey_f_down,
 };
 
-const struct ufsm_trigger trigger_6ef41bf3_e96c_467e_8d44_ca20342a8c3f = {
-    .name = "eSaveModel",
-    .trigger = eSaveModel,
-};
-
 const struct ufsm_trigger trigger_e229b0c4_18ec_4b88_82ab_d4b8bea28c37 = {
     .name = "eEnableScale",
     .trigger = eEnableScale,
@@ -226,8 +226,6 @@ const struct ufsm_region r_00000000_0000_0000_0000_000000000000 = {
 const struct ufsm_transition t_2d426111_3a43_4b1a_806c_429a58933591;
 const struct ufsm_transition t_a6c9ad6d_0290_4175_a002_2a36de53e02d;
 const struct ufsm_action a_75d67fbb_4c7b_49d3_8dca_37738d7ea3b9;
-const struct ufsm_transition t_dc093791_23cf_44ee_9a7f_be11c3af735e;
-const struct ufsm_action a_0d8610a3_0667_4da7_967c_b6aaa115bb00;
 const struct ufsm_transition t_09dd9b8a_6758_4c30_ab8a_2301cecb65c0;
 
 const struct ufsm_transition t_2d426111_3a43_4b1a_806c_429a58933591 = {
@@ -253,22 +251,6 @@ const struct ufsm_transition t_a6c9ad6d_0290_4175_a002_2a36de53e02d = {
     .guard = NULL,
     .source = &s_9bc407ce_cf13_4456_b060_9742ec032659,
     .dest = &s_3f3cbe39_6420_4c24_b653_9da89a7a08e2,
-    .next = &t_dc093791_23cf_44ee_9a7f_be11c3af735e,
-};
-
-const struct ufsm_action a_0d8610a3_0667_4da7_967c_b6aaa115bb00 = {
-    .name = "canvas_save_model",
-    .f = &canvas_save_model,
-    .next = NULL,
-};
-
-const struct ufsm_transition t_dc093791_23cf_44ee_9a7f_be11c3af735e = {
-    .kind = UFSM_TRANSITION_EXTERNAL,
-    .trigger = &trigger_6ef41bf3_e96c_467e_8d44_ca20342a8c3f,
-    .action = &a_0d8610a3_0667_4da7_967c_b6aaa115bb00,
-    .guard = NULL,
-    .source = &s_9bc407ce_cf13_4456_b060_9742ec032659,
-    .dest = &s_9bc407ce_cf13_4456_b060_9742ec032659,
     .next = &t_09dd9b8a_6758_4c30_ab8a_2301cecb65c0,
 };
 
@@ -1368,8 +1350,6 @@ const struct ufsm_transition t_1d1a3c07_4ac5_43c1_a78f_9acd2fc3c911;
 const struct ufsm_action a_bd3cd067_12ad_477e_b047_e36dfbc3c52a;
 const struct ufsm_transition t_d0f1f748_3041_4a61_b544_c50f04d0c1c4;
 const struct ufsm_transition t_60e95b7f_92e2_4a79_8a36_2dcfc82f5e50;
-const struct ufsm_transition t_ce0fef3a_170e_4f4f_a393_204e3858c751;
-const struct ufsm_action a_27d7e2eb_08c9_4e75_ae8c_72fa2b14d50a;
 const struct ufsm_transition t_a1459f99_7543_45cc_ac90_1cd1c5d1140e;
 
 const struct ufsm_action a_bd3cd067_12ad_477e_b047_e36dfbc3c52a = {
@@ -1384,7 +1364,7 @@ const struct ufsm_transition t_1d1a3c07_4ac5_43c1_a78f_9acd2fc3c911 = {
     .action = &a_bd3cd067_12ad_477e_b047_e36dfbc3c52a,
     .guard = NULL,
     .source = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
-    .dest = &s_a3597828_1b7e_4269_ba3a_1c77e960c864,
+    .dest = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
     .next = &t_d0f1f748_3041_4a61_b544_c50f04d0c1c4,
 };
 
@@ -1394,7 +1374,7 @@ const struct ufsm_transition t_d0f1f748_3041_4a61_b544_c50f04d0c1c4 = {
     .action = NULL,
     .guard = NULL,
     .source = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
-    .dest = &s_d00443ac_2597_4673_82b0_e9b6349e5700,
+    .dest = &s_36c58958_3a41_4b90_b455_9258ad6400ab,
     .next = &t_60e95b7f_92e2_4a79_8a36_2dcfc82f5e50,
 };
 
@@ -1405,22 +1385,6 @@ const struct ufsm_transition t_60e95b7f_92e2_4a79_8a36_2dcfc82f5e50 = {
     .guard = NULL,
     .source = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
     .dest = &s_9dcc0d0a_9027_433a_98a9_6484ee801210,
-    .next = &t_ce0fef3a_170e_4f4f_a393_204e3858c751,
-};
-
-const struct ufsm_action a_27d7e2eb_08c9_4e75_ae8c_72fa2b14d50a = {
-    .name = "canvas_translate_state",
-    .f = &canvas_translate_state,
-    .next = NULL,
-};
-
-const struct ufsm_transition t_ce0fef3a_170e_4f4f_a393_204e3858c751 = {
-    .kind = UFSM_TRANSITION_EXTERNAL,
-    .trigger = &trigger_abdf4bb1_e569_4bc1_b984_8b08b5366cf4,
-    .action = &a_27d7e2eb_08c9_4e75_ae8c_72fa2b14d50a,
-    .guard = NULL,
-    .source = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
-    .dest = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
     .next = &t_a1459f99_7543_45cc_ac90_1cd1c5d1140e,
 };
 
@@ -1443,11 +1407,11 @@ const struct ufsm_state s_960d3c90_38ca_4b40_ba58_3fa52185d2c2 = {
     .exit = NULL,
     .region = NULL,
     .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_d5563896_3314_42c4_af48_de144f157b2e,
+    .next = &s_4f8688ed_1d77_4105_a8c3_32d2a01b4323,
 };
 
 
-const struct ufsm_state s_d5563896_3314_42c4_af48_de144f157b2e = {
+const struct ufsm_state s_4f8688ed_1d77_4105_a8c3_32d2a01b4323 = {
     .index = 25,
     .name = "Final",
     .kind = UFSM_STATE_FINAL,
@@ -1456,24 +1420,125 @@ const struct ufsm_state s_d5563896_3314_42c4_af48_de144f157b2e = {
     .exit = NULL,
     .region = NULL,
     .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_ed5c60cd_007c_45e9_bbf2_b28b9bee2f65,
+    .next = &s_9dcc0d0a_9027_433a_98a9_6484ee801210,
 };
 
+/* Transitions originating from 'Edit' */
+const struct ufsm_transition t_5eab8cc6_a546_4d54_8ce1_17ae54205b61;
+const struct ufsm_action a_16b8748a_5df8_4271_a01f_23f63429a579;
+const struct ufsm_guard g_4d827bdb_c798_4829_93c4_90acd8a35d02;
+const struct ufsm_transition t_920a29b7_5375_466c_ac35_9c3a6735d0da;
+const struct ufsm_action a_c9138d12_f221_4866_863c_0332ab591df9;
+const struct ufsm_guard g_dbc3dc53_429b_4f24_bac5_d7bd9aeb78dc;
+const struct ufsm_transition t_8313a454_c083_40eb_a201_b253c3fc2da4;
+const struct ufsm_action a_86e9ffb9_8c7f_4d5b_ba2e_f51c1f47b6aa;
+const struct ufsm_guard g_e97aacb6_87c7_4bed_b749_74baca7eb1d3;
+const struct ufsm_transition t_d2b68cb1_e708_49f0_b917_9c193982ef49;
+const struct ufsm_action a_7d046b31_0818_465a_bf88_bbd5c97b6c04;
+const struct ufsm_guard g_ea013bc8_f5ec_49b7_8e8c_79cd1b8f31bd;
 
-const struct ufsm_state s_ed5c60cd_007c_45e9_bbf2_b28b9bee2f65 = {
+const struct ufsm_action a_16b8748a_5df8_4271_a01f_23f63429a579 = {
+    .name = "canvas_edit_state_entry",
+    .f = &canvas_edit_state_entry,
+    .next = NULL,
+};
+
+const struct ufsm_guard g_4d827bdb_c798_4829_93c4_90acd8a35d02 = {
+    .name = "canvas_state_entry_selected",
+    .f = &canvas_state_entry_selected,
+    .next = NULL,
+};
+
+const struct ufsm_transition t_5eab8cc6_a546_4d54_8ce1_17ae54205b61 = {
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .trigger = NULL,
+    .action = &a_16b8748a_5df8_4271_a01f_23f63429a579,
+    .guard = &g_4d827bdb_c798_4829_93c4_90acd8a35d02,
+    .source = &s_9dcc0d0a_9027_433a_98a9_6484ee801210,
+    .dest = &s_57bf38bf_9f31_452c_ae58_04890f81958a,
+    .next = &t_920a29b7_5375_466c_ac35_9c3a6735d0da,
+};
+
+const struct ufsm_action a_c9138d12_f221_4866_863c_0332ab591df9 = {
+    .name = "canvas_edit_state_exit",
+    .f = &canvas_edit_state_exit,
+    .next = NULL,
+};
+
+const struct ufsm_guard g_dbc3dc53_429b_4f24_bac5_d7bd9aeb78dc = {
+    .name = "canvas_state_exit_selected",
+    .f = &canvas_state_exit_selected,
+    .next = NULL,
+};
+
+const struct ufsm_transition t_920a29b7_5375_466c_ac35_9c3a6735d0da = {
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .trigger = NULL,
+    .action = &a_c9138d12_f221_4866_863c_0332ab591df9,
+    .guard = &g_dbc3dc53_429b_4f24_bac5_d7bd9aeb78dc,
+    .source = &s_9dcc0d0a_9027_433a_98a9_6484ee801210,
+    .dest = &s_8962e8ae_4db8_4d87_b944_36c1e883fc43,
+    .next = &t_8313a454_c083_40eb_a201_b253c3fc2da4,
+};
+
+const struct ufsm_action a_86e9ffb9_8c7f_4d5b_ba2e_f51c1f47b6aa = {
+    .name = "canvas_edit_state_name",
+    .f = &canvas_edit_state_name,
+    .next = NULL,
+};
+
+const struct ufsm_guard g_e97aacb6_87c7_4bed_b749_74baca7eb1d3 = {
+    .name = "canvas_state_selected",
+    .f = &canvas_state_selected,
+    .next = NULL,
+};
+
+const struct ufsm_transition t_8313a454_c083_40eb_a201_b253c3fc2da4 = {
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .trigger = &trigger_8026ece2_dd00_44e8_8613_a68197aaec7c,
+    .action = &a_86e9ffb9_8c7f_4d5b_ba2e_f51c1f47b6aa,
+    .guard = &g_e97aacb6_87c7_4bed_b749_74baca7eb1d3,
+    .source = &s_9dcc0d0a_9027_433a_98a9_6484ee801210,
+    .dest = &s_4f8688ed_1d77_4105_a8c3_32d2a01b4323,
+    .next = &t_d2b68cb1_e708_49f0_b917_9c193982ef49,
+};
+
+const struct ufsm_action a_7d046b31_0818_465a_bf88_bbd5c97b6c04 = {
+    .name = "canvas_set_transition_trigger",
+    .f = &canvas_set_transition_trigger,
+    .next = NULL,
+};
+
+const struct ufsm_guard g_ea013bc8_f5ec_49b7_8e8c_79cd1b8f31bd = {
+    .name = "canvas_transition_selected",
+    .f = &canvas_transition_selected,
+    .next = NULL,
+};
+
+const struct ufsm_transition t_d2b68cb1_e708_49f0_b917_9c193982ef49 = {
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .trigger = &trigger_2dcc8a3e_f0b8_4e8a_96a0_a339f4dc3bfb,
+    .action = &a_7d046b31_0818_465a_bf88_bbd5c97b6c04,
+    .guard = &g_ea013bc8_f5ec_49b7_8e8c_79cd1b8f31bd,
+    .source = &s_9dcc0d0a_9027_433a_98a9_6484ee801210,
+    .dest = &s_c390bbe5_375d_4f96_80fb_1014da2717d4,
+    .next = NULL,
+};
+
+const struct ufsm_state s_9dcc0d0a_9027_433a_98a9_6484ee801210 = {
     .index = 26,
-    .name = "Final",
-    .kind = UFSM_STATE_FINAL,
-    .transition = NULL,
+    .name = "Edit",
+    .kind = UFSM_STATE_SIMPLE,
+    .transition = &t_5eab8cc6_a546_4d54_8ce1_17ae54205b61,
     .entry = NULL,
     .exit = NULL,
     .region = NULL,
     .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_79b42026_e0d8_4aea_bf1b_b131d28f76c2,
+    .next = &s_57bf38bf_9f31_452c_ae58_04890f81958a,
 };
 
 
-const struct ufsm_state s_79b42026_e0d8_4aea_bf1b_b131d28f76c2 = {
+const struct ufsm_state s_57bf38bf_9f31_452c_ae58_04890f81958a = {
     .index = 27,
     .name = "Final",
     .kind = UFSM_STATE_FINAL,
@@ -1482,11 +1547,11 @@ const struct ufsm_state s_79b42026_e0d8_4aea_bf1b_b131d28f76c2 = {
     .exit = NULL,
     .region = NULL,
     .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_4f8688ed_1d77_4105_a8c3_32d2a01b4323,
+    .next = &s_8962e8ae_4db8_4d87_b944_36c1e883fc43,
 };
 
 
-const struct ufsm_state s_4f8688ed_1d77_4105_a8c3_32d2a01b4323 = {
+const struct ufsm_state s_8962e8ae_4db8_4d87_b944_36c1e883fc43 = {
     .index = 28,
     .name = "Final",
     .kind = UFSM_STATE_FINAL,
@@ -1495,6 +1560,359 @@ const struct ufsm_state s_4f8688ed_1d77_4105_a8c3_32d2a01b4323 = {
     .exit = NULL,
     .region = NULL,
     .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
+    .next = &s_a2a6cb0d_06ba_4737_8da9_15e5abf19fe2,
+};
+
+/* Transitions originating from 'Delete' */
+const struct ufsm_transition t_2213c167_5061_41b8_a38c_85537f9410db;
+const struct ufsm_action a_3d8bdfbb_4bf6_4eb3_ae61_2b559a580c50;
+const struct ufsm_guard g_0c6ce15e_c154_44d9_a245_e06a16fdb797;
+const struct ufsm_transition t_caab11b2_f47c_42b7_a525_d3a227fe5db1;
+const struct ufsm_action a_0aec359d_b65a_42f5_8a13_f021b5dae536;
+const struct ufsm_guard g_000027ce_24f7_4fb0_9a42_b38f06de0d4d;
+const struct ufsm_transition t_7843fc2c_6b48_447c_84b1_84c2c97fbd0e;
+const struct ufsm_action a_feb47dbd_4c8a_46c1_a041_e23bcc7e23b1;
+const struct ufsm_guard g_0fd0a697_7e31_4660_9ffe_a059daac0d49;
+
+const struct ufsm_action a_3d8bdfbb_4bf6_4eb3_ae61_2b559a580c50 = {
+    .name = "canvas_delete_entry",
+    .f = &canvas_delete_entry,
+    .next = NULL,
+};
+
+const struct ufsm_guard g_0c6ce15e_c154_44d9_a245_e06a16fdb797 = {
+    .name = "canvas_state_entry_selected",
+    .f = &canvas_state_entry_selected,
+    .next = NULL,
+};
+
+const struct ufsm_transition t_2213c167_5061_41b8_a38c_85537f9410db = {
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .trigger = NULL,
+    .action = &a_3d8bdfbb_4bf6_4eb3_ae61_2b559a580c50,
+    .guard = &g_0c6ce15e_c154_44d9_a245_e06a16fdb797,
+    .source = &s_a2a6cb0d_06ba_4737_8da9_15e5abf19fe2,
+    .dest = &s_4fa41c00_4c8a_427b_aab9_084185816cf2,
+    .next = &t_caab11b2_f47c_42b7_a525_d3a227fe5db1,
+};
+
+const struct ufsm_action a_0aec359d_b65a_42f5_8a13_f021b5dae536 = {
+    .name = "canvas_delete_exit",
+    .f = &canvas_delete_exit,
+    .next = NULL,
+};
+
+const struct ufsm_guard g_000027ce_24f7_4fb0_9a42_b38f06de0d4d = {
+    .name = "canvas_state_exit_selected",
+    .f = &canvas_state_exit_selected,
+    .next = NULL,
+};
+
+const struct ufsm_transition t_caab11b2_f47c_42b7_a525_d3a227fe5db1 = {
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .trigger = NULL,
+    .action = &a_0aec359d_b65a_42f5_8a13_f021b5dae536,
+    .guard = &g_000027ce_24f7_4fb0_9a42_b38f06de0d4d,
+    .source = &s_a2a6cb0d_06ba_4737_8da9_15e5abf19fe2,
+    .dest = &s_a4974753_4d25_4df5_b50d_c2c54682884a,
+    .next = &t_7843fc2c_6b48_447c_84b1_84c2c97fbd0e,
+};
+
+const struct ufsm_action a_feb47dbd_4c8a_46c1_a041_e23bcc7e23b1 = {
+    .name = "canvas_delete_state",
+    .f = &canvas_delete_state,
+    .next = NULL,
+};
+
+const struct ufsm_guard g_0fd0a697_7e31_4660_9ffe_a059daac0d49 = {
+    .name = "canvas_state_selected",
+    .f = &canvas_state_selected,
+    .next = NULL,
+};
+
+const struct ufsm_transition t_7843fc2c_6b48_447c_84b1_84c2c97fbd0e = {
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .trigger = NULL,
+    .action = &a_feb47dbd_4c8a_46c1_a041_e23bcc7e23b1,
+    .guard = &g_0fd0a697_7e31_4660_9ffe_a059daac0d49,
+    .source = &s_a2a6cb0d_06ba_4737_8da9_15e5abf19fe2,
+    .dest = &s_5eb13eb8_b839_4876_9195_15171db9d107,
+    .next = NULL,
+};
+
+const struct ufsm_state s_a2a6cb0d_06ba_4737_8da9_15e5abf19fe2 = {
+    .index = 29,
+    .name = "Delete",
+    .kind = UFSM_STATE_SIMPLE,
+    .transition = &t_2213c167_5061_41b8_a38c_85537f9410db,
+    .entry = NULL,
+    .exit = NULL,
+    .region = NULL,
+    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
+    .next = &s_4fa41c00_4c8a_427b_aab9_084185816cf2,
+};
+
+
+const struct ufsm_state s_4fa41c00_4c8a_427b_aab9_084185816cf2 = {
+    .index = 30,
+    .name = "Final",
+    .kind = UFSM_STATE_FINAL,
+    .transition = NULL,
+    .entry = NULL,
+    .exit = NULL,
+    .region = NULL,
+    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
+    .next = &s_a4974753_4d25_4df5_b50d_c2c54682884a,
+};
+
+
+const struct ufsm_state s_a4974753_4d25_4df5_b50d_c2c54682884a = {
+    .index = 31,
+    .name = "Final",
+    .kind = UFSM_STATE_FINAL,
+    .transition = NULL,
+    .entry = NULL,
+    .exit = NULL,
+    .region = NULL,
+    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
+    .next = &s_5eb13eb8_b839_4876_9195_15171db9d107,
+};
+
+
+const struct ufsm_state s_5eb13eb8_b839_4876_9195_15171db9d107 = {
+    .index = 32,
+    .name = "Final",
+    .kind = UFSM_STATE_FINAL,
+    .transition = NULL,
+    .entry = NULL,
+    .exit = NULL,
+    .region = NULL,
+    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
+    .next = &s_c390bbe5_375d_4f96_80fb_1014da2717d4,
+};
+
+
+const struct ufsm_state s_c390bbe5_375d_4f96_80fb_1014da2717d4 = {
+    .index = 33,
+    .name = "FinalTrigger",
+    .kind = UFSM_STATE_FINAL,
+    .transition = NULL,
+    .entry = NULL,
+    .exit = NULL,
+    .region = NULL,
+    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
+    .next = &s_36c58958_3a41_4b90_b455_9258ad6400ab,
+};
+
+/* Transitions originating from 'Add actions' */
+const struct ufsm_transition t_5e8ad22e_5060_4fe7_adc8_dfa18aeffaac;
+
+const struct ufsm_transition t_5e8ad22e_5060_4fe7_adc8_dfa18aeffaac = {
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .trigger = NULL,
+    .action = NULL,
+    .guard = NULL,
+    .source = &s_36c58958_3a41_4b90_b455_9258ad6400ab,
+    .dest = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
+    .next = NULL,
+};
+
+const struct ufsm_state s_36c58958_3a41_4b90_b455_9258ad6400ab = {
+    .index = 34,
+    .name = "Add actions",
+    .kind = UFSM_STATE_SIMPLE,
+    .transition = &t_5e8ad22e_5060_4fe7_adc8_dfa18aeffaac,
+    .entry = NULL,
+    .exit = NULL,
+    .region = &r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0,
+    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
+    .next = NULL,
+};
+
+const struct ufsm_region r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0 = {
+    .index = 6,
+    .name = "New region",
+    .has_history = false,
+    .state = &s_981f9378_69f5_43fe_b5dc_9d20146f8512,
+    .parent_state = &s_36c58958_3a41_4b90_b455_9258ad6400ab,
+    .next = NULL,
+};
+
+/* Exit functions for state 'New state' */
+const struct ufsm_entry_exit exit_f81544f9_c8bf_4338_b016_265eb5ca6d73;
+const struct ufsm_entry_exit exit_f81544f9_c8bf_4338_b016_265eb5ca6d73 = {
+    .name = "canvas_hide_state_hint",
+    .f = &canvas_hide_state_hint,
+    .next = NULL,
+};
+
+
+const struct ufsm_state s_981f9378_69f5_43fe_b5dc_9d20146f8512 = {
+    .index = 35,
+    .name = "New state",
+    .kind = UFSM_STATE_SIMPLE,
+    .transition = NULL,
+    .entry = NULL,
+    .exit = &exit_f81544f9_c8bf_4338_b016_265eb5ca6d73,
+    .region = &r_a50feb78_b194_4729_bfcf_65232ca6637f,
+    .parent_region = &r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0,
+    .next = &s_de4a6839_98a3_4ad2_b3e8_afd201ff2526,
+};
+
+
+const struct ufsm_state s_de4a6839_98a3_4ad2_b3e8_afd201ff2526 = {
+    .index = 36,
+    .name = "FinalNewState",
+    .kind = UFSM_STATE_FINAL,
+    .transition = NULL,
+    .entry = NULL,
+    .exit = NULL,
+    .region = NULL,
+    .parent_region = &r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0,
+    .next = &s_61e6d20a_06ae_484d_b503_b553a57076fb,
+};
+
+
+const struct ufsm_state s_61e6d20a_06ae_484d_b503_b553a57076fb = {
+    .index = 37,
+    .name = "Final",
+    .kind = UFSM_STATE_FINAL,
+    .transition = NULL,
+    .entry = NULL,
+    .exit = NULL,
+    .region = NULL,
+    .parent_region = &r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0,
+    .next = &s_5577a77a_a350_4e46_b546_d8e30a5a4218,
+};
+
+/* Exit functions for state 'New transition' */
+const struct ufsm_entry_exit exit_ef406f02_bf16_48ff_bc41_0b9439965f70;
+const struct ufsm_entry_exit exit_fb14b1ed_ed67_462b_a08d_6ca461999586;
+const struct ufsm_entry_exit exit_ef406f02_bf16_48ff_bc41_0b9439965f70 = {
+    .name = "canvas_hide_transition_hint",
+    .f = &canvas_hide_transition_hint,
+    .next = &exit_fb14b1ed_ed67_462b_a08d_6ca461999586,
+};
+
+const struct ufsm_entry_exit exit_fb14b1ed_ed67_462b_a08d_6ca461999586 = {
+    .name = "canvas_cleanup_transition",
+    .f = &canvas_cleanup_transition,
+    .next = NULL,
+};
+
+/* Transitions originating from 'New transition' */
+const struct ufsm_transition t_37ba5277_6ab7_4a89_aa5c_c86356d2d835;
+
+const struct ufsm_transition t_37ba5277_6ab7_4a89_aa5c_c86356d2d835 = {
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .trigger = NULL,
+    .action = NULL,
+    .guard = NULL,
+    .source = &s_5577a77a_a350_4e46_b546_d8e30a5a4218,
+    .dest = &s_61e6d20a_06ae_484d_b503_b553a57076fb,
+    .next = NULL,
+};
+
+const struct ufsm_state s_5577a77a_a350_4e46_b546_d8e30a5a4218 = {
+    .index = 38,
+    .name = "New transition",
+    .kind = UFSM_STATE_SIMPLE,
+    .transition = &t_37ba5277_6ab7_4a89_aa5c_c86356d2d835,
+    .entry = NULL,
+    .exit = &exit_ef406f02_bf16_48ff_bc41_0b9439965f70,
+    .region = &r_399603a6_1dcf_4977_9a02_948ace6516e8,
+    .parent_region = &r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0,
+    .next = &s_1c628dd0_8520_464f_b8ef_d1d21750c188,
+};
+
+
+const struct ufsm_state s_1c628dd0_8520_464f_b8ef_d1d21750c188 = {
+    .index = 39,
+    .name = "FinalAddAction",
+    .kind = UFSM_STATE_FINAL,
+    .transition = NULL,
+    .entry = NULL,
+    .exit = NULL,
+    .region = NULL,
+    .parent_region = &r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0,
+    .next = &s_9e7cfc8f_eaad_49e7_af0c_62ef54a95902,
+};
+
+
+const struct ufsm_state s_9e7cfc8f_eaad_49e7_af0c_62ef54a95902 = {
+    .index = 40,
+    .name = "Final",
+    .kind = UFSM_STATE_FINAL,
+    .transition = NULL,
+    .entry = NULL,
+    .exit = NULL,
+    .region = NULL,
+    .parent_region = &r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0,
+    .next = &s_2b0e86d1_1dd3_44ea_b8ce_4f55378130ac,
+};
+
+
+const struct ufsm_state s_2b0e86d1_1dd3_44ea_b8ce_4f55378130ac = {
+    .index = 41,
+    .name = "FinalGuard",
+    .kind = UFSM_STATE_FINAL,
+    .transition = NULL,
+    .entry = NULL,
+    .exit = NULL,
+    .region = NULL,
+    .parent_region = &r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0,
+    .next = &s_251f5542_7682_4cbb_bcdf_658d352b4ac7,
+};
+
+
+const struct ufsm_state s_251f5542_7682_4cbb_bcdf_658d352b4ac7 = {
+    .index = 42,
+    .name = "Final",
+    .kind = UFSM_STATE_FINAL,
+    .transition = NULL,
+    .entry = NULL,
+    .exit = NULL,
+    .region = NULL,
+    .parent_region = &r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0,
+    .next = &s_d5563896_3314_42c4_af48_de144f157b2e,
+};
+
+
+const struct ufsm_state s_d5563896_3314_42c4_af48_de144f157b2e = {
+    .index = 43,
+    .name = "Final",
+    .kind = UFSM_STATE_FINAL,
+    .transition = NULL,
+    .entry = NULL,
+    .exit = NULL,
+    .region = NULL,
+    .parent_region = &r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0,
+    .next = &s_ed5c60cd_007c_45e9_bbf2_b28b9bee2f65,
+};
+
+
+const struct ufsm_state s_ed5c60cd_007c_45e9_bbf2_b28b9bee2f65 = {
+    .index = 44,
+    .name = "Final",
+    .kind = UFSM_STATE_FINAL,
+    .transition = NULL,
+    .entry = NULL,
+    .exit = NULL,
+    .region = NULL,
+    .parent_region = &r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0,
+    .next = &s_79b42026_e0d8_4aea_bf1b_b131d28f76c2,
+};
+
+
+const struct ufsm_state s_79b42026_e0d8_4aea_bf1b_b131d28f76c2 = {
+    .index = 45,
+    .name = "Final",
+    .kind = UFSM_STATE_FINAL,
+    .transition = NULL,
+    .entry = NULL,
+    .exit = NULL,
+    .region = NULL,
+    .parent_region = &r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0,
     .next = &s_d00443ac_2597_4673_82b0_e9b6349e5700,
 };
 
@@ -1509,8 +1927,16 @@ const struct ufsm_transition t_5df44fb0_3e60_4696_a28f_231b349e715b;
 const struct ufsm_action a_0222a355_0e6d_491c_adfb_1ee421385ebe;
 const struct ufsm_transition t_f4a49ef2_816c_4f06_a62b_636ee7a4dcde;
 const struct ufsm_action a_e7ac0279_26ce_42f1_907b_c6c79bc5ed17;
+const struct ufsm_guard g_4935ce45_f1df_4544_9ebd_740f19273ee1;
 const struct ufsm_transition t_e36cfa2f_65fa_411d_9052_814066a2515d;
 const struct ufsm_action a_c2ec4bfc_819c_4827_9fc6_09b867dcb484;
+const struct ufsm_guard g_ff4df5d6_129d_43a4_b1fe_a1d31a88cca7;
+const struct ufsm_transition t_0c7fc31d_617b_4ff2_96d1_a53816e902db;
+const struct ufsm_action a_1d3c3e01_e163_4409_9bc3_5f2b4f836f6d;
+const struct ufsm_guard g_5e162f2e_8a1d_4ada_9781_5dcc54b1a96d;
+const struct ufsm_transition t_508621c6_25d1_496f_bfac_03555fd6b7af;
+const struct ufsm_action a_69100478_837c_44d0_b471_4156f4e7d35d;
+const struct ufsm_guard g_20e12c5f_fb74_4edd_bbfc_0b026e1d5cda;
 
 const struct ufsm_transition t_2164f156_98bb_407f_8c0a_847be7458a49 = {
     .kind = UFSM_TRANSITION_EXTERNAL,
@@ -1586,11 +2012,17 @@ const struct ufsm_action a_e7ac0279_26ce_42f1_907b_c6c79bc5ed17 = {
     .next = NULL,
 };
 
+const struct ufsm_guard g_4935ce45_f1df_4544_9ebd_740f19273ee1 = {
+    .name = "canvas_state_selected",
+    .f = &canvas_state_selected,
+    .next = NULL,
+};
+
 const struct ufsm_transition t_f4a49ef2_816c_4f06_a62b_636ee7a4dcde = {
     .kind = UFSM_TRANSITION_EXTERNAL,
     .trigger = &trigger_93f84b98_6e9e_4acb_8011_6c758d37ba1b,
     .action = &a_e7ac0279_26ce_42f1_907b_c6c79bc5ed17,
-    .guard = NULL,
+    .guard = &g_4935ce45_f1df_4544_9ebd_740f19273ee1,
     .source = &s_d00443ac_2597_4673_82b0_e9b6349e5700,
     .dest = &s_ed5c60cd_007c_45e9_bbf2_b28b9bee2f65,
     .next = &t_e36cfa2f_65fa_411d_9052_814066a2515d,
@@ -1602,385 +2034,105 @@ const struct ufsm_action a_c2ec4bfc_819c_4827_9fc6_09b867dcb484 = {
     .next = NULL,
 };
 
+const struct ufsm_guard g_ff4df5d6_129d_43a4_b1fe_a1d31a88cca7 = {
+    .name = "canvas_state_selected",
+    .f = &canvas_state_selected,
+    .next = NULL,
+};
+
 const struct ufsm_transition t_e36cfa2f_65fa_411d_9052_814066a2515d = {
     .kind = UFSM_TRANSITION_EXTERNAL,
     .trigger = &trigger_6153e3ce_a758_469e_b559_b8f06b691d7a,
     .action = &a_c2ec4bfc_819c_4827_9fc6_09b867dcb484,
-    .guard = NULL,
+    .guard = &g_ff4df5d6_129d_43a4_b1fe_a1d31a88cca7,
     .source = &s_d00443ac_2597_4673_82b0_e9b6349e5700,
     .dest = &s_79b42026_e0d8_4aea_bf1b_b131d28f76c2,
+    .next = &t_0c7fc31d_617b_4ff2_96d1_a53816e902db,
+};
+
+const struct ufsm_action a_1d3c3e01_e163_4409_9bc3_5f2b4f836f6d = {
+    .name = "canvas_add_guard",
+    .f = &canvas_add_guard,
+    .next = NULL,
+};
+
+const struct ufsm_guard g_5e162f2e_8a1d_4ada_9781_5dcc54b1a96d = {
+    .name = "canvas_transition_selected",
+    .f = &canvas_transition_selected,
+    .next = NULL,
+};
+
+const struct ufsm_transition t_0c7fc31d_617b_4ff2_96d1_a53816e902db = {
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .trigger = &trigger_696c9837_5d54_4336_a903_61eeb02b6953,
+    .action = &a_1d3c3e01_e163_4409_9bc3_5f2b4f836f6d,
+    .guard = &g_5e162f2e_8a1d_4ada_9781_5dcc54b1a96d,
+    .source = &s_d00443ac_2597_4673_82b0_e9b6349e5700,
+    .dest = &s_2b0e86d1_1dd3_44ea_b8ce_4f55378130ac,
+    .next = &t_508621c6_25d1_496f_bfac_03555fd6b7af,
+};
+
+const struct ufsm_action a_69100478_837c_44d0_b471_4156f4e7d35d = {
+    .name = "canvas_add_transition_action",
+    .f = &canvas_add_transition_action,
+    .next = NULL,
+};
+
+const struct ufsm_guard g_20e12c5f_fb74_4edd_bbfc_0b026e1d5cda = {
+    .name = "canvas_transition_selected",
+    .f = &canvas_transition_selected,
+    .next = NULL,
+};
+
+const struct ufsm_transition t_508621c6_25d1_496f_bfac_03555fd6b7af = {
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .trigger = &trigger_a5bd1392_5461_489e_ad96_12bec38ed212,
+    .action = &a_69100478_837c_44d0_b471_4156f4e7d35d,
+    .guard = &g_20e12c5f_fb74_4edd_bbfc_0b026e1d5cda,
+    .source = &s_d00443ac_2597_4673_82b0_e9b6349e5700,
+    .dest = &s_1c628dd0_8520_464f_b8ef_d1d21750c188,
     .next = NULL,
 };
 
 const struct ufsm_state s_d00443ac_2597_4673_82b0_e9b6349e5700 = {
-    .index = 29,
+    .index = 46,
     .name = "Add",
     .kind = UFSM_STATE_SIMPLE,
     .transition = &t_2164f156_98bb_407f_8c0a_847be7458a49,
     .entry = NULL,
     .exit = NULL,
     .region = NULL,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_9dcc0d0a_9027_433a_98a9_6484ee801210,
+    .parent_region = &r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0,
+    .next = &s_7abb5fd1_094d_4aee_90e6_00a01d8375f0,
 };
 
-/* Transitions originating from 'Edit' */
-const struct ufsm_transition t_5eab8cc6_a546_4d54_8ce1_17ae54205b61;
-const struct ufsm_action a_16b8748a_5df8_4271_a01f_23f63429a579;
-const struct ufsm_guard g_4d827bdb_c798_4829_93c4_90acd8a35d02;
-const struct ufsm_transition t_920a29b7_5375_466c_ac35_9c3a6735d0da;
-const struct ufsm_action a_c9138d12_f221_4866_863c_0332ab591df9;
-const struct ufsm_guard g_dbc3dc53_429b_4f24_bac5_d7bd9aeb78dc;
-const struct ufsm_transition t_8313a454_c083_40eb_a201_b253c3fc2da4;
-const struct ufsm_action a_86e9ffb9_8c7f_4d5b_ba2e_f51c1f47b6aa;
+/* Transitions originating from 'Init' */
+const struct ufsm_transition t_18bf7e02_43e1_47b5_9ecc_5f51760b04ac;
 
-const struct ufsm_action a_16b8748a_5df8_4271_a01f_23f63429a579 = {
-    .name = "canvas_edit_state_entry",
-    .f = &canvas_edit_state_entry,
-    .next = NULL,
-};
-
-const struct ufsm_guard g_4d827bdb_c798_4829_93c4_90acd8a35d02 = {
-    .name = "canvas_state_entry_selected",
-    .f = &canvas_state_entry_selected,
-    .next = NULL,
-};
-
-const struct ufsm_transition t_5eab8cc6_a546_4d54_8ce1_17ae54205b61 = {
-    .kind = UFSM_TRANSITION_EXTERNAL,
-    .trigger = NULL,
-    .action = &a_16b8748a_5df8_4271_a01f_23f63429a579,
-    .guard = &g_4d827bdb_c798_4829_93c4_90acd8a35d02,
-    .source = &s_9dcc0d0a_9027_433a_98a9_6484ee801210,
-    .dest = &s_57bf38bf_9f31_452c_ae58_04890f81958a,
-    .next = &t_920a29b7_5375_466c_ac35_9c3a6735d0da,
-};
-
-const struct ufsm_action a_c9138d12_f221_4866_863c_0332ab591df9 = {
-    .name = "canvas_edit_state_exit",
-    .f = &canvas_edit_state_exit,
-    .next = NULL,
-};
-
-const struct ufsm_guard g_dbc3dc53_429b_4f24_bac5_d7bd9aeb78dc = {
-    .name = "canvas_state_exit_selected",
-    .f = &canvas_state_exit_selected,
-    .next = NULL,
-};
-
-const struct ufsm_transition t_920a29b7_5375_466c_ac35_9c3a6735d0da = {
-    .kind = UFSM_TRANSITION_EXTERNAL,
-    .trigger = NULL,
-    .action = &a_c9138d12_f221_4866_863c_0332ab591df9,
-    .guard = &g_dbc3dc53_429b_4f24_bac5_d7bd9aeb78dc,
-    .source = &s_9dcc0d0a_9027_433a_98a9_6484ee801210,
-    .dest = &s_8962e8ae_4db8_4d87_b944_36c1e883fc43,
-    .next = &t_8313a454_c083_40eb_a201_b253c3fc2da4,
-};
-
-const struct ufsm_action a_86e9ffb9_8c7f_4d5b_ba2e_f51c1f47b6aa = {
-    .name = "canvas_edit_state_name",
-    .f = &canvas_edit_state_name,
-    .next = NULL,
-};
-
-const struct ufsm_transition t_8313a454_c083_40eb_a201_b253c3fc2da4 = {
-    .kind = UFSM_TRANSITION_EXTERNAL,
-    .trigger = NULL,
-    .action = &a_86e9ffb9_8c7f_4d5b_ba2e_f51c1f47b6aa,
-    .guard = NULL,
-    .source = &s_9dcc0d0a_9027_433a_98a9_6484ee801210,
-    .dest = &s_4f8688ed_1d77_4105_a8c3_32d2a01b4323,
-    .next = NULL,
-};
-
-const struct ufsm_state s_9dcc0d0a_9027_433a_98a9_6484ee801210 = {
-    .index = 30,
-    .name = "Edit",
-    .kind = UFSM_STATE_SIMPLE,
-    .transition = &t_5eab8cc6_a546_4d54_8ce1_17ae54205b61,
-    .entry = NULL,
-    .exit = NULL,
-    .region = NULL,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_57bf38bf_9f31_452c_ae58_04890f81958a,
-};
-
-
-const struct ufsm_state s_57bf38bf_9f31_452c_ae58_04890f81958a = {
-    .index = 31,
-    .name = "Final",
-    .kind = UFSM_STATE_FINAL,
-    .transition = NULL,
-    .entry = NULL,
-    .exit = NULL,
-    .region = NULL,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_8962e8ae_4db8_4d87_b944_36c1e883fc43,
-};
-
-
-const struct ufsm_state s_8962e8ae_4db8_4d87_b944_36c1e883fc43 = {
-    .index = 32,
-    .name = "Final",
-    .kind = UFSM_STATE_FINAL,
-    .transition = NULL,
-    .entry = NULL,
-    .exit = NULL,
-    .region = NULL,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_a2a6cb0d_06ba_4737_8da9_15e5abf19fe2,
-};
-
-/* Transitions originating from 'Delete' */
-const struct ufsm_transition t_2213c167_5061_41b8_a38c_85537f9410db;
-const struct ufsm_action a_3d8bdfbb_4bf6_4eb3_ae61_2b559a580c50;
-const struct ufsm_guard g_0c6ce15e_c154_44d9_a245_e06a16fdb797;
-const struct ufsm_transition t_caab11b2_f47c_42b7_a525_d3a227fe5db1;
-const struct ufsm_action a_0aec359d_b65a_42f5_8a13_f021b5dae536;
-const struct ufsm_guard g_000027ce_24f7_4fb0_9a42_b38f06de0d4d;
-const struct ufsm_transition t_7843fc2c_6b48_447c_84b1_84c2c97fbd0e;
-const struct ufsm_action a_feb47dbd_4c8a_46c1_a041_e23bcc7e23b1;
-
-const struct ufsm_action a_3d8bdfbb_4bf6_4eb3_ae61_2b559a580c50 = {
-    .name = "canvas_delete_entry",
-    .f = &canvas_delete_entry,
-    .next = NULL,
-};
-
-const struct ufsm_guard g_0c6ce15e_c154_44d9_a245_e06a16fdb797 = {
-    .name = "canvas_state_entry_selected",
-    .f = &canvas_state_entry_selected,
-    .next = NULL,
-};
-
-const struct ufsm_transition t_2213c167_5061_41b8_a38c_85537f9410db = {
-    .kind = UFSM_TRANSITION_EXTERNAL,
-    .trigger = NULL,
-    .action = &a_3d8bdfbb_4bf6_4eb3_ae61_2b559a580c50,
-    .guard = &g_0c6ce15e_c154_44d9_a245_e06a16fdb797,
-    .source = &s_a2a6cb0d_06ba_4737_8da9_15e5abf19fe2,
-    .dest = &s_4fa41c00_4c8a_427b_aab9_084185816cf2,
-    .next = &t_caab11b2_f47c_42b7_a525_d3a227fe5db1,
-};
-
-const struct ufsm_action a_0aec359d_b65a_42f5_8a13_f021b5dae536 = {
-    .name = "canvas_delete_exit",
-    .f = &canvas_delete_exit,
-    .next = NULL,
-};
-
-const struct ufsm_guard g_000027ce_24f7_4fb0_9a42_b38f06de0d4d = {
-    .name = "canvas_state_exit_selected",
-    .f = &canvas_state_exit_selected,
-    .next = NULL,
-};
-
-const struct ufsm_transition t_caab11b2_f47c_42b7_a525_d3a227fe5db1 = {
-    .kind = UFSM_TRANSITION_EXTERNAL,
-    .trigger = NULL,
-    .action = &a_0aec359d_b65a_42f5_8a13_f021b5dae536,
-    .guard = &g_000027ce_24f7_4fb0_9a42_b38f06de0d4d,
-    .source = &s_a2a6cb0d_06ba_4737_8da9_15e5abf19fe2,
-    .dest = &s_a4974753_4d25_4df5_b50d_c2c54682884a,
-    .next = &t_7843fc2c_6b48_447c_84b1_84c2c97fbd0e,
-};
-
-const struct ufsm_action a_feb47dbd_4c8a_46c1_a041_e23bcc7e23b1 = {
-    .name = "canvas_delete_state",
-    .f = &canvas_delete_state,
-    .next = NULL,
-};
-
-const struct ufsm_transition t_7843fc2c_6b48_447c_84b1_84c2c97fbd0e = {
-    .kind = UFSM_TRANSITION_EXTERNAL,
-    .trigger = NULL,
-    .action = &a_feb47dbd_4c8a_46c1_a041_e23bcc7e23b1,
-    .guard = NULL,
-    .source = &s_a2a6cb0d_06ba_4737_8da9_15e5abf19fe2,
-    .dest = &s_5eb13eb8_b839_4876_9195_15171db9d107,
-    .next = NULL,
-};
-
-const struct ufsm_state s_a2a6cb0d_06ba_4737_8da9_15e5abf19fe2 = {
-    .index = 33,
-    .name = "Delete",
-    .kind = UFSM_STATE_SIMPLE,
-    .transition = &t_2213c167_5061_41b8_a38c_85537f9410db,
-    .entry = NULL,
-    .exit = NULL,
-    .region = NULL,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_4fa41c00_4c8a_427b_aab9_084185816cf2,
-};
-
-
-const struct ufsm_state s_4fa41c00_4c8a_427b_aab9_084185816cf2 = {
-    .index = 34,
-    .name = "Final",
-    .kind = UFSM_STATE_FINAL,
-    .transition = NULL,
-    .entry = NULL,
-    .exit = NULL,
-    .region = NULL,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_a4974753_4d25_4df5_b50d_c2c54682884a,
-};
-
-
-const struct ufsm_state s_a4974753_4d25_4df5_b50d_c2c54682884a = {
-    .index = 35,
-    .name = "Final",
-    .kind = UFSM_STATE_FINAL,
-    .transition = NULL,
-    .entry = NULL,
-    .exit = NULL,
-    .region = NULL,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_5eb13eb8_b839_4876_9195_15171db9d107,
-};
-
-
-const struct ufsm_state s_5eb13eb8_b839_4876_9195_15171db9d107 = {
-    .index = 36,
-    .name = "Final",
-    .kind = UFSM_STATE_FINAL,
-    .transition = NULL,
-    .entry = NULL,
-    .exit = NULL,
-    .region = NULL,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_981f9378_69f5_43fe_b5dc_9d20146f8512,
-};
-
-/* Exit functions for state 'New state' */
-const struct ufsm_entry_exit exit_f81544f9_c8bf_4338_b016_265eb5ca6d73;
-const struct ufsm_entry_exit exit_f81544f9_c8bf_4338_b016_265eb5ca6d73 = {
-    .name = "canvas_hide_state_hint",
-    .f = &canvas_hide_state_hint,
-    .next = NULL,
-};
-
-
-const struct ufsm_state s_981f9378_69f5_43fe_b5dc_9d20146f8512 = {
-    .index = 37,
-    .name = "New state",
-    .kind = UFSM_STATE_SIMPLE,
-    .transition = NULL,
-    .entry = NULL,
-    .exit = &exit_f81544f9_c8bf_4338_b016_265eb5ca6d73,
-    .region = &r_a50feb78_b194_4729_bfcf_65232ca6637f,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_de4a6839_98a3_4ad2_b3e8_afd201ff2526,
-};
-
-
-const struct ufsm_state s_de4a6839_98a3_4ad2_b3e8_afd201ff2526 = {
-    .index = 38,
-    .name = "Final",
-    .kind = UFSM_STATE_FINAL,
-    .transition = NULL,
-    .entry = NULL,
-    .exit = NULL,
-    .region = NULL,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_5577a77a_a350_4e46_b546_d8e30a5a4218,
-};
-
-/* Exit functions for state 'New transition' */
-const struct ufsm_entry_exit exit_ef406f02_bf16_48ff_bc41_0b9439965f70;
-const struct ufsm_entry_exit exit_fb14b1ed_ed67_462b_a08d_6ca461999586;
-const struct ufsm_entry_exit exit_ef406f02_bf16_48ff_bc41_0b9439965f70 = {
-    .name = "canvas_hide_transition_hint",
-    .f = &canvas_hide_transition_hint,
-    .next = &exit_fb14b1ed_ed67_462b_a08d_6ca461999586,
-};
-
-const struct ufsm_entry_exit exit_fb14b1ed_ed67_462b_a08d_6ca461999586 = {
-    .name = "canvas_cleanup_transition",
-    .f = &canvas_cleanup_transition,
-    .next = NULL,
-};
-
-/* Transitions originating from 'New transition' */
-const struct ufsm_transition t_37ba5277_6ab7_4a89_aa5c_c86356d2d835;
-
-const struct ufsm_transition t_37ba5277_6ab7_4a89_aa5c_c86356d2d835 = {
+const struct ufsm_transition t_18bf7e02_43e1_47b5_9ecc_5f51760b04ac = {
     .kind = UFSM_TRANSITION_EXTERNAL,
     .trigger = NULL,
     .action = NULL,
     .guard = NULL,
-    .source = &s_5577a77a_a350_4e46_b546_d8e30a5a4218,
-    .dest = &s_61e6d20a_06ae_484d_b503_b553a57076fb,
+    .source = &s_7abb5fd1_094d_4aee_90e6_00a01d8375f0,
+    .dest = &s_d00443ac_2597_4673_82b0_e9b6349e5700,
     .next = NULL,
 };
 
-const struct ufsm_state s_5577a77a_a350_4e46_b546_d8e30a5a4218 = {
-    .index = 39,
-    .name = "New transition",
-    .kind = UFSM_STATE_SIMPLE,
-    .transition = &t_37ba5277_6ab7_4a89_aa5c_c86356d2d835,
-    .entry = NULL,
-    .exit = &exit_ef406f02_bf16_48ff_bc41_0b9439965f70,
-    .region = &r_399603a6_1dcf_4977_9a02_948ace6516e8,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_61e6d20a_06ae_484d_b503_b553a57076fb,
-};
-
-
-const struct ufsm_state s_61e6d20a_06ae_484d_b503_b553a57076fb = {
-    .index = 40,
-    .name = "Final",
-    .kind = UFSM_STATE_FINAL,
-    .transition = NULL,
+const struct ufsm_state s_7abb5fd1_094d_4aee_90e6_00a01d8375f0 = {
+    .index = 47,
+    .name = "Init",
+    .kind = UFSM_STATE_INIT,
+    .transition = &t_18bf7e02_43e1_47b5_9ecc_5f51760b04ac,
     .entry = NULL,
     .exit = NULL,
     .region = NULL,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_9e7cfc8f_eaad_49e7_af0c_62ef54a95902,
-};
-
-
-const struct ufsm_state s_9e7cfc8f_eaad_49e7_af0c_62ef54a95902 = {
-    .index = 41,
-    .name = "Final",
-    .kind = UFSM_STATE_FINAL,
-    .transition = NULL,
-    .entry = NULL,
-    .exit = NULL,
-    .region = NULL,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_251f5542_7682_4cbb_bcdf_658d352b4ac7,
-};
-
-
-const struct ufsm_state s_251f5542_7682_4cbb_bcdf_658d352b4ac7 = {
-    .index = 42,
-    .name = "Final",
-    .kind = UFSM_STATE_FINAL,
-    .transition = NULL,
-    .entry = NULL,
-    .exit = NULL,
-    .region = NULL,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
-    .next = &s_a3597828_1b7e_4269_ba3a_1c77e960c864,
-};
-
-
-const struct ufsm_state s_a3597828_1b7e_4269_ba3a_1c77e960c864 = {
-    .index = 43,
-    .name = "Final",
-    .kind = UFSM_STATE_FINAL,
-    .transition = NULL,
-    .entry = NULL,
-    .exit = NULL,
-    .region = NULL,
-    .parent_region = &r_73c8002b_fc21_4c2c_b0f8_34c1375ffad2,
+    .parent_region = &r_6cf67ffd_25f6_42f6_a938_a18b9f63f9c0,
     .next = NULL,
 };
 
 const struct ufsm_region r_399603a6_1dcf_4977_9a02_948ace6516e8 = {
-    .index = 6,
+    .index = 7,
     .name = "New region",
     .has_history = false,
     .state = &s_0aba8ad4_38a9_4738_9804_0ea11c158a5b,
@@ -2016,7 +2168,7 @@ const struct ufsm_transition t_26cd65f2_5b3c_4b6a_972e_4c373f725c31 = {
 };
 
 const struct ufsm_state s_0aba8ad4_38a9_4738_9804_0ea11c158a5b = {
-    .index = 44,
+    .index = 48,
     .name = "Start",
     .kind = UFSM_STATE_SIMPLE,
     .transition = &t_26cd65f2_5b3c_4b6a_972e_4c373f725c31,
@@ -2084,7 +2236,7 @@ const struct ufsm_transition t_64d6ffc5_cd5f_421b_94d9_6f492e0d4d95 = {
 };
 
 const struct ufsm_state s_fc6399d1_c9b5_4a38_88d7_755d83db66e7 = {
-    .index = 45,
+    .index = 49,
     .name = "End",
     .kind = UFSM_STATE_SIMPLE,
     .transition = &t_75bf6d51_b12a_4965_88af_8322eed7532b,
@@ -2127,7 +2279,7 @@ const struct ufsm_transition t_b0bd24ef_27bd_46c6_9d1d_f086fbe9a48c = {
 };
 
 const struct ufsm_state s_643d909a_46c4_48b9_83ec_e5aa2bfcbc41 = {
-    .index = 46,
+    .index = 50,
     .name = "Vertice",
     .kind = UFSM_STATE_SIMPLE,
     .transition = &t_e069b40c_5f7b_41b5_84b4_0a0c7b19b0df,
@@ -2140,7 +2292,7 @@ const struct ufsm_state s_643d909a_46c4_48b9_83ec_e5aa2bfcbc41 = {
 
 
 const struct ufsm_state s_4bc349e7_ed14_49e2_a5c6_5e279183799f = {
-    .index = 47,
+    .index = 51,
     .name = "Final",
     .kind = UFSM_STATE_FINAL,
     .transition = NULL,
@@ -2152,7 +2304,7 @@ const struct ufsm_state s_4bc349e7_ed14_49e2_a5c6_5e279183799f = {
 };
 
 const struct ufsm_region r_a50feb78_b194_4729_bfcf_65232ca6637f = {
-    .index = 7,
+    .index = 8,
     .name = "New region",
     .has_history = false,
     .state = &s_579a57b9_4811_47b4_bcb3_e29e3d5bfbd0,
@@ -2188,7 +2340,7 @@ const struct ufsm_transition t_59129edf_e5c4_4e73_af4c_6fd92261070c = {
 };
 
 const struct ufsm_state s_579a57b9_4811_47b4_bcb3_e29e3d5bfbd0 = {
-    .index = 48,
+    .index = 52,
     .name = "Start",
     .kind = UFSM_STATE_SIMPLE,
     .transition = &t_59129edf_e5c4_4e73_af4c_6fd92261070c,
@@ -2238,7 +2390,7 @@ const struct ufsm_transition t_d2bb4846_d816_476c_97c3_184577aa2b8f = {
 };
 
 const struct ufsm_state s_3eae6205_4dc7_43c7_b9e0_ea2f8efadafc = {
-    .index = 49,
+    .index = 53,
     .name = "End",
     .kind = UFSM_STATE_SIMPLE,
     .transition = &t_3bbe2091_6c8b_4e30_a60a_a78f3ebd9b09,
@@ -2253,11 +2405,11 @@ const struct ufsm_state s_3eae6205_4dc7_43c7_b9e0_ea2f8efadafc = {
 int canvas_machine_initialize(struct canvas_machine *machine, void *ctx)
 {
     machine->machine.r_data = machine->region_data;
-    machine->machine.no_of_regions = 8;
+    machine->machine.no_of_regions = 9;
     machine->machine.s_data = machine->state_data;
-    machine->machine.no_of_states = 50;
+    machine->machine.no_of_states = 54;
     machine->machine.region = &r_00000000_0000_0000_0000_000000000000;
-    ufsm_stack_init(&(machine->machine.stack), 13, machine->stack_data);
+    ufsm_stack_init(&(machine->machine.stack), 16, machine->stack_data);
     ufsm_stack_init(&(machine->machine.stack2), 3, machine->stack_data2);
     return ufsm_init_machine(&machine->machine, ctx);
 }
