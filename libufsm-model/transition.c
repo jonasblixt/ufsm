@@ -757,6 +757,36 @@ int ufsmm_transition_add_action(struct ufsmm_model *model,
     return UFSMM_OK;
 }
 
+int ufsmm_transition_change_src_state(struct ufsmm_transition *transition,
+                                      struct ufsmm_state *new_state)
+{
+    struct ufsmm_transition_state_ref *src = &transition->source;
+    struct ufsmm_state *old_state = src->state;
+    struct ufsmm_transition *prev = transition->prev;
+    struct ufsmm_transition *next = transition->next;
+    src->state = new_state;
+
+    if (prev == NULL) {
+        old_state->transition = next;
+    } else {
+        prev->next = next;
+    }
+
+    if (new_state->transition == NULL) {
+        new_state->transition = transition;
+        transition->next = NULL;
+        transition->prev = NULL;
+    } else {
+        struct ufsmm_transition *last = new_state->transition;
+        while (last->next != NULL)
+            last = last->next;
+        last->next = transition;
+        transition->next = NULL;
+        transition->prev = last;
+    }
+    return 0;
+}
+
 int ufsmm_transition_delete_action(struct ufsmm_transition *transition, uuid_t id)
 {
     return delete_action_ref(&transition->action, id);

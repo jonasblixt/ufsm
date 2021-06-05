@@ -556,14 +556,17 @@ int ufsmm_state_add_transition(struct ufsmm_state *source,
 int ufsmm_state_delete_transition(struct ufsmm_transition *transition)
 {
     struct ufsmm_state *s = transition->source.state;
-    struct ufsmm_transition *prev;
-
-    prev = transition->prev;
+    struct ufsmm_transition *prev = transition->prev;
+    struct ufsmm_transition *next = transition->next;
 
     if (prev) {
-        prev->next = transition->next;
+        prev->next = next;
+        if (next)
+            next->prev = prev;
     } else {
         s->transition = transition->next;
+        if (s->transition)
+            s->transition->prev = NULL;
     }
 
     return ufsmm_transition_free_one(transition);

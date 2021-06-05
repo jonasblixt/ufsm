@@ -444,6 +444,22 @@
     {
       "name":"canvas_edit_region_name",
       "id":"e04f4b16-cfef-4af5-af1d-9529f81431cf"
+    },
+    {
+      "name":"canvas_delete_transition",
+      "id":"20f3e2e4-e0f5-40c3-a8b1-e8d9525e540f"
+    },
+    {
+      "name":"canvas_delete_guard",
+      "id":"475b1f2d-cfea-4921-a95f-c6e105b97225"
+    },
+    {
+      "name":"canvas_delete_action",
+      "id":"d58460f0-e26c-4c70-aa9d-72e3e230cb96"
+    },
+    {
+      "name":"canvas_delete_region",
+      "id":"263779b7-1d93-4590-8d15-df1d6fe726bc"
     }
   ],
   "entries":null,
@@ -2349,7 +2365,7 @@
                         "name":"Delete",
                         "kind":"state",
                         "width":100.0,
-                        "height":230.0,
+                        "height":730.0,
                         "x":90.0,
                         "y":110.0,
                         "entries":[
@@ -2463,6 +2479,146 @@
                             ],
                             "state-condition":[
                             ]
+                          },
+                          {
+                            "id":"902d5b73-59cf-468c-ab9d-231e52960d38",
+                            "source":{
+                              "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
+                              "side":"right",
+                              "offset":230.0
+                            },
+                            "dest":{
+                              "state":"8b33ef70-24eb-48db-ab67-8f0aefac3f67",
+                              "side":"left",
+                              "offset":10.0
+                            },
+                            "text-block":{
+                              "x":210.0,
+                              "y":290.0,
+                              "w":310.0,
+                              "h":40.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                              {
+                                "action-id":"4fc9cd36-8433-4d7d-a182-0458175a8109",
+                                "id":"ddd0e7bb-cf42-464b-b331-9fa5459fea5a"
+                              }
+                            ],
+                            "actions":[
+                              {
+                                "action-id":"20f3e2e4-e0f5-40c3-a8b1-e8d9525e540f",
+                                "id":"72fe8522-133c-49bd-a027-1afb6a387653"
+                              }
+                            ],
+                            "state-condition":[
+                            ]
+                          },
+                          {
+                            "id":"48303ade-8f71-4c56-af0a-3e0cde447c08",
+                            "source":{
+                              "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
+                              "side":"right",
+                              "offset":410.0
+                            },
+                            "dest":{
+                              "state":"ca1c6893-c831-4314-b8fe-dcfde2c24a25",
+                              "side":"left",
+                              "offset":10.0
+                            },
+                            "text-block":{
+                              "x":210.0,
+                              "y":470.0,
+                              "w":300.0,
+                              "h":50.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                              {
+                                "action-id":"1e5f8899-41d1-40b1-b530-414bd0789803",
+                                "id":"30e8c43e-c172-466e-89db-2221875dfaa2"
+                              }
+                            ],
+                            "actions":[
+                              {
+                                "action-id":"475b1f2d-cfea-4921-a95f-c6e105b97225",
+                                "id":"12cb9647-9c9f-44e7-a664-d4e7ea47a9e9"
+                              }
+                            ],
+                            "state-condition":[
+                            ]
+                          },
+                          {
+                            "id":"e4e87702-65b8-4aa8-9901-dd40d19d2e53",
+                            "source":{
+                              "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
+                              "side":"right",
+                              "offset":350.0
+                            },
+                            "dest":{
+                              "state":"2f8c4059-7592-47c7-97e9-a20463906416",
+                              "side":"left",
+                              "offset":10.0
+                            },
+                            "text-block":{
+                              "x":200.0,
+                              "y":410.0,
+                              "w":300.0,
+                              "h":50.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                              {
+                                "action-id":"4da1cef2-491b-4835-9f3f-115ad2ec20cb",
+                                "id":"3267395b-d1d1-4614-9fd8-060da2ebcf77"
+                              }
+                            ],
+                            "actions":[
+                              {
+                                "action-id":"d58460f0-e26c-4c70-aa9d-72e3e230cb96",
+                                "id":"9abb840d-dd82-47b3-8112-c7eeb0b6a124"
+                              }
+                            ],
+                            "state-condition":[
+                            ]
+                          },
+                          {
+                            "id":"bdda3eae-47ce-4224-9930-9578041beb6c",
+                            "source":{
+                              "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
+                              "side":"right",
+                              "offset":290.0
+                            },
+                            "dest":{
+                              "state":"13b647f6-56cb-4562-8e86-35f81911845b",
+                              "side":"left",
+                              "offset":10.0
+                            },
+                            "text-block":{
+                              "x":210.0,
+                              "y":350.0,
+                              "w":300.0,
+                              "h":50.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                              {
+                                "action-id":"2c2fe276-a071-4670-bca4-0c22271b15d6",
+                                "id":"93b99aac-abf1-4673-ad65-e215aa6a37fb"
+                              }
+                            ],
+                            "actions":[
+                              {
+                                "action-id":"263779b7-1d93-4590-8d15-df1d6fe726bc",
+                                "id":"20f6587d-8786-42fd-bc7a-3117dfc8f90b"
+                              }
+                            ],
+                            "state-condition":[
+                            ]
                           }
                         ]
                       },
@@ -2508,6 +2664,74 @@
                             "state-condition":[
                             ]
                           }
+                        ]
+                      },
+                      {
+                        "id":"8b33ef70-24eb-48db-ab67-8f0aefac3f67",
+                        "name":"Final",
+                        "kind":"final",
+                        "width":20.0,
+                        "height":20.0,
+                        "x":470.0,
+                        "y":330.0,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                        ]
+                      },
+                      {
+                        "id":"2f8c4059-7592-47c7-97e9-a20463906416",
+                        "name":"Final",
+                        "kind":"final",
+                        "width":20.0,
+                        "height":20.0,
+                        "x":470.0,
+                        "y":450.0,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                        ]
+                      },
+                      {
+                        "id":"ca1c6893-c831-4314-b8fe-dcfde2c24a25",
+                        "name":"Final",
+                        "kind":"final",
+                        "width":20.0,
+                        "height":20.0,
+                        "x":470.0,
+                        "y":510.0,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                        ]
+                      },
+                      {
+                        "id":"13b647f6-56cb-4562-8e86-35f81911845b",
+                        "name":"Final",
+                        "kind":"final",
+                        "width":20.0,
+                        "height":20.0,
+                        "x":470.0,
+                        "y":390.0,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
                         ]
                       }
                     ]

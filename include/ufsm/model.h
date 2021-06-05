@@ -398,6 +398,8 @@ int ufsmm_transition_free_one(struct ufsmm_transition *transition);
 struct ufsmm_transition_state_condition *
 ufsmm_transition_get_state_conditions(struct ufsmm_transition *t);
 
+int ufsmm_transition_change_src_state(struct ufsmm_transition *transition,
+                                      struct ufsmm_state *new_state);
 int ufsmm_transition_free(struct ufsmm_transition *transition);
 
 /* Misc model library stuff */

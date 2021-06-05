@@ -141,11 +141,15 @@ void canvas_set_transition_trigger(void *context);
 void canvas_add_transition_action(void *context);
 void canvas_toggle_region_offpage(void *context);
 void canvas_edit_region_name(void *context);
+void canvas_delete_transition(void *context);
+void canvas_delete_guard(void *context);
+void canvas_delete_action(void *context);
+void canvas_delete_region(void *context);
 
 struct canvas_machine {
     struct ufsm_machine machine;
     struct ufsm_region_data region_data[14];
-    struct ufsm_state_data state_data[66];
+    struct ufsm_state_data state_data[70];
     void *stack_data[16];
     void *stack_data2[3];
 };

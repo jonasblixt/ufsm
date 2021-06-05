@@ -190,7 +190,8 @@ void canvas_move_vertice(void *context)
                 if (new_src_state != t->source.state) {
                     L_DEBUG("Switching to new source: %s",
                                     new_src_state->name);
-                    t->source.state = new_src_state;
+                    //t->source.state = new_src_state;
+                    ufsmm_transition_change_src_state(t, new_src_state);
                 }
             }
 
@@ -718,6 +719,48 @@ void canvas_translate_state(void *context)
 {
 }
 
+void canvas_delete_region(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+
+    if ((!priv->selected_region->draw_as_root)) {
+        struct ufsmm_region *pr = NULL;
+        if (priv->selected_region->parent_state) {
+            pr = priv->selected_region->parent_state->parent_region;
+        } else {
+            pr = priv->model->root;
+        }
+
+        ufsmm_model_delete_region(priv->model, priv->selected_region);
+        priv->selected_region = pr;
+        priv->redraw = true;
+    }
+}
+
+void canvas_delete_guard(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    ufsmm_transition_delete_guard(priv->selected_transition,
+                                  priv->selected_aref->act->id);
+    priv->redraw = true;
+}
+
+void canvas_delete_action(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    ufsmm_transition_delete_action(priv->selected_transition,
+                                   priv->selected_aref->act->id);
+    priv->redraw = true;
+}
+
+void canvas_delete_transition(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *t = priv->selected_transition;
+    ufsmm_state_delete_transition(t);
+    priv->redraw = true;
+}
+
 void canvas_delete_entry(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -743,7 +786,11 @@ void canvas_delete_exit(void *context)
 
 void canvas_delete_state(void *context)
 {
-    L_DEBUG("Deleting state");
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    ufsmm_model_delete_state(priv->model, priv->selected_state);
+    priv->selected_state = NULL;
+    priv->selection = UFSMM_SELECTION_NONE;
+    priv->redraw = true;
 }
 
 void canvas_new_state_set_scoords(void *context)
