@@ -220,6 +220,20 @@ struct ufsmm_model
     const char *filename;
 };
 
+struct ufsmm_ll_node
+{
+    void *data;
+    struct ufsmm_ll_node *next;
+    struct ufsmm_ll_node *prev;
+};
+
+struct ufsmm_ll
+{
+    ssize_t no_of_items;
+    struct ufsmm_ll_node *first;
+    struct ufsmm_ll_node *last;
+};
+
 int ufsmm_model_load(const char *filename, struct ufsmm_model **model);
 int ufsmm_model_create(struct ufsmm_model **model, const char *name);
 int ufsmm_model_write(const char *filename, struct ufsmm_model *model);
@@ -400,4 +414,27 @@ int ufsmm_stack_free(struct ufsmm_stack *stack);
 int ufsmm_stack_push(struct ufsmm_stack *stack, void *item);
 int ufsmm_stack_pop(struct ufsmm_stack *stack, void **item);
 
+/* uFSM linked list API */
+
+struct ufsmm_ll_node* ufsmm_ll_init_node(void *data);
+void ufsmm_ll_free_node(struct ufsmm_ll_node *node);
+int ufsmm_ll_init(struct ufsmm_ll **ll);
+int ufsmm_ll_free(struct ufsmm_ll *ll);
+int ufsmm_ll_append(struct ufsmm_ll *ll, struct ufsmm_ll_node *node);
+int ufsmm_ll_pop(struct ufsmm_ll *ll, struct ufsmm_ll_node **node);
+int ufsmm_ll_pop2(struct ufsmm_ll *ll, void **data);
+int ufsmm_ll_prepend(struct ufsmm_ll *ll, struct ufsmm_ll_node *node);
+int ufsmm_ll_get_first(struct ufsmm_ll *ll, struct ufsmm_ll_node **node);
+int ufsmm_ll_get_last(struct ufsmm_ll *ll, struct ufsmm_ll_node **node);
+int ufsmm_ll_move_up(struct ufsmm_ll *ll, struct ufsmm_ll_node *node);
+int ufsmm_ll_move_down(struct ufsmm_ll *ll, struct ufsmm_ll_node *node);
+int ufsmm_ll_remove(struct ufsmm_ll *ll, struct ufsmm_ll_node *node);
+int ufsmm_ll_find(struct ufsmm_ll *ll, void *data_ref,
+                                    struct ufsmm_ll_node **node);
+int ufsmm_ll_insert_before(struct ufsmm_ll *ll,
+                           struct ufsmm_ll_node *before_node,
+                           struct ufsmm_ll_node *node);
+int ufsmm_ll_insert_after(struct ufsmm_ll *ll,
+                           struct ufsmm_ll_node *after_node,
+                           struct ufsmm_ll_node *node);
 #endif  // INCLUDE_UFSMM_MODEL_H_

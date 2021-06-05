@@ -19,11 +19,16 @@ check_PROGRAMS = test1 \
                  test_model \
                  test_actions \
                  test_transitions \
-                 test_triggers
+                 test_triggers \
+                 test_ll
 
 test1_SOURCES = common.c test1.c
 test1_LDADD = $(COMMON_TEST_LDADD)
 test1_CFLAGS = $(COMMON_TEST_CFLAGS)
+
+test_ll_SOURCES = common.c ll.c
+test_ll_LDADD = $(COMMON_TEST_LDADD)
+test_ll_CFLAGS = $(COMMON_TEST_CFLAGS)
 
 test_stack_SOURCES = common.c test_stack.c
 test_stack_LDADD = $(COMMON_TEST_LDADD)
@@ -50,4 +55,5 @@ TESTS = test1 \
         test_model \
         test_actions \
         test_triggers \
-        test_transitions
+        test_transitions \
+        test_ll
