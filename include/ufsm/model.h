@@ -95,6 +95,20 @@ enum ufsmm_transition_vertice_kind
     UFSMM_TRANSITION_VERTICE_END,
 };
 
+struct ufsmm_ll_node
+{
+    void *data;
+    struct ufsmm_ll_node *next;
+    struct ufsmm_ll_node *prev;
+};
+
+struct ufsmm_ll
+{
+    struct ufsmm_ll_node *first;
+    struct ufsmm_ll_node *last;
+};
+
+
 struct ufsmm_action
 {
     uuid_t id;
@@ -218,20 +232,6 @@ struct ufsmm_model
     unsigned int no_of_regions;
     unsigned int no_of_states;
     const char *filename;
-};
-
-struct ufsmm_ll_node
-{
-    void *data;
-    struct ufsmm_ll_node *next;
-    struct ufsmm_ll_node *prev;
-};
-
-struct ufsmm_ll
-{
-    ssize_t no_of_items;
-    struct ufsmm_ll_node *first;
-    struct ufsmm_ll_node *last;
 };
 
 int ufsmm_model_load(const char *filename, struct ufsmm_model **model);
@@ -421,6 +421,7 @@ void ufsmm_ll_free_node(struct ufsmm_ll_node *node);
 int ufsmm_ll_init(struct ufsmm_ll **ll);
 int ufsmm_ll_free(struct ufsmm_ll *ll);
 int ufsmm_ll_append(struct ufsmm_ll *ll, struct ufsmm_ll_node *node);
+int ufsmm_ll_append2(struct ufsmm_ll *ll, void *data);
 int ufsmm_ll_pop(struct ufsmm_ll *ll, struct ufsmm_ll_node **node);
 int ufsmm_ll_pop2(struct ufsmm_ll *ll, void **data);
 int ufsmm_ll_prepend(struct ufsmm_ll *ll, struct ufsmm_ll_node *node);

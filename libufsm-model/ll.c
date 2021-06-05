@@ -52,6 +52,18 @@ int ufsmm_ll_append(struct ufsmm_ll *ll, struct ufsmm_ll_node *node)
     return 0;
 }
 
+int ufsmm_ll_append2(struct ufsmm_ll *ll, void *data)
+{
+    struct ufsmm_ll_node *new_node = NULL;
+
+    if (ufsmm_ll_init_node(&new_node) != UFSMM_OK)
+        return -1;
+
+    new_node->data = data;
+
+    return ufsmm_ll_append(ll, new_node);
+}
+
 int ufsmm_ll_prepend(struct ufsmm_ll *ll, struct ufsmm_ll_node *node)
 {
     if (ll->first != NULL) {

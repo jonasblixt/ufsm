@@ -1345,7 +1345,7 @@ const struct ufsm_transition t_1056be5e_6925_4fc0_b8b1_506d7f7b5c75 = {
     .action = NULL,
     .guard = &g_4f16985b_2a99_475b_bf3b_09dbeac17206,
     .source = &s_4b1878b4_404c_407e_8a33_4e2ef72cdae6,
-    .dest = &s_6af64093_51b3_4564_be9a_fcb682134262,
+    .dest = &s_7921f170_0693_4d0b_bc73_b4567901a39b,
     .next = &t_86de4f6b_ab31_42c4_a75f_0711716430da,
 };
 
@@ -1361,7 +1361,7 @@ const struct ufsm_transition t_86de4f6b_ab31_42c4_a75f_0711716430da = {
     .action = NULL,
     .guard = &g_589e02f8_8ee8_42db_b040_b357ba6b0978,
     .source = &s_4b1878b4_404c_407e_8a33_4e2ef72cdae6,
-    .dest = &s_7921f170_0693_4d0b_bc73_b4567901a39b,
+    .dest = &s_6af64093_51b3_4564_be9a_fcb682134262,
     .next = &t_71bb64ea_43c9_4b0c_8ed3_769f2a0a0eb2,
 };
 

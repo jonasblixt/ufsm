@@ -283,10 +283,45 @@ void canvas_move_vertice(void *context)
 
 void canvas_check_guard(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *t = priv->selected_transition;
+    struct ufsmm_region *cr = priv->current_region;
+
+    for (struct ufsmm_action_ref *ar = t->guard; ar; ar = ar->next)
+        ar->focus = false;
+
+    for (struct ufsmm_action_ref *ar = t->guard; ar; ar = ar->next) {
+        if (point_in_box2(priv->px, priv->py, ar->x + cr->ox,
+                                              ar->y + cr->oy, ar->w, ar->h)) {
+            ar->focus = true;
+            priv->redraw = true;
+            priv->selected_aref = ar;
+            priv->selection = UFSMM_SELECTION_GUARD;
+            L_DEBUG("Selected guard!");
+        }
+    }
 }
 
 void canvas_check_action(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+
+    struct ufsmm_transition *t = priv->selected_transition;
+    struct ufsmm_region *cr = priv->current_region;
+
+    for (struct ufsmm_action_ref *ar = t->action; ar; ar = ar->next)
+        ar->focus = false;
+
+    for (struct ufsmm_action_ref *ar = t->action; ar; ar = ar->next) {
+        if (point_in_box2(priv->px, priv->py, ar->x + cr->ox,
+                                              ar->y + cr->oy, ar->w, ar->h)) {
+            ar->focus = true;
+            priv->redraw = true;
+            priv->selected_aref = ar;
+            priv->selection = UFSMM_SELECTION_ACTION;
+            L_DEBUG("Selected action!");
+        }
+    }
 }
 
 void canvas_focus_guard(void *context)
@@ -336,12 +371,14 @@ void canvas_cleanup_transition(void *context)
 
 bool canvas_guard_selected(void *context)
 {
-    return false;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    return (priv->selection == UFSMM_SELECTION_GUARD);
 }
 
 bool canvas_action_selected(void *context)
 {
-    return false;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    return (priv->selection == UFSMM_SELECTION_ACTION);
 }
 
 bool canvas_state_exit_selected(void *context)

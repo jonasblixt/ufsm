@@ -99,6 +99,7 @@ static int deserialize_vertices(json_object *j_vertices,
         vertice->x = x;
         vertice->y = y;
 
+        // ufsmm_ll_append2(t->vertices, vertice);
         if (t->vertices == NULL) {
             t->vertices = vertice;
             prev = vertice;
@@ -489,6 +490,7 @@ int ufsmm_transitions_serialize(struct ufsmm_state *state,
         /* Add vertices */
         json_object *j_vertices = json_object_new_array();
 
+        // struct ufsmm_ll_node *vnode = t->vertices; vnode
         for (struct ufsmm_vertice *v = t->vertices; v; v = v->next) {
             json_object *j_vertice = json_object_new_object();
 
