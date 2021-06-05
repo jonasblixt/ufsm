@@ -142,8 +142,8 @@ void canvas_toggle_region_offpage(void *context);
 
 struct canvas_machine {
     struct ufsm_machine machine;
-    struct ufsm_region_data region_data[10];
-    struct ufsm_state_data state_data[57];
+    struct ufsm_region_data region_data[14];
+    struct ufsm_state_data state_data[65];
     void *stack_data[16];
     void *stack_data2[3];
 };

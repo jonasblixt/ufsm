@@ -169,6 +169,7 @@ void canvas_move_vertice(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
+    struct ufsmm_region *cr = priv->current_region;
 
     double dx = priv->dx;// / priv->current_region->scale;
     double dy = priv->dy;// / priv->current_region->scale;
@@ -180,6 +181,18 @@ void canvas_move_vertice(void *context)
         {
             enum ufsmm_side src_side;
             double src_offset;
+            struct ufsmm_state *new_src_state = NULL;
+
+            if (ufsmm_state_get_at_xy(priv, priv->current_region,
+                                        priv->px,
+                                        priv->py,
+                                        &new_src_state, NULL) == UFSMM_OK) {
+                if (new_src_state != t->source.state) {
+                    L_DEBUG("Switching to new source: %s",
+                                    new_src_state->name);
+                    t->source.state = new_src_state;
+                }
+            }
 
             ufsmm_state_get_closest_side(priv,
                                          t->source.state,
@@ -219,7 +232,19 @@ void canvas_move_vertice(void *context)
         case UFSMM_TRANSITION_VERTICE_END:
         {
             enum ufsmm_side dest_side;
+            struct ufsmm_state *new_dest_state = NULL;
             double dest_offset;
+
+            if (ufsmm_state_get_at_xy(priv, priv->current_region,
+                                        priv->px,
+                                        priv->py,
+                                        &new_dest_state, NULL) == UFSMM_OK) {
+                if (new_dest_state != t->dest.state) {
+                    L_DEBUG("Switching to new destination: %s",
+                                    new_dest_state->name);
+                    t->dest.state = new_dest_state;
+                }
+            }
 
             ufsmm_state_get_closest_side(priv,
                                          t->dest.state,
@@ -596,6 +621,7 @@ void canvas_add_region(void *context)
     rc = ufsmm_add_region(priv->selected_state, false, &new_region);
     new_region->name = strdup("New region");
     new_region->h = 40;
+    priv->redraw = true;
     L_DEBUG("Created new region");
 }
 
@@ -607,6 +633,7 @@ void canvas_add_entry(void *context)
                                         priv->model,
                                         priv->selected_state);
     L_DEBUG("Add entry on state %s %i", priv->selected_state->name, rc);
+    priv->redraw = true;
 }
 
 void canvas_add_exit(void *context)
@@ -617,6 +644,7 @@ void canvas_add_exit(void *context)
                                         priv->model,
                                         priv->selected_state);
     L_DEBUG("Add exit on state %s %i", priv->selected_state->name, rc);
+    priv->redraw = true;
 }
 
 void canvas_edit_state_name(void *context)
@@ -839,10 +867,12 @@ void canvas_create_init_state(void *context)
         new_state->w = 20;
         new_state->h = 20;
         new_state->kind = UFSMM_STATE_INIT;
+        priv->redraw = true;
         L_DEBUG("Created new state, pr = %s", priv->selected_region->name);
     } else {
         L_ERR("Could not create new state");
     }
+
 }
 
 void canvas_create_final_state(void *context)
