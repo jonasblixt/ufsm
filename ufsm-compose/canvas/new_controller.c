@@ -691,6 +691,13 @@ void canvas_edit_state_name(void *context)
                                 &priv->selected_state->name);
 }
 
+void canvas_edit_region_name(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    ufsm_edit_string_dialog(GTK_WINDOW(priv->root_window), "Edit region name",
+                                &priv->selected_region->name);
+}
+
 void canvas_add_guard(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -983,6 +990,8 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eEnableScale);
     } else if (event->keyval == GDK_KEY_a) {
         canvas_machine_process(&priv->machine, eKey_a_down);
+    } else if (event->keyval == GDK_KEY_n) {
+        canvas_machine_process(&priv->machine, eKey_n_down);
     } else if (event->keyval == GDK_KEY_O) {
         canvas_machine_process(&priv->machine, eKey_O_down);
     } else if (event->keyval == GDK_KEY_r) {

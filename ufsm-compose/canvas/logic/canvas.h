@@ -40,6 +40,7 @@ enum {
     eScrollUp,
     eScrollDown,
     eKey_O_down,
+    eKey_n_down,
 };
 
 /* Guard function prototypes */
@@ -139,11 +140,12 @@ void canvas_add_guard(void *context);
 void canvas_set_transition_trigger(void *context);
 void canvas_add_transition_action(void *context);
 void canvas_toggle_region_offpage(void *context);
+void canvas_edit_region_name(void *context);
 
 struct canvas_machine {
     struct ufsm_machine machine;
     struct ufsm_region_data region_data[14];
-    struct ufsm_state_data state_data[65];
+    struct ufsm_state_data state_data[66];
     void *stack_data[16];
     void *stack_data2[3];
 };

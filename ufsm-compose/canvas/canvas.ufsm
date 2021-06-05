@@ -122,6 +122,10 @@
     {
       "name":"eKey_O_down",
       "id":"f33c8b54-fd9e-4308-ac59-5592f5ec5889"
+    },
+    {
+      "name":"eKey_n_down",
+      "id":"5d4dd5c5-09a7-4182-b0a2-89bd6a79049f"
     }
   ],
   "actions":[
@@ -436,6 +440,10 @@
     {
       "name":"canvas_toggle_region_offpage",
       "id":"5c5db228-dfea-49e5-aac7-9ad16b44263a"
+    },
+    {
+      "name":"canvas_edit_region_name",
+      "id":"e04f4b16-cfef-4af5-af1d-9529f81431cf"
     }
   ],
   "entries":null,
@@ -1994,7 +2002,7 @@
                           },
                           {
                             "id":"8313a454-c083-40eb-a201-b253c3fc2da4",
-                            "trigger":"8026ece2-dd00-44e8-8613-a68197aaec7c",
+                            "trigger":"5d4dd5c5-09a7-4182-b0a2-89bd6a79049f",
                             "source":{
                               "state":"9dcc0d0a-9027-433a-98a9-6484ee801210",
                               "side":"right",
@@ -2034,7 +2042,7 @@
                             "source":{
                               "state":"9dcc0d0a-9027-433a-98a9-6484ee801210",
                               "side":"right",
-                              "offset":210.0
+                              "offset":290.0
                             },
                             "dest":{
                               "state":"c390bbe5-375d-4f96-80fb-1014da2717d4",
@@ -2043,7 +2051,7 @@
                             },
                             "text-block":{
                               "x":270.0,
-                              "y":400.0,
+                              "y":470.0,
                               "w":230.0,
                               "h":60.0
                             },
@@ -2070,7 +2078,7 @@
                             "source":{
                               "state":"9dcc0d0a-9027-433a-98a9-6484ee801210",
                               "side":"right",
-                              "offset":270.0
+                              "offset":360.0
                             },
                             "dest":{
                               "state":"a25385c1-d89d-4486-aa6f-744d06527d1b",
@@ -2078,8 +2086,8 @@
                               "offset":10.0
                             },
                             "text-block":{
-                              "x":270.0,
-                              "y":470.0,
+                              "x":260.0,
+                              "y":550.0,
                               "w":390.0,
                               "h":50.0
                             },
@@ -2099,6 +2107,42 @@
                             ],
                             "state-condition":[
                             ]
+                          },
+                          {
+                            "id":"48bc8d2e-7ada-4efa-81cb-a688650b9f2f",
+                            "trigger":"5d4dd5c5-09a7-4182-b0a2-89bd6a79049f",
+                            "source":{
+                              "state":"9dcc0d0a-9027-433a-98a9-6484ee801210",
+                              "side":"right",
+                              "offset":210.0
+                            },
+                            "dest":{
+                              "state":"b8dad906-f19b-4ee2-83c9-653593b8c5ec",
+                              "side":"left",
+                              "offset":10.0
+                            },
+                            "text-block":{
+                              "x":270.0,
+                              "y":410.0,
+                              "w":410.0,
+                              "h":40.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                              {
+                                "action-id":"2c2fe276-a071-4670-bca4-0c22271b15d6",
+                                "id":"dee733cd-c882-4c83-83c2-b37e5a20a6ce"
+                              }
+                            ],
+                            "actions":[
+                              {
+                                "action-id":"e04f4b16-cfef-4af5-af1d-9529f81431cf",
+                                "id":"f46ecd34-64df-41b0-b76a-c1ff23c0e9c6"
+                              }
+                            ],
+                            "state-condition":[
+                            ]
                           }
                         ]
                       },
@@ -2109,7 +2153,7 @@
                         "width":20.0,
                         "height":20.0,
                         "x":710.0,
-                        "y":450.0,
+                        "y":530.0,
                         "entries":[
                         ],
                         "exits":[
@@ -2170,7 +2214,24 @@
                         "width":20.0,
                         "height":20.0,
                         "x":710.0,
-                        "y":510.0,
+                        "y":600.0,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                        ]
+                      },
+                      {
+                        "id":"b8dad906-f19b-4ee2-83c9-653593b8c5ec",
+                        "name":"Final",
+                        "kind":"final",
+                        "width":20.0,
+                        "height":20.0,
+                        "x":710.0,
+                        "y":450.0,
                         "entries":[
                         ],
                         "exits":[
