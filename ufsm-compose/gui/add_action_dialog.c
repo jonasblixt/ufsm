@@ -143,7 +143,8 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
     GtkWidget *dialog, *vbox, *content_area;
     GtkWidget *treeview;
     GtkDialogFlags flags;
-    struct ufsmm_action *action;
+    struct ufsmm_actions *list;
+    struct ufsmm_action *a;
     struct ufsmm_state *state = (struct ufsmm_state *) p_input;
     struct ufsmm_transition *transition = (struct ufsmm_transition *) p_input;
 
@@ -152,19 +153,19 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
     switch (kind) {
         case UFSMM_ACTION_GUARD:
             msg = "Add guard";
-            action = model->guards;
+            list = &model->guards;
         break;
         case UFSMM_ACTION_ENTRY:
             msg = "Add entry";
-            action = model->actions;
+            list = &model->actions;
         break;
         case UFSMM_ACTION_EXIT:
             msg = "Add exit";
-            action = model->actions;
+            list = &model->actions;
         break;
         case UFSMM_ACTION_ACTION:
             msg = "Add action";
-            action = model->actions;
+            list = &model->actions;
         break;
         default:
             return -1;
@@ -197,7 +198,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                                 G_TYPE_STRING,
                                 G_TYPE_POINTER);
 
-    for (struct ufsmm_action *a = action; a; a = a->next) {
+    TAILQ_FOREACH(a, list, tailq) {
         gtk_list_store_append(store, &iter);
         gtk_list_store_set (store, &iter,
                             COLUMN_MATCH_RATING, 0,

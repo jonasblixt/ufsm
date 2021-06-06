@@ -47,14 +47,14 @@ TEST(create_entry_action)
     rc = ufsmm_model_load("test_entry_action.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    struct ufsmm_action *entries_list = ufsmm_model_get_actions(model);
+    struct ufsmm_actions *entries_list = &model->actions;//ufsmm_model_get_actions(model);
 
     printf("Model load %i\n", rc);
     printf("model->actions = %p\n", entries_list);
 
-    uuid_unparse(entries_list->id, uuid_str2);
+    uuid_unparse(entries_list->tqh_first->id, uuid_str2);
     ASSERT_EQ((char *) uuid_str, (char *) uuid_str2);
-    ASSERT_EQ(entries_list->name, "test-action");
+    ASSERT_EQ(entries_list->tqh_first->name, "test-action");
 
     rc = ufsmm_model_free(model);
     ASSERT_EQ(rc, UFSMM_OK);
@@ -104,17 +104,17 @@ TEST(delete_entry_action)
     rc = ufsmm_model_load("test_delete_action.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    struct ufsmm_action *entries_list = ufsmm_model_get_actions(model);
+    struct ufsmm_actions *entries_list = &model->actions; //ufsmm_model_get_actions(model);
 
     printf("Model load %i\n", rc);
-    printf("model->actions = %p\n", entries_list);
+    printf("model->actions = %p\n", entries_list->tqh_first);
 
-    uuid_unparse(entries_list->id, uuid_str2);
+    uuid_unparse(entries_list->tqh_first->id, uuid_str2);
     ASSERT_EQ((char *) uuid_str, (char *) uuid_str2);
-    ASSERT_EQ(entries_list->name, "test-action");
+    ASSERT_EQ(entries_list->tqh_first->name, "test-action");
 
-    printf("Deleting %s, %s\n", entries_list->name, uuid_str2);
-    rc = ufsmm_model_delete_action(model, entries_list->id);
+    printf("Deleting %s, %s\n", entries_list->tqh_first->name, uuid_str2);
+    rc = ufsmm_model_delete_action(model, entries_list->tqh_first->id);
     ASSERT_EQ(rc, UFSMM_OK);
     printf("Done, saving model...\n");
 
@@ -129,8 +129,8 @@ TEST(delete_entry_action)
     rc = ufsmm_model_load("test_delete_action.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    entries_list = ufsmm_model_get_actions(model);
-    ASSERT_EQ(entries_list, NULL);
+    entries_list = &model->actions; //ufsmm_model_get_actions(model);
+    ASSERT_EQ(entries_list->tqh_first, NULL);
 
     rc = ufsmm_model_free(model);
     ASSERT_EQ(rc, UFSMM_OK);
@@ -179,7 +179,7 @@ TEST(delete_missing_entry_action)
     rc = ufsmm_model_load("test_delete_action2.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    struct ufsmm_action *entries_list = ufsmm_model_get_actions(model);
+    struct ufsmm_actions *entries_list = &model->actions;//ufsmm_model_get_actions(model);
 
     uuid_t non_existing_entry = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 

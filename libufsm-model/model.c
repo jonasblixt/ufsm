@@ -59,7 +59,7 @@ static int pop_r_js_pair(struct ufsmm_stack *stack,
     return ufsmm_stack_pop(stack, (void **) r);
 }
 
-static int parse_action_list(json_object *j_list, struct ufsmm_action **out,
+static int parse_action_list(json_object *j_list, struct ufsmm_actions *actions,
                              enum ufsmm_action_kind kind)
 {
     size_t no_of_actions = json_object_array_length(j_list);
@@ -68,12 +68,11 @@ static int parse_action_list(json_object *j_list, struct ufsmm_action **out,
     json_object *j_id;
 
     L_DEBUG("no_of_actions = %zu", no_of_actions);
+    TAILQ_INIT(actions);
 
-    struct ufsmm_action *list = NULL, *next;
     struct ufsmm_action *action;
 
     if (no_of_actions == 0) {
-        (*out) = NULL;
         return UFSMM_OK;
     }
 
@@ -101,17 +100,8 @@ static int parse_action_list(json_object *j_list, struct ufsmm_action **out,
 
         L_DEBUG("Loaded action function '%s' %s", action->name,
                         json_object_get_string(j_id));
-
-        if (list == NULL) {
-            list = action;
-            next = action;
-        } else {
-            next->next = action;
-            next = next->next;
-        }
+        TAILQ_INSERT_TAIL(actions, action, tailq);
     }
-
-    (*out) = list;
 
     return UFSMM_OK;
 }
@@ -533,10 +523,10 @@ err_free_model:
     return rc;
 }
 
-static int serialize_action_list(struct ufsmm_action *list,
+static int serialize_action_list(struct ufsmm_actions *input,
                                  json_object **out)
 {
-    struct ufsmm_action *item = list;
+    struct ufsmm_action *item;
     char uuid_str[37];
 
     json_object *actions = json_object_new_array();
@@ -544,7 +534,7 @@ static int serialize_action_list(struct ufsmm_action *list,
     json_object *name;
     json_object *id;
 
-    while (item) {
+    TAILQ_FOREACH(item, input, tailq) {
         action = json_object_new_object();
         name = json_object_new_string(item->name);
         uuid_unparse(item->id, uuid_str);
@@ -553,7 +543,6 @@ static int serialize_action_list(struct ufsmm_action *list,
         json_object_object_add(action, "name", name);
         json_object_object_add(action, "id", id);
         json_object_array_add(actions, action);
-        item = item->next;
     }
 
     (*out) = actions;
@@ -607,6 +596,8 @@ int ufsmm_model_create(struct ufsmm_model **model_pp, const char *name)
     memset(model->root, 0, sizeof(*model->root));
     uuid_generate_random(model->root->id);
 
+    TAILQ_INIT(&model->actions);
+    TAILQ_INIT(&model->guards);
     L_DEBUG("Created model '%s'", name);
 
     return UFSMM_OK;
@@ -686,7 +677,7 @@ int ufsmm_model_write(const char *filename, struct ufsmm_model *model)
     json_object *j_exits;
     json_object *j_guards;
 
-    rc = serialize_action_list(model->actions, &j_actions);
+    rc = serialize_action_list(&model->actions, &j_actions);
 
     if (rc != UFSMM_OK)
     {
@@ -694,7 +685,7 @@ int ufsmm_model_write(const char *filename, struct ufsmm_model *model)
         goto err_free_out;
     }
 
-    rc = serialize_action_list(model->guards, &j_guards);
+    rc = serialize_action_list(&model->guards, &j_guards);
 
     if (rc != UFSMM_OK)
     {
@@ -761,19 +752,17 @@ err_free_out:
     return rc;
 }
 
-static int free_action_list(struct ufsmm_action *list)
+static int free_action_list(struct ufsmm_actions *list)
 {
-    struct ufsmm_action *item = list;
-    struct ufsmm_action *tmp;
+    struct ufsmm_action *item;
 
     if (list == NULL)
         return UFSMM_OK;
 
-    while (item) {
-        tmp = item->next;
+    while (item = TAILQ_FIRST(list)) {
+        TAILQ_REMOVE(list, item, tailq);
         free((void *) item->name);
         free(item);
-        item = tmp;
     }
 
     return UFSMM_OK;
@@ -833,13 +822,13 @@ int ufsmm_model_free(struct ufsmm_model *model)
         return rc;
 
     L_DEBUG("Freeing actions");
-    rc = free_action_list(model->actions);
+    rc = free_action_list(&model->actions);
 
     if (rc != UFSMM_OK)
         return rc;
 
     L_DEBUG("Freeing guards");
-    rc = free_action_list(model->guards);
+    rc = free_action_list(&model->guards);
 
     if (rc != UFSMM_OK)
         return rc;
@@ -919,7 +908,7 @@ int ufsmm_model_add_action(struct ufsmm_model *model,
 {
     int rc = UFSMM_OK;
     struct ufsmm_action *action;
-    struct ufsmm_action *list, **dest;
+    struct ufsmm_actions *dest;
 
     action = malloc(sizeof(struct ufsmm_action));
 
@@ -946,16 +935,7 @@ int ufsmm_model_add_action(struct ufsmm_model *model,
             goto err_free_out;
     }
 
-    list = *dest;
-
-    if (list == NULL) {
-        list = action;
-        (*dest) = list;
-    } else {
-        while (list->next != NULL)
-            list = list->next;
-        list->next = action;
-    }
+    TAILQ_INSERT_TAIL(dest, action, tailq);
 
     if (act) {
         (*act) = action;
@@ -968,34 +948,21 @@ err_free_out:
     return rc;
 }
 
-static int action_list_delete(struct ufsmm_action **list_in, uuid_t id)
+static int action_list_delete(struct ufsmm_actions *actions, uuid_t id)
 {
+    struct ufsmm_action *tmp_act;
     bool found_item = false;
-    struct ufsmm_action *list = *list_in;
-    struct ufsmm_action *item = list;
-    struct ufsmm_action *prev, *next;
+    for (struct ufsmm_action *act = TAILQ_FIRST(actions); act != NULL; act = tmp_act) {
+        tmp_act = TAILQ_NEXT(act, tailq);
 
-    prev = NULL;
-
-    while (item) {
-        next = item->next;
-
-        if (uuid_compare(item->id, id) == 0) {
-            if (prev)
-                prev->next = next;
-
-            /* If this is the first and only item, set input to NULL */
-            if (item == *list_in)
-                (*list_in) = NULL;
-
-            free((void *) item->name);
-            memset(item, 0, sizeof(*item));
-            free(item);
+        if (uuid_compare(act->id, id) == 0) {
+            TAILQ_REMOVE(actions, act, tailq);
+            free((void *) act->name);
+            memset(act, 0, sizeof(*act));
+            free(act);
             found_item = true;
+            break;
         }
-
-        prev = item;
-        item = item->next;
     }
 
     if (found_item)
@@ -1020,73 +987,60 @@ int ufsmm_model_delete_action(struct ufsmm_model *model, uuid_t id)
     return -UFSMM_ERROR;
 }
 
-struct ufsmm_action* ufsmm_model_get_guards(struct ufsmm_model *model)
-{
-    return model->guards;
-}
-
-struct ufsmm_action* ufsmm_model_get_actions(struct ufsmm_model *model)
-{
-    return model->actions;
-}
-
 int ufsmm_model_get_action(struct ufsmm_model *model, uuid_t id,
                           enum ufsmm_action_kind kind,
                           struct ufsmm_action **result)
 {
-    struct ufsmm_action *list = NULL;
+    struct ufsmm_actions *list = NULL;
+    struct ufsmm_action *act = NULL;
 
     switch (kind) {
         case UFSMM_ACTION_ENTRY:
         case UFSMM_ACTION_EXIT:
         case UFSMM_ACTION_ACTION:
-            list = model->actions;
+            list = &model->actions;
         break;
         case UFSMM_ACTION_GUARD:
-            list = model->guards;
+            list = &model->guards;
         break;
         default:
             return -UFSMM_ERROR;
     }
 
-    while (list) {
-        if (uuid_compare(id, list->id) == 0) {
-            (*result) = list;
+    TAILQ_FOREACH(act, list, tailq) {
+        if (uuid_compare(id, act->id) == 0) {
+            (*result) = act;
             return UFSMM_OK;
         }
-
-        list = list->next;
     }
 
     return -UFSMM_ERROR;
 }
-
 
 int ufsmm_model_get_action_by_name(struct ufsmm_model *model,
                           const char *name,
                           enum ufsmm_action_kind kind,
                           struct ufsmm_action **result)
 {
-    struct ufsmm_action *list = NULL;
+    struct ufsmm_actions *list = NULL;
+    struct ufsmm_action *act = NULL;
 
     switch (kind) {
         case UFSMM_ACTION_ACTION:
-            list = model->actions;
+            list = &model->actions;
         break;
         case UFSMM_ACTION_GUARD:
-            list = model->guards;
+            list = &model->guards;
         break;
         default:
             return -UFSMM_ERROR;
     }
 
-    while (list) {
-        if (strcmp(list->name, name) == 0) {
-            (*result) = list;
+    TAILQ_FOREACH(act, list, tailq) {
+        if (strcmp(act->name, name) == 0) {
+            (*result) = act;
             return UFSMM_OK;
         }
-
-        list = list->next;
     }
 
     return -UFSMM_ERROR;

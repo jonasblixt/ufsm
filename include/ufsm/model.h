@@ -101,8 +101,10 @@ struct ufsmm_action
     uuid_t id;
     const char *name;
     enum ufsmm_action_kind kind;
-    struct ufsmm_action *next;
+    TAILQ_ENTRY(ufsmm_action) tailq;
 };
+
+TAILQ_HEAD(ufsmm_actions, ufsmm_action);
 
 struct ufsmm_action_ref
 {
@@ -214,8 +216,8 @@ struct ufsmm_model
 {
     json_object *jroot;
     struct ufsmm_region *root;
-    struct ufsmm_action *guards;  /* Global list of guard functions */
-    struct ufsmm_action *actions; /* Global list of action functions */
+    struct ufsmm_actions guards;  /* Global list of guard functions */
+    struct ufsmm_actions actions; /* Global list of action functions */
     struct ufsmm_trigger *triggers;
     const char *name;
     int version;
@@ -256,8 +258,6 @@ int ufsmm_model_calculate_nested_region_depth(struct ufsmm_model *model);
 int ufsmm_model_calculate_max_transitions(struct ufsmm_model *model);
 int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model);
 
-struct ufsmm_action* ufsmm_model_get_guards(struct ufsmm_model *model);
-struct ufsmm_action* ufsmm_model_get_actions(struct ufsmm_model *model);
 struct ufsmm_trigger* ufsmm_model_get_triggers(struct ufsmm_model *model);
 
 struct ufsmm_state *ufsmm_model_get_state_from_uuid(struct ufsmm_model *model,

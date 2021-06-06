@@ -499,10 +499,10 @@ static int generate_header_file(struct ufsmm_model *model,
     }
 
     /* Guard function prototypes */
-    if (model->guards) {
+    if (model->guards.tqh_first) {
         fprintf(fp, "/* Guard function prototypes */\n");
-
-        for (struct ufsmm_action *a = model->guards; a; a = a->next) {
+        struct ufsmm_action *a;
+        TAILQ_FOREACH(a, &model->guards, tailq) {
             fprintf(fp, "bool %s(void *context);\n", a->name);
         }
 
@@ -510,10 +510,11 @@ static int generate_header_file(struct ufsmm_model *model,
     }
 
     /* Action function prototypes */
-    if (model->actions) {
+    if (model->actions.tqh_first) {
         fprintf(fp, "/* Action function prototypes */\n");
 
-        for (struct ufsmm_action *a = model->actions; a; a = a->next) {
+        struct ufsmm_action *a;
+        TAILQ_FOREACH(a, &model->actions, tailq) {
             fprintf(fp, "void %s(void *context);\n", a->name);
         }
 
