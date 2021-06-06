@@ -89,7 +89,7 @@ static void render_selection_boxes(cairo_t *cr, struct ufsmm_transition *t)
 
     cairo_move_to (cr, fbx, fby);
 
-    for (v = t->vertices; v; v = v->next) {
+    TAILQ_FOREACH(v, &t->vertices, tailq) {
         cairo_rectangle (cr, rx + v->x - 5, ry + v->y - 5, 10, 10);
         cairo_fill(cr);
         cairo_move_to (cr, rx + v->x, ry + v->y);
@@ -298,18 +298,18 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
 }
 
 int ufsmm_canvas_render_transition(cairo_t *cr,
-                                  struct ufsmm_transition *transitions)
+                                  struct ufsmm_transitions *transitions)
 {
     double begin_x, begin_y, end_x, end_y;
     cairo_text_extents_t extents;
     struct ufsmm_vertice *v;
+    struct ufsmm_transition *t;
     double rx, ry, rw, rh;
 
     if (transitions == NULL)
         return UFSMM_OK;
 
-    for (struct ufsmm_transition *t = transitions; t; t = t->next) {
-
+    TAILQ_FOREACH(t, transitions, tailq) {
         transition_calc_begin_end_point(t->source.state,
                              t->source.side,
                              t->source.offset,
@@ -327,7 +327,7 @@ int ufsmm_canvas_render_transition(cairo_t *cr,
         cairo_move_to (cr, begin_x, begin_y);
         cairo_set_line_width (cr, 2.0);
 
-        for (v = t->vertices; v; v = v->next) {
+        TAILQ_FOREACH(v, &t->vertices, tailq) {
             cairo_line_to(cr, v->x + rx, v->y + ry);
             ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
             cairo_stroke (cr);

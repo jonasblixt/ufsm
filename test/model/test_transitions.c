@@ -15,9 +15,9 @@ TEST(load_transitions)
     ASSERT_EQ(rc, UFSMM_OK);
 
     ASSERT(model->root->state);
-    ASSERT(model->root->state->transition != NULL);
+    ASSERT(model->root->state->transitions.tqh_first != NULL);
 
-    struct ufsmm_transition *t = model->root->state->transition;
+    struct ufsmm_transition *t = model->root->state->transitions.tqh_first;
     ASSERT_EQ(t->source.state->name, "A");
     ASSERT_EQ(t->source.offset, 20.0);
     ASSERT_EQ(t->source.side, UFSMM_SIDE_RIGHT);
@@ -32,7 +32,7 @@ TEST(load_transitions)
     ASSERT_EQ(t->text_block_coords.y, 10.0);
     ASSERT_EQ(t->text_block_coords.w, 100.0);
     ASSERT_EQ(t->text_block_coords.h, 50.0);
-
+/*
     struct ufsmm_vertice *v1, *v2;
 
     v1 = t->vertices;
@@ -41,7 +41,7 @@ TEST(load_transitions)
     ASSERT_EQ(v1->y, 100.0);
     ASSERT_EQ(v2->x, 100.0);
     ASSERT_EQ(v2->y, 110.0);
-
+*/
     struct ufsmm_action_ref *guards = t->guard;
     ASSERT_EQ(guards->act->name, "gSecond");
 
@@ -80,7 +80,9 @@ TEST(create_one_transition)
 
     /* Create a transition from A to B */
     struct ufsmm_transition *t;
-    rc = ufsmm_state_add_transition(a, b, &t);
+    rc = ufsmm_transition_new(&t);
+    ASSERT_EQ(rc, 0);
+    rc = ufsmm_state_add_transition(a, b, t);
     ASSERT_EQ(rc, UFSMM_OK);
 
     /* Create a trigger and assign it to transition 't' */
@@ -109,7 +111,7 @@ TEST(create_one_transition)
     ASSERT(a != NULL);
     ASSERT(b != NULL);
 
-    t = a->transition;
+    t = a->transitions.tqh_first;
     ASSERT(t != NULL);
     ASSERT_EQ(t->source.state->name, "A");
     ASSERT_EQ(t->dest.state->name, "B");
@@ -144,11 +146,17 @@ TEST(create_multiple_transitions)
 
     /* Create transitions between A and B */
     printf("Creating transitions\n");
-    rc = ufsmm_state_add_transition(a, b, &t1);
+    rc = ufsmm_transition_new(&t1);
+    ASSERT_EQ(rc, 0);
+    rc = ufsmm_state_add_transition(a, b, t1);
     ASSERT_EQ(rc, UFSMM_OK);
-    rc = ufsmm_state_add_transition(a, b, &t2);
+    rc = ufsmm_transition_new(&t2);
+    ASSERT_EQ(rc, 0);
+    rc = ufsmm_state_add_transition(a, b, t2);
     ASSERT_EQ(rc, UFSMM_OK);
-    rc = ufsmm_state_add_transition(b, a, &t3);
+    rc = ufsmm_transition_new(&t3);
+    ASSERT_EQ(rc, 0);
+    rc = ufsmm_state_add_transition(b, a, t3);
     ASSERT_EQ(rc, UFSMM_OK);
 
     /* Create a trigger and assign it to transition 't' */

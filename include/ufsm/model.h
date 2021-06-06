@@ -3,6 +3,7 @@
 
 #include <stdarg.h>
 #include <stdint.h>
+#include <sys/queue.h>
 #include <uuid/uuid.h>
 #include <stdbool.h>
 #include <json.h>
@@ -95,20 +96,6 @@ enum ufsmm_transition_vertice_kind
     UFSMM_TRANSITION_VERTICE_END,
 };
 
-struct ufsmm_ll_node
-{
-    void *data;
-    struct ufsmm_ll_node *next;
-    struct ufsmm_ll_node *prev;
-};
-
-struct ufsmm_ll
-{
-    struct ufsmm_ll_node *first;
-    struct ufsmm_ll_node *last;
-};
-
-
 struct ufsmm_action
 {
     uuid_t id;
@@ -137,8 +124,10 @@ struct ufsmm_vertice
 {
     double x;
     double y;
-    struct ufsmm_vertice *next;
+    TAILQ_ENTRY(ufsmm_vertice) tailq;
 };
+
+TAILQ_HEAD(ufsmm_vertices, ufsmm_vertice);
 
 struct ufsmm_transition_state_ref
 {
@@ -172,12 +161,13 @@ struct ufsmm_transition
     struct ufsmm_transition_state_ref source;
     struct ufsmm_transition_state_ref dest;
     struct ufsmm_coords text_block_coords;
-    struct ufsmm_vertice *vertices;
+    struct ufsmm_vertices vertices;
     struct ufsmm_transition_state_condition *state_conditions;
     bool focus;
-    struct ufsmm_transition *prev;
-    struct ufsmm_transition *next;
+    TAILQ_ENTRY(ufsmm_transition) tailq;
 };
+
+TAILQ_HEAD(ufsmm_transitions, ufsmm_transition);
 
 struct ufsmm_region
 {
@@ -210,7 +200,7 @@ struct ufsmm_state
     bool resizeable;
     unsigned int branch_concurrency_count;
     enum ufsmm_state_kind kind;
-    struct ufsmm_transition *transition;
+    struct ufsmm_transitions transitions;
     struct ufsmm_action_ref *entries;
     struct ufsmm_action_ref *exits;
     struct ufsmm_region *regions;
@@ -324,12 +314,9 @@ int ufsmm_state_get_exits(struct ufsmm_state *state,
 
 int ufsmm_state_add_transition(struct ufsmm_state *source,
                               struct ufsmm_state *dest,
-                              struct ufsmm_transition **transition);
+                              struct ufsmm_transition *transition);
 
 int ufsmm_state_delete_transition(struct ufsmm_transition *transition);
-
-int ufsmm_state_get_transitions(struct ufsmm_state *state,
-                               struct ufsmm_transition **transitions);
 
 int ufsmm_state_append_region(struct ufsmm_state *state, struct ufsmm_region *r);
 
@@ -392,7 +379,7 @@ int ufsmm_transition_add_state_condition(struct ufsmm_model *model,
 
 int ufsmm_transition_delete_state_condition(struct ufsmm_transition *transition,
                                             uuid_t id);
-
+int ufsmm_transition_new(struct ufsmm_transition **transition);
 int ufsmm_transition_free_one(struct ufsmm_transition *transition);
 
 struct ufsmm_transition_state_condition *
@@ -400,7 +387,7 @@ ufsmm_transition_get_state_conditions(struct ufsmm_transition *t);
 
 int ufsmm_transition_change_src_state(struct ufsmm_transition *transition,
                                       struct ufsmm_state *new_state);
-int ufsmm_transition_free(struct ufsmm_transition *transition);
+int ufsmm_transition_free(struct ufsmm_transitions *transitions);
 
 /* Misc model library stuff */
 
@@ -416,28 +403,4 @@ int ufsmm_stack_free(struct ufsmm_stack *stack);
 int ufsmm_stack_push(struct ufsmm_stack *stack, void *item);
 int ufsmm_stack_pop(struct ufsmm_stack *stack, void **item);
 
-/* uFSM linked list API */
-
-struct ufsmm_ll_node* ufsmm_ll_init_node(void *data);
-void ufsmm_ll_free_node(struct ufsmm_ll_node *node);
-int ufsmm_ll_init(struct ufsmm_ll **ll);
-int ufsmm_ll_free(struct ufsmm_ll *ll);
-int ufsmm_ll_append(struct ufsmm_ll *ll, struct ufsmm_ll_node *node);
-int ufsmm_ll_append2(struct ufsmm_ll *ll, void *data);
-int ufsmm_ll_pop(struct ufsmm_ll *ll, struct ufsmm_ll_node **node);
-int ufsmm_ll_pop2(struct ufsmm_ll *ll, void **data);
-int ufsmm_ll_prepend(struct ufsmm_ll *ll, struct ufsmm_ll_node *node);
-int ufsmm_ll_get_first(struct ufsmm_ll *ll, struct ufsmm_ll_node **node);
-int ufsmm_ll_get_last(struct ufsmm_ll *ll, struct ufsmm_ll_node **node);
-int ufsmm_ll_move_up(struct ufsmm_ll *ll, struct ufsmm_ll_node *node);
-int ufsmm_ll_move_down(struct ufsmm_ll *ll, struct ufsmm_ll_node *node);
-int ufsmm_ll_remove(struct ufsmm_ll *ll, struct ufsmm_ll_node *node);
-int ufsmm_ll_find(struct ufsmm_ll *ll, void *data_ref,
-                                    struct ufsmm_ll_node **node);
-int ufsmm_ll_insert_before(struct ufsmm_ll *ll,
-                           struct ufsmm_ll_node *before_node,
-                           struct ufsmm_ll_node *node);
-int ufsmm_ll_insert_after(struct ufsmm_ll *ll,
-                           struct ufsmm_ll_node *after_node,
-                           struct ufsmm_ll_node *node);
 #endif  // INCLUDE_UFSMM_MODEL_H_

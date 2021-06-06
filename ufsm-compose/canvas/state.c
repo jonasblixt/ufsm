@@ -340,20 +340,28 @@ int ufsmm_canvas_render_state(struct ufsmm_canvas *canvas,
 
 int ufsmm_canvas_state_translate(struct ufsmm_state *s, double dx, double dy)
 {
+    struct ufsmm_transition *t;
     s->x += dx;
     s->y += dy;
 
-    for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
+    TAILQ_FOREACH(t, &s->transitions, tailq) {
         if ((t->source.state == s) &&
             (t->dest.state == s)) {
 
             t->text_block_coords.x += dx;
             t->text_block_coords.y += dy;
 
+            struct ufsmm_vertice *v;
+            TAILQ_FOREACH(v, &t->vertices, tailq) {
+                v->x += dx;
+                v->y += dy;
+            }
+/*
             for (struct ufsmm_vertice *v = t->vertices; v; v = v->next) {
                 v->x += dx;
                 v->y += dy;
             }
+*/
         }
     }
 }

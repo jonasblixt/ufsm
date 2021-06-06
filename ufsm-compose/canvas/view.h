@@ -64,7 +64,7 @@ int ufsmm_canvas_render_state(struct ufsmm_canvas *canvas,
 int ufsmm_canvas_render_region(struct ufsmm_canvas *canvas,
                                struct ufsmm_region *region);
 
-int ufsmm_canvas_render_transition(cairo_t *cr, struct ufsmm_transition *t);
+int ufsmm_canvas_render_transition(cairo_t *cr, struct ufsmm_transitions *t);
 double ufsmm_canvas_get_scale(void);
 
 int ufsmm_get_state_absolute_coords(struct ufsmm_state *s, double *x,

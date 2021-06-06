@@ -13,6 +13,7 @@ int ufsmm_add_state(struct ufsmm_region *region, const char *name,
         return -UFSMM_ERR_MEM;
 
     memset(state, 0, sizeof(*state));
+    TAILQ_INIT(&state->transitions);
 
     (*out) = state;
 
@@ -247,6 +248,7 @@ int ufsmm_state_deserialize(struct ufsmm_model *model,
     state = malloc(sizeof(struct ufsmm_state));
     memset(state, 0, sizeof(*state));
 
+    TAILQ_INIT(&state->transitions);
     (*out) = state;
 
     if (!json_object_object_get_ex(j_state, "id", &j_id)) {
@@ -520,63 +522,20 @@ int ufsmm_state_delete_exit(struct ufsmm_state *state,
 
 int ufsmm_state_add_transition(struct ufsmm_state *source,
                               struct ufsmm_state *dest,
-                              struct ufsmm_transition **transition)
+                              struct ufsmm_transition *t)
 {
-    struct ufsmm_transition *t, *t_tmp;
+    struct ufsmm_transition *t_tmp;
 
-    t = malloc(sizeof(*t));
-
-    if (t == NULL)
-        return -UFSMM_ERROR;
-
-    memset(t, 0, sizeof(*t));
-
-    if (transition) {
-        (*transition) = t;
-    }
-
-    uuid_generate_random(t->id);
     t->source.state = source;
     t->dest.state = dest;
 
-    if (source->transition == NULL) {
-        source->transition = t;
-    } else {
-        t_tmp = source->transition;
-
-        while (t_tmp->next)
-            t_tmp = t_tmp->next;
-
-        t_tmp->next = t;
-    }
-
+    TAILQ_INSERT_TAIL(&source->transitions, t, tailq);
     return UFSMM_OK;
 }
 
 int ufsmm_state_delete_transition(struct ufsmm_transition *transition)
 {
-    struct ufsmm_state *s = transition->source.state;
-    struct ufsmm_transition *prev = transition->prev;
-    struct ufsmm_transition *next = transition->next;
-
-    if (prev) {
-        prev->next = next;
-        if (next)
-            next->prev = prev;
-    } else {
-        s->transition = transition->next;
-        if (s->transition)
-            s->transition->prev = NULL;
-    }
-
     return ufsmm_transition_free_one(transition);
-}
-
-int ufsmm_state_get_transitions(struct ufsmm_state *state,
-                               struct ufsmm_transition **transitions)
-{
-    (*transitions) = state->transition;
-    return UFSMM_OK;
 }
 
 int ufsmm_state_move_to_region(struct ufsmm_model *model,

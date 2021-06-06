@@ -42,12 +42,7 @@ struct ufsmm_canvas {
     enum ufsmm_transition_vertice_kind selected_transition_vertice;
     struct ufsmm_vertice *selected_transition_vertice_data;
     struct ufsmm_action_ref *selected_aref;
-    /* New transition variables */
-    struct ufsmm_vertice *new_transition_vertice;
-    struct ufsmm_vertice *new_transition_vertice_last;
-    struct ufsmm_state *new_transition_source_state;
-    double new_transition_source_offset;
-    enum ufsmm_side new_transition_source_side;
+    struct ufsmm_transition *new_transition;
     /* Common stuff */
     bool redraw;
     double dx, dy;

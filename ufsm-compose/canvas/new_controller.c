@@ -504,11 +504,12 @@ void canvas_move_state(void *context)
             priv->sy = priv->py;
 
             /* Update vertice coordinates on outgoing transitions */
-            for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
+            struct ufsmm_transition *t;
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
                 t->text_block_coords.x += diff_x;
                 t->text_block_coords.y += diff_y;
-
-                for (struct ufsmm_vertice *v = t->vertices; v; v = v->next) {
+                struct ufsmm_vertice *v;
+                TAILQ_FOREACH(v, &t->vertices, tailq) {
                     v->x += diff_x;
                     v->y += diff_y;
                 }
@@ -851,10 +852,12 @@ void canvas_create_transition_start(void *context)
 
     if (rc == UFSMM_OK) {
         L_DEBUG("Found source state: %s", source_state->name);
-        priv->new_transition_source_state = source_state;
+        ufsmm_transition_new(&priv->new_transition);
+        priv->new_transition->source.state = source_state;
         ufsmm_state_get_closest_side(priv, source_state,
-                                    &priv->new_transition_source_side,
-                                    &priv->new_transition_source_offset);
+                                    &priv->new_transition->source.side,
+                                    &priv->new_transition->source.offset);
+
     }
 }
 
@@ -883,23 +886,20 @@ void canvas_create_transition(void *context)
 
         ufsmm_state_get_closest_side(priv, dest_state, &dest_side,
                                     &dest_offset);
-        L_DEBUG("Creating transition %s --> %s", priv->new_transition_source_state->name,
+        L_DEBUG("Creating transition %s --> %s", priv->new_transition->source.state->name,
                                                  dest_state->name);
-        struct ufsmm_transition *new_transition;
-        ufsmm_state_add_transition(priv->new_transition_source_state,
-                                   dest_state, &new_transition);
-        new_transition->source.side = priv->new_transition_source_side;
-        new_transition->source.offset = priv->new_transition_source_offset;
-        new_transition->dest.side = dest_side;
-        new_transition->dest.offset = dest_offset;
-        new_transition->text_block_coords.x = priv->new_transition_source_state->x;
-        new_transition->text_block_coords.y = priv->new_transition_source_state->y;
-        new_transition->text_block_coords.w = 100;
-        new_transition->text_block_coords.h = 30;
-        new_transition->vertices = priv->new_transition_vertice;
+        priv->new_transition->dest.side = dest_side;
+        priv->new_transition->dest.offset = dest_offset;
+        priv->new_transition->text_block_coords.x = priv->new_transition->source.state->x;
+        priv->new_transition->text_block_coords.y = priv->new_transition->source.state->y;
+        priv->new_transition->text_block_coords.w = 100;
+        priv->new_transition->text_block_coords.h = 30;
+
+        ufsmm_state_add_transition(priv->new_transition->source.state,
+                                   dest_state,
+                                   priv->new_transition);
     }
 
-    priv->new_transition_vertice = NULL;
     priv->redraw = true;
 }
 
@@ -917,26 +917,19 @@ void canvas_transition_vdel_last(void *context)
 void canvas_add_transition_vertice(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_vertice *v;
     double x, y, w, h;
 
-    if (priv->new_transition_vertice == NULL) {
-        priv->new_transition_vertice = malloc(sizeof(*priv->new_transition_vertice));
-        memset(priv->new_transition_vertice, 0, sizeof(*priv->new_transition_vertice));
-        priv->new_transition_vertice_last = priv->new_transition_vertice;
-    } else {
-        priv->new_transition_vertice_last->next = malloc(sizeof(*priv->new_transition_vertice));
-        priv->new_transition_vertice_last = priv->new_transition_vertice_last->next;
-        memset(priv->new_transition_vertice_last, 0, sizeof(*priv->new_transition_vertice_last));
-    }
+    v = malloc(sizeof(*v));
+    memset(v, 0, sizeof(*v));
 
     ufsmm_get_region_absolute_coords(priv->selected_region, &x, &y, &w, &h);
-    priv->new_transition_vertice_last->x =
-        ufsmm_canvas_nearest_grid_point(priv->px) - (x + priv->current_region->ox);
-    priv->new_transition_vertice_last->y =
-        ufsmm_canvas_nearest_grid_point(priv->py) - (y + priv->current_region->oy);
 
-    L_DEBUG("Add vertice at <%f, %f>", priv->new_transition_vertice_last->x,
-                                       priv->new_transition_vertice_last->y);
+    v->x = ufsmm_canvas_nearest_grid_point(priv->px) - (x + priv->current_region->ox);
+    v->y = ufsmm_canvas_nearest_grid_point(priv->py) - (y + priv->current_region->oy);
+
+    TAILQ_INSERT_TAIL(&priv->new_transition->vertices, v, tailq);
+    L_DEBUG("Add vertice at <%f, %f>", v->x, v->y);
 }
 
 void canvas_create_init_state(void *context)

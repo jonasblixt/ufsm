@@ -34,13 +34,15 @@ static void uu_to_str(uuid_t uu, char *output)
 static void generate_transitions(FILE *fp, struct ufsmm_state *s)
 {
     char uu_str[37];
+    struct ufsmm_transition *t;
 
-    if (s->transition) {
+    if (s->transitions.tqh_first) {
         fprintf(fp, "/* Transitions originating from '%s' */\n", s->name);
     }
 
     /* Forward declare transitions */
-    for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
+
+    TAILQ_FOREACH(t, &s->transitions, tailq) {
         uu_to_str(t->id, uu_str);
         fprintf(fp, "const struct ufsm_transition t_%s;\n", uu_str);
         for (struct ufsmm_action_ref *ar = t->action; ar; ar = ar->next) {
@@ -55,7 +57,7 @@ static void generate_transitions(FILE *fp, struct ufsmm_state *s)
 
     fprintf(fp, "\n");
 
-    for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
+    TAILQ_FOREACH(t, &s->transitions, tailq) {
         for (struct ufsmm_action_ref *ar = t->action; ar; ar = ar->next) {
             uu_to_str(ar->id, uu_str);
             fprintf(fp, "const struct ufsm_action a_%s = {\n", uu_str);
@@ -113,8 +115,8 @@ static void generate_transitions(FILE *fp, struct ufsmm_state *s)
         fprintf(fp, "    .source = &s_%s,\n", uu_str);
         uu_to_str(t->dest.state->id, uu_str);
         fprintf(fp, "    .dest = &s_%s,\n", uu_str);
-        if (t->next) {
-            uu_to_str(t->next->id, uu_str);
+        if (TAILQ_NEXT(t, tailq)) {
+            uu_to_str(TAILQ_NEXT(t, tailq)->id, uu_str);
             fprintf(fp, "    .next = &t_%s,\n", uu_str);
         } else {
             fprintf(fp, "    .next = NULL,\n");
@@ -230,8 +232,8 @@ static void generate_state_output(FILE *fp, struct ufsmm_state *s)
     }
     fprintf(fp, "    .kind = %s,\n", state_kind);
 
-    if (s->transition) {
-        uu_to_str(s->transition->id, uu_str);
+    if (s->transitions.tqh_first) {
+        uu_to_str(s->transitions.tqh_first->id, uu_str);
         fprintf(fp, "    .transition = &t_%s,\n", uu_str);
     } else {
         fprintf(fp, "    .transition = NULL,\n");

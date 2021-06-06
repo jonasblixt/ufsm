@@ -5,8 +5,7 @@ libufsm_model_la_SOURCES = ufsm.c \
                     model.c \
                     state.c \
                     transition.c \
-                    region.c \
-                    ll.c
+                    region.c
 
 libufsm_model_la_CFLAGS = -I$(top_srcdir)/include \
                      $(CODE_COVERAGE_CFLAGS) \

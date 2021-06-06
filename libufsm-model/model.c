@@ -874,7 +874,7 @@ int ufsmm_model_free(struct ufsmm_model *model)
                 free_action_ref_list(s->exits);
 
                 L_DEBUG("Freeing transitions for state '%s'", s->name);
-                ufsmm_transition_free(s->transition);
+                ufsmm_transition_free(&s->transitions);
                 free((void *) s->name);
 
                 for (r2 = s->regions; r2; r2 = r2->next)
@@ -1377,8 +1377,10 @@ int ufsmm_model_calculate_max_transitions(struct ufsmm_model *model)
         for (s = r->state; s; s = s->next) {
             unsigned int t_count = 0;
 
-            for (struct ufsmm_transition *t = s->transition; t; t = t->next)
+            struct ufsmm_transition *t;
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
                 t_count += 1;
+            }
 
             if (t_count > max_source_transitions)
                 max_source_transitions = t_count;
@@ -1508,7 +1510,8 @@ static int internal_delete(struct ufsmm_model *model,
     L_DEBUG("Deleting source transitions");
     if (state) {
         L_DEBUG("Deleting transitions originating from '%s'", state->name);
-        for (struct ufsmm_transition *t = state->transition; t; t = t->next) {
+        struct ufsmm_transition *t;
+        TAILQ_FOREACH(t, &state->transitions, tailq) {
             rc = ufsmm_stack_push(stack3, (void *) t);
             if (rc != UFSMM_OK)
                 goto err_out;
@@ -1517,7 +1520,8 @@ static int internal_delete(struct ufsmm_model *model,
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
         for (s = r->state; s; s = s->next) {
             L_DEBUG("Deleting transitions originating from '%s'", s->name);
-            for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
+            struct ufsmm_transition *t;
+            TAILQ_FOREACH(t, &state->transitions, tailq) {
                 rc = ufsmm_stack_push(stack3, (void *) t);
                 if (rc != UFSMM_OK)
                     goto err_out;
@@ -1555,7 +1559,8 @@ static int internal_delete(struct ufsmm_model *model,
 
         while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
             for (s = r->state; s; s = s->next) {
-                for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
+                struct ufsmm_transition *t;
+                TAILQ_FOREACH(t, &s->transitions, tailq) {
                     if (t->dest.state == s2) {
                         rc = ufsmm_stack_push(stack3, (void *) t);
                         if (rc != UFSMM_OK)

@@ -147,7 +147,8 @@ bool canvas_transition_vertice_selected(void *context)
         priv->tx = t->source.offset;
     }
 
-    for (struct ufsmm_vertice *v = t->vertices; v; v = v->next) {
+    struct ufsmm_vertice *v;
+    TAILQ_FOREACH(v, &t->vertices, tailq) {
         if (point_in_box(priv->px, priv->py, v->x + ox + rx, v->y + oy + ry, 10, 10)) {
             L_DEBUG("Vertice selected");
             priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE;
@@ -314,7 +315,8 @@ void canvas_process_selection(void *context)
             continue;
 
         for (s = r->state; s; s = s->next) {
-            for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
+            struct ufsmm_transition *t;
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
                 struct ufsmm_vertice *v;
                 double vsx, vsy, vex, vey;
                 double tsx, tsy, tex, tey;
@@ -337,8 +339,8 @@ void canvas_process_selection(void *context)
                 vsx = tsx + ox;
                 vsy = tsy + oy;
 
-                if (t->vertices) {
-                    for (v = t->vertices; v; v = v->next) {
+                if (t->vertices.tqh_first != NULL) {
+                    TAILQ_FOREACH(v, &t->vertices, tailq) {
                         vex = v->x + ox + rx;
                         vey = v->y + oy + ry;
 

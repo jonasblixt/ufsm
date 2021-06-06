@@ -100,13 +100,14 @@ static int deserialize_vertices(json_object *j_vertices,
         vertice->y = y;
 
         // ufsmm_ll_append2(t->vertices, vertice);
-        if (t->vertices == NULL) {
+        /*if (t->vertices == NULL) {
             t->vertices = vertice;
             prev = vertice;
         } else {
             prev->next = vertice;
             prev = prev->next;
-        }
+        }*/
+        TAILQ_INSERT_TAIL(&t->vertices, vertice, tailq);
     }
 
     return UFSMM_OK;
@@ -203,6 +204,8 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
             return -UFSMM_ERROR;
 
         memset(transition, 0, sizeof(*transition));
+
+        TAILQ_INIT(&transition->vertices);
 
         if (!json_object_object_get_ex(j_t, "id", &j_id)) {
             L_ERR("Could not read ID");
@@ -347,17 +350,7 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
         L_DEBUG("Loaded transition '%s' -> '%s'", transition->source.state->name,
                                                   transition->dest.state->name);
 
-        if (state->transition == NULL) {
-            state->transition = transition;
-            transition->prev = NULL;
-        } else {
-            struct ufsmm_transition *list = state->transition;
-
-            while (list->next)
-                list = list->next;
-            list->next = transition;
-            transition->prev = list;
-        }
+        TAILQ_INSERT_TAIL(&state->transitions, transition, tailq);
     }
 
 
@@ -402,7 +395,7 @@ int ufsmm_transitions_serialize(struct ufsmm_state *state,
 
     L_DEBUG("Serializing transitions belonging to state '%s'", state->name);
 
-    for (t = state->transition; t; t = t->next) {
+    TAILQ_FOREACH(t, &state->transitions, tailq) {
         j_t = json_object_new_object();
 
         /* Add UUID */
@@ -490,8 +483,8 @@ int ufsmm_transitions_serialize(struct ufsmm_state *state,
         /* Add vertices */
         json_object *j_vertices = json_object_new_array();
 
-        // struct ufsmm_ll_node *vnode = t->vertices; vnode
-        for (struct ufsmm_vertice *v = t->vertices; v; v = v->next) {
+        struct ufsmm_vertice *v;
+        TAILQ_FOREACH(v, &t->vertices, tailq) {
             json_object *j_vertice = json_object_new_object();
 
             json_object_object_add(j_vertice, "x",
@@ -545,35 +538,29 @@ err_out:
     return rc;
 }
 
-int ufsmm_transition_free(struct ufsmm_transition *transition)
+int ufsmm_transition_free(struct ufsmm_transitions *transitions)
 {
-    struct ufsmm_transition *list = transition;
-    struct ufsmm_transition *tmp;
-    struct ufsmm_vertice *v, *v_tmp;
+    struct ufsmm_transition *t;
+    struct ufsmm_vertice *v;
     struct ufsmm_transition_state_condition *sc, *sc_tmp;
 
-    if (transition == NULL)
+    if (transitions == NULL)
         return UFSMM_OK;
 
-    while (list)
-    {
-        L_DEBUG("Freeing transition %s --> %s", list->source.state->name,
-                                                list->dest.state->name);
-        tmp = list->next;
+    while (t = TAILQ_FIRST(transitions)) {
+        L_DEBUG("Freeing transition %s --> %s", t->source.state->name,
+                                                t->dest.state->name);
         L_DEBUG("Freeing actions");
-        free_action_ref_list(list->action);
+        free_action_ref_list(t->action);
         L_DEBUG("Freeing guards");
-        free_action_ref_list(list->guard);
+        free_action_ref_list(t->guard);
 
-        v = list->vertices;
-
-        while (v) {
-            v_tmp = v->next;
+        while (v = TAILQ_FIRST(&t->vertices)) {
+            TAILQ_REMOVE(&t->vertices, v, tailq);
             free(v);
-            v = v_tmp;
         }
 
-        sc = list->state_conditions;
+        sc = t->state_conditions;
 
         while (sc) {
             sc_tmp = sc->next;
@@ -581,8 +568,8 @@ int ufsmm_transition_free(struct ufsmm_transition *transition)
             sc = sc_tmp;
         }
 
-        free(list);
-        list = tmp;
+        TAILQ_REMOVE(transitions, t, tailq);
+        free(t);
     }
 
     return UFSMM_OK;
@@ -599,28 +586,18 @@ int ufsmm_transition_free_one(struct ufsmm_transition *transition)
 
     L_DEBUG("Freeing transition %s --> %s", transition->source.state->name,
                                             transition->dest.state->name);
+
+    TAILQ_REMOVE(&transition->source.state->transitions, transition, tailq);
     source = transition->source.state;
-
-    if (transition->prev) {
-        transition->prev->next = transition->next;
-    } else {
-        source->transition = transition->next;
-    }
-
-    if (transition->next)
-        transition->next->prev = transition->prev;
 
     L_DEBUG("Freeing actions");
     free_action_ref_list(transition->action);
     L_DEBUG("Freeing guards");
     free_action_ref_list(transition->guard);
 
-    v = transition->vertices;
-
-    while (v) {
-        v_tmp = v->next;
+    while (v = TAILQ_FIRST(&transition->vertices)) {
+        TAILQ_REMOVE(&transition->vertices, v, tailq);
         free(v);
-        v = v_tmp;
     }
 
     sc = transition->state_conditions;
@@ -632,7 +609,6 @@ int ufsmm_transition_free_one(struct ufsmm_transition *transition)
     }
 
     free(transition);
-
     return UFSMM_OK;
 }
 
@@ -762,28 +738,11 @@ int ufsmm_transition_change_src_state(struct ufsmm_transition *transition,
 {
     struct ufsmm_transition_state_ref *src = &transition->source;
     struct ufsmm_state *old_state = src->state;
-    struct ufsmm_transition *prev = transition->prev;
-    struct ufsmm_transition *next = transition->next;
     src->state = new_state;
 
-    if (prev == NULL) {
-        old_state->transition = next;
-    } else {
-        prev->next = next;
-    }
+    TAILQ_REMOVE(&old_state->transitions, transition, tailq);
+    TAILQ_INSERT_TAIL(&new_state->transitions, transition, tailq);
 
-    if (new_state->transition == NULL) {
-        new_state->transition = transition;
-        transition->next = NULL;
-        transition->prev = NULL;
-    } else {
-        struct ufsmm_transition *last = new_state->transition;
-        while (last->next != NULL)
-            last = last->next;
-        last->next = transition;
-        transition->next = NULL;
-        transition->prev = last;
-    }
     return 0;
 }
 
@@ -815,4 +774,24 @@ struct ufsmm_transition_state_condition *
 ufsmm_transition_get_state_conditions(struct ufsmm_transition *t)
 {
     return t->state_conditions;
+}
+
+int ufsmm_transition_new(struct ufsmm_transition **transition)
+{
+    struct ufsmm_transition *t;
+
+    t = malloc(sizeof(*t));
+
+    if (t == NULL)
+        return -UFSMM_ERROR;
+
+    memset(t, 0, sizeof(*t));
+
+    if (transition) {
+        (*transition) = t;
+    }
+
+    TAILQ_INIT(&t->vertices);
+    uuid_generate_random(t->id);
+    return 0;
 }

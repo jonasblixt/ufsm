@@ -169,7 +169,7 @@ int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
     {
         for (s = r->state; s; s = s->next)
         {
-            ufsmm_canvas_render_transition(canvas->cr, s->transition);
+            ufsmm_canvas_render_transition(canvas->cr, &s->transitions);
             for (r2 = s->regions; r2; r2 = r2->next)
             {
                 if (r2->off_page)
