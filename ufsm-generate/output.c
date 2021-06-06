@@ -400,7 +400,8 @@ static int generate_c_file(struct ufsmm_model *model,
     /* Pass 2: Triggers */
     fprintf(fp, "\n/* Triggers */\n");
 
-    for (struct ufsmm_trigger *t = model->triggers; t; t = t->next) {
+    struct ufsmm_trigger *t;
+    TAILQ_FOREACH(t, &model->triggers, tailq) {
         uu_to_str(t->id, uu_str);
         fprintf(fp, "const struct ufsm_trigger trigger_%s = {\n", uu_str);
         fprintf(fp, "    .name = \"%s\",\n", t->name);
@@ -487,11 +488,11 @@ static int generate_header_file(struct ufsmm_model *model,
     fprintf(fp, "#include <ufsm/ufsm.h>\n\n");
 
     /* Triggers */
-    if (model->triggers) {
+    if (model->triggers.tqh_first) {
         fprintf(fp, "/* Triggers */\n");
         fprintf(fp, "enum {\n");
-
-        for (struct ufsmm_trigger *t = model->triggers; t; t = t->next) {
+        struct ufsmm_trigger *t;
+        TAILQ_FOREACH(t, &model->triggers, tailq) {
             fprintf(fp, "    %s,\n", t->name);
         }
 

@@ -181,7 +181,8 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
                         COLUMN_TRIGGER_REF, NULL,
                         -1);
 
-    for (struct ufsmm_trigger *t = model->triggers; t; t = t->next) {
+    struct ufsmm_trigger *t;
+    TAILQ_FOREACH(t, &model->triggers, tailq) {
         gtk_list_store_append(store, &iter);
         gtk_list_store_set (store, &iter,
                             COLUMN_MATCH_RATING, 0,

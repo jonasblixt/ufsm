@@ -119,8 +119,10 @@ struct ufsmm_trigger
 {
     uuid_t id;
     const char *name;
-    struct ufsmm_trigger *next;
+    TAILQ_ENTRY(ufsmm_trigger) tailq;
 };
+
+TAILQ_HEAD(ufsmm_triggers, ufsmm_trigger);
 
 struct ufsmm_vertice
 {
@@ -218,7 +220,7 @@ struct ufsmm_model
     struct ufsmm_region *root;
     struct ufsmm_actions guards;  /* Global list of guard functions */
     struct ufsmm_actions actions; /* Global list of action functions */
-    struct ufsmm_trigger *triggers;
+    struct ufsmm_triggers triggers;
     const char *name;
     int version;
     unsigned int no_of_regions;
@@ -257,8 +259,6 @@ int ufsmm_model_calculate_max_orthogonal_regions(struct ufsmm_model *model);
 int ufsmm_model_calculate_nested_region_depth(struct ufsmm_model *model);
 int ufsmm_model_calculate_max_transitions(struct ufsmm_model *model);
 int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model);
-
-struct ufsmm_trigger* ufsmm_model_get_triggers(struct ufsmm_model *model);
 
 struct ufsmm_state *ufsmm_model_get_state_from_uuid(struct ufsmm_model *model,
                                                   uuid_t id);

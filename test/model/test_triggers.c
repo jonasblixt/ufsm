@@ -46,7 +46,7 @@ TEST(create_one_trigger)
     rc = ufsmm_model_load("test_one_trigger.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    struct ufsmm_trigger *triggers = ufsmm_model_get_triggers(model);
+    struct ufsmm_trigger *triggers = model->triggers.tqh_first;
 
     printf("Model load %i\n", rc);
     printf("model->triggers = %p\n", triggers);
@@ -99,7 +99,7 @@ TEST(delete_one_trigger)
     rc = ufsmm_model_load("test_delete_trigger1.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    struct ufsmm_trigger *triggers = ufsmm_model_get_triggers(model);
+    struct ufsmm_trigger *triggers = model->triggers.tqh_first;
 
     printf("Model load %i\n", rc);
     printf("model->triggers = %p\n", triggers);
@@ -117,7 +117,7 @@ TEST(delete_one_trigger)
     rc = ufsmm_model_load("test_delete_trigger2.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    triggers = ufsmm_model_get_triggers(model);
+    triggers = model->triggers.tqh_first;
     ASSERT(triggers == NULL);
 
     rc = ufsmm_model_free(model);

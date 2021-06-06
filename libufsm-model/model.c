@@ -116,11 +116,10 @@ static int parse_triggers(json_object *j_list, struct ufsmm_model *model)
 
     L_DEBUG("no_of_triggers = %zu", no_of_triggers);
 
-    struct ufsmm_trigger *list = NULL, *next;
     struct ufsmm_trigger *trigger;
 
+    TAILQ_INIT(&model->triggers);
     if (no_of_triggers == 0) {
-        model->triggers = NULL;
         return UFSMM_OK;
     }
 
@@ -150,16 +149,8 @@ static int parse_triggers(json_object *j_list, struct ufsmm_model *model)
         L_DEBUG("Loaded trigger '%s' %s", trigger->name,
                                           json_object_get_string(j_id));
 
-        if (list == NULL) {
-            list = trigger;
-            next = trigger;
-        } else {
-            next->next = trigger;
-            next = next->next;
-        }
+        TAILQ_INSERT_TAIL(&model->triggers, trigger, tailq);
     }
-
-    model->triggers = list;
 
     return UFSMM_OK;
 }
@@ -552,7 +543,7 @@ static int serialize_action_list(struct ufsmm_actions *input,
 static int serialize_trigger_list(struct ufsmm_model *model,
                                  json_object **out)
 {
-    struct ufsmm_trigger *item = model->triggers;
+    struct ufsmm_trigger *item;
     char uuid_str[37];
 
     json_object *triggers = json_object_new_array();
@@ -560,7 +551,7 @@ static int serialize_trigger_list(struct ufsmm_model *model,
     json_object *name;
     json_object *id;
 
-    while (item) {
+    TAILQ_FOREACH(item, &model->triggers, tailq) {
         trigger = json_object_new_object();
         name = json_object_new_string(item->name);
         uuid_unparse(item->id, uuid_str);
@@ -569,7 +560,6 @@ static int serialize_trigger_list(struct ufsmm_model *model,
         json_object_object_add(trigger, "name", name);
         json_object_object_add(trigger, "id", id);
         json_object_array_add(triggers, trigger);
-        item = item->next;
     }
 
     (*out) = triggers;
@@ -598,6 +588,7 @@ int ufsmm_model_create(struct ufsmm_model **model_pp, const char *name)
 
     TAILQ_INIT(&model->actions);
     TAILQ_INIT(&model->guards);
+    TAILQ_INIT(&model->triggers);
     L_DEBUG("Created model '%s'", name);
 
     return UFSMM_OK;
@@ -788,17 +779,12 @@ int free_action_ref_list(struct ufsmm_action_ref *list)
 
 static int free_triggers(struct ufsmm_model *model)
 {
-    struct ufsmm_trigger *item = model->triggers;
-    struct ufsmm_trigger *tmp;
+    struct ufsmm_trigger *item;
 
-    if (item == NULL)
-        return UFSMM_OK;
-
-    while (item) {
-        tmp = item->next;
+    while (item = TAILQ_FIRST(&model->triggers)) {
+        TAILQ_REMOVE(&model->triggers, item, tailq);
         free((void *) item->name);
         free(item);
-        item = tmp;
     }
 
     return UFSMM_OK;
@@ -1050,18 +1036,14 @@ int ufsmm_model_add_trigger(struct ufsmm_model *model, const char *name,
 {
     int rc = UFSMM_OK;
     struct ufsmm_trigger *trigger;
-    struct ufsmm_trigger *list, **dest;
 
     /* Check if trigger already exits */
-    list = model->triggers;
 
-    while (list) {
-        if (strcmp(list->name, name) == 0) {
-            (*out) = list;
+    TAILQ_FOREACH(trigger, &model->triggers, tailq) {
+        if (strcmp(trigger->name, name) == 0) {
+            (*out) = trigger;
             return UFSMM_OK;
         }
-
-        list = list->next;
     }
 
     trigger = malloc(sizeof(struct ufsmm_trigger));
@@ -1073,16 +1055,8 @@ int ufsmm_model_add_trigger(struct ufsmm_model *model, const char *name,
 
     uuid_generate_random(trigger->id);
     trigger->name = strdup(name);
-    list = model->triggers;
 
-    if (list == NULL) {
-        list = trigger;
-        model->triggers = list;
-    } else {
-        while (list->next != NULL)
-            list = list->next;
-        list->next = trigger;
-    }
+    TAILQ_INSERT_TAIL(&model->triggers, trigger, tailq);
 
     if (out) {
         (*out) = trigger;
@@ -1098,31 +1072,17 @@ err_free_out:
 int ufsmm_model_delete_trigger(struct ufsmm_model *model, uuid_t id)
 {
     bool found_item = false;
-    struct ufsmm_trigger *list = model->triggers;
-    struct ufsmm_trigger *item = list;
-    struct ufsmm_trigger *prev, *next;
+    struct ufsmm_trigger *item, *tmp_item;
 
-    prev = NULL;
-
-    while (item) {
-        next = item->next;
-
+    for (item = TAILQ_FIRST(&model->triggers); item != NULL; item = tmp_item) {
+        tmp_item = TAILQ_NEXT(item, tailq);
         if (uuid_compare(item->id, id) == 0) {
-            if (prev)
-                prev->next = next;
-
-            /* If this is the first and only item, set input to NULL */
-            if (item == model->triggers)
-                model->triggers = NULL;
-
+            TAILQ_REMOVE(&model->triggers, item, tailq);
             free((void *) item->name);
             memset(item, 0, sizeof(*item));
             free(item);
             found_item = true;
         }
-
-        prev = item;
-        item = item->next;
     }
 
     if (found_item)
@@ -1134,23 +1094,16 @@ int ufsmm_model_delete_trigger(struct ufsmm_model *model, uuid_t id)
 int ufsmm_model_get_trigger(struct ufsmm_model *model, uuid_t id,
                            struct ufsmm_trigger **out)
 {
-    struct ufsmm_trigger *list = model->triggers;
+    struct ufsmm_trigger *list;
 
-    while (list) {
+    TAILQ_FOREACH(list, &model->triggers, tailq) {
         if (uuid_compare(id, list->id) == 0) {
             (*out) = list;
             return UFSMM_OK;
         }
-
-        list = list->next;
     }
 
     return -UFSMM_ERROR;
-}
-
-struct ufsmm_trigger* ufsmm_model_get_triggers(struct ufsmm_model *model)
-{
-    return model->triggers;
 }
 
 struct ufsmm_state *ufsmm_model_get_state_from_uuid(struct ufsmm_model *model,
@@ -1190,13 +1143,12 @@ search_out:
 struct ufsmm_trigger * ufsmm_model_get_trigger_from_uuid(struct ufsmm_model *model,
                                                        uuid_t id)
 {
-    struct ufsmm_trigger *list = model->triggers;
+    struct ufsmm_trigger *list;
 
-    while (list) {
+    TAILQ_FOREACH(list, &model->triggers, tailq) {
         if (uuid_compare(list->id, id) == 0) {
             return list;
         }
-        list = list->next;
     }
 
     return NULL;
