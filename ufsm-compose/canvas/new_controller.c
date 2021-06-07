@@ -637,10 +637,56 @@ void canvas_reorder_exit_func(void *context)
 
 void canvas_reorder_guard_func(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *transition = priv->selected_transition;
+    struct ufsmm_action_ref *aref = priv->selected_aref;
+    struct ufsmm_action_ref *next, *prev;
+
+    if (priv->dx > 10.0) {
+        ufsmm_canvas_reset_delta(priv);
+        next = TAILQ_NEXT(aref, tailq);
+        if (next) {
+            TAILQ_REMOVE(&transition->guards, aref, tailq);
+            TAILQ_INSERT_AFTER(&transition->guards, next, aref, tailq);
+            priv->redraw = true;
+        }
+    } else if (priv->dx < -10.0) {
+        ufsmm_canvas_reset_delta(priv);
+        prev = TAILQ_PREV(aref, ufsmm_action_refs, tailq);
+
+        if (prev) {
+            TAILQ_REMOVE(&transition->guards, aref, tailq);
+            TAILQ_INSERT_BEFORE(prev, aref, tailq);
+            priv->redraw = true;
+        }
+    }
 }
 
 void canvas_reorder_action_func(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *transition = priv->selected_transition;
+    struct ufsmm_action_ref *aref = priv->selected_aref;
+    struct ufsmm_action_ref *next, *prev;
+
+    if (priv->dx > 10.0) {
+        ufsmm_canvas_reset_delta(priv);
+        next = TAILQ_NEXT(aref, tailq);
+        if (next) {
+            TAILQ_REMOVE(&transition->actions, aref, tailq);
+            TAILQ_INSERT_AFTER(&transition->actions, next, aref, tailq);
+            priv->redraw = true;
+        }
+    } else if (priv->dx < -10.0) {
+        ufsmm_canvas_reset_delta(priv);
+        prev = TAILQ_PREV(aref, ufsmm_action_refs, tailq);
+
+        if (prev) {
+            TAILQ_REMOVE(&transition->actions, aref, tailq);
+            TAILQ_INSERT_BEFORE(prev, aref, tailq);
+            priv->redraw = true;
+        }
+    }
 }
 
 void canvas_resize_textblock(void *context)
