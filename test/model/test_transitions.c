@@ -42,13 +42,13 @@ TEST(load_transitions)
     ASSERT_EQ(v2->x, 100.0);
     ASSERT_EQ(v2->y, 110.0);
 */
-    struct ufsmm_action_ref *guards = t->guard;
+    struct ufsmm_action_ref *guards = TAILQ_FIRST(&t->guards);
     ASSERT_EQ(guards->act->name, "gSecond");
 
     struct ufsmm_action_ref *a1, *a2;
 
-    a1 = t->action;
-    a2 = a1->next;
+    a1 = TAILQ_FIRST(&t->actions);
+    a2 = TAILQ_NEXT(a1, tailq);
     ASSERT_EQ(a1->act->name, "aFirst");
     ASSERT_EQ(a2->act->name, "aSecond");
 

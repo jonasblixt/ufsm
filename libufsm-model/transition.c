@@ -206,6 +206,8 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
         memset(transition, 0, sizeof(*transition));
 
         TAILQ_INIT(&transition->vertices);
+        TAILQ_INIT(&transition->actions);
+        TAILQ_INIT(&transition->guards);
 
         if (!json_object_object_get_ex(j_t, "id", &j_id)) {
             L_ERR("Could not read ID");
@@ -361,21 +363,20 @@ err_out:
     return rc;
 }
 
-static int serialize_action_list(struct ufsmm_action_ref *list,
+static int serialize_action_list(struct ufsmm_action_refs *list,
                                  json_object *output)
 {
     json_object *action;
     char uuid_str[37];
-    struct ufsmm_action_ref *tmp = list;
+    struct ufsmm_action_ref *item;
 
-    while (tmp) {
-        uuid_unparse(tmp->act->id, uuid_str);
+    TAILQ_FOREACH(item, list, tailq) {
+        uuid_unparse(item->act->id, uuid_str);
         action = json_object_new_object();
         json_object_object_add(action, "action-id", json_object_new_string(uuid_str));
-        uuid_unparse(tmp->id, uuid_str);
+        uuid_unparse(item->id, uuid_str);
         json_object_object_add(action, "id", json_object_new_string(uuid_str));
         json_object_array_add(output, action);
-        tmp = tmp->next;
     }
 
     return UFSMM_OK;
@@ -501,7 +502,7 @@ int ufsmm_transitions_serialize(struct ufsmm_state *state,
         /* Add guards */
         json_object *j_guards = json_object_new_array();
 
-        rc = serialize_action_list(t->guard, j_guards);
+        rc = serialize_action_list(&t->guards, j_guards);
         if (rc != UFSMM_OK)
            goto err_out;
 
@@ -510,7 +511,7 @@ int ufsmm_transitions_serialize(struct ufsmm_state *state,
         /* Add actions */
         json_object *j_actions = json_object_new_array();
 
-        rc = serialize_action_list(t->action, j_actions);
+        rc = serialize_action_list(&t->actions, j_actions);
         if (rc != UFSMM_OK)
            goto err_out;
 
@@ -551,9 +552,9 @@ int ufsmm_transition_free(struct ufsmm_transitions *transitions)
         L_DEBUG("Freeing transition %s --> %s", t->source.state->name,
                                                 t->dest.state->name);
         L_DEBUG("Freeing actions");
-        free_action_ref_list(t->action);
+        free_action_ref_list(&t->actions);
         L_DEBUG("Freeing guards");
-        free_action_ref_list(t->guard);
+        free_action_ref_list(&t->guards);
 
         while (v = TAILQ_FIRST(&t->vertices)) {
             TAILQ_REMOVE(&t->vertices, v, tailq);
@@ -591,9 +592,9 @@ int ufsmm_transition_free_one(struct ufsmm_transition *transition)
     source = transition->source.state;
 
     L_DEBUG("Freeing actions");
-    free_action_ref_list(transition->action);
+    free_action_ref_list(&transition->actions);
     L_DEBUG("Freeing guards");
-    free_action_ref_list(transition->guard);
+    free_action_ref_list(&transition->guards);
 
     while (v = TAILQ_FIRST(&transition->vertices)) {
         TAILQ_REMOVE(&transition->vertices, v, tailq);
@@ -626,6 +627,7 @@ int ufsmm_transition_add_guard(struct ufsmm_model *model,
                               uuid_t action_id)
 {
     struct ufsmm_action *action;
+    struct ufsmm_action_ref *aref;
     int rc;
 
     L_DEBUG("%s", __func__);
@@ -640,59 +642,20 @@ int ufsmm_transition_add_guard(struct ufsmm_model *model,
     }
 
     L_DEBUG("Adding guard '%s' to transition", action->name);
-    struct ufsmm_action_ref *list = transition->guard;
 
-    if (list == NULL) {
-        list = malloc(sizeof(struct ufsmm_action_ref));
-        memset(list, 0, sizeof(*list));
-        list->act = action;
-        memcpy(list->id, id, 16);
-        transition->guard = list;
-    } else {
-        while (list->next)
-            list = list->next;
-        list->next = malloc(sizeof(struct ufsmm_action_ref));
-        memset(list->next, 0, sizeof(*list->next));
-        list->next->act = action;
-        memcpy(list->next->id, id, 16);
-    }
+    aref = malloc(sizeof(struct ufsmm_action_ref));
+    memset(aref, 0, sizeof(*aref));
+    aref->act = action;
+    memcpy(aref->id, id, 16);
+
+    TAILQ_INSERT_TAIL(&transition->guards, aref, tailq);
 
     return UFSMM_OK;
 }
 
-static int delete_action_ref(struct ufsmm_action_ref **list, uuid_t id)
-{
-    struct ufsmm_action_ref *tmp, *prev;
-
-    tmp = *list;
-    prev = NULL;
-
-    while (tmp) {
-        if (uuid_compare(tmp->act->id, id) == 0) {
-            if (prev == NULL) {
-                *list = tmp->next;
-                free(tmp);
-                return UFSMM_OK;
-            } else {
-                prev->next = tmp->next;
-                free(tmp);
-                return UFSMM_OK;
-            }
-        }
-
-        prev = tmp;
-        tmp = tmp->next;
-    }
-}
-
 int ufsmm_transition_delete_guard(struct ufsmm_transition *transition, uuid_t id)
 {
-    return delete_action_ref(&transition->guard, id);
-}
-
-struct ufsmm_action_ref *ufsmm_transition_get_guards(struct ufsmm_transition *t)
-{
-    return t->guard;
+    return delete_action_ref(&transition->guards, id);
 }
 
 int ufsmm_transition_add_action(struct ufsmm_model *model,
@@ -701,6 +664,7 @@ int ufsmm_transition_add_action(struct ufsmm_model *model,
                                uuid_t action_id)
 {
     struct ufsmm_action *action;
+    struct ufsmm_action_ref *aref;
     int rc;
 
     rc = ufsmm_model_get_action(model, action_id, UFSMM_ACTION_ACTION, &action);
@@ -713,23 +677,12 @@ int ufsmm_transition_add_action(struct ufsmm_model *model,
     }
 
     L_DEBUG("Adding action '%s' to transition", action->name);
-    struct ufsmm_action_ref *list = transition->action;
 
-    if (list == NULL) {
-        list = malloc(sizeof(struct ufsmm_action_ref));
-        memset(list, 0, sizeof(*list));
-        list->act = action;
-        memcpy(list->id, id, 16);
-        transition->action = list;
-    } else {
-        while (list->next)
-            list = list->next;
-        list->next = malloc(sizeof(struct ufsmm_action_ref));
-        memset(list->next, 0, sizeof(*list->next));
-        list->next->act = action;
-        memcpy(list->next->id, id, 16);
-    }
-
+    aref = malloc(sizeof(struct ufsmm_action_ref));
+    memset(aref, 0, sizeof(*aref));
+    aref->act = action;
+    memcpy(aref->id, id, 16);
+    TAILQ_INSERT_TAIL(&transition->actions, aref, tailq);
     return UFSMM_OK;
 }
 
@@ -748,12 +701,7 @@ int ufsmm_transition_change_src_state(struct ufsmm_transition *transition,
 
 int ufsmm_transition_delete_action(struct ufsmm_transition *transition, uuid_t id)
 {
-    return delete_action_ref(&transition->action, id);
-}
-
-struct ufsmm_action_ref *ufsmm_transition_get_actions(struct ufsmm_transition *t)
-{
-    return t->action;
+    return delete_action_ref(&transition->actions, id);
 }
 
 int ufsmm_transition_add_state_condition(struct ufsmm_model *model,
@@ -792,6 +740,8 @@ int ufsmm_transition_new(struct ufsmm_transition **transition)
     }
 
     TAILQ_INIT(&t->vertices);
+    TAILQ_INIT(&t->actions);
+    TAILQ_INIT(&t->guards);
     uuid_generate_random(t->id);
     return 0;
 }

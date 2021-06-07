@@ -112,8 +112,10 @@ struct ufsmm_action_ref
     bool focus;
     double x, y, w, h; /* Support variables for the canvas */
     struct ufsmm_action *act;
-    struct ufsmm_action_ref *next;
+    TAILQ_ENTRY(ufsmm_action_ref) tailq;
 };
+
+TAILQ_HEAD(ufsmm_action_refs, ufsmm_action_ref);
 
 struct ufsmm_trigger
 {
@@ -160,8 +162,8 @@ struct ufsmm_transition
     uuid_t id;
     struct ufsmm_trigger *trigger;
     enum ufsmm_transition_kind kind;
-    struct ufsmm_action_ref *action;
-    struct ufsmm_action_ref *guard;
+    struct ufsmm_action_refs actions;
+    struct ufsmm_action_refs guards;
     struct ufsmm_transition_state_ref source;
     struct ufsmm_transition_state_ref dest;
     struct ufsmm_coords text_block_coords;
@@ -205,8 +207,8 @@ struct ufsmm_state
     unsigned int branch_concurrency_count;
     enum ufsmm_state_kind kind;
     struct ufsmm_transitions transitions;
-    struct ufsmm_action_ref *entries;
-    struct ufsmm_action_ref *exits;
+    struct ufsmm_action_refs entries;
+    struct ufsmm_action_refs exits;
     struct ufsmm_region *regions;
     struct ufsmm_region *parent_region;
     struct ufsmm_region *last_region;
@@ -265,13 +267,16 @@ struct ufsmm_state *ufsmm_model_get_state_from_uuid(struct ufsmm_model *model,
 
 struct ufsmm_trigger * ufsmm_model_get_trigger_from_uuid(struct ufsmm_model *model,
                                                        uuid_t id);
-int free_action_ref_list(struct ufsmm_action_ref *list);
+int free_action_ref_list(struct ufsmm_action_refs *list);
 
 int ufsmm_model_delete_region(struct ufsmm_model *model,
                               struct ufsmm_region *region);
 
 int ufsmm_model_delete_state(struct ufsmm_model *model,
                              struct ufsmm_state *state);
+
+
+int delete_action_ref(struct ufsmm_action_refs *list, uuid_t id);
 
 /* Region api */
 int ufsmm_add_region(struct ufsmm_state *state, bool off_page,
@@ -306,11 +311,6 @@ int ufsmm_state_add_exit(struct ufsmm_model *model,
 
 int ufsmm_state_delete_entry(struct ufsmm_state *state, uuid_t id);
 int ufsmm_state_delete_exit(struct ufsmm_state *state, uuid_t id);
-
-int ufsmm_state_get_entries(struct ufsmm_state *state,
-                           struct ufsmm_action_ref **list);
-int ufsmm_state_get_exits(struct ufsmm_state *state,
-                         struct ufsmm_action_ref **list);
 
 int ufsmm_state_add_transition(struct ufsmm_state *source,
                               struct ufsmm_state *dest,
@@ -362,7 +362,6 @@ int ufsmm_transition_add_guard(struct ufsmm_model *model,
                               uuid_t action_id);
 
 int ufsmm_transition_delete_guard(struct ufsmm_transition *transition, uuid_t id);
-struct ufsmm_action_ref *ufsmm_transition_get_guards(struct ufsmm_transition *t);
 
 int ufsmm_transition_add_action(struct ufsmm_model *model,
                                struct ufsmm_transition *transition,
@@ -370,7 +369,6 @@ int ufsmm_transition_add_action(struct ufsmm_model *model,
                                uuid_t action_id);
 
 int ufsmm_transition_delete_action(struct ufsmm_transition *transition, uuid_t id);
-struct ufsmm_action_ref *ufsmm_transition_get_actions(struct ufsmm_transition *t);
 
 int ufsmm_transition_add_state_condition(struct ufsmm_model *model,
                                         struct ufsmm_transition *transition,

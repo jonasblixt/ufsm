@@ -1,6 +1,7 @@
 #include <string.h>
 #include <ufsm/model.h>
 #include <json.h>
+#include <sys/queue.h>
 #include "../nala.h"
 #include "common.h"
 
@@ -233,9 +234,7 @@ TEST(add_entry_action_to_state)
 
     a = model->root->state;
 
-    struct ufsmm_action_ref *aref = NULL;
-    rc = ufsmm_state_get_entries(a, &aref);
-    ASSERT_EQ(rc, UFSMM_OK);
+    struct ufsmm_action_ref *aref = TAILQ_FIRST(&a->entries);
     ASSERT(aref != NULL);
     ASSERT(aref->act != NULL);
 
@@ -290,9 +289,7 @@ TEST(delete_entry_action_from_state)
 
     a = model->root->state;
 
-    struct ufsmm_action_ref *aref = NULL;
-    rc = ufsmm_state_get_entries(a, &aref);
-    ASSERT_EQ(rc, UFSMM_OK);
+    struct ufsmm_action_ref *aref = TAILQ_FIRST(&a->entries);
     ASSERT(aref != NULL);
     ASSERT(aref->act != NULL);
 
@@ -368,13 +365,12 @@ TEST(multiple_actions1)
 
     a = model->root->state;
 
-    struct ufsmm_action_ref *aref = NULL;
-    rc = ufsmm_state_get_entries(a, &aref);
+    struct ufsmm_action_ref *aref = TAILQ_FIRST(&a->entries);
     ASSERT_EQ(rc, UFSMM_OK);
     ASSERT(aref != NULL);
     ASSERT(aref->act != NULL);
 
-    rc = ufsmm_state_delete_entry(a, aref->next->act->id);
+    rc = ufsmm_state_delete_entry(a, TAILQ_NEXT(aref, tailq)->act->id);
     ASSERT_EQ(rc, UFSMM_OK);
 
     rc = ufsmm_model_write("test_multiple_actions1_1.ufsm", model);
@@ -390,9 +386,7 @@ TEST(multiple_actions1)
 
     a = model->root->state;
 
-    aref = NULL;
-    rc = ufsmm_state_get_entries(a, &aref);
-    ASSERT_EQ(rc, UFSMM_OK);
+    aref = TAILQ_FIRST(&a->entries);
     ASSERT(aref != NULL);
     ASSERT(aref->act != NULL);
 
@@ -412,9 +406,7 @@ TEST(multiple_actions1)
 
     a = model->root->state;
 
-    aref = NULL;
-    rc = ufsmm_state_get_entries(a, &aref);
-    ASSERT_EQ(rc, UFSMM_OK);
+    aref = TAILQ_FIRST(&a->entries);
     ASSERT(aref != NULL);
     ASSERT(aref->act != NULL);
 
@@ -434,9 +426,7 @@ TEST(multiple_actions1)
 
     a = model->root->state;
 
-    aref = NULL;
-    rc = ufsmm_state_get_entries(a, &aref);
-    ASSERT_EQ(rc, UFSMM_OK);
+    aref = TAILQ_FIRST(&a->entries);
     ASSERT(aref == NULL);
 
     rc = ufsmm_model_free(model);

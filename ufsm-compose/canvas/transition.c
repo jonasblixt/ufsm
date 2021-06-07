@@ -182,6 +182,7 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
     double tx, ty, tw, th;
     unsigned int line_no = 0;
     const char *text_ptr = NULL;
+    struct ufsmm_action_ref *ar;
 
     cairo_save(cr);
     cairo_set_font_size (cr, 14);
@@ -213,12 +214,12 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
     x_space -= extents.width;
     x += extents.width + 10;
 
-    for (struct ufsmm_action_ref *ar = t->guard; ar; ar = ar->next) {
-        if ((ar == t->guard) && ar->next)
+    TAILQ_FOREACH(ar, &t->guards, tailq) {
+        if ((ar == TAILQ_FIRST(&t->guards)) && TAILQ_NEXT(ar, tailq))
             sprintf(text_buf, "[%s(), ", ar->act->name);
-        else if ((ar == t->guard) && !ar->next)
+        else if ((ar == TAILQ_FIRST(&t->guards)) && (TAILQ_NEXT(ar, tailq) == NULL))
             sprintf(text_buf, "[%s()]", ar->act->name);
-        else if (!ar->next)
+        else if (TAILQ_NEXT(ar, tailq) == NULL)
             sprintf(text_buf, "%s()]", ar->act->name);
         else
             sprintf(text_buf, "%s(), ", ar->act->name);
@@ -253,12 +254,12 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
 
     }
 
-    for (struct ufsmm_action_ref *ar = t->action; ar; ar = ar->next) {
-        if ((ar == t->action) && ar->next)
+    TAILQ_FOREACH(ar, &t->actions, tailq) {
+        if ((ar == TAILQ_FIRST(&t->actions)) && TAILQ_NEXT(ar, tailq))
             sprintf(text_buf, " / %s(), ", ar->act->name);
-        else if ((ar == t->action) && !ar->next)
+        else if ((ar == TAILQ_FIRST(&t->actions)) && (TAILQ_NEXT(ar, tailq) == NULL))
             sprintf(text_buf, " / %s()", ar->act->name);
-        else if (ar->next)
+        else if (TAILQ_NEXT(ar, tailq))
             sprintf(text_buf, "%s(), ", ar->act->name);
         else
             sprintf(text_buf, "%s()", ar->act->name);

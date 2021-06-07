@@ -204,7 +204,7 @@ static int render_normal_state(struct ufsmm_canvas *canvas,
 
     double y_offset = 0.0;
 
-    if (state->entries || state->exits) {
+    if (TAILQ_FIRST(&state->entries) || TAILQ_FIRST(&state->exits)) {
         y_offset = 50.0;
         cairo_move_to (cr, x, y + 30);
         cairo_line_to(cr, x + w, y + 30);
@@ -214,12 +214,11 @@ static int render_normal_state(struct ufsmm_canvas *canvas,
 
     /* Render entry actions */
     struct ufsmm_action_ref *entry;
-    ufsmm_state_get_entries(state, &entry);
     char action_str_buf[128];
 
     cairo_save(cr);
     cairo_set_font_size (cr, 14);
-    for (;entry; entry = entry->next) {
+    TAILQ_FOREACH(entry, &state->entries, tailq) {
         snprintf(action_str_buf, sizeof(action_str_buf),
                     "e/ %s()", entry->act->name);
 
@@ -248,8 +247,7 @@ static int render_normal_state(struct ufsmm_canvas *canvas,
         y_offset += 20;
     }
 
-    ufsmm_state_get_exits(state, &entry);
-    for (;entry; entry = entry->next) {
+    TAILQ_FOREACH(entry, &state->exits, tailq) {
         snprintf(action_str_buf, sizeof(action_str_buf),
                     "x/ %s()", entry->act->name);
 

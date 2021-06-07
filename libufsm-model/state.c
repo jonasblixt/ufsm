@@ -14,7 +14,8 @@ int ufsmm_add_state(struct ufsmm_region *region, const char *name,
 
     memset(state, 0, sizeof(*state));
     TAILQ_INIT(&state->transitions);
-
+    TAILQ_INIT(&state->entries);
+    TAILQ_INIT(&state->exits);
     (*out) = state;
 
     state->name = strdup(name);
@@ -88,21 +89,20 @@ int ufsmm_state_get_xy(struct ufsmm_state *s, double *x, double *y)
     return UFSMM_OK;
 }
 
-static int serialize_action_list(struct ufsmm_action_ref *list,
+static int serialize_action_list(struct ufsmm_action_refs *list,
                                  json_object *output)
 {
     json_object *action;
     char uuid_str[37];
-    struct ufsmm_action_ref *tmp = list;
+    struct ufsmm_action_ref *tmp;
 
-    while (tmp) {
+    TAILQ_FOREACH(tmp, list, tailq) {
         action = json_object_new_object();
         uuid_unparse(tmp->id, uuid_str);
         json_object_object_add(action, "id", json_object_new_string(uuid_str));
         uuid_unparse(tmp->act->id, uuid_str);
         json_object_object_add(action, "action-id", json_object_new_string(uuid_str));
         json_object_array_add(output, action);
-        tmp = tmp->next;
     }
 
     return UFSMM_OK;
@@ -187,11 +187,11 @@ int ufsmm_state_serialize(struct ufsmm_state *state, json_object *region,
     json_object_object_add(j_state, "y",
                 json_object_new_double(state->y));
 
-    rc = serialize_action_list(state->entries, j_entries);
+    rc = serialize_action_list(&state->entries, j_entries);
     if (rc != UFSMM_OK)
         goto err_out;
 
-    rc = serialize_action_list(state->exits, j_exits);
+    rc = serialize_action_list(&state->exits, j_exits);
     if (rc != UFSMM_OK)
         goto err_out;
 
@@ -249,6 +249,8 @@ int ufsmm_state_deserialize(struct ufsmm_model *model,
     memset(state, 0, sizeof(*state));
 
     TAILQ_INIT(&state->transitions);
+    TAILQ_INIT(&state->entries);
+    TAILQ_INIT(&state->exits);
     (*out) = state;
 
     if (!json_object_object_get_ex(j_state, "id", &j_id)) {
@@ -386,8 +388,8 @@ int ufsmm_state_deserialize(struct ufsmm_model *model,
 err_free_name_out:
     free((void *) state->name);
 err_out:
-    free_action_ref_list(state->entries);
-    free_action_ref_list(state->exits);
+    free_action_ref_list(&state->entries);
+    free_action_ref_list(&state->exits);
     free(state);
     return rc;
 }
@@ -398,6 +400,7 @@ int ufsmm_state_add_exit(struct ufsmm_model *model,
                         uuid_t action_id)
 {
     struct ufsmm_action *action;
+    struct ufsmm_action_ref *action_ref;
     int rc;
 
     rc = ufsmm_model_get_action(model, action_id, UFSMM_ACTION_ACTION, &action);
@@ -410,23 +413,13 @@ int ufsmm_state_add_exit(struct ufsmm_model *model,
     }
 
     L_DEBUG("Adding exit action '%s' to state '%s'", action->name, state->name);
-    struct ufsmm_action_ref *list = state->exits;
 
-    if (list == NULL) {
-        list = malloc(sizeof(struct ufsmm_action_ref));
-        memset(list, 0, sizeof(*list));
-        list->act = action;
-        memcpy(list->id, id, 16);
-        state->exits = list;
-    } else {
-        while (list->next)
-            list = list->next;
-        list->next = malloc(sizeof(struct ufsmm_action_ref));
-        memset(list->next, 0, sizeof(*list->next));
-        list->next->act = action;
-        memcpy(list->next->id, id, 16);
-    }
+    action_ref = malloc(sizeof(struct ufsmm_action_ref));
+    memset(action_ref, 0, sizeof(*action_ref));
+    action_ref->act = action;
+    memcpy(action_ref->id, id, 16);
 
+    TAILQ_INSERT_TAIL(&state->exits, action_ref, tailq);
     return UFSMM_OK;
 }
 
@@ -436,6 +429,7 @@ int ufsmm_state_add_entry(struct ufsmm_model *model,
                          uuid_t action_id)
 {
     struct ufsmm_action *action;
+    struct ufsmm_action_ref *action_ref;
     int rc;
 
     rc = ufsmm_model_get_action(model, action_id, UFSMM_ACTION_ACTION, &action);
@@ -449,63 +443,12 @@ int ufsmm_state_add_entry(struct ufsmm_model *model,
 
     L_DEBUG("Adding entry action '%s' to state '%s'", action->name, state->name);
 
-    struct ufsmm_action_ref *list = state->entries;
-
-    if (list == NULL) {
-        list = malloc(sizeof(struct ufsmm_action_ref));
-        memset(list, 0, sizeof(*list));
-        list->act = action;
-        memcpy(list->id, id, 16);
-        state->entries = list;
-    } else {
-        while (list->next)
-            list = list->next;
-        list->next = malloc(sizeof(struct ufsmm_action_ref));
-        memset(list->next, 0, sizeof(*list->next));
-        list->next->act = action;
-        memcpy(list->next->id, id, 16);
-    }
-
+    action_ref = malloc(sizeof(struct ufsmm_action_ref));
+    memset(action_ref, 0, sizeof(*action_ref));
+    action_ref->act = action;
+    memcpy(action_ref->id, id, 16);
+    TAILQ_INSERT_TAIL(&state->entries, action_ref, tailq);
     return UFSMM_OK;
-}
-
-int ufsmm_state_get_entries(struct ufsmm_state *state,
-                           struct ufsmm_action_ref **list)
-{
-    (*list) = state->entries;
-    return UFSMM_OK;
-}
-
-int ufsmm_state_get_exits(struct ufsmm_state *state,
-                         struct ufsmm_action_ref **list)
-{
-    (*list) = state->exits;
-    return UFSMM_OK;
-}
-
-static int delete_action_ref(struct ufsmm_action_ref **list, uuid_t id)
-{
-    struct ufsmm_action_ref *tmp, *prev;
-
-    tmp = *list;
-    prev = NULL;
-
-    while (tmp) {
-        if (uuid_compare(tmp->act->id, id) == 0) {
-            if (prev == NULL) {
-                *list = tmp->next;
-                free(tmp);
-                return UFSMM_OK;
-            } else {
-                prev->next = tmp->next;
-                free(tmp);
-                return UFSMM_OK;
-            }
-        }
-
-        prev = tmp;
-        tmp = tmp->next;
-    }
 }
 
 int ufsmm_state_delete_entry(struct ufsmm_state *state,

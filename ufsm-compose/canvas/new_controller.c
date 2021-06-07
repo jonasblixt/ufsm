@@ -105,6 +105,7 @@ void canvas_check_action_func(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_state *s = priv->selected_state;
     struct ufsmm_region *r = priv->current_region;
+    struct ufsmm_action_ref *ar;
 
     if (priv->selected_aref != NULL) {
         priv->selected_aref->focus = false;
@@ -113,7 +114,7 @@ void canvas_check_action_func(void *context)
 
     if (priv->selection == UFSMM_SELECTION_STATE) {
         /* Check action functions */
-        for (struct ufsmm_action_ref *ar = s->entries; ar; ar = ar->next) {
+        TAILQ_FOREACH(ar, &s->entries, tailq) {
             if (point_in_box2(priv->px, priv->py, ar->x + r->ox, ar->y + r->oy, ar->w, ar->h)) {
                 L_DEBUG("%s selected", ar->act->name);
                 priv->selected_aref = ar;
@@ -124,7 +125,7 @@ void canvas_check_action_func(void *context)
             }
         }
 
-        for (struct ufsmm_action_ref *ar = s->exits; ar; ar = ar->next) {
+        TAILQ_FOREACH(ar, &s->exits, tailq) {
             if (point_in_box2(priv->px, priv->py, ar->x + r->ox, ar->y + r->oy, ar->w, ar->h)) {
                 L_DEBUG("%s selected", ar->act->name);
                 priv->selected_aref = ar;
@@ -287,11 +288,13 @@ void canvas_check_guard(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
     struct ufsmm_region *cr = priv->current_region;
+    struct ufsmm_action_ref *ar;
 
-    for (struct ufsmm_action_ref *ar = t->guard; ar; ar = ar->next)
+    TAILQ_FOREACH(ar, &t->guards, tailq) {
         ar->focus = false;
+    }
 
-    for (struct ufsmm_action_ref *ar = t->guard; ar; ar = ar->next) {
+    TAILQ_FOREACH(ar, &t->guards, tailq) {
         if (point_in_box2(priv->px, priv->py, ar->x + cr->ox,
                                               ar->y + cr->oy, ar->w, ar->h)) {
             ar->focus = true;
@@ -306,14 +309,15 @@ void canvas_check_guard(void *context)
 void canvas_check_action(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-
+    struct ufsmm_action_ref *ar;
     struct ufsmm_transition *t = priv->selected_transition;
     struct ufsmm_region *cr = priv->current_region;
 
-    for (struct ufsmm_action_ref *ar = t->action; ar; ar = ar->next)
+    TAILQ_FOREACH(ar, &t->actions, tailq) {
         ar->focus = false;
+    }
 
-    for (struct ufsmm_action_ref *ar = t->action; ar; ar = ar->next) {
+    TAILQ_FOREACH(ar, &t->actions, tailq) {
         if (point_in_box2(priv->px, priv->py, ar->x + cr->ox,
                                               ar->y + cr->oy, ar->w, ar->h)) {
             ar->focus = true;

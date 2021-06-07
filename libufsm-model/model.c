@@ -759,19 +759,13 @@ static int free_action_list(struct ufsmm_actions *list)
     return UFSMM_OK;
 }
 
-int free_action_ref_list(struct ufsmm_action_ref *list)
+int free_action_ref_list(struct ufsmm_action_refs *list)
 {
-    struct ufsmm_action_ref *item = list;
-    struct ufsmm_action_ref *tmp;
+    struct ufsmm_action_ref *item;
 
-    if (list == NULL)
-        return UFSMM_OK;
-
-    while (item) {
-        tmp = item->next;
-        L_DEBUG("Freeing action %p", item);
+    while (item = TAILQ_FIRST(list)) {
+        TAILQ_REMOVE(list, item, tailq);
         free(item);
-        item = tmp;
     }
 
     return UFSMM_OK;
@@ -843,10 +837,10 @@ int ufsmm_model_free(struct ufsmm_model *model)
                 ufsmm_stack_push(free_stack, s);
                 L_DEBUG("Freeing entries for state '%s' <%p>", s->name,
                                                                s->entries);
-                free_action_ref_list(s->entries);
+                free_action_ref_list(&s->entries);
                 L_DEBUG("Freeing exits for state '%s' <%p>", s->name,
                                                              s->exits);
-                free_action_ref_list(s->exits);
+                free_action_ref_list(&s->exits);
 
                 L_DEBUG("Freeing transitions for state '%s'", s->name);
                 ufsmm_transition_free(&s->transitions);
@@ -1542,8 +1536,8 @@ static int internal_delete(struct ufsmm_model *model,
 
     while (ufsmm_stack_pop(stack2, (void *) &s) == UFSMM_OK) {
         L_DEBUG("Deleting state: %s", s->name);
-        free_action_ref_list(s->entries);
-        free_action_ref_list(s->exits);
+        free_action_ref_list(&s->entries);
+        free_action_ref_list(&s->exits);
         free((void *) s->name);
 
         if (s->prev)
@@ -1585,4 +1579,20 @@ int ufsmm_model_delete_state(struct ufsmm_model *model,
                              struct ufsmm_state *state)
 {
     return internal_delete(model, NULL, state);
+}
+
+int delete_action_ref(struct ufsmm_action_refs *list, uuid_t id)
+{
+    struct ufsmm_action_ref *item, *tmp_item;
+
+    for (item = TAILQ_FIRST(list); item != NULL; item = tmp_item) {
+        tmp_item = TAILQ_NEXT(item, tailq);
+        if (uuid_compare(item->act->id, id) == 0) {
+            TAILQ_REMOVE(list, item, tailq);
+            free(item);
+            return UFSMM_OK;
+        }
+    }
+
+    return -UFSMM_ERROR;
 }
