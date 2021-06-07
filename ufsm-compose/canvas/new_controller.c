@@ -824,13 +824,20 @@ void canvas_create_new_state(void *context)
     double ty = s->y;
     double ox = priv->current_region->ox;
     double oy = priv->current_region->oy;
-    ufsmm_get_region_absolute_coords(r, &x, &y, &w, &h);
-    s->x = tx - (x + ox);
+    //ufsmm_get_region_absolute_coords(r, &x, &y, &w, &h);
+    if (r->parent_state) {
+        ufsmm_get_state_absolute_coords(r->parent_state, &x, &y, &w, &h);
+    } else {
+        x = 0;
+        y = 0;
+    }
     double y_offset = 0.0;
 
     if (r->parent_state)
         y_offset = r->parent_state->region_y_offset;
-    s->y = ty - (y + oy) + y_offset;
+
+    s->x = tx - (x + ox);
+    s->y = ty - (y + oy);// + y_offset;
     s->w = priv->px - tx;
     s->h = priv->py - ty;
     priv->redraw = true;
