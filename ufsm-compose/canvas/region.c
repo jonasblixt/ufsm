@@ -122,7 +122,7 @@ int ufsmm_region_get_at_xy(struct ufsmm_canvas *canvas,
              found_region = true;
         }
 
-        for (s = r->state; s; s = s->next) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
             for (r2 = s->regions; r2; r2 = r2->next) {
                 ufsmm_stack_push(stack, r2);
             }

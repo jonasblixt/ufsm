@@ -589,6 +589,7 @@ int ufsmm_model_create(struct ufsmm_model **model_pp, const char *name)
     TAILQ_INIT(&model->actions);
     TAILQ_INIT(&model->guards);
     TAILQ_INIT(&model->triggers);
+    TAILQ_INIT(&model->root->states);
     L_DEBUG("Created model '%s'", name);
 
     return UFSMM_OK;
@@ -636,8 +637,7 @@ int ufsmm_model_write(const char *filename, struct ufsmm_model *model)
             root_j_region = current_j_region;
         }
 
-        for (s = r->state; s; s = s->next)
-        {
+        TAILQ_FOREACH(s, &r->states, tailq) {
             L_DEBUG("Found state '%s'", s->name);
 
             rc = ufsmm_state_serialize(s, current_j_region, &current_j_state);
@@ -824,15 +824,12 @@ int ufsmm_model_free(struct ufsmm_model *model)
 
         while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK)
         {
-            L_DEBUG("loop %p", r->state);
             ufsmm_stack_push(free_stack, r);
-            if (r->name)
-            {
+            if (r->name) {
                 free((void *) r->name);
             }
 
-            for (s = r->state; s; s = s->next)
-            {
+            TAILQ_FOREACH(s, &r->states, tailq) {
                 L_DEBUG("Found state '%s'", s->name);
                 ufsmm_stack_push(free_stack, s);
                 L_DEBUG("Freeing entries for state '%s' <%p>", s->name,
@@ -1118,7 +1115,7 @@ struct ufsmm_state *ufsmm_model_get_state_from_uuid(struct ufsmm_model *model,
     rc = ufsmm_stack_push(stack, (void *) model->root);
 
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
-        for (s = r->state; s; s = s->next) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
             if (uuid_compare(s->id, id) == 0) {
                 goto search_out;
             }
@@ -1202,7 +1199,7 @@ int ufsmm_model_calculate_max_orthogonal_regions(struct ufsmm_model *model)
     rc = ufsmm_stack_push(stack, (void *) model->root);
 
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
-        for (s = r->state; s; s = s->next) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
             unsigned int r_count = 0;
             for (r2 = s->regions; r2; r2 = r2->next) {
                 r_count++;
@@ -1238,8 +1235,7 @@ int ufsmm_model_calculate_nested_region_depth(struct ufsmm_model *model)
     rc = ufsmm_stack_push(stack, (void *) model->root);
 
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
-        for (s = r->state; s; s = s->next) {
-
+        TAILQ_FOREACH(s, &r->states, tailq) {
             for (r2 = s->regions; r2; r2 = r2->next) {
                 if (r2->depth > nested_r_depth)
                     nested_r_depth = r2->depth;
@@ -1274,7 +1270,7 @@ int ufsmm_model_calculate_max_transitions(struct ufsmm_model *model)
     rc = ufsmm_stack_push(stack, (void *) model->root);
 
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
-        for (s = r->state; s; s = s->next) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
             unsigned int t_count = 0;
 
             struct ufsmm_transition *t;
@@ -1317,7 +1313,7 @@ int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model)
     rc = ufsmm_stack_push(stack, (void *) model->root);
 
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
-        for (s = r->state; s; s = s->next) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
             unsigned int pr_count = 0;
             /* Calculate the number of regions in parent state */
             struct ufsmm_region *pr = s->parent_region;
@@ -1418,7 +1414,7 @@ static int internal_delete(struct ufsmm_model *model,
         }
     }
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
-        for (s = r->state; s; s = s->next) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
             L_DEBUG("Deleting transitions originating from '%s'", s->name);
             struct ufsmm_transition *t;
             TAILQ_FOREACH(t, &state->transitions, tailq) {
@@ -1458,7 +1454,7 @@ static int internal_delete(struct ufsmm_model *model,
             goto err_out;
 
         while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
-            for (s = r->state; s; s = s->next) {
+            TAILQ_FOREACH(s, &r->states, tailq) {
                 struct ufsmm_transition *t;
                 TAILQ_FOREACH(t, &s->transitions, tailq) {
                     if (t->dest.state == s2) {
@@ -1524,7 +1520,7 @@ static int internal_delete(struct ufsmm_model *model,
      * Populate 'stack3' with th regions we want to delete
      * */
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
-        for (s = r->state; s; s = s->next) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
             ufsmm_stack_push(stack2, (void *) s);
 
             for (r2 = s->regions; r2; r2 = r2->next) {
@@ -1540,11 +1536,7 @@ static int internal_delete(struct ufsmm_model *model,
         free_action_ref_list(&s->exits);
         free((void *) s->name);
 
-        if (s->prev)
-            s->prev->next = s->next;
-        else
-            s->parent_region->state = s->next;
-
+        TAILQ_REMOVE(&s->parent_region->states, s, tailq);
         free(s);
     }
 

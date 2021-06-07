@@ -177,6 +177,8 @@ struct ufsmm_transition
 
 TAILQ_HEAD(ufsmm_transitions, ufsmm_transition);
 
+TAILQ_HEAD(ufsmm_states, ufsmm_state);
+
 struct ufsmm_region
 {
     uuid_t id;
@@ -188,9 +190,8 @@ struct ufsmm_region
     unsigned int depth;
     double ox, oy;
     double scale;
-    struct ufsmm_state *state;
+    struct ufsmm_states states;
     struct ufsmm_state *parent_state;
-    struct ufsmm_state *last_state;
     struct ufsmm_region *prev;
     struct ufsmm_region *next;
 };
@@ -214,9 +215,9 @@ struct ufsmm_state
     struct ufsmm_region *regions;
     struct ufsmm_region *parent_region;
     struct ufsmm_region *last_region;
-    struct ufsmm_state *prev;
-    struct ufsmm_state *next;
+    TAILQ_ENTRY(ufsmm_state) tailq;
 };
+
 
 struct ufsmm_model
 {

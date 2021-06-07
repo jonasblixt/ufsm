@@ -13,6 +13,7 @@ int ufsmm_add_region(struct ufsmm_state *state, bool off_page,
         return -UFSMM_ERR_MEM;
 
     memset(region, 0, sizeof(*region));
+    TAILQ_INIT(&region->states);
 
     region->parent_state = state;
 
@@ -45,22 +46,7 @@ int ufsmm_set_region_name(struct ufsmm_region *region, const char *name)
 
 int ufsmm_region_append_state(struct ufsmm_region *r, struct ufsmm_state *state)
 {
-    if (!r->last_state)
-    {
-        r->last_state = state;
-    }
-
-    if (!r->state)
-    {
-        r->state = state;
-    }
-    else
-    {
-        r->last_state->next = state;
-        state->prev = r->last_state;
-        r->last_state = state;
-    }
-
+    TAILQ_INSERT_TAIL(&r->states, state, tailq);
     return UFSMM_OK;
 }
 
@@ -129,6 +115,7 @@ int ufsmm_region_deserialize(json_object *j_r, struct ufsmm_state *state,
 
     r = malloc(sizeof(struct ufsmm_region));
     memset(r, 0, sizeof(*r));
+    TAILQ_INIT(&r->states);
 
     (*out) = r;
 

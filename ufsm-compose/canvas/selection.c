@@ -284,7 +284,7 @@ void canvas_process_selection(void *context)
         if (r->off_page && !r->draw_as_root)
             continue;
 
-        for (s = r->state; s; s = s->next) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
             s->focus = false;
             ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
 
@@ -314,7 +314,7 @@ void canvas_process_selection(void *context)
         if (r->off_page && !r->draw_as_root)
             continue;
 
-        for (s = r->state; s; s = s->next) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
             struct ufsmm_transition *t;
             TAILQ_FOREACH(t, &s->transitions, tailq) {
                 struct ufsmm_vertice *v;

@@ -23,15 +23,7 @@ int ufsmm_add_state(struct ufsmm_region *region, const char *name,
 
     uuid_generate_random(state->id);
 
-    if (region->last_state) {
-        state->prev = region->last_state;
-        region->last_state->next = state;
-        region->last_state = state;
-    }
-    if (!region->state)
-        region->state = state;
-
-    region->last_state = state;
+    TAILQ_INSERT_TAIL(&region->states, state, tailq);
 
     return UFSMM_OK;
 }
@@ -493,53 +485,10 @@ int ufsmm_state_move_to_region(struct ufsmm_model *model,
         return -UFSMM_ERROR;
 
     /* Unlink from source region */
-    if (state->parent_region->last_state == state) {
-        L_DEBUG("Was last, update last_state");
-        state->parent_region->last_state = state->prev;
-    }
-
-    if (state->prev == NULL) { /* First state in source region */
-        L_DEBUG("First in source region");
-        struct ufsmm_state *next = state->next;
-        state->parent_region->state = next;
-
-        if (next == NULL) {
-            L_DEBUG("Source region is now empty");
-            state->parent_region->last_state = NULL;
-        } else {
-            next->prev = NULL;
-            L_DEBUG("state->next = '%s'", next->name);
-        }
-    } else {
-        struct ufsmm_state *prev = state->prev;
-        struct ufsmm_state *next = state->next;
-
-        L_DEBUG("%p %p", prev, next);
-
-        if (prev)
-            L_DEBUG("state->prev = '%s'", prev->name);
-        if (next)
-            L_DEBUG("state->next = '%s'", next->name);
-
-        state->prev->next = next;
-
-        if (next) {
-            state->next->prev = prev;
-        }
-    }
+    TAILQ_REMOVE(&state->parent_region->states, state, tailq);
 
     /* Insert into new region */
-    if (new_region->last_state) {
-        new_region->last_state->next = state;
-        state->prev = new_region->last_state;
-        state->next = NULL;
-        new_region->last_state = state;
-    } else {
-        new_region->last_state = state;
-        new_region->state = state;
-        state->prev = NULL;
-        state->next = NULL;
-    }
+    TAILQ_INSERT_TAIL(&new_region->states, state, tailq);
 
     state->parent_region = new_region;
 
@@ -568,7 +517,7 @@ bool ufsmm_state_contains_region(struct ufsmm_model *model,
             break;
         }
 
-        for (s = r->state; s; s = s->next) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
             for (r2 = s->regions; r2; r2 = r2->next) {
                 ufsmm_stack_push(stack, r2);
             }

@@ -390,8 +390,7 @@ int ufsmm_state_get_at_xy(struct ufsmm_canvas *canvas,
             continue;
         d++;
 
-        for (s = r->state; s; s = s->next)
-        {
+        TAILQ_FOREACH(s, &r->states, tailq) {
             ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
 
             x += ox;

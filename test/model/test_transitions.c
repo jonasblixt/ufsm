@@ -14,10 +14,10 @@ TEST(load_transitions)
     rc = ufsmm_model_load(UFSMM_TEST_SRC"test_load_transitions.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    ASSERT(model->root->state);
-    ASSERT(model->root->state->transitions.tqh_first != NULL);
+    ASSERT(TAILQ_FIRST(&model->root->states));
+    ASSERT(TAILQ_FIRST(&model->root->states)->transitions.tqh_first != NULL);
 
-    struct ufsmm_transition *t = model->root->state->transitions.tqh_first;
+    struct ufsmm_transition *t = TAILQ_FIRST(&model->root->states)->transitions.tqh_first;
     ASSERT_EQ(t->source.state->name, "A");
     ASSERT_EQ(t->source.offset, 20.0);
     ASSERT_EQ(t->source.side, UFSMM_SIDE_RIGHT);
@@ -105,8 +105,8 @@ TEST(create_one_transition)
     rc = ufsmm_model_load("test_create_one_transition.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    a = model->root->state;
-    b = a->next;
+    a = TAILQ_FIRST(&model->root->states);
+    b = TAILQ_NEXT(a, tailq);
     ASSERT(a != NULL);
     ASSERT(b != NULL);
 

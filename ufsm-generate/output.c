@@ -265,8 +265,8 @@ static void generate_state_output(FILE *fp, struct ufsmm_state *s)
     uu_to_str(s->parent_region->id, uu_str);
     fprintf(fp, "    .parent_region = &r_%s,\n", uu_str);
 
-    if (s->next) {
-        uu_to_str(s->next->id, uu_str);
+    if (TAILQ_NEXT(s, tailq)) {
+        uu_to_str(TAILQ_NEXT(s, tailq)->id, uu_str);
         fprintf(fp, "    .next = &s_%s,\n", uu_str);
     } else {
         fprintf(fp, "    .next = NULL,\n");
@@ -278,8 +278,9 @@ static void generate_region_output(FILE *fp, struct ufsmm_region *r)
 {
     char uu_str[37];
     bool region_has_history = false;
+    struct ufsmm_state *s;
 
-    for (struct ufsmm_state *s = r->state; s; s = s->next) {
+    TAILQ_FOREACH(s, &r->states, tailq) {
         if ((s->kind == UFSMM_STATE_SHALLOW_HISTORY) ||
             (s->kind == UFSMM_STATE_DEEP_HISTORY)) {
             region_has_history = true;
@@ -291,7 +292,7 @@ static void generate_region_output(FILE *fp, struct ufsmm_region *r)
         struct ufsmm_region *rr = r->parent_state->parent_region;
 
         while (rr) {
-            for (struct ufsmm_state *s = rr->state; s; s = s->next) {
+            TAILQ_FOREACH(s, &rr->states, tailq) {
                 if ((s->kind == UFSMM_STATE_SHALLOW_HISTORY) ||
                     (s->kind == UFSMM_STATE_DEEP_HISTORY)) {
                     region_has_history = true;
@@ -316,8 +317,8 @@ static void generate_region_output(FILE *fp, struct ufsmm_region *r)
     else
         fprintf(fp, "    .has_history = false,\n");
 
-    if (r->state) {
-        uu_to_str(r->state->id, uu_str);
+    if (TAILQ_FIRST(&r->states)) {
+        uu_to_str(TAILQ_FIRST(&r->states)->id, uu_str);
         fprintf(fp, "    .state = &s_%s,\n", uu_str);
     } else {
         fprintf(fp, "    .state = NULL,\n");
@@ -388,8 +389,7 @@ static int generate_c_file(struct ufsmm_model *model,
     {
         uu_to_str(r->id, uu_str);
         fprintf(fp, "const struct ufsm_region r_%s; /* Region: %s */\n", uu_str, r->name);
-        for (s = r->state; s; s = s->next)
-        {
+        TAILQ_FOREACH(s, &r->states, tailq) {
             uu_to_str(s->id, uu_str);
             fprintf(fp, "const struct ufsm_state s_%s; /* State: %s */\n", uu_str, s->name);
             for (r2 = s->regions; r2; r2 = r2->next)
@@ -417,9 +417,7 @@ static int generate_c_file(struct ufsmm_model *model,
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK)
     {
         generate_region_output(fp, r);
-
-        for (s = r->state; s; s = s->next)
-        {
+        TAILQ_FOREACH(s, &r->states, tailq) {
             generate_state_output(fp, s);
 
             for (r2 = s->regions; r2; r2 = r2->next)

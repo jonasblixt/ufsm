@@ -232,7 +232,7 @@ TEST(add_entry_action_to_state)
     rc = ufsmm_model_load("test_add_entry_to_state.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    a = model->root->state;
+    a = TAILQ_FIRST(&model->root->states);
 
     struct ufsmm_action_ref *aref = TAILQ_FIRST(&a->entries);
     ASSERT(aref != NULL);
@@ -287,7 +287,7 @@ TEST(delete_entry_action_from_state)
     rc = ufsmm_model_load("test_delete_entry_from_state.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    a = model->root->state;
+    a = TAILQ_FIRST(&model->root->states);
 
     struct ufsmm_action_ref *aref = TAILQ_FIRST(&a->entries);
     ASSERT(aref != NULL);
@@ -363,7 +363,7 @@ TEST(multiple_actions1)
     rc = ufsmm_model_load("test_multiple_actions1.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    a = model->root->state;
+    a = TAILQ_FIRST(&model->root->states);
 
     struct ufsmm_action_ref *aref = TAILQ_FIRST(&a->entries);
     ASSERT_EQ(rc, UFSMM_OK);
@@ -384,7 +384,7 @@ TEST(multiple_actions1)
     rc = ufsmm_model_load("test_multiple_actions1_1.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    a = model->root->state;
+    a = TAILQ_FIRST(&model->root->states);
 
     aref = TAILQ_FIRST(&a->entries);
     ASSERT(aref != NULL);
@@ -404,7 +404,7 @@ TEST(multiple_actions1)
     rc = ufsmm_model_load("test_multiple_actions1_2.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    a = model->root->state;
+    a = TAILQ_FIRST(&model->root->states);
 
     aref = TAILQ_FIRST(&a->entries);
     ASSERT(aref != NULL);
@@ -424,7 +424,7 @@ TEST(multiple_actions1)
     rc = ufsmm_model_load("test_multiple_actions1_3.ufsm", &model);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    a = model->root->state;
+    a = TAILQ_FIRST(&model->root->states);
 
     aref = TAILQ_FIRST(&a->entries);
     ASSERT(aref == NULL);
