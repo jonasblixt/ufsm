@@ -554,12 +554,43 @@ void canvas_resize_region(void *context)
     r->h = ufsmm_canvas_nearest_grid_point(r->h);
 }
 
+void ufsmm_canvas_reset_delta(struct ufsmm_canvas *canvas)
+{
+    canvas->sx = canvas->px;
+    canvas->sy = canvas->py;
+}
+
 void canvas_resize_region_end(void *context)
 {
 }
 
 void canvas_reorder_entry_func(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *state = priv->selected_state;
+    struct ufsmm_action_ref *aref = priv->selected_aref;
+    struct ufsmm_action_ref *next, *prev;
+
+    if (priv->dy > 10.0) {
+        L_DEBUG("Move down!");
+        ufsmm_canvas_reset_delta(priv);
+        next = TAILQ_NEXT(aref, tailq);
+        if (next) {
+            TAILQ_REMOVE(&state->entries, aref, tailq);
+            TAILQ_INSERT_AFTER(&state->entries, next, aref, tailq);
+            priv->redraw = true;
+        }
+    } else if (priv->dy < -10.0) {
+        L_DEBUG("Move up!");
+        ufsmm_canvas_reset_delta(priv);
+        prev = TAILQ_PREV(aref, ufsmm_action_refs, tailq);
+
+        if (prev) {
+            TAILQ_REMOVE(&state->entries, aref, tailq);
+            TAILQ_INSERT_BEFORE(prev, aref, tailq);
+            priv->redraw = true;
+        }
+    }
 }
 
 void canvas_update_mselect(void *context)
@@ -579,6 +610,29 @@ void canvas_move_text_block(void *context)
 
 void canvas_reorder_exit_func(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *state = priv->selected_state;
+    struct ufsmm_action_ref *aref = priv->selected_aref;
+    struct ufsmm_action_ref *next, *prev;
+
+    if (priv->dy > 10.0) {
+        ufsmm_canvas_reset_delta(priv);
+        next = TAILQ_NEXT(aref, tailq);
+        if (next) {
+            TAILQ_REMOVE(&state->exits, aref, tailq);
+            TAILQ_INSERT_AFTER(&state->exits, next, aref, tailq);
+            priv->redraw = true;
+        }
+    } else if (priv->dy < -10.0) {
+        ufsmm_canvas_reset_delta(priv);
+        prev = TAILQ_PREV(aref, ufsmm_action_refs, tailq);
+
+        if (prev) {
+            TAILQ_REMOVE(&state->exits, aref, tailq);
+            TAILQ_INSERT_BEFORE(prev, aref, tailq);
+            priv->redraw = true;
+        }
+    }
 }
 
 void canvas_reorder_guard_func(void *context)

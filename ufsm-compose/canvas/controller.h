@@ -59,5 +59,6 @@ struct ufsmm_canvas {
 GtkWidget* ufsmm_canvas_new(GtkWidget *parent);
 void ufsmm_canvas_free(GtkWidget *widget);
 int ufsmm_canvas_load_model(GtkWidget *widget, struct ufsmm_model *model);
+void ufsmm_canvas_reset_delta(struct ufsmm_canvas *canvas);
 
 #endif  // CANVAS_CONTROLLER_H_
