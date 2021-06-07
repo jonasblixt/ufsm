@@ -21,19 +21,13 @@ int ufsmm_add_region(struct ufsmm_state *state, bool off_page,
 
     uuid_generate_random(region->id);
 
-    if (state->last_region) {
-        region->prev = state->last_region;
-        state->last_region->next = region;
-    }
+    TAILQ_INSERT_TAIL(&state->regions, region, tailq);
 
-    if (!state->regions) {
-        state->regions = region;
+    if (!TAILQ_FIRST(&state->regions)) {
         region->h = -1;
     } else {
         region->h = 40;
     }
-
-    state->last_region = region;
 
     return UFSMM_OK;
 }

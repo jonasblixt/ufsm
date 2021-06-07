@@ -16,6 +16,7 @@ int ufsmm_add_state(struct ufsmm_region *region, const char *name,
     TAILQ_INIT(&state->transitions);
     TAILQ_INIT(&state->entries);
     TAILQ_INIT(&state->exits);
+    TAILQ_INIT(&state->regions);
     (*out) = state;
 
     state->name = strdup(name);
@@ -33,21 +34,7 @@ int ufsmm_state_append_region(struct ufsmm_state *state, struct ufsmm_region *r)
     if (state)
     {
         L_DEBUG("Belongs to %s", state->name);
-        /* Place region last in the list of regions for this state */
-        if (!state->regions)
-        {
-            state->regions = r;
-        }
-
-        if (!state->last_region)
-        {
-            state->last_region = r;
-        }
-        else
-        {
-            state->last_region->next = r;
-            state->last_region = r;
-        }
+        TAILQ_INSERT_TAIL(&state->regions, r, tailq);
     }
 
     return UFSMM_OK;
@@ -243,6 +230,7 @@ int ufsmm_state_deserialize(struct ufsmm_model *model,
     TAILQ_INIT(&state->transitions);
     TAILQ_INIT(&state->entries);
     TAILQ_INIT(&state->exits);
+    TAILQ_INIT(&state->regions);
     (*out) = state;
 
     if (!json_object_object_get_ex(j_state, "id", &j_id)) {
@@ -506,7 +494,7 @@ bool ufsmm_state_contains_region(struct ufsmm_model *model,
 
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
 
-    for (r = state->regions; r; r = r->next) {
+    TAILQ_FOREACH(r, &state->regions, tailq) {
         ufsmm_stack_push(stack, r);
     }
 
@@ -518,7 +506,7 @@ bool ufsmm_state_contains_region(struct ufsmm_model *model,
         }
 
         TAILQ_FOREACH(s, &r->states, tailq) {
-            for (r2 = s->regions; r2; r2 = r2->next) {
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, r2);
             }
         }

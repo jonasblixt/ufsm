@@ -192,9 +192,10 @@ struct ufsmm_region
     double scale;
     struct ufsmm_states states;
     struct ufsmm_state *parent_state;
-    struct ufsmm_region *prev;
-    struct ufsmm_region *next;
+    TAILQ_ENTRY(ufsmm_region) tailq;
 };
+
+TAILQ_HEAD(ufsmm_regions, ufsmm_region);
 
 struct ufsmm_state
 {
@@ -212,9 +213,8 @@ struct ufsmm_state
     struct ufsmm_transitions transitions;
     struct ufsmm_action_refs entries;
     struct ufsmm_action_refs exits;
-    struct ufsmm_region *regions;
+    struct ufsmm_regions regions;
     struct ufsmm_region *parent_region;
-    struct ufsmm_region *last_region;
     TAILQ_ENTRY(ufsmm_state) tailq;
 };
 

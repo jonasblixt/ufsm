@@ -266,7 +266,7 @@ static int render_normal_state(struct ufsmm_canvas *canvas,
         y_offset += 20;
     }
 
-    if (state->regions) {
+    if (TAILQ_FIRST(&state->regions)) {
         cairo_move_to (cr, x, y + y_offset);
         cairo_line_to(cr, x + w, y + y_offset);
     }
@@ -403,8 +403,7 @@ int ufsmm_state_get_at_xy(struct ufsmm_canvas *canvas,
                  (*out) = s;
                  found_state = true;
             }
-            for (r2 = s->regions; r2; r2 = r2->next)
-            {
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, r2);
             }
         }

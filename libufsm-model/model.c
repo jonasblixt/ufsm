@@ -584,6 +584,7 @@ int ufsmm_model_create(struct ufsmm_model **model_pp, const char *name)
 
     model->root = malloc(sizeof(struct ufsmm_region));
     memset(model->root, 0, sizeof(*model->root));
+    TAILQ_INIT(&model->root->states);
     uuid_generate_random(model->root->id);
 
     TAILQ_INIT(&model->actions);
@@ -650,8 +651,9 @@ int ufsmm_model_write(const char *filename, struct ufsmm_model *model)
             }
 
             /* Queue up sub-regions */
-            for (r2 = s->regions; r2; r2 = r2->next)
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 push_r_js_pair(stack, r2, current_j_state);
+            }
         }
 
     }
@@ -843,8 +845,7 @@ int ufsmm_model_free(struct ufsmm_model *model)
                 ufsmm_transition_free(&s->transitions);
                 free((void *) s->name);
 
-                for (r2 = s->regions; r2; r2 = r2->next)
-                {
+                TAILQ_FOREACH(r2, &s->regions, tailq) {
                     L_DEBUG("Found region '%s'", r2->name);
                     ufsmm_stack_push(stack, (void *) r2);
                 }
@@ -1120,7 +1121,7 @@ struct ufsmm_state *ufsmm_model_get_state_from_uuid(struct ufsmm_model *model,
                 goto search_out;
             }
 
-            for (r2 = s->regions; r2; r2 = r2->next) {
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, (void *) r2);
             }
         }
@@ -1201,7 +1202,7 @@ int ufsmm_model_calculate_max_orthogonal_regions(struct ufsmm_model *model)
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
         TAILQ_FOREACH(s, &r->states, tailq) {
             unsigned int r_count = 0;
-            for (r2 = s->regions; r2; r2 = r2->next) {
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 r_count++;
                 ufsmm_stack_push(stack, (void *) r2);
             }
@@ -1236,7 +1237,7 @@ int ufsmm_model_calculate_nested_region_depth(struct ufsmm_model *model)
 
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
         TAILQ_FOREACH(s, &r->states, tailq) {
-            for (r2 = s->regions; r2; r2 = r2->next) {
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 if (r2->depth > nested_r_depth)
                     nested_r_depth = r2->depth;
 
@@ -1281,7 +1282,7 @@ int ufsmm_model_calculate_max_transitions(struct ufsmm_model *model)
             if (t_count > max_source_transitions)
                 max_source_transitions = t_count;
 
-            for (r2 = s->regions; r2; r2 = r2->next) {
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, (void *) r2);
             }
         }
@@ -1318,7 +1319,7 @@ int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model)
             /* Calculate the number of regions in parent state */
             struct ufsmm_region *pr = s->parent_region;
 
-            for (; pr; pr = pr->next) {
+            for (; pr; pr = TAILQ_NEXT(pr, tailq)) {
                 pr_count++;
             }
 
@@ -1335,7 +1336,7 @@ int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model)
                 max_concurrent_states = s->branch_concurrency_count;
             }
 
-            for (r2 = s->regions; r2; r2 = r2->next) {
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, (void *) r2);
             }
         }
@@ -1391,7 +1392,7 @@ static int internal_delete(struct ufsmm_model *model,
     } else if (state) {
         L_DEBUG("Deleting state '%s'", state->name);
         ufsmm_stack_push(stack2, (void *) state);
-        for (r = state->regions; r; r = r->next) {
+        TAILQ_FOREACH(r, &state->regions, tailq) {
             rc = ufsmm_stack_push(stack, (void *) r);
 
             if (rc != UFSMM_OK)
@@ -1417,7 +1418,8 @@ static int internal_delete(struct ufsmm_model *model,
         TAILQ_FOREACH(s, &r->states, tailq) {
             L_DEBUG("Deleting transitions originating from '%s'", s->name);
             struct ufsmm_transition *t;
-            TAILQ_FOREACH(t, &state->transitions, tailq) {
+
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
                 rc = ufsmm_stack_push(stack3, (void *) t);
                 if (rc != UFSMM_OK)
                     goto err_out;
@@ -1425,7 +1427,7 @@ static int internal_delete(struct ufsmm_model *model,
 
             ufsmm_stack_push(stack2, (void *) s);
 
-            for (r2 = s->regions; r2; r2 = r2->next) {
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, (void *) r2);
             }
         }
@@ -1464,7 +1466,7 @@ static int internal_delete(struct ufsmm_model *model,
                     }
                 }
 
-                for (r2 = s->regions; r2; r2 = r2->next) {
+                TAILQ_FOREACH(r2, &s->regions, tailq) {
                     ufsmm_stack_push(stack, (void *) r2);
                 }
             }
@@ -1500,7 +1502,7 @@ static int internal_delete(struct ufsmm_model *model,
         if (rc != UFSMM_OK)
             goto err_out;
 
-        for (r = state->regions; r; r = r->next) {
+        TAILQ_FOREACH(r, &state->regions, tailq) {
             rc = ufsmm_stack_push(stack, (void *) r);
 
             if (rc != UFSMM_OK)
@@ -1523,7 +1525,7 @@ static int internal_delete(struct ufsmm_model *model,
         TAILQ_FOREACH(s, &r->states, tailq) {
             ufsmm_stack_push(stack2, (void *) s);
 
-            for (r2 = s->regions; r2; r2 = r2->next) {
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, (void *) r2);
                 ufsmm_stack_push(stack3, (void *) r2);
             }
@@ -1542,13 +1544,8 @@ static int internal_delete(struct ufsmm_model *model,
 
     while (ufsmm_stack_pop(stack3, (void *) &r) == UFSMM_OK) {
         L_DEBUG("Deleting region: %s", r->name);
+        TAILQ_REMOVE(&r->parent_state->regions, r, tailq);
         free((void *) r->name);
-
-        if (r->prev)
-            r->prev->next = r->next;
-        else if (r->parent_state)
-            r->parent_state->regions = r->next;
-
         free(r);
     }
 

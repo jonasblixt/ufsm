@@ -63,13 +63,11 @@ int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
     ps = r->parent_state;
 
     if (ps) {
-        pr = ps->regions;
 
-        while (pr) {
+        TAILQ_FOREACH(pr, &ps->regions, tailq) {
             if (pr == r)
                 break;
             y_acc += pr->h;
-            pr = pr->next;
         }
     }
 
@@ -153,8 +151,7 @@ int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
         TAILQ_FOREACH(s, &r->states, tailq) {
             ufsmm_canvas_render_state(canvas, s);
 
-            for (r2 = s->regions; r2; r2 = r2->next)
-            {
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, (void *) r2);
             }
         }
@@ -167,8 +164,7 @@ int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
     {
         TAILQ_FOREACH(s, &r->states, tailq) {
             ufsmm_canvas_render_transition(canvas->cr, &s->transitions);
-            for (r2 = s->regions; r2; r2 = r2->next)
-            {
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 if (r2->off_page)
                     continue;
 

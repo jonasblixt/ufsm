@@ -33,8 +33,8 @@ int ufsmm_canvas_render_region(struct ufsmm_canvas *canvas,
         cairo_rectangle (cr, x, y, w, h);
         cairo_stroke (cr);
         cairo_restore (cr);
-    } else if (region->next) {
-        if (!region->next->focus) {
+    } else if (TAILQ_NEXT(region, tailq)) {
+        if (!TAILQ_NEXT(region, tailq)->focus) {
             cairo_save(cr);
             ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
             cairo_set_dash(cr, dashes, 2, 0);
@@ -123,7 +123,7 @@ int ufsmm_region_get_at_xy(struct ufsmm_canvas *canvas,
         }
 
         TAILQ_FOREACH(s, &r->states, tailq) {
-            for (r2 = s->regions; r2; r2 = r2->next) {
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, r2);
             }
         }

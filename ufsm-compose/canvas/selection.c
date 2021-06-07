@@ -301,7 +301,7 @@ void canvas_process_selection(void *context)
                 priv->selected_state = s;
             }
 
-            for (r2 = s->regions; r2; r2 = r2->next) {
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, r2);
             }
         }
@@ -435,9 +435,7 @@ void canvas_process_selection(void *context)
 #endif
             }
 
-            for (r2 = s->regions; r2; r2 = r2->next)
-            {
-
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, r2);
             }
         }
