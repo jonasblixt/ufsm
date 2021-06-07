@@ -154,8 +154,10 @@ struct ufsmm_transition_state_condition
 {
     struct ufsmm_state *state;
     bool positive;
-    struct ufsmm_transition_state_condition *next;
+    TAILQ_ENTRY(ufsmm_transition_state_condition) tailq;
 };
+
+TAILQ_HEAD(ufsmm_transition_state_conditions, ufsmm_transition_state_condition);
 
 struct ufsmm_transition
 {
@@ -168,7 +170,7 @@ struct ufsmm_transition
     struct ufsmm_transition_state_ref dest;
     struct ufsmm_coords text_block_coords;
     struct ufsmm_vertices vertices;
-    struct ufsmm_transition_state_condition *state_conditions;
+    struct ufsmm_transition_state_conditions state_conditions;
     bool focus;
     TAILQ_ENTRY(ufsmm_transition) tailq;
 };
@@ -379,9 +381,6 @@ int ufsmm_transition_delete_state_condition(struct ufsmm_transition *transition,
                                             uuid_t id);
 int ufsmm_transition_new(struct ufsmm_transition **transition);
 int ufsmm_transition_free_one(struct ufsmm_transition *transition);
-
-struct ufsmm_transition_state_condition *
-ufsmm_transition_get_state_conditions(struct ufsmm_transition *t);
 
 int ufsmm_transition_change_src_state(struct ufsmm_transition *transition,
                                       struct ufsmm_state *new_state);

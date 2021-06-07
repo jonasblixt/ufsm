@@ -8,7 +8,7 @@ static int deserialize_state_conditions(struct ufsmm_model *model,
                                         json_object *j_state_conds,
                                         struct ufsmm_transition *t)
 {
-    struct ufsmm_transition_state_condition *state_cond, *prev;
+    struct ufsmm_transition_state_condition *state_cond;
     json_object *j_state_cond;
     json_object *j_state_id;
     json_object *j_positive;
@@ -51,13 +51,7 @@ static int deserialize_state_conditions(struct ufsmm_model *model,
         state_cond->state = state;
         state_cond->positive = positive;
 
-        if (t->state_conditions == NULL) {
-            t->state_conditions = state_cond;
-            prev = state_cond;
-        } else {
-            prev->next = state_cond;
-            prev = prev->next;
-        }
+        TAILQ_INSERT_TAIL(&t->state_conditions, state_cond, tailq);
     }
 
     return UFSMM_OK;
@@ -198,16 +192,12 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
     for (int n = 0; n < n_entries; n++) {
         j_t = json_object_array_get_idx(j_transitions_list, n);
 
-        transition = malloc(sizeof(struct ufsmm_transition));
+        rc = ufsmm_transition_new(&transition);
 
-        if (transition == NULL)
-            return -UFSMM_ERROR;
-
-        memset(transition, 0, sizeof(*transition));
-
-        TAILQ_INIT(&transition->vertices);
-        TAILQ_INIT(&transition->actions);
-        TAILQ_INIT(&transition->guards);
+        if (rc != UFSMM_OK) {
+            L_ERR("Could not allocate new transition");
+            goto err_out;
+        }
 
         if (!json_object_object_get_ex(j_t, "id", &j_id)) {
             L_ERR("Could not read ID");
@@ -519,8 +509,8 @@ int ufsmm_transitions_serialize(struct ufsmm_state *state,
 
         /* State transitions conditions */
         json_object *j_state_conds = json_object_new_array();
-        struct ufsmm_transition_state_condition *sconds = t->state_conditions;
-        for (; sconds; sconds = sconds->next) {
+        struct ufsmm_transition_state_condition *sconds;
+        TAILQ_FOREACH(sconds, &t->state_conditions, tailq) {
             json_object *j_state_cond = json_object_new_object();
             uuid_unparse(sconds->state->id, uuid_str);
             json_object_object_add(j_state_cond, "state-id",
@@ -561,12 +551,9 @@ int ufsmm_transition_free(struct ufsmm_transitions *transitions)
             free(v);
         }
 
-        sc = t->state_conditions;
-
-        while (sc) {
-            sc_tmp = sc->next;
+        while (sc = TAILQ_FIRST(&t->state_conditions)) {
+            TAILQ_REMOVE(&t->state_conditions, sc, tailq);
             free(sc);
-            sc = sc_tmp;
         }
 
         TAILQ_REMOVE(transitions, t, tailq);
@@ -601,12 +588,9 @@ int ufsmm_transition_free_one(struct ufsmm_transition *transition)
         free(v);
     }
 
-    sc = transition->state_conditions;
-
-    while (sc) {
-        sc_tmp = sc->next;
+    while (sc = TAILQ_FIRST(&transition->state_conditions)) {
+        TAILQ_REMOVE(&transition->state_conditions, sc, tailq);
         free(sc);
-        sc = sc_tmp;
     }
 
     free(transition);
@@ -718,12 +702,6 @@ int ufsmm_transition_delete_state_condition(struct ufsmm_transition *transition,
     return UFSMM_OK;
 }
 
-struct ufsmm_transition_state_condition *
-ufsmm_transition_get_state_conditions(struct ufsmm_transition *t)
-{
-    return t->state_conditions;
-}
-
 int ufsmm_transition_new(struct ufsmm_transition **transition)
 {
     struct ufsmm_transition *t;
@@ -742,6 +720,7 @@ int ufsmm_transition_new(struct ufsmm_transition **transition)
     TAILQ_INIT(&t->vertices);
     TAILQ_INIT(&t->actions);
     TAILQ_INIT(&t->guards);
+    TAILQ_INIT(&t->state_conditions);
     uuid_generate_random(t->id);
     return 0;
 }
