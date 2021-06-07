@@ -368,6 +368,9 @@ void canvas_process_selection(void *context)
                                           vex, vey);
                 L_DEBUG("d = %.2f", d);
                 if (d < 10.0) {
+                    if (priv->selected_transition) {
+                        priv->selected_transition->focus = false;
+                    }
                     priv->selection = UFSMM_SELECTION_TRANSITION;
                     priv->selected_transition = t;
                 } else {
@@ -386,6 +389,10 @@ void canvas_process_selection(void *context)
                                 priv->px, priv->py, tx, ty, tx + tw, ty + th);
                     t->focus = true;
                     priv->selection = UFSMM_SELECTION_TRANSITION;
+
+                    if (priv->selected_transition) {
+                        priv->selected_transition->focus = false;
+                    }
                     priv->selected_transition = t;
                     selected_text_block = &t->text_block_coords;
 
@@ -401,38 +408,6 @@ void canvas_process_selection(void *context)
                         selected_text_block_corner = UFSMM_NO_SELECTION;
                     }
                 }
-
-#ifdef __NOPE__
-                /* Check guards */
-
-                for (struct ufsmm_action_ref *ar = t->guard; ar; ar = ar->next)
-                    ar->focus = false;
-
-                for (struct ufsmm_action_ref *ar = t->action; ar; ar = ar->next)
-                    ar->focus = false;
-
-                for (struct ufsmm_action_ref *ar = t->guard; ar; ar = ar->next) {
-                    if (point_in_box2(priv->px, priv->py, ar->x + ox, ar->y + oy, ar->w, ar->h)) {
-                        ar->focus = true;
-                        selected_action_ref = ar;
-                    }
-                }
-
-                for (struct ufsmm_action_ref *ar = t->action; ar; ar = ar->next) {
-                    if (point_in_box2(priv->px, priv->py, ar->x + ox, ar->y + oy, ar->w, ar->h)) {
-                        ar->focus = true;
-                        selected_action_ref = ar;
-                    }
-                }
-                if (t_focus) {
-                    selected_transition = t;
-                    L_DEBUG("Transition %s --> %s selected",
-                                t->source.state->name, t->dest.state->name);
-                    t->focus = true;
-                    priv->redraw = true;
-                }
-
-#endif
             }
 
             TAILQ_FOREACH(r2, &s->regions, tailq) {
