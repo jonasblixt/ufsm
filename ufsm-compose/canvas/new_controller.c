@@ -465,27 +465,12 @@ void canvas_move_state(void *context)
     s->x = ufsmm_canvas_nearest_grid_point(priv->tx + priv->dx);
     s->y = ufsmm_canvas_nearest_grid_point(priv->ty + priv->dy);
 
-    /* Move transition vertices on transitions originating from this state */
-    /*for (struct ufsmm_transition *t = s->transition; t; t = t->next) {
-        if ((t->source.state == s) &&
-            (t->dest.state == s)) {
-
-            t->text_block_coords.x += priv->dx;
-            t->text_block_coords.y += priv->dy;
-
-            for (struct ufsmm_vertice *v = t->vertices; v; v = v->next) {
-                v->x += priv->dx;
-                v->y += priv->dy;
-            }
-        }
-    }*/
-
     /* Check if state is dragged on top of another region, if so, re-parent state */
     rc = ufsmm_region_get_at_xy(priv, priv->current_region,
                                     priv->px, priv->py, &new_pr, NULL);
 
     if (rc == UFSMM_OK && (s->parent_region != new_pr)) {
-        L_DEBUG("Re-parent '%s' to region: %s", s->name, new_pr->name);
+        L_DEBUG("***** Re-parent '%s' to region: %s", s->name, new_pr->name);
 
 
         ufsmm_get_region_absolute_coords(s->parent_region, &x, &y, &w, &h);
@@ -936,10 +921,16 @@ void canvas_create_new_state(void *context)
     if (r->parent_state)
         y_offset = r->parent_state->region_y_offset;
 
-    s->x = tx - (x + ox);
-    s->y = ty - (y + oy);// + y_offset;
-    s->w = priv->px - tx;
-    s->h = priv->py - ty;
+    s->x = ufsmm_canvas_nearest_grid_point(tx - (x + ox));
+    s->y = ufsmm_canvas_nearest_grid_point(ty - (y + oy));
+    s->w = ufsmm_canvas_nearest_grid_point(priv->px - tx);
+    s->h = ufsmm_canvas_nearest_grid_point(priv->py - ty);
+
+    if (s->w < 50)
+        s->w = 50.0;
+    if (s->h < 50)
+        s->h = 50.0;
+
     priv->redraw = true;
 }
 
