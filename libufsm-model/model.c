@@ -1305,6 +1305,9 @@ int ufsmm_model_calculate_max_transitions(struct ufsmm_model *model)
  * Calculate 'worst case' of states that can be concurrently active in
  *  the model.
  *
+ *  FIXME: This routine will for now just count the number of regions
+ *              in the model. This is not the same thing as worst case
+ *              state concurrency.
  */
 
 int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model)
@@ -1326,33 +1329,9 @@ int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model)
 
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
         TAILQ_FOREACH(s, &r->states, tailq) {
-            unsigned int pr_count = 0;
-            /* Calculate the number of regions in parent state */
-            struct ufsmm_region *pr = s->parent_region;
-
-            for (; pr; pr = TAILQ_NEXT(pr, tailq)) {
-                pr_count++;
-            }
-
-            s->branch_concurrency_count = pr_count;
-            pr = s->parent_region;
-
-            if (pr) {
-                if (pr->parent_state) {
-                    s->branch_concurrency_count += 
-                            pr->parent_state->branch_concurrency_count;
-                }
-            }
-
-            if (s->branch_concurrency_count > max_concurrent_states) {
-                max_concurrent_states = s->branch_concurrency_count;
-            }
-
-            printf("State <%s> concurrency = %i\n", s->name,
-                                    s->branch_concurrency_count);
-
             TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, (void *) r2);
+                max_concurrent_states += 1;
             }
         }
     }
