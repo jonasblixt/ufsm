@@ -13,7 +13,7 @@ ufsm_compose_SOURCES = main.c \
                canvas/color.c \
                canvas/selection.c \
                canvas/logic/canvas.c \
-               canvas/new_controller.c \
+               canvas/controller.c \
 			   canvas/pan_and_scale.c
 
 
