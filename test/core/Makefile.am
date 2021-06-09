@@ -18,7 +18,8 @@ dist_noinst_DATA = test_transition_conflict.ufsm \
 				   test_deephistory.ufsm \
 				   test_nested_composits.ufsm \
 				   test_nested_composits2.ufsm \
-				   test_join2.ufsm
+				   test_join2.ufsm \
+				   test_ev_repeat_orth.ufsm
 
 MOSTLYCLEANFILES = test_transition_conflict.gen.c test_transition_conflict.gen.h \
 				   test_xmi_machine.gen.c test_xmi_machine.gen.h \
@@ -26,7 +27,8 @@ MOSTLYCLEANFILES = test_transition_conflict.gen.c test_transition_conflict.gen.h
 				   test_nested_composits.gen.c test_nested_composits.gen.h \
 				   test_nested_composits2.gen.c test_nested_composits2.gen.h \
 				   test_join2.gen.c test_join2.gen.h \
-				   test_transition_prio.gen.c test_transition_prio.gen.h
+				   test_transition_prio.gen.c test_transition_prio.gen.h \
+				   test_ev_repeat_orth.gen.c test_ev_repeat_orth.gen.h
 
 BUILTSOURCES: test_transition_conflict.gen.c test_transition_conflict.gen.h \
 		      test_xmi_machine.gen.c test_xmi_machine.gen.h \
@@ -34,7 +36,8 @@ BUILTSOURCES: test_transition_conflict.gen.c test_transition_conflict.gen.h \
 			  test_nested_composits.gen.c test_nested_composits.gen.h \
 			  test_nested_composits2.gen.c test_nested_composits2.gen.h \
 			  test_join2.gen.c test_join2.gen.h \
-			  test_transition_prio.gen.c test_transition_prio.gen.h
+			  test_transition_prio.gen.c test_transition_prio.gen.h \
+			  test_ev_repeat_orth.gen.c test_ev_repeat_orth.gen.h
 
 ################################################################################
 
@@ -48,7 +51,8 @@ check_PROGRAMS = test_simple \
 				 test_nested_composits \
 				 test_nested_composits2 \
 				 test_join2 \
-				 test_transition_prio
+				 test_transition_prio \
+				 test_ev_repeat_orth
 
 test_simple_SOURCES = test_simple.c
 test_simple_LDADD = $(COMMON_TEST_LDADD)
@@ -106,6 +110,11 @@ test_transition_prio_SOURCES = test_transition_prio.c $(builddir)/test_transitio
 test_transition_prio_LDADD = $(COMMON_TEST_LDADD)
 test_transition_prio_CFLAGS = $(COMMON_TEST_CFLAGS)
 
+test_ev_repeat_orth.c: test_ev_repeat_orth.gen.c
+test_ev_repeat_orth_SOURCES = test_ev_repeat_orth.c $(builddir)/test_ev_repeat_orth.gen.c
+test_ev_repeat_orth_LDADD = $(COMMON_TEST_LDADD)
+test_ev_repeat_orth_CFLAGS = $(COMMON_TEST_CFLAGS)
+
 TESTS = test_simple \
         test_simple_substate \
         test_simple_completion \
@@ -116,4 +125,5 @@ TESTS = test_simple \
 		test_nested_composits \
 		test_nested_composits2 \
 		test_join2 \
-		test_transition_prio
+		test_transition_prio \
+		test_ev_repeat_orth

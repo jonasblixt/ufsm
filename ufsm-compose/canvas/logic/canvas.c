@@ -3256,7 +3256,7 @@ int canvas_machine_initialize(struct canvas_machine *machine, void *ctx)
     machine->machine.s_data = machine->state_data;
     machine->machine.no_of_states = 80;
     machine->machine.region = &r_00000000_0000_0000_0000_000000000000;
-    ufsm_stack_init(&(machine->machine.stack), 25, machine->stack_data);
+    ufsm_stack_init(&(machine->machine.stack), 49, machine->stack_data);
     ufsm_stack_init(&(machine->machine.stack2), 3, machine->stack_data2);
     return ufsm_init_machine(&machine->machine, ctx);
 }

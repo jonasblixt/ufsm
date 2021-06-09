@@ -23,12 +23,8 @@ const char *ufsm_state_kinds[] =
     "Final",
     "Shallow history",
     "Deep history",
-    "Exit point",
-    "Entry point",
     "Join",
     "Fork",
-    "Choice",
-    "Junction",
     "Terminate",
 };
 
@@ -561,27 +557,6 @@ static int ufsm_process_regions(struct ufsm_machine *m,
     return err;
 }
 
-static int ufsm_process_entry_exit_points(struct ufsm_machine *m,
-                                          const struct ufsm_state *dest,
-                                          int *c)
-{
-    int err = UFSM_OK;
-
-    for (const struct ufsm_state *s = dest->parent_region->state; s; s = s->next) {
-        for (const struct ufsm_transition *te = s->transition; te; te = te->next) {
-            if (te->source == dest) {
-                err = ufsm_push_rt_pair(m, te->dest->parent_region, te);
-
-                if (err != UFSM_OK)
-                    break;
-
-                *c = *c + 1;
-            }
-        }
-    }
-    return err;
-}
-
 static int ufsm_process_final_state(struct ufsm_machine *m,
                                     const struct ufsm_region *act_region,
                                     const struct ufsm_state *dest,
@@ -691,61 +666,6 @@ static int ufsm_process_join(struct ufsm_machine *m,
     return err;
 }
 
-static int ufsm_process_choice(struct ufsm_machine *m,
-                               const struct ufsm_region *act_region,
-                               const struct ufsm_state *dest,
-                               int *c)
-{
-    int err = UFSM_OK;
-    const struct ufsm_transition *t_default = NULL;
-    bool made_transition = false;
-
-    for (const struct ufsm_state *s = dest->parent_region->state; s; s = s->next) {
-        for (const struct ufsm_transition *dt = s->transition; dt; dt = dt->next) {
-            if (dt->source == dest) {
-                if (dt->guard) {
-                    if (ufsm_test_guards(m, dt)) {
-                        err = ufsm_push_rt_pair(m, act_region, dt);
-
-                        if (err != UFSM_OK)
-                            break;
-                        made_transition = true;
-                        *c = *c + 1;
-                        break;
-                    }
-                } else {
-                    t_default = dt;
-                }
-            }
-        }
-    }
-
-    if (!made_transition && t_default && err == UFSM_OK) {
-        err = ufsm_push_rt_pair(m, act_region, t_default);
-        *c = *c + 1;
-    }
-
-    return err;
-}
-
-static int ufsm_process_junction(struct ufsm_machine *m,
-                                 const struct ufsm_state *dest,
-                                 int *c)
-{
-    int err = UFSM_OK;
-
-    for (const struct ufsm_state *s = dest->parent_region->state; s; s = s->next) {
-        for (const struct ufsm_transition *t = s->transition; t; t = t->next) {
-            if (t->source == dest) {
-                err = ufsm_push_rt_pair(m, dest->parent_region, t);
-                *c = *c + 1;
-            }
-        }
-    }
-
-    return err;
-}
-
 static void ufsm_load_history(struct ufsm_machine *m,
                               const struct ufsm_state *src,
                               const struct ufsm_state **dest)
@@ -841,10 +761,6 @@ static int ufsm_make_transition(struct ufsm_machine *m,
                     err = ufsm_process_regions(m, dest, &transition_count);
                 }
             break;
-            case UFSM_STATE_ENTRY_POINT:
-            case UFSM_STATE_EXIT_POINT:
-                err = ufsm_process_entry_exit_points(m,dest,&transition_count);
-            break;
             case UFSM_STATE_FINAL:
                 /* If all regions in this state have reached 'Final'
                  *  the superstate should exit if there is an anonymous
@@ -860,13 +776,6 @@ static int ufsm_make_transition(struct ufsm_machine *m,
             case UFSM_STATE_JOIN:
                 err = ufsm_process_join(m, act_region, src, dest,
                                                         &transition_count);
-            break;
-            case UFSM_STATE_CHOICE:
-                err = ufsm_process_choice(m, act_region, dest,
-                                                        &transition_count);
-            break;
-            case UFSM_STATE_JUNCTION:
-                err = ufsm_process_junction(m, dest, &transition_count);
             break;
             case UFSM_STATE_TERMINATE:
                 m->terminated = true;
@@ -972,7 +881,6 @@ static void ufsm_transition(struct ufsm_machine *m, const struct ufsm_region *r,
     }
 }
 
-
 int ufsm_process(struct ufsm_machine *m, int ev)
 {
     int err = UFSM_OK;
@@ -995,8 +903,6 @@ int ufsm_process(struct ufsm_machine *m, int ev)
         ufsm_reset_machine(m);
         goto err_out;
     }
-
-    printf("Active regions count = %i\n", region_count);
 
     for (int i = 0; i < region_count; i++) {
         err = ufsm_pop_sr_pair(m, &s, &region);

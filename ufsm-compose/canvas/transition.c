@@ -349,13 +349,23 @@ int ufsmm_canvas_render_transition(cairo_t *cr,
         cairo_move_to (cr, begin_x, begin_y);
         cairo_set_line_width (cr, 2.0);
 
+        double y_off = 0.0;
+        struct ufsmm_state *ps = NULL;
+        /*
+        if (t->source.state->parent_region) {
+            if (t->source.state->parent_region->parent_state) {
+                ps = t->source.state->parent_region->parent_state;
+                y_off = ps->region_y_offset;
+            }
+        }*/
+
         TAILQ_FOREACH(v, &t->vertices, tailq) {
-            cairo_line_to(cr, v->x + rx, v->y + ry);
+            cairo_line_to(cr, v->x + rx, v->y + ry - y_off);
             ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
             cairo_stroke (cr);
-            cairo_move_to (cr, v->x + rx, v->y + ry);
+            cairo_move_to (cr, v->x + rx, v->y + ry - y_off);
             begin_x = v->x + rx;
-            begin_y = v->y + ry;
+            begin_y = v->y + ry - y_off;
         }
 
         cairo_line_to(cr, end_x, end_y);

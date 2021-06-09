@@ -134,23 +134,11 @@ int ufsmm_state_serialize(struct ufsmm_state *state, json_object *region,
         case UFSMM_STATE_DEEP_HISTORY:
             j_kind = json_object_new_string("deep-history");
         break;
-        case UFSMM_STATE_EXIT_POINT:
-            j_kind = json_object_new_string("exit-point");
-        break;
-        case UFSMM_STATE_ENTRY_POINT:
-            j_kind = json_object_new_string("entry-point");
-        break;
         case UFSMM_STATE_JOIN:
             j_kind = json_object_new_string("join");
         break;
         case UFSMM_STATE_FORK:
             j_kind = json_object_new_string("fork");
-        break;
-        case UFSMM_STATE_CHOICE:
-            j_kind = json_object_new_string("choice");
-        break;
-        case UFSMM_STATE_JUNCTION:
-            j_kind = json_object_new_string("junction");
         break;
         case UFSMM_STATE_TERMINATE:
             j_kind = json_object_new_string("terminate");
@@ -278,21 +266,12 @@ int ufsmm_state_deserialize(struct ufsmm_model *model,
         state->kind = UFSMM_STATE_SHALLOW_HISTORY;
     } else if (strcmp(state_kind, "deep-history") == 0) {
         state->kind = UFSMM_STATE_DEEP_HISTORY;
-    } else if (strcmp(state_kind, "exit-point") == 0) {
-        state->kind = UFSMM_STATE_EXIT_POINT;
-    } else if (strcmp(state_kind, "entry-point") == 0) {
-        state->kind = UFSMM_STATE_ENTRY_POINT;
     } else if (strcmp(state_kind, "join") == 0) {
         state->kind = UFSMM_STATE_JOIN;
         state->resizeable = true;
     } else if (strcmp(state_kind, "fork") == 0) {
         state->kind = UFSMM_STATE_FORK;
         state->resizeable = true;
-    } else if (strcmp(state_kind, "choice") == 0) {
-        state->kind = UFSMM_STATE_CHOICE;
-        state->resizeable = true;
-    } else if (strcmp(state_kind, "junction") == 0) {
-        state->kind = UFSMM_STATE_JUNCTION;
     } else if (strcmp(state_kind, "terminate") == 0) {
         state->kind = UFSMM_STATE_TERMINATE;
     } else {

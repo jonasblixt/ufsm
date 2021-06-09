@@ -208,23 +208,12 @@ static void generate_state_output(FILE *fp, struct ufsmm_state *s)
         case UFSMM_STATE_DEEP_HISTORY:
             state_kind = "UFSM_STATE_DEEP_HISTORY";
         break;
-        case UFSMM_STATE_EXIT_POINT:
-            state_kind = "UFSM_STATE_EXIT_POINT";
-        break;
-        case UFSMM_STATE_ENTRY_POINT:
-            state_kind = "UFSM_STATE_ENTRY_POINT";
         break;
         case UFSMM_STATE_JOIN:
             state_kind = "UFSM_STATE_JOIN";
         break;
         case UFSMM_STATE_FORK:
             state_kind = "UFSM_STATE_FORK";
-        break;
-        case UFSMM_STATE_CHOICE:
-            state_kind = "UFSM_STATE_CHOICE";
-        break;
-        case UFSMM_STATE_JUNCTION:
-            state_kind = "UFSM_STATE_JUNCTION";
         break;
         case UFSMM_STATE_TERMINATE:
             state_kind = "UFSM_STATE_TERMINATE";
