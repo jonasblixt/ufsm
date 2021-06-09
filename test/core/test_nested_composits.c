@@ -1,9 +1,7 @@
-
 #include <stdio.h>
 #include <assert.h>
-#include <ufsm.h>
-#include <test_nested_composits_input.h>
-#include "common.h"
+#include <ufsm/ufsm.h>
+#include "test_nested_composits.gen.h"
 
 bool flag_xA11, flag_eA11, flag_xA12, flag_eA12, flag_xA12Dummy, 
      flag_eA12Dummy, flag_xA13, flag_eA13, flag_xInitA, flag_eInitA,
@@ -28,108 +26,115 @@ static void reset_flags(void)
     flag_eA22 = false;
 }
 
-void xA11(void)
+void xA11(void *ctx)
 {
     flag_xA11 = true;
 }
 
-void eA11(void)
+void eA11(void *ctx)
 {
     flag_eA11 = true;
 }
 
-void xA12(void)
+void xA12(void *ctx)
 {
     flag_xA12 = true;
 }
 
-void eA12(void)
+void eA12(void *ctx)
 {
     flag_eA12 = true;
 }
 
-void xA12Dummy(void)
+void xA12dummy(void *ctx)
 {
     flag_xA12Dummy = true;
 }
 
-void eA12Dummy(void)
+void eA12dummy(void *ctx)
 {
     flag_eA12Dummy = true;
 }
 
-void xA13(void)
+void xA13(void *ctx)
 {
     flag_xA13 = true;
 }
 
-void eA13(void)
+void eA13(void *ctx)
 {
     flag_eA13 = true;
 }
 
-void xInitA(void)
+void xInitA(void *ctx)
 {
     flag_xInitA = true;
 }
 
-void eInitA(void)
+void eInitA(void *ctx)
 {
     flag_eInitA = true;
 }
 
-void xA21(void)
+void xA21(void *ctx)
 {
     flag_xA21 = true;
 }
 
-void eA21(void)
+void eA21(void *ctx)
 {
     flag_eA21 = true;
 }
 
-void xA22(void)
+void xA22(void *ctx)
 {
     flag_xA22 = true;
 }
 
-void eA22(void)
+void eA22(void *ctx)
 {
     flag_eA22 = true;
 }
 
-void eAEnd(void)
+void eAEnd(void *ctx)
 {
     flag_eAEnd = true;
 }
 
 int main(void) 
 {
-    struct ufsm_machine *m = get_StateMachine1();
+    int rc;
+    struct test_nested_composits_machine machine;
+    struct ufsm_machine *m = &machine.machine;
+    ufsm_debug_machine(&machine.machine);
+
     reset_flags();
-    test_init(m);
-    ufsm_init_machine(m);
-   
+
+    test_nested_composits_machine_initialize(&machine, NULL);
+
     assert ("Step1" && !flag_xA11 && !flag_eA11 && !flag_xA12 && !flag_eA12 &&
      !flag_xA12Dummy && !flag_eA12Dummy && !flag_xA13 && !flag_eA13 && 
      !flag_xInitA && flag_eInitA && !flag_eAEnd && !flag_xA21 && flag_eA21 &&
      !flag_xA22 && !flag_eA22);
 
-    test_process(m, EV);
+    rc = ufsm_process(m, EV);
+    assert(rc == 0);
 
     assert ("Step2" && flag_xA11 && flag_eA11 && !flag_xA12 && flag_eA12 &&
      !flag_xA12Dummy && !flag_eA12Dummy && flag_xA13 && flag_eA13 && 
      flag_xInitA && flag_eInitA && !flag_eAEnd && !flag_xA21 && flag_eA21 &&
      !flag_xA22 && !flag_eA22);
 
-    test_process(m, EV3);
+    rc = ufsm_process(m, EV3);
+    assert(rc == 0);
 
     assert ("Step3" && flag_xA11 && flag_eA11 && !flag_xA12 && flag_eA12 &&
      !flag_xA12Dummy && !flag_eA12Dummy && flag_xA13 && flag_eA13 && 
      flag_xInitA && flag_eInitA && !flag_eAEnd && flag_xA21 && flag_eA21 &&
      !flag_xA22 && flag_eA22);
 
-    test_process(m, EV2);
+    rc = ufsm_process(m, EV2);
+    assert(rc == 0);
 
     assert ("Step4" && flag_xA11 && flag_eA11 && flag_xA12 && flag_eA12 &&
      flag_xA12Dummy && flag_eA12Dummy && flag_xA13 && flag_eA13 && 

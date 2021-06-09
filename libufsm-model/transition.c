@@ -529,7 +529,7 @@ err_out:
     return rc;
 }
 
-int ufsmm_transition_free(struct ufsmm_transitions *transitions)
+int ufsmm_transition_free_list(struct ufsmm_transitions *transitions)
 {
     struct ufsmm_transition *t;
     struct ufsmm_vertice *v;
@@ -539,25 +539,11 @@ int ufsmm_transition_free(struct ufsmm_transitions *transitions)
         return UFSMM_OK;
 
     while (t = TAILQ_FIRST(transitions)) {
-        L_DEBUG("Freeing transition %s --> %s", t->source.state->name,
-                                                t->dest.state->name);
-        L_DEBUG("Freeing actions");
-        free_action_ref_list(&t->actions);
-        L_DEBUG("Freeing guards");
-        free_action_ref_list(&t->guards);
-
-        while (v = TAILQ_FIRST(&t->vertices)) {
-            TAILQ_REMOVE(&t->vertices, v, tailq);
-            free(v);
-        }
-
-        while (sc = TAILQ_FIRST(&t->state_conditions)) {
-            TAILQ_REMOVE(&t->state_conditions, sc, tailq);
-            free(sc);
-        }
-
         TAILQ_REMOVE(transitions, t, tailq);
-        free(t);
+        if (ufsmm_transition_free_one(t) != UFSMM_OK) {
+            L_ERR("Failed to free transition");
+            return -UFSMM_ERROR;
+        }
     }
 
     return UFSMM_OK;

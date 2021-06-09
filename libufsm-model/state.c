@@ -4,29 +4,39 @@
 #include <json.h>
 
 
-int ufsmm_add_state(struct ufsmm_region *region, const char *name,
-                    struct ufsmm_state **out)
+struct ufsmm_state *ufsmm_state_new(enum ufsmm_state_kind kind)
 {
     struct ufsmm_state *state = malloc(sizeof(struct ufsmm_state));
 
-    if (!state)
-        return -UFSMM_ERR_MEM;
+    if (state == NULL)
+        return NULL;
 
     memset(state, 0, sizeof(*state));
+
+    uuid_generate_random(state->id);
+    state->kind = kind;
+
     TAILQ_INIT(&state->transitions);
     TAILQ_INIT(&state->entries);
     TAILQ_INIT(&state->exits);
     TAILQ_INIT(&state->regions);
-    (*out) = state;
+
+    return state;
+}
+
+void ufsmm_state_free(struct ufsmm_state *state)
+{
+    if (state->name)
+        free((void *) state->name);
+    free(state);
+}
+
+void ufsmm_state_set_name(struct ufsmm_state *state, const char *name)
+{
+    if (state->name != NULL)
+        free((void *) state->name);
 
     state->name = strdup(name);
-    state->parent_region = region;
-
-    uuid_generate_random(state->id);
-
-    TAILQ_INSERT_TAIL(&region->states, state, tailq);
-
-    return UFSMM_OK;
 }
 
 int ufsmm_state_append_region(struct ufsmm_state *state, struct ufsmm_region *r)

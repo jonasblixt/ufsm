@@ -1,3 +1,4 @@
+#include <math.h>
 #include "controller.h"
 #include "view.h"
 #include "canvas/logic/canvas.h"
@@ -13,14 +14,17 @@ bool canvas_state_selected(void *context)
 bool canvas_state_resize_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    return (priv->selected_corner != UFSMM_NO_SELECTION) &&
-            (priv->selected_state->kind == UFSMM_STATE_NORMAL);
+    return (priv->selected_corner != UFSMM_NO_SELECTION);
 }
 
 bool canvas_region_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     return (priv->selection == UFSMM_SELECTION_REGION);
+}
+
+void canvas_resize_state_end(void *context)
+{
 }
 
 void canvas_resize_state_begin(void *context)
@@ -44,48 +48,77 @@ void canvas_resize_state(void *context)
 
     priv->redraw = true;
 
-    switch (priv->selected_corner) {
-        case UFSMM_TOP_MIDDLE:
-            selected_state->h = priv->th - dy;
-            selected_state->y = priv->ty + dy;
-        break;
-        case UFSMM_BOT_MIDDLE:
-            selected_state->h = priv->th + dy;
-        break;
-        case UFSMM_TOP_RIGHT:
-            selected_state->h = priv->th - dy;
-            selected_state->w = priv->tw + dx;
-            selected_state->y = priv->ty + dy;
-        break;
-        case UFSMM_RIGHT_MIDDLE:
-            selected_state->w = priv->tw + dx;
-        break;
-        case UFSMM_LEFT_MIDDLE:
-            selected_state->w = priv->tw - dx;
-            selected_state->x = priv->tx + dx;
-        break;
-        case UFSMM_BOT_RIGHT:
-            selected_state->w = priv->tw + dx;
-            selected_state->h = priv->th + dy;
-        break;
-        case UFSMM_BOT_LEFT:
-            selected_state->w = priv->tw - dx;
-            selected_state->x = priv->tx + dx;
-            selected_state->h = priv->th + dy;
-        break;
-        case UFSMM_TOP_LEFT:
-            selected_state->w = priv->tw - dx;
-            selected_state->x = priv->tx + dx;
-            selected_state->h = priv->th - dy;
-            selected_state->y = priv->ty + dy;
-        break;
+    if (selected_state->kind == UFSMM_STATE_NORMAL) {
+        switch (priv->selected_corner) {
+            case UFSMM_TOP_MIDDLE:
+                selected_state->h = priv->th - dy;
+                selected_state->y = priv->ty + dy;
+            break;
+            case UFSMM_BOT_MIDDLE:
+                selected_state->h = priv->th + dy;
+            break;
+            case UFSMM_TOP_RIGHT:
+                selected_state->h = priv->th - dy;
+                selected_state->w = priv->tw + dx;
+                selected_state->y = priv->ty + dy;
+            break;
+            case UFSMM_RIGHT_MIDDLE:
+                selected_state->w = priv->tw + dx;
+            break;
+            case UFSMM_LEFT_MIDDLE:
+                selected_state->w = priv->tw - dx;
+                selected_state->x = priv->tx + dx;
+            break;
+            case UFSMM_BOT_RIGHT:
+                selected_state->w = priv->tw + dx;
+                selected_state->h = priv->th + dy;
+            break;
+            case UFSMM_BOT_LEFT:
+                selected_state->w = priv->tw - dx;
+                selected_state->x = priv->tx + dx;
+                selected_state->h = priv->th + dy;
+            break;
+            case UFSMM_TOP_LEFT:
+                selected_state->w = priv->tw - dx;
+                selected_state->x = priv->tx + dx;
+                selected_state->h = priv->th - dy;
+                selected_state->y = priv->ty + dy;
+            break;
+        }
+
+        if (selected_state->w < 50)
+            selected_state->w = 50;
+
+        if (selected_state->h < 50)
+            selected_state->h = 50;
+
+    } else if (selected_state->kind == UFSMM_STATE_JOIN) {
+
+        switch (priv->selected_corner) {
+            case UFSMM_TOP_LEFT:
+                if ((fabs(dy) < 100) && (selected_state->h == 10)) {
+                    selected_state->w = priv->tw - dx;
+                    selected_state->h = 10;
+                    selected_state->x = priv->tx + dx;
+                } else {
+                    L_DEBUG("Switch orientation");
+                    selected_state->w = 10;
+                    selected_state->h = priv->th - dy;
+                    selected_state->y = priv->ty + dy;
+                }
+            break;
+            case UFSMM_TOP_RIGHT:
+                if ((fabs(dy) < 100) && (selected_state->h == 10)) {
+                    selected_state->w = priv->tw + dx;
+                    selected_state->h = 10;
+                } else {
+                    L_DEBUG("Switch orientation");
+                    selected_state->w = 10;
+                    selected_state->h = priv->th + dy;
+                }
+            break;
+       }
     }
-
-    if (selected_state->w < 50)
-        selected_state->w = 50;
-
-    if (selected_state->h < 50)
-        selected_state->h = 50;
 
     selected_state->x = ufsmm_canvas_nearest_grid_point(selected_state->x);
     selected_state->y = ufsmm_canvas_nearest_grid_point(selected_state->y);

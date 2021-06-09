@@ -71,10 +71,14 @@ TEST(create_one_transition)
     ASSERT(model != NULL);
 
     /* Create states A and B */
-    rc = ufsmm_add_state(model->root, "A", &a);
+    a = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(a, "A");
+    rc = ufsmm_region_append_state(model->root, a);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    rc = ufsmm_add_state(model->root, "B", &b);
+    b = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(b, "B");
+    rc = ufsmm_region_append_state(model->root, b);
     ASSERT_EQ(rc, UFSMM_OK);
 
     /* Create a transition from A to B */
@@ -137,10 +141,15 @@ TEST(create_multiple_transitions)
 
     /* Create states A and B */
     printf("Creating states\n");
-    rc = ufsmm_add_state(model->root, "A", &a);
+
+    a = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(a, "A");
+    rc = ufsmm_region_append_state(model->root, a);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    rc = ufsmm_add_state(model->root, "B", &b);
+    b = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(b, "B");
+    rc = ufsmm_region_append_state(model->root, b);
     ASSERT_EQ(rc, UFSMM_OK);
 
     /* Create transitions between A and B */

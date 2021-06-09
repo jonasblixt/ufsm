@@ -589,6 +589,7 @@ int ufsm_gen_output(struct ufsmm_model *model, const char *output_filename,
         return -1;
     }
 
+
     unsigned int stack_elements  =
                   max_concurrent_states * 2 +
                   nested_region_depth +
@@ -618,6 +619,10 @@ int ufsm_gen_output(struct ufsmm_model *model, const char *output_filename,
     }
 
     free(fn_str);
+
+    fprintf(fp_h, "/* max_concurrent_states = %i\n", max_concurrent_states);
+    fprintf(fp_h, "   nested_region_depth = %i\n", nested_region_depth);
+    fprintf(fp_h, "   max_transitions = %i */\n", max_transitions);
 
     /* Generate headers for c and h files */
     generate_file_header(fp_h);

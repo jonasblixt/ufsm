@@ -88,13 +88,19 @@ TEST(write_model)
     rc = ufsmm_set_region_name(model->root, "Root region");
     ASSERT_EQ(rc, UFSMM_OK);
 
-    rc = ufsmm_add_state(model->root, "A", &a);
+    a = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(a, "A");
+    rc = ufsmm_region_append_state(model->root, a);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    rc = ufsmm_add_state(model->root, "B", &b);
+    b = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(b, "B");
+    rc = ufsmm_region_append_state(model->root, b);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    rc = ufsmm_add_state(model->root, "C", &c);
+    c = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(c, "C");
+    rc = ufsmm_region_append_state(model->root, c);
     ASSERT_EQ(rc, UFSMM_OK);
 
     /* Add region in composit state C */
@@ -114,13 +120,19 @@ TEST(write_model)
 
     /* Add some new states in r1 */
 
-    rc = ufsmm_add_state(r1, "C1", &c1);
+    c1 = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(c1, "C1");
+    rc = ufsmm_region_append_state(r1, c1);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    rc = ufsmm_add_state(r1, "C2", &c2);
+    c2 = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(c2, "C2");
+    rc = ufsmm_region_append_state(r1, c2);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    rc = ufsmm_add_state(r1, "C3", &c3);
+    c3 = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(c3, "C3");
+    rc = ufsmm_region_append_state(r1, c3);
     ASSERT_EQ(rc, UFSMM_OK);
 
     /* Create region in composit state C3 */
@@ -133,13 +145,19 @@ TEST(write_model)
 
     /* Add some new states in r2 */
 
-    rc = ufsmm_add_state(r2, "C31", &c31);
+    c31 = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(c31, "C31");
+    rc = ufsmm_region_append_state(r2, c31);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    rc = ufsmm_add_state(r2, "C32", &c32);
+    c32 = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(c32, "C32");
+    rc = ufsmm_region_append_state(r2, c32);
     ASSERT_EQ(rc, UFSMM_OK);
 
-    rc = ufsmm_add_state(r2, "C33", &c33);
+    c33 = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(c33, "C33");
+    rc = ufsmm_region_append_state(r2, c33);
     ASSERT_EQ(rc, UFSMM_OK);
 
     rc = ufsmm_model_write("test_model_out.ufsm", model);

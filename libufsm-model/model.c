@@ -842,7 +842,7 @@ int ufsmm_model_free(struct ufsmm_model *model)
                 free_action_ref_list(&s->exits);
 
                 L_DEBUG("Freeing transitions for state '%s'", s->name);
-                ufsmm_transition_free(&s->transitions);
+                ufsmm_transition_free_list(&s->transitions);
                 free((void *) s->name);
 
                 TAILQ_FOREACH(r2, &s->regions, tailq) {
@@ -1239,7 +1239,7 @@ int ufsmm_model_calculate_nested_region_depth(struct ufsmm_model *model)
         TAILQ_FOREACH(s, &r->states, tailq) {
             TAILQ_FOREACH(r2, &s->regions, tailq) {
                 if (r2->depth > nested_r_depth)
-                    nested_r_depth = r2->depth;
+                    nested_r_depth = r2->depth + 1;
 
                 ufsmm_stack_push(stack, (void *) r2);
             }
@@ -1254,6 +1254,11 @@ int ufsmm_model_calculate_nested_region_depth(struct ufsmm_model *model)
         return nested_r_depth;
 }
 
+/**
+ * Find the state with the maximum amount of outbound transitions
+ *
+ * Returns count of outbound transitions
+ */
 int ufsmm_model_calculate_max_transitions(struct ufsmm_model *model)
 {
     int rc;
@@ -1296,6 +1301,12 @@ int ufsmm_model_calculate_max_transitions(struct ufsmm_model *model)
         return max_source_transitions;
 }
 
+/**
+ * Calculate 'worst case' of states that can be concurrently active in
+ *  the model.
+ *
+ */
+
 int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model)
 {
     int rc;
@@ -1324,6 +1335,7 @@ int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model)
             }
 
             s->branch_concurrency_count = pr_count;
+            pr = s->parent_region;
 
             if (pr) {
                 if (pr->parent_state) {
@@ -1336,6 +1348,9 @@ int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model)
                 max_concurrent_states = s->branch_concurrency_count;
             }
 
+            printf("State <%s> concurrency = %i\n", s->name,
+                                    s->branch_concurrency_count);
+
             TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, (void *) r2);
             }
@@ -1344,10 +1359,12 @@ int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model)
 
     ufsmm_stack_free(stack);
 
-    if (rc != UFSMM_OK)
+    if (rc != UFSMM_OK) {
         return -UFSMM_ERROR;
-    else
+    } else {
+        printf("max_concurrent_states = %i\n", max_concurrent_states);
         return max_concurrent_states;
+    }
 }
 
 static int internal_delete(struct ufsmm_model *model,

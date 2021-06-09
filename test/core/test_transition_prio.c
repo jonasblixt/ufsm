@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
-#include <ufsm.h>
-#include <test_transition_prio_input.h>
-#include "common.h"
+#include <ufsm/ufsm.h>
+#include "test_transition_prio.gen.h"
 
 static bool flag_eA,flag_xA,flag_eB,flag_xB,flag_eC,flag_xC,flag_eD,flag_xD,
             flag_eE, flag_eF, flag_xF, flag_eG, flag_xG, flag_eH, flag_xH;
@@ -26,12 +25,12 @@ static void reset_flags(void)
     flag_xH = false;
 }
 
-void eA(void)
+void eA(void *ctx)
 {
     flag_eA = true;
 }
 
-void xA(void)
+void xA(void *ctx)
 {
     flag_xA = true;
 
@@ -39,106 +38,115 @@ void xA(void)
                  && flag_xA && flag_xF);
 }
 
-void eB(void)
+void eB(void *ctx)
 {
     flag_eB = true;
 }
 
-void xB(void)
+void xB(void *ctx)
 {
     flag_xB = true;
 
-    assert ("xB" && flag_xD && !flag_xC && flag_xH && flag_xB && !flag_xC
+    assert ("xB" && flag_xD && flag_xC && flag_xH && flag_xB && flag_xC
                  && !flag_xA && flag_xF);
+
 }
 
-void eC(void)
+void eC(void *ctx)
 {
     flag_eC = true;
 }
 
-void xC(void)
+void xC(void *ctx)
 {
     flag_xC = true;
 
-    assert ("xC" && flag_xD && flag_xC && flag_xH && flag_xB
+    assert ("xC" && flag_xD && flag_xC && flag_xH && !flag_xB
                  && !flag_xA && flag_xF);
+
 }
 
-void eD(void)
+void eD(void *ctx)
 {
     flag_eD = true;
 }
 
-void xD(void)
+void xD(void *ctx)
 {
     flag_xD = true;
 
-    assert ("xD" && flag_xD && !flag_xC && !flag_xH && !flag_xB && !flag_xC
+    assert ("xD" && flag_xD && !flag_xC && flag_xH && !flag_xB && !flag_xC
                  && !flag_xA && flag_xF);
+
 }
 
-void eE(void)
+void eE(void *ctx)
 {
     flag_eE = true;
 }
 
-void eF(void)
+void eF(void *ctx)
 {
     flag_eF = true;
-    assert ("eF" && !flag_eH);
+    assert ("eF" && flag_eH);
 }
 
-void xF(void)
+void xF(void *ctx)
 {
     flag_xF = true;
 
-    assert ("xF" && !flag_xD && !flag_xC && !flag_xH && !flag_xB && !flag_xC
+    assert ("xF" && !flag_xD && !flag_xC && flag_xH && !flag_xB && !flag_xC
                  && !flag_xA);
+
 }
 
-void eG(void)
+void eG(void *ctx)
 {
     flag_eG = true;
 }
 
-void xG(void)
+void xG(void *ctx)
 {
     flag_xG = true;
 }
 
-void eH(void)
+void eH(void *ctx)
 {
     flag_eH = true;
 
-    assert ("eH" && flag_eF);
+    assert ("eH" && !flag_eF);
 }
 
-void xH(void)
+void xH(void *ctx)
 {
     flag_xH = true;
 
-    assert ("xH" && flag_xD && !flag_xC && flag_xH && !flag_xB && !flag_xC
-                 && !flag_xA && flag_xF);
+    assert ("xH" && !flag_xD && !flag_xC && flag_xH && !flag_xB && !flag_xC
+                 && !flag_xA && !flag_xF);
 
 }
 
-int main(void) 
+int main(void)
 {
-    struct ufsm_machine *m = get_StateMachine1();
-    
-    test_init(m);
-    ufsm_init_machine(m);
+    int rc;
+    struct transition_prio_machine machine;
+    struct ufsm_machine *m = &machine.machine;
+    ufsm_debug_machine(&machine.machine);
+
+    reset_flags();
+
+    transition_prio_machine_initialize(&machine, NULL);
 
     assert ("step1" && flag_eA && flag_eC && flag_eD && flag_eE && flag_eB
                     && flag_eG && !flag_xA && !flag_xD && !flag_eF && !flag_xB
                     && !flag_xG && !flag_eH && !flag_xH);
-                    
-    test_process(m, EV);
 
+    rc = ufsm_process(m, EV);
+    assert(rc == 0);
     reset_flags();
 
-    test_process(m, EV2);
+    rc = ufsm_process(m, EV2);
+    assert(rc == 0);
 
     return 0;
 }

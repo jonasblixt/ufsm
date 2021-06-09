@@ -25,7 +25,9 @@ TEST(create_entry_action)
     ASSERT_EQ(rc, UFSMM_OK);
 
     printf("Adding state\n");
-    rc = ufsmm_add_state(model->root, "A", &a);
+    a = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(a, "A");
+    rc = ufsmm_region_append_state(model->root, a);
     ASSERT_EQ(rc, UFSMM_OK);
 
     rc = ufsmm_model_add_action(model, UFSMM_ACTION_ENTRY,
@@ -82,7 +84,10 @@ TEST(delete_entry_action)
     ASSERT_EQ(rc, UFSMM_OK);
 
     printf("Adding state\n");
-    rc = ufsmm_add_state(model->root, "A", &a);
+
+    a = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(a, "A");
+    rc = ufsmm_region_append_state(model->root, a);
     ASSERT_EQ(rc, UFSMM_OK);
 
     rc = ufsmm_model_add_action(model, UFSMM_ACTION_ENTRY,
@@ -157,7 +162,10 @@ TEST(delete_missing_entry_action)
     ASSERT_EQ(rc, UFSMM_OK);
 
     printf("Adding state\n");
-    rc = ufsmm_add_state(model->root, "A", &a);
+
+    a = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(a, "A");
+    rc = ufsmm_region_append_state(model->root, a);
     ASSERT_EQ(rc, UFSMM_OK);
 
     rc = ufsmm_model_add_action(model, UFSMM_ACTION_ENTRY,
@@ -209,7 +217,9 @@ TEST(add_entry_action_to_state)
     ASSERT_EQ(rc, UFSMM_OK);
 
     printf("Adding state\n");
-    rc = ufsmm_add_state(model->root, "A", &a);
+    a = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(a, "A");
+    rc = ufsmm_region_append_state(model->root, a);
     ASSERT_EQ(rc, UFSMM_OK);
 
     rc = ufsmm_model_add_action(model, UFSMM_ACTION_ENTRY,
@@ -264,7 +274,9 @@ TEST(delete_entry_action_from_state)
     ASSERT_EQ(rc, UFSMM_OK);
 
     printf("Adding state\n");
-    rc = ufsmm_add_state(model->root, "A", &a);
+    a = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(a, "A");
+    rc = ufsmm_region_append_state(model->root, a);
     ASSERT_EQ(rc, UFSMM_OK);
 
     rc = ufsmm_model_add_action(model, UFSMM_ACTION_ENTRY,
@@ -321,7 +333,9 @@ TEST(multiple_actions1)
     ASSERT_EQ(rc, UFSMM_OK);
 
     printf("Adding state\n");
-    rc = ufsmm_add_state(model->root, "A", &a);
+    a = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(a, "A");
+    rc = ufsmm_region_append_state(model->root, a);
     ASSERT_EQ(rc, UFSMM_OK);
 
     /* Add first entry action */

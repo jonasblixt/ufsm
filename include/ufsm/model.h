@@ -96,6 +96,13 @@ enum ufsmm_transition_vertice_kind
     UFSMM_TRANSITION_VERTICE_END,
 };
 
+enum ufsmm_orientation
+{
+    UFSMM_ORIENTATION_NA,
+    UFSMM_ORIENTATION_VERTICAL,
+    UFSMM_ORIENTATION_HORIZONTAL,
+};
+
 struct ufsmm_action
 {
     uuid_t id;
@@ -299,8 +306,11 @@ int ufsmm_region_get_height(struct ufsmm_region *r, double *h);
 
 /* State api */
 
-int ufsmm_add_state(struct ufsmm_region *region, const char *name,
-                    struct ufsmm_state **out);
+struct ufsmm_state *ufsmm_state_new(enum ufsmm_state_kind kind);
+void ufsmm_state_free(struct ufsmm_state *state);
+
+void ufsmm_state_set_name(struct ufsmm_state *state, const char *name);
+
 
 int ufsmm_state_add_entry(struct ufsmm_model *model,
                          struct ufsmm_state *state,
@@ -385,7 +395,7 @@ int ufsmm_transition_free_one(struct ufsmm_transition *transition);
 
 int ufsmm_transition_change_src_state(struct ufsmm_transition *transition,
                                       struct ufsmm_state *new_state);
-int ufsmm_transition_free(struct ufsmm_transitions *transitions);
+int ufsmm_transition_free_list(struct ufsmm_transitions *transitions);
 
 /* Misc model library stuff */
 

@@ -44,6 +44,7 @@ struct ufsmm_canvas {
     struct ufsmm_action_ref *selected_aref;
     struct ufsmm_transition *new_transition;
     /* Common stuff */
+    void *command_data;
     bool redraw;
     double dx, dy;
     double px, py; /* Location of mouse pointer */

@@ -36,39 +36,64 @@ void canvas_check_sresize_boxes(void *context)
     double px = priv->px;
     double py = priv->py;
 
-    if (s->kind != UFSMM_STATE_NORMAL)
-        return;
-
     ufsmm_get_state_absolute_coords(priv->selected_state, &x, &y, &w, &h);
 
     x += r->ox;
     y += r->oy;
 
     /* Check re-size boxes */
-    if (point_in_box(px, py, x, y, 10, 10)) {
-        L_DEBUG("Top left corner!");
-        priv->selected_corner = UFSMM_TOP_LEFT;
-    } else if (point_in_box(px, py, x + w, y, 10, 10)) {
-        L_DEBUG("Top right corner!");
-        priv->selected_corner = UFSMM_TOP_RIGHT;
-    } else if (point_in_box(px, py, x + w/2, y, 10, 10)) {
-        L_DEBUG("Top middle");
-        priv->selected_corner = UFSMM_TOP_MIDDLE;
-    } else if (point_in_box(px, py, x, y + h/2, 10, 10)) {
-        L_DEBUG("Left middle");
-        priv->selected_corner = UFSMM_LEFT_MIDDLE;
-    } else if (point_in_box(px, py, x, y + h, 10, 10)) {
-        L_DEBUG("Bottom left corner");
-        priv->selected_corner = UFSMM_BOT_LEFT;
-    } else if (point_in_box(px, py, x + w/2, y + h, 10, 10)) {
-        L_DEBUG("Bottom middle");
-        priv->selected_corner = UFSMM_BOT_MIDDLE;
-    } else if (point_in_box(px, py, x + w, y + h, 10, 10)) {
-        L_DEBUG("Bottom right corner");
-        priv->selected_corner = UFSMM_BOT_RIGHT;
-    } else if (point_in_box(px, py, x + w, y + h/2, 10, 10)) {
-        L_DEBUG("Right middle");
-        priv->selected_corner = UFSMM_RIGHT_MIDDLE;
+
+    if (s->kind == UFSMM_STATE_NORMAL) {
+        if (point_in_box(px, py, x, y, 10, 10)) {
+            L_DEBUG("Top left corner!");
+            priv->selected_corner = UFSMM_TOP_LEFT;
+        } else if (point_in_box(px, py, x + w, y, 10, 10)) {
+            L_DEBUG("Top right corner!");
+            priv->selected_corner = UFSMM_TOP_RIGHT;
+        } else if (point_in_box(px, py, x + w/2, y, 10, 10)) {
+            L_DEBUG("Top middle");
+            priv->selected_corner = UFSMM_TOP_MIDDLE;
+        } else if (point_in_box(px, py, x, y + h/2, 10, 10)) {
+            L_DEBUG("Left middle");
+            priv->selected_corner = UFSMM_LEFT_MIDDLE;
+        } else if (point_in_box(px, py, x, y + h, 10, 10)) {
+            L_DEBUG("Bottom left corner");
+            priv->selected_corner = UFSMM_BOT_LEFT;
+        } else if (point_in_box(px, py, x + w/2, y + h, 10, 10)) {
+            L_DEBUG("Bottom middle");
+            priv->selected_corner = UFSMM_BOT_MIDDLE;
+        } else if (point_in_box(px, py, x + w, y + h, 10, 10)) {
+            L_DEBUG("Bottom right corner");
+            priv->selected_corner = UFSMM_BOT_RIGHT;
+        } else if (point_in_box(px, py, x + w, y + h/2, 10, 10)) {
+            L_DEBUG("Right middle");
+            priv->selected_corner = UFSMM_RIGHT_MIDDLE;
+        } else {
+            priv->selected_corner = UFSMM_NO_SELECTION;
+        }
+    } else if (s->kind == UFSMM_STATE_JOIN) {
+        L_DEBUG("Checking join corners");
+        if (w > 10.0) {
+            if (point_in_box(px, py, x, y + h/2, 10, 10)) {
+                L_DEBUG("Corner1");
+                priv->selected_corner = UFSMM_TOP_LEFT;
+            } else if (point_in_box(px, py, x + w, y + h/2, 10, 10)) {
+                L_DEBUG("Corner2");
+                priv->selected_corner = UFSMM_TOP_RIGHT;
+            } else {
+                priv->selected_corner = UFSMM_NO_SELECTION;
+            }
+        } else {
+            if (point_in_box(px, py, x + 5, y + h , 10, 10)) {
+                L_DEBUG("Corner1");
+                priv->selected_corner = UFSMM_TOP_RIGHT;
+            } else if (point_in_box(px, py, x + 5, y, 10, 10)) {
+                L_DEBUG("Corner2");
+                priv->selected_corner = UFSMM_TOP_LEFT;
+            } else {
+                priv->selected_corner = UFSMM_NO_SELECTION;
+            }
+        }
     } else {
         priv->selected_corner = UFSMM_NO_SELECTION;
     }
@@ -112,7 +137,8 @@ void canvas_check_action_func(void *context)
         priv->selected_aref = NULL;
     }
 
-    if (priv->selection == UFSMM_SELECTION_STATE) {
+    if ((priv->selection == UFSMM_SELECTION_STATE) &&
+        (priv->selected_state->kind == UFSMM_STATE_NORMAL)) {
         /* Check action functions */
         TAILQ_FOREACH(ar, &s->entries, tailq) {
             if (point_in_box2(priv->px, priv->py, ar->x + r->ox, ar->y + r->oy, ar->w, ar->h)) {
@@ -888,8 +914,10 @@ void canvas_new_state_set_scoords(void *context)
     int rc;
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_region *r = priv->selected_region;
-    struct ufsmm_state *new_state = NULL;
-    rc = ufsmm_add_state(priv->selected_region, "New state", &new_state);
+    struct ufsmm_state *new_state = ufsmm_state_new(UFSMM_STATE_NORMAL);
+
+    ufsmm_state_set_name(new_state, "New state");
+    rc = ufsmm_region_append_state(priv->selected_region, new_state);
 
     priv->new_state = new_state;
 
@@ -909,17 +937,13 @@ void canvas_create_new_state(void *context)
     double ty = s->y;
     double ox = priv->current_region->ox;
     double oy = priv->current_region->oy;
-    //ufsmm_get_region_absolute_coords(r, &x, &y, &w, &h);
+
     if (r->parent_state) {
         ufsmm_get_state_absolute_coords(r->parent_state, &x, &y, &w, &h);
     } else {
         x = 0;
         y = 0;
     }
-    double y_offset = 0.0;
-
-    if (r->parent_state)
-        y_offset = r->parent_state->region_y_offset;
 
     s->x = ufsmm_canvas_nearest_grid_point(tx - (x + ox));
     s->y = ufsmm_canvas_nearest_grid_point(ty - (y + oy));
@@ -1041,18 +1065,28 @@ void canvas_create_init_state(void *context)
     double x, y, w, h;
     double new_state_sx = ufsmm_canvas_nearest_grid_point(priv->px);
     double new_state_sy = ufsmm_canvas_nearest_grid_point(priv->py);
-    struct ufsmm_state *new_state = NULL;
-    rc = ufsmm_add_state(priv->selected_region, "Init", &new_state);
+    struct ufsmm_state *new_state = ufsmm_state_new(UFSMM_STATE_INIT);
+    struct ufsmm_region *r = priv->selected_region;
+
+    ufsmm_state_set_name(new_state, "Init");
+
+    rc = ufsmm_region_append_state(priv->selected_region, new_state);
 
     if (rc == UFSMM_OK) {
-        ufsmm_get_region_absolute_coords(priv->selected_region, &x, &y, &w, &h);
+
+        if (r->parent_state) {
+            ufsmm_get_state_absolute_coords(r->parent_state, &x, &y, &w, &h);
+        } else {
+            x = 0;
+            y = 0;
+        }
+        //ufsmm_get_region_absolute_coords(priv->selected_region, &x, &y, &w, &h);
         L_DEBUG("x, y = <%.2f, %.2f>, new_state_xy = <%.2f, %.2f>",
                     x, y, new_state_sx, new_state_sy);
         new_state->x = new_state_sx - (x + priv->current_region->ox);
         new_state->y = new_state_sy - (y + priv->current_region->oy);
         new_state->w = 20;
         new_state->h = 20;
-        new_state->kind = UFSMM_STATE_INIT;
         priv->redraw = true;
         L_DEBUG("Created new state, pr = %s", priv->selected_region->name);
     } else {
@@ -1069,8 +1103,11 @@ void canvas_create_final_state(void *context)
     L_DEBUG("Adding final state");
     double new_state_sx = ufsmm_canvas_nearest_grid_point(priv->px);
     double new_state_sy = ufsmm_canvas_nearest_grid_point(priv->py);
-    struct ufsmm_state *new_state = NULL;
-    rc = ufsmm_add_state(priv->selected_region, "Final", &new_state);
+    struct ufsmm_state *new_state = ufsmm_state_new(UFSMM_STATE_FINAL);
+
+    ufsmm_state_set_name(new_state, "Final");
+
+    rc = ufsmm_region_append_state(priv->selected_region, new_state);
 
     if (rc == UFSMM_OK) {
         ufsmm_get_region_absolute_coords(priv->selected_region, &x, &y, &w, &h);
@@ -1080,7 +1117,6 @@ void canvas_create_final_state(void *context)
         new_state->y = new_state_sy - (y + priv->current_region->oy);
         new_state->w = 20;
         new_state->h = 20;
-        new_state->kind = UFSMM_STATE_FINAL;
         priv->redraw = true;
         L_DEBUG("Created new state, pr = %s", priv->selected_region->name);
     } else {
@@ -1106,6 +1142,83 @@ void canvas_add_transition_action(void *context)
     ufsm_add_transition_action_dialog(GTK_WINDOW(priv->root_window),
                                             priv->model,
                                             priv->selected_transition);
+}
+
+struct join_op {
+    struct ufsmm_state *state;
+    double sx, sy;
+};
+
+void canvas_create_join_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    L_DEBUG("%s", __func__);
+    priv->command_data = malloc(sizeof(struct join_op));
+    memset(priv->command_data, 0, sizeof(struct join_op));
+    struct join_op *op = (struct join_op *) priv->command_data;
+    op->state = ufsmm_state_new(UFSMM_STATE_JOIN);
+    ufsmm_state_set_name(op->state, "Join");
+}
+
+void canvas_create_join_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct join_op *op = (struct join_op *) priv->command_data;
+    L_DEBUG("%s", __func__);
+    if (op->state) {
+        free(op->state);
+    }
+
+    free(priv->command_data);
+}
+
+void canvas_create_join_start(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *r;
+    int rc;
+    struct join_op *op = (struct join_op *) priv->command_data;
+    L_DEBUG("%s", __func__);
+
+    rc = ufsmm_region_get_at_xy(priv, priv->current_region,
+                                priv->px, priv->py, &r, NULL);
+
+    if (rc == UFSMM_OK) {
+        L_DEBUG("Setting pr = %s", r->name);
+        op->state->parent_region = r;
+    } else {
+        L_ERR("Could not find parent region");
+    }
+
+
+    op->state->x = priv->px;
+    op->state->y = priv->py;
+}
+
+void canvas_update_join_preview(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct join_op *op = (struct join_op *) priv->command_data;
+    L_DEBUG("%s", __func__);
+
+    op->state->w = priv->px - op->state->x;
+    op->state->h = priv->py - op->state->y;
+    priv->redraw = true;
+}
+
+void canvas_add_join_to_region(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct join_op *op = (struct join_op *) priv->command_data;
+    L_DEBUG("%s", __func__);
+    if (op->state->w > op->state->h)
+        op->state->h = 10;
+    else
+        op->state->w = 10;
+
+    ufsmm_region_append_state(op->state->parent_region, op->state);
+    priv->redraw = true;
+    op->state = NULL;
 }
 
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
@@ -1142,12 +1255,16 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eKey_t_down);
     } else if (event->keyval == GDK_KEY_i) {
         canvas_machine_process(&priv->machine, eKey_i_down);
+    } else if (event->keyval == GDK_KEY_j) {
+        canvas_machine_process(&priv->machine, eKey_j_down);
     } else if (event->keyval == GDK_KEY_f) {
         canvas_machine_process(&priv->machine, eKey_f_down);
     } else if (event->keyval == GDK_KEY_g) {
         canvas_machine_process(&priv->machine, eKey_g_down);
     } else if (event->keyval == GDK_KEY_e) {
         canvas_machine_process(&priv->machine, eKey_e_down);
+    } else if (event->keyval == GDK_KEY_Escape) {
+        canvas_machine_process(&priv->machine, eKey_esc_down);
     } else if (event->keyval == GDK_KEY_x) {
         canvas_machine_process(&priv->machine, eKey_x_down);
     } else if (event->keyval == GDK_KEY_Delete) {

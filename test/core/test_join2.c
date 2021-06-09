@@ -1,9 +1,7 @@
-
 #include <stdio.h>
 #include <assert.h>
-#include <ufsm.h>
-#include <test_join2_input.h>
-#include "common.h"
+#include <ufsm/ufsm.h>
+#include "test_join2.gen.h"
 
 static bool flag_eB;
 
@@ -12,22 +10,26 @@ static void reset_flags(void)
     flag_eB = false;
 }
 
-void eB(void)
+void eB(void *ctx)
 {
     flag_eB = true;
 }
 
 int main(void) 
 {
-    struct ufsm_machine *m = get_StateMachine1();
+    int rc;
+    struct join2_machine machine;
+    struct ufsm_machine *m = &machine.machine;
+    ufsm_debug_machine(&machine.machine);
+
     reset_flags();
-    test_init(m);
-    ufsm_init_machine(m);
-   
+
+    join2_machine_initialize(&machine, NULL);
+
     assert (!flag_eB);
 
-    test_process(m, EV);
-
+    rc = ufsm_process(m, EV);
+    assert(rc == 0);
     assert(flag_eB);
 
     return 0;

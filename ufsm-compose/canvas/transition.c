@@ -59,6 +59,27 @@ int transition_calc_begin_end_point(struct ufsmm_state *s,
             default:
             break;
         }
+    } else if ((s->kind == UFSMM_STATE_JOIN) || (s->kind == UFSMM_STATE_FORK)) {
+        switch (side) {
+            case UFSMM_SIDE_LEFT:
+                (*x) = sx;
+                (*y) = sy + ((offset > sh)?sh:offset);
+            break;
+            case UFSMM_SIDE_RIGHT:
+                (*x) = sx + sw;
+                (*y) = sy + ((offset > sh)?sh:offset);
+            break;
+            case UFSMM_SIDE_TOP:
+                (*x) = sx + ((offset > sw)?sw:offset);
+                (*y) = sy;
+            break;
+            case UFSMM_SIDE_BOTTOM:
+                (*x) = sx + ((offset > sw)?sw:offset);
+                (*y) = sy + sh;
+            break;
+            default:
+            break;
+        }
     }
 }
 

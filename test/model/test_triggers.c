@@ -24,7 +24,9 @@ TEST(create_one_trigger)
     ASSERT_EQ(rc, UFSMM_OK);
 
     printf("Adding state\n");
-    rc = ufsmm_add_state(model->root, "A", &a);
+    a = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(a, "A");
+    rc = ufsmm_region_append_state(model->root, a);
     ASSERT_EQ(rc, UFSMM_OK);
 
     rc = ufsmm_model_add_trigger(model, "eTestEvent", &trigger);
@@ -79,7 +81,9 @@ TEST(delete_one_trigger)
     ASSERT_EQ(rc, UFSMM_OK);
 
     printf("Adding state\n");
-    rc = ufsmm_add_state(model->root, "A", &a);
+    a = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    ufsmm_state_set_name(a, "A");
+    rc = ufsmm_region_append_state(model->root, a);
     ASSERT_EQ(rc, UFSMM_OK);
 
     rc = ufsmm_model_add_trigger(model, "eTestEvent", &trigger);

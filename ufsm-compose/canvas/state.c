@@ -93,6 +93,59 @@ static int render_init_state(struct ufsmm_canvas *canvas,
     return 0;
 }
 
+
+static int render_join_state(struct ufsmm_canvas *canvas,
+                             struct ufsmm_state *state)
+{
+    double x, y, w, h;
+    double lbl_x, lbl_y;
+    double radius = 10.0;
+    double degrees = M_PI / 180.0;
+    bool clip_text = false;
+    cairo_text_extents_t extents;
+    cairo_t *cr = canvas->cr;
+
+    ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
+
+    cairo_save(cr);
+    cairo_new_sub_path(cr);
+    cairo_set_line_width(cr, 4);
+    if (state->focus)
+        ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
+    else
+        ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
+
+    if (state->w > state->h) {
+        cairo_rectangle (cr, x, y, w, 10);
+    } else {
+        cairo_rectangle (cr, x, y, 10, h);
+    }
+    cairo_stroke_preserve(cr);
+    cairo_close_path(cr);
+    cairo_stroke_preserve(cr);
+    cairo_fill_preserve(cr);
+    ufsmm_color_set(cr, UFSMM_COLOR_BG);
+    cairo_fill(cr);
+    cairo_restore(cr);
+
+    if (state->focus) {
+        cairo_save(cr);
+        ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
+        if (w > 10.0) {
+            cairo_rectangle (cr, x - 5, (y + h/2) - 5, 10, 10);     /* Left */
+            cairo_rectangle (cr, x + w - 5, (y + h/2) - 5, 10, 10);     /* Right */
+        } else {
+            cairo_rectangle (cr, x + w/2 - 5, y - 5, 10, 10);     /* Left */
+            cairo_rectangle (cr, x + w/2 - 5, y + h - 5, 10, 10);     /* Right */
+        }
+        cairo_fill(cr);
+        cairo_restore(cr);
+
+    }
+
+    return 0;
+}
+
 static int render_final_state(struct ufsmm_canvas *canvas,
                               struct ufsmm_state *state)
 {
@@ -322,6 +375,9 @@ int ufsmm_canvas_render_state(struct ufsmm_canvas *canvas,
         break;
         case UFSMM_STATE_INIT:
             rc = render_init_state(canvas, state);
+        break;
+        case UFSMM_STATE_JOIN:
+            rc = render_join_state(canvas, state);
         break;
         case UFSMM_STATE_FINAL:
             rc = render_final_state(canvas, state);

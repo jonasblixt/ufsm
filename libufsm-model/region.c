@@ -40,6 +40,7 @@ int ufsmm_set_region_name(struct ufsmm_region *region, const char *name)
 
 int ufsmm_region_append_state(struct ufsmm_region *r, struct ufsmm_state *state)
 {
+    state->parent_region = r;
     TAILQ_INSERT_TAIL(&r->states, state, tailq);
     return UFSMM_OK;
 }

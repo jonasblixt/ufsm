@@ -59,8 +59,9 @@ int ufsm_stack_init(struct ufsm_stack *stack,
 
 static int ufsm_stack_push(struct ufsm_stack *stack, const void *item)
 {
-    if (stack->pos >= stack->no_of_elements)
+    if (stack->pos >= stack->no_of_elements) {
         return UFSM_ERROR_STACK_OVERFLOW;
+    }
 
     stack->data[stack->pos++] = (void *) item;
 
@@ -293,12 +294,15 @@ static int ufsm_enter_parent_states(struct ufsm_machine *m,
 
         ps = pr->parent_state;
 
-        const struct ufsm_state *current = ufsm_get_current_state(m, ps->parent_region);
-        if (ps && current != ps) {
-            ufsm_set_current_state(m, ps->parent_region, ps);
+        if (ps != NULL) {
+            const struct ufsm_state *current = \
+                         ufsm_get_current_state(m, ps->parent_region);
+            if (current != ps) {
+                ufsm_set_current_state(m, ps->parent_region, ps);
 
-            if (pr != ancestor)
-                ufsm_enter_state(m, ps);
+                if (pr != ancestor)
+                    ufsm_enter_state(m, ps);
+            }
         }
     }
 
@@ -382,8 +386,8 @@ static int ufsm_leave_parent_states(struct ufsm_machine *m,
 }
 
 inline static int ufsm_push_sr_pair(struct ufsm_machine *m,
-                                    const struct ufsm_region *r,
-                                    const struct ufsm_state *s)
+                                    const struct ufsm_state *s,
+                                    const struct ufsm_region *r)
 {
     int err = UFSM_OK;
 
@@ -396,8 +400,8 @@ inline static int ufsm_push_sr_pair(struct ufsm_machine *m,
 }
 
 inline static int ufsm_pop_sr_pair(struct ufsm_machine *m,
-                                   struct ufsm_region **r,
-                                   struct ufsm_state **s)
+                                   struct ufsm_state **s,
+                                   struct ufsm_region **r)
 {
     int err = UFSM_OK;
 
@@ -428,7 +432,7 @@ static int ufsm_find_active_regions(struct ufsm_machine *m,
 
             if (s) {
                 m->s_data[s->index].cant_exit = false;
-                err = ufsm_push_sr_pair(m, r, s);
+                err = ufsm_push_sr_pair(m, s, r);
 
                 if (err != UFSM_OK) {
                     goto err_out;
@@ -468,7 +472,7 @@ static int ufsm_leave_nested_states(struct ufsm_machine *m,
         return err;
 
     for (int i = 0; i < c; i++) {
-        err = ufsm_pop_sr_pair(m, &r, &s2);
+        err = ufsm_pop_sr_pair(m, &s2, &r);
 
         if (err != UFSM_OK)
             break;
@@ -937,7 +941,7 @@ static inline bool ufsm_transition_has_trigger(const struct ufsm_transition *t, 
     return false;
 }
 
-static int ufsm_transition(struct ufsm_machine *m, const struct ufsm_region *r,
+static void ufsm_transition(struct ufsm_machine *m, const struct ufsm_region *r,
                             int ev)
 {
     int rc;
@@ -966,8 +970,6 @@ static int ufsm_transition(struct ufsm_machine *m, const struct ufsm_region *r,
             }
         }
     }
-
-    return UFSM_OK;
 }
 
 
@@ -987,10 +989,17 @@ int ufsm_process(struct ufsm_machine *m, int ev)
     if (m->debug_event)
         m->debug_event(ev);
 
-    ufsm_find_active_regions(m,m->region, &region_count);
+    err = ufsm_find_active_regions(m, m->region, &region_count);
+
+    if (err != UFSM_OK) {
+        ufsm_reset_machine(m);
+        goto err_out;
+    }
+
+    printf("Active regions count = %i\n", region_count);
 
     for (int i = 0; i < region_count; i++) {
-        err = ufsm_pop_sr_pair(m, &region, &s);
+        err = ufsm_pop_sr_pair(m, &s, &region);
 
         if (err != UFSM_OK) {
             goto err_out;
@@ -999,10 +1008,7 @@ int ufsm_process(struct ufsm_machine *m, int ev)
          * changed
          * */
         if (m->r_data[region->index].current == s) {
-            err = ufsm_transition (m, region, ev);
-            if (err != UFSM_OK) {
-                goto err_out;
-            }
+            ufsm_transition(m, region, ev);
         }
     }
 
