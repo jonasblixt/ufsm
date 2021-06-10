@@ -118,6 +118,7 @@ int ufsmm_get_state_absolute_coords(struct ufsmm_state *s, double *x,
     return 0;
 }
 
+
 int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
 {
     int rc;
@@ -173,6 +174,10 @@ int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
         }
     }
 
+
+    if (canvas->preview_state)
+        ufsmm_canvas_render_state(canvas, canvas->preview_state);
+
     ufsmm_stack_free(stack);
 
     /* Draw selection overlay */
@@ -193,6 +198,7 @@ int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
         cairo_stroke (canvas->cr);
         cairo_restore (canvas->cr);
     }
+
     return rc;
 }
 

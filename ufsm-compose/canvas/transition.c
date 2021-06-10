@@ -37,7 +37,8 @@ int transition_calc_begin_end_point(struct ufsmm_state *s,
         }
     } else if ((s->kind == UFSMM_STATE_INIT) || (s->kind == UFSMM_STATE_FINAL) ||
                (s->kind == UFSMM_STATE_SHALLOW_HISTORY) ||
-               (s->kind == UFSMM_STATE_DEEP_HISTORY)) {
+               (s->kind == UFSMM_STATE_DEEP_HISTORY) ||
+               (s->kind == UFSMM_STATE_TERMINATE)) {
 
         switch (side) {
             case UFSMM_SIDE_LEFT:

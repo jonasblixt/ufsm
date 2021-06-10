@@ -1008,7 +1008,11 @@ void canvas_create_transition_start(void *context)
     }
 }
 
-void canvas_update_transition_hint(void *context)
+void canvas_create_state_begin(void *context)
+{
+}
+
+void canvas_create_state_end(void *context)
 {
 }
 
@@ -1187,7 +1191,7 @@ void canvas_create_join_end(void *context)
     struct join_op *op = (struct join_op *) priv->command_data;
     L_DEBUG("%s", __func__);
     if (op->state) {
-        free(op->state);
+        ufsmm_state_free(op->state);
     }
 
     free(priv->command_data);
@@ -1271,7 +1275,7 @@ void canvas_create_fork_end(void *context)
     struct fork_op *op = (struct fork_op *) priv->command_data;
     L_DEBUG("%s", __func__);
     if (op->state) {
-        free(op->state);
+        ufsmm_state_free(op->state);
     }
 
     free(priv->command_data);
@@ -1333,6 +1337,59 @@ void canvas_add_fork_to_region(void *context)
     op->state = NULL;
 }
 
+struct terminate_op {
+    struct ufsmm_state *state;
+    bool commit;
+};
+
+void canvas_create_terminate_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    L_DEBUG("%s", __func__);
+    priv->command_data = malloc(sizeof(struct terminate_op));
+    memset(priv->command_data, 0, sizeof(struct terminate_op));
+    struct terminate_op *op = (struct terminate_op *) priv->command_data;
+    op->state = ufsmm_state_new(UFSMM_STATE_TERMINATE);
+    op->state->w = 20;
+    op->state->h = 20;
+    op->state->parent_region = priv->selected_region;
+    priv->preview_state = op->state;
+    ufsmm_state_set_name(op->state, "Terminate");
+}
+
+void canvas_create_terminate_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct terminate_op *op = (struct terminate_op *) priv->command_data;
+
+    if (!op->commit)
+        ufsmm_state_free(op->state);
+    free(op);
+    priv->preview_state = NULL;
+    priv->redraw = true;
+}
+
+void canvas_add_terminate_to_region(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct terminate_op *op = (struct terminate_op *) priv->command_data;
+    op->commit = true;
+    ufsmm_region_append_state(priv->selected_region, op->state);
+    priv->redraw = true;
+}
+
+void canvas_terminate_update_preview(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct terminate_op *op = (struct terminate_op *) priv->command_data;
+    double ox = priv->current_region->ox;
+    double oy = priv->current_region->oy;
+    op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - ox - 10);
+    op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - oy - 20);
+    priv->redraw = true;
+}
+
+
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     struct ufsmm_canvas *priv = 
@@ -1365,6 +1422,8 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eKey_r_down);
     } else if (event->keyval == GDK_KEY_t) {
         canvas_machine_process(&priv->machine, eKey_t_down);
+    } else if (event->keyval == GDK_KEY_T) {
+        canvas_machine_process(&priv->machine, eKey_T_down);
     } else if (event->keyval == GDK_KEY_i) {
         canvas_machine_process(&priv->machine, eKey_i_down);
     } else if (event->keyval == GDK_KEY_j) {

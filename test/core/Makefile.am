@@ -20,7 +20,8 @@ dist_noinst_DATA = test_transition_conflict.ufsm \
 				   test_nested_composits2.ufsm \
 				   test_join2.ufsm \
 				   test_ev_repeat_orth.ufsm \
-				   test_fork.ufsm
+				   test_fork.ufsm \
+				   test_terminate.ufsm
 
 MOSTLYCLEANFILES = test_transition_conflict.gen.c test_transition_conflict.gen.h \
 				   test_xmi_machine.gen.c test_xmi_machine.gen.h \
@@ -30,7 +31,8 @@ MOSTLYCLEANFILES = test_transition_conflict.gen.c test_transition_conflict.gen.h
 				   test_join2.gen.c test_join2.gen.h \
 				   test_transition_prio.gen.c test_transition_prio.gen.h \
 				   test_ev_repeat_orth.gen.c test_ev_repeat_orth.gen.h \
-				   test_fork.gen.c test_fork.gen.h
+				   test_fork.gen.c test_fork.gen.h \
+				   test_terminate.gen.c test_terminate.gen.h
 
 BUILTSOURCES: test_transition_conflict.gen.c test_transition_conflict.gen.h \
 		      test_xmi_machine.gen.c test_xmi_machine.gen.h \
@@ -40,7 +42,8 @@ BUILTSOURCES: test_transition_conflict.gen.c test_transition_conflict.gen.h \
 			  test_join2.gen.c test_join2.gen.h \
 			  test_transition_prio.gen.c test_transition_prio.gen.h \
 			  test_ev_repeat_orth.gen.c test_ev_repeat_orth.gen.h \
-			  test_fork.gen.c test_fork.gen.h
+			  test_fork.gen.c test_fork.gen.h \
+			  test_terminate.gen.c test_terminate.gen.h
 
 ################################################################################
 
@@ -56,7 +59,8 @@ check_PROGRAMS = test_simple \
 				 test_join2 \
 				 test_transition_prio \
 				 test_ev_repeat_orth \
-				 test_fork
+				 test_fork \
+				 test_terminate
 
 test_simple_SOURCES = test_simple.c
 test_simple_LDADD = $(COMMON_TEST_LDADD)
@@ -124,6 +128,11 @@ test_ev_repeat_orth_SOURCES = test_ev_repeat_orth.c $(builddir)/test_ev_repeat_o
 test_ev_repeat_orth_LDADD = $(COMMON_TEST_LDADD)
 test_ev_repeat_orth_CFLAGS = $(COMMON_TEST_CFLAGS)
 
+test_terminate.c: test_terminate.gen.c
+test_terminate_SOURCES = test_terminate.c $(builddir)/test_terminate.gen.c
+test_terminate_LDADD = $(COMMON_TEST_LDADD)
+test_terminate_CFLAGS = $(COMMON_TEST_CFLAGS)
+
 TESTS = test_simple \
         test_simple_substate \
         test_simple_completion \
@@ -136,4 +145,5 @@ TESTS = test_simple \
 		test_join2 \
 		test_transition_prio \
 		test_ev_repeat_orth \
-		test_fork
+		test_fork \
+		test_terminate
