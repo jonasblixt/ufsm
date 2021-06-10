@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
-#include <ufsm.h>
-#include <test_fork_input.h>
-#include "common.h"
+#include <ufsm/ufsm.h>
+#include "test_fork.gen.h"
 
 static bool gA_val = false;
 static bool g2_val = false;
@@ -24,9 +23,6 @@ void reset_flags(void)
 {
     flag_gA = false;
     flag_g2 = false;
-    flag_finalD = false;
-    flag_eD = false;
-    flag_eC = false;
     flag_finalC = false;
     flag_eB2 = false;
     flag_xB2 = false;
@@ -36,31 +32,29 @@ void reset_flags(void)
     flag_xAB = false;
 }
 
-bool gA(void) { flag_gA = true; return gA_val; }
-bool g2(void) { flag_g2 = true; return g2_val; }
-void finalD(void) { flag_finalD = true; }
-void eD(void) { flag_eD = true; }
-void eC(void) { flag_eC = true; }
-void finalC(void) { flag_finalC = true; }
-void eB2(void) { flag_eB2 = true; }
-void xB2(void) { flag_xB2 = true; }
-void eA2(void) { flag_eA2 = true; }
-void xA2(void) { flag_xA2 = true; }
-void eAB(void) { flag_eAB = true; }
-void xAB(void) { ab_exit_cnt++; flag_xAB = true; }
+bool gA(void *ctx) { flag_gA = true; return gA_val; }
+bool g2(void *ctx) { flag_g2 = true; return g2_val; }
+void finalC(void *ctx) { flag_finalC = true; }
+void eB2(void *ctx) { flag_eB2 = true; }
+void xB2(void *ctx) { flag_xB2 = true; }
+void eA2(void *ctx) { flag_eA2 = true; }
+void xA2(void *ctx) { flag_xA2 = true; }
+void eAB(void *ctx) { flag_eAB = true; }
+void xAB(void *ctx) { ab_exit_cnt++; flag_xAB = true; }
 
-int main(void) 
+int main(void)
 {
-    struct ufsm_machine *m = get_StateMachine1();
-    
-    test_init(m);
-    ufsm_init_machine(m);
+    int rc;
+    struct test_fork_machine machine;
+    struct ufsm_machine *m = &machine.machine;
+    ufsm_debug_machine(&machine.machine);
 
-    assert ("step1" && !flag_finalD &&
+    reset_flags();
+    test_fork_machine_initialize(&machine, NULL);
+
+    assert ("step1" &&
             !flag_gA &&
             !flag_g2 &&
-            !flag_eD &&
-            !flag_eC &&
             !flag_finalC &&
             !flag_eB2 &&
             !flag_xB2 &&
@@ -71,13 +65,12 @@ int main(void)
 
     g2_val = true;
     gA_val = false;
-    test_process(m, EV);
+    rc = ufsm_process(m, EV);
+    assert(rc == 0);
 
-    assert ("step2" && !flag_finalD &&
+    assert ("step2" &&
             flag_gA &&
             flag_g2 &&
-            !flag_eD &&
-            !flag_eC &&
             !flag_finalC &&
             flag_eB2 &&
             !flag_xB2 &&
@@ -87,13 +80,12 @@ int main(void)
             !flag_xAB);
 
     reset_flags();
-    test_process(m, EV);
+    rc = ufsm_process(m, EV);
+    assert(rc == 0);
 
-    assert ("step3" && !flag_finalD &&
+    assert ("step3" &&
             !flag_gA &&
             !flag_g2 &&
-            !flag_eD &&
-            !flag_eC &&
             flag_finalC &&
             !flag_eB2 &&
             flag_xB2 &&
@@ -104,20 +96,17 @@ int main(void)
 
     assert ("step4" && ab_exit_cnt == 1);
 
-    ufsm_reset_machine(m);
-    ufsm_init_machine(m);
-    reset_flags(),
+    reset_flags();
+    test_fork_machine_initialize(&machine, NULL);
 
     g2_val = false;
     gA_val = true;
-    test_process(m, EV);
+    rc = ufsm_process(m, EV);
+    assert(rc == 0);
 
-
-    assert ("step5" && !flag_finalD &&
+    assert ("step5" &&
             flag_gA &&
             !flag_g2 &&
-            !flag_eD &&
-            !flag_eC &&
             !flag_finalC &&
             !flag_eB2 &&
             !flag_xB2 &&
@@ -125,8 +114,6 @@ int main(void)
             !flag_xA2 &&
             flag_eAB &&
             !flag_xAB);
-
-
 
     return 0;
 }

@@ -413,11 +413,11 @@ void canvas_show_state_hint(void *context)
 {
 }
 
-void canvas_hide_transition_hint(void *context)
+void canvas_create_transition_begin(void *context)
 {
 }
 
-void canvas_cleanup_transition(void *context)
+void canvas_create_transition_end(void *context)
 {
 }
 
@@ -1249,6 +1249,90 @@ void canvas_add_join_to_region(void *context)
     op->state = NULL;
 }
 
+struct fork_op {
+    struct ufsmm_state *state;
+    double sx, sy;
+};
+
+void canvas_create_fork_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    L_DEBUG("%s", __func__);
+    priv->command_data = malloc(sizeof(struct fork_op));
+    memset(priv->command_data, 0, sizeof(struct fork_op));
+    struct fork_op *op = (struct fork_op *) priv->command_data;
+    op->state = ufsmm_state_new(UFSMM_STATE_FORK);
+    ufsmm_state_set_name(op->state, "Fork");
+}
+
+void canvas_create_fork_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct fork_op *op = (struct fork_op *) priv->command_data;
+    L_DEBUG("%s", __func__);
+    if (op->state) {
+        free(op->state);
+    }
+
+    free(priv->command_data);
+}
+
+void canvas_create_fork_start(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *r;
+    int rc;
+    struct fork_op *op = (struct fork_op *) priv->command_data;
+    L_DEBUG("%s", __func__);
+
+    rc = ufsmm_region_get_at_xy(priv, priv->current_region,
+                                priv->px, priv->py, &r, NULL);
+
+    if (rc == UFSMM_OK) {
+        L_DEBUG("Setting pr = %s", r->name);
+        op->state->parent_region = r;
+    } else {
+        L_ERR("Could not find parent region");
+    }
+
+
+    op->state->x = ufsmm_canvas_nearest_grid_point(priv->px);
+    op->state->y = ufsmm_canvas_nearest_grid_point(priv->py);
+}
+
+void canvas_update_fork_preview(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct fork_op *op = (struct fork_op *) priv->command_data;
+    L_DEBUG("%s", __func__);
+
+    op->state->w = priv->px - op->state->x;
+    op->state->h = priv->py - op->state->y;
+    priv->redraw = true;
+}
+
+void canvas_add_fork_to_region(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct fork_op *op = (struct fork_op *) priv->command_data;
+    L_DEBUG("%s", __func__);
+
+    if (op->state->w > op->state->h) {
+        op->state->orientation = UFSMM_ORIENTATION_HORIZONTAL;
+        op->state->h = 10;
+    } else {
+        op->state->orientation = UFSMM_ORIENTATION_VERTICAL;
+        op->state->w = 10;
+    }
+
+    op->state->h = ufsmm_canvas_nearest_grid_point(op->state->h);
+    op->state->w = ufsmm_canvas_nearest_grid_point(op->state->w);
+
+    ufsmm_region_append_state(op->state->parent_region, op->state);
+    priv->redraw = true;
+    op->state = NULL;
+}
+
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     struct ufsmm_canvas *priv = 
@@ -1287,6 +1371,8 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eKey_j_down);
     } else if (event->keyval == GDK_KEY_f) {
         canvas_machine_process(&priv->machine, eKey_f_down);
+    } else if (event->keyval == GDK_KEY_F) {
+        canvas_machine_process(&priv->machine, eKey_F_down);
     } else if (event->keyval == GDK_KEY_g) {
         canvas_machine_process(&priv->machine, eKey_g_down);
     } else if (event->keyval == GDK_KEY_e) {

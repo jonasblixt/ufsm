@@ -376,6 +376,7 @@ int ufsmm_canvas_render_state(struct ufsmm_canvas *canvas,
         case UFSMM_STATE_INIT:
             rc = render_init_state(canvas, state);
         break;
+        case UFSMM_STATE_FORK:
         case UFSMM_STATE_JOIN:
             rc = render_join_state(canvas, state);
         break;

@@ -19,7 +19,8 @@ dist_noinst_DATA = test_transition_conflict.ufsm \
 				   test_nested_composits.ufsm \
 				   test_nested_composits2.ufsm \
 				   test_join2.ufsm \
-				   test_ev_repeat_orth.ufsm
+				   test_ev_repeat_orth.ufsm \
+				   test_fork.ufsm
 
 MOSTLYCLEANFILES = test_transition_conflict.gen.c test_transition_conflict.gen.h \
 				   test_xmi_machine.gen.c test_xmi_machine.gen.h \
@@ -28,7 +29,8 @@ MOSTLYCLEANFILES = test_transition_conflict.gen.c test_transition_conflict.gen.h
 				   test_nested_composits2.gen.c test_nested_composits2.gen.h \
 				   test_join2.gen.c test_join2.gen.h \
 				   test_transition_prio.gen.c test_transition_prio.gen.h \
-				   test_ev_repeat_orth.gen.c test_ev_repeat_orth.gen.h
+				   test_ev_repeat_orth.gen.c test_ev_repeat_orth.gen.h \
+				   test_fork.gen.c test_fork.gen.h
 
 BUILTSOURCES: test_transition_conflict.gen.c test_transition_conflict.gen.h \
 		      test_xmi_machine.gen.c test_xmi_machine.gen.h \
@@ -37,7 +39,8 @@ BUILTSOURCES: test_transition_conflict.gen.c test_transition_conflict.gen.h \
 			  test_nested_composits2.gen.c test_nested_composits2.gen.h \
 			  test_join2.gen.c test_join2.gen.h \
 			  test_transition_prio.gen.c test_transition_prio.gen.h \
-			  test_ev_repeat_orth.gen.c test_ev_repeat_orth.gen.h
+			  test_ev_repeat_orth.gen.c test_ev_repeat_orth.gen.h \
+			  test_fork.gen.c test_fork.gen.h
 
 ################################################################################
 
@@ -52,7 +55,8 @@ check_PROGRAMS = test_simple \
 				 test_nested_composits2 \
 				 test_join2 \
 				 test_transition_prio \
-				 test_ev_repeat_orth
+				 test_ev_repeat_orth \
+				 test_fork
 
 test_simple_SOURCES = test_simple.c
 test_simple_LDADD = $(COMMON_TEST_LDADD)
@@ -105,6 +109,11 @@ test_join2_SOURCES = test_join2.c $(builddir)/test_join2.gen.c
 test_join2_LDADD = $(COMMON_TEST_LDADD)
 test_join2_CFLAGS = $(COMMON_TEST_CFLAGS)
 
+test_fork.c: test_fork.gen.c
+test_fork_SOURCES = test_fork.c $(builddir)/test_fork.gen.c
+test_fork_LDADD = $(COMMON_TEST_LDADD)
+test_fork_CFLAGS = $(COMMON_TEST_CFLAGS)
+
 test_transition_prio.c: test_transition_prio.gen.c
 test_transition_prio_SOURCES = test_transition_prio.c $(builddir)/test_transition_prio.gen.c
 test_transition_prio_LDADD = $(COMMON_TEST_LDADD)
@@ -126,4 +135,5 @@ TESTS = test_simple \
 		test_nested_composits2 \
 		test_join2 \
 		test_transition_prio \
-		test_ev_repeat_orth
+		test_ev_repeat_orth \
+		test_fork
