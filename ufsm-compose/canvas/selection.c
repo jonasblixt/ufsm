@@ -92,29 +92,30 @@ void canvas_resize_state(void *context)
         if (selected_state->h < 50)
             selected_state->h = 50;
 
-    } else if (selected_state->kind == UFSMM_STATE_JOIN) {
+    } else if ((selected_state->kind == UFSMM_STATE_JOIN) ||
+               (selected_state->kind == UFSMM_STATE_FORK)) {
 
         switch (priv->selected_corner) {
             case UFSMM_TOP_LEFT:
-                if ((fabs(dy) < 100) && (selected_state->h == 10)) {
-                    selected_state->w = priv->tw - dx;
-                    selected_state->h = 10;
-                    selected_state->x = priv->tx + dx;
+                if (selected_state->orientation == UFSMM_ORIENTATION_HORIZONTAL) {
+                    if (priv->tw - dx > 50) {
+                        selected_state->w = priv->tw - dx;
+                        selected_state->x = priv->tx + dx;
+                    }
                 } else {
-                    L_DEBUG("Switch orientation");
-                    selected_state->w = 10;
-                    selected_state->h = priv->th - dy;
-                    selected_state->y = priv->ty + dy;
+                    if (priv->th - dy > 50) {
+                        selected_state->h = priv->th - dy;
+                        selected_state->y = priv->ty + dy;
+                    }
                 }
             break;
             case UFSMM_TOP_RIGHT:
-                if ((fabs(dy) < 100) && (selected_state->h == 10)) {
-                    selected_state->w = priv->tw + dx;
-                    selected_state->h = 10;
+                if (selected_state->orientation == UFSMM_ORIENTATION_HORIZONTAL) {
+                    if (priv->tw + dx > 50)
+                        selected_state->w = priv->tw + dx;
                 } else {
-                    L_DEBUG("Switch orientation");
-                    selected_state->w = 10;
-                    selected_state->h = priv->th + dy;
+                    if (priv->th + dy > 50)
+                        selected_state->h = priv->th + dy;
                 }
             break;
        }

@@ -115,7 +115,7 @@ static int render_join_state(struct ufsmm_canvas *canvas,
     else
         ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
 
-    if (state->w > state->h) {
+    if (state->orientation == UFSMM_ORIENTATION_HORIZONTAL) {
         cairo_rectangle (cr, x, y, w, 10);
     } else {
         cairo_rectangle (cr, x, y, 10, h);
@@ -131,7 +131,7 @@ static int render_join_state(struct ufsmm_canvas *canvas,
     if (state->focus) {
         cairo_save(cr);
         ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
-        if (w > 10.0) {
+        if (state->orientation == UFSMM_ORIENTATION_HORIZONTAL) {
             cairo_rectangle (cr, x - 5, (y + h/2) - 5, 10, 10);     /* Left */
             cairo_rectangle (cr, x + w - 5, (y + h/2) - 5, 10, 10);     /* Right */
         } else {

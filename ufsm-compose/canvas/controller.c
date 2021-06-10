@@ -27,6 +27,30 @@ void canvas_save(void *context)
     ufsmm_model_write(priv->model->filename, priv->model);
 }
 
+void canvas_rotate_state(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *s = priv->selected_state;
+
+    if ((s->kind == UFSMM_STATE_JOIN) || (s->kind == UFSMM_STATE_FORK)) {
+        if ((s->orientation == UFSMM_ORIENTATION_NA) ||
+            (s->orientation == UFSMM_ORIENTATION_VERTICAL)) {
+            s->orientation = UFSMM_ORIENTATION_HORIZONTAL;
+            L_DEBUG("Rotating from vertical to horizontal w=%.2f h=%.2f", s->w, s->h);
+            s->w = s->h;
+            s->h = 10;
+        } else {
+            L_DEBUG("Rotating from horizontal to vertical w=%.2f h=%.2f", s->w, s->h);
+            s->orientation = UFSMM_ORIENTATION_VERTICAL;
+            s->h = s->w;
+            s->w = 10;
+        }
+
+        priv->redraw = true;
+    }
+
+}
+
 void canvas_check_sresize_boxes(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -71,24 +95,21 @@ void canvas_check_sresize_boxes(void *context)
         } else {
             priv->selected_corner = UFSMM_NO_SELECTION;
         }
-    } else if (s->kind == UFSMM_STATE_JOIN) {
+    } else if ((s->kind == UFSMM_STATE_JOIN) ||
+               (s->kind == UFSMM_STATE_FORK)) {
         L_DEBUG("Checking join corners");
-        if (w > 10.0) {
+        if (s->orientation == UFSMM_ORIENTATION_HORIZONTAL) {
             if (point_in_box(px, py, x, y + h/2, 10, 10)) {
-                L_DEBUG("Corner1");
                 priv->selected_corner = UFSMM_TOP_LEFT;
             } else if (point_in_box(px, py, x + w, y + h/2, 10, 10)) {
-                L_DEBUG("Corner2");
                 priv->selected_corner = UFSMM_TOP_RIGHT;
             } else {
                 priv->selected_corner = UFSMM_NO_SELECTION;
             }
         } else {
             if (point_in_box(px, py, x + 5, y + h , 10, 10)) {
-                L_DEBUG("Corner1");
                 priv->selected_corner = UFSMM_TOP_RIGHT;
             } else if (point_in_box(px, py, x + 5, y, 10, 10)) {
-                L_DEBUG("Corner2");
                 priv->selected_corner = UFSMM_TOP_LEFT;
             } else {
                 priv->selected_corner = UFSMM_NO_SELECTION;
@@ -1191,8 +1212,8 @@ void canvas_create_join_start(void *context)
     }
 
 
-    op->state->x = priv->px;
-    op->state->y = priv->py;
+    op->state->x = ufsmm_canvas_nearest_grid_point(priv->px);
+    op->state->y = ufsmm_canvas_nearest_grid_point(priv->py);
 }
 
 void canvas_update_join_preview(void *context)
@@ -1211,10 +1232,17 @@ void canvas_add_join_to_region(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct join_op *op = (struct join_op *) priv->command_data;
     L_DEBUG("%s", __func__);
-    if (op->state->w > op->state->h)
+
+    if (op->state->w > op->state->h) {
+        op->state->orientation = UFSMM_ORIENTATION_HORIZONTAL;
         op->state->h = 10;
-    else
+    } else {
+        op->state->orientation = UFSMM_ORIENTATION_VERTICAL;
         op->state->w = 10;
+    }
+
+    op->state->h = ufsmm_canvas_nearest_grid_point(op->state->h);
+    op->state->w = ufsmm_canvas_nearest_grid_point(op->state->w);
 
     ufsmm_region_append_state(op->state->parent_region, op->state);
     priv->redraw = true;

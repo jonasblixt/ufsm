@@ -488,6 +488,10 @@
     {
       "name":"canvas_resize_state_end",
       "id":"81c803db-40a6-44a9-b231-d36878fb92b0"
+    },
+    {
+      "name":"canvas_rotate_state",
+      "id":"63548cf6-7163-4ec5-89fb-839f1a0a5a72"
     }
   ],
   "entries":null,
@@ -572,6 +576,7 @@
         "height":290.0,
         "x":720.0,
         "y":300.0,
+        "orientation":0,
         "entries":[
         ],
         "exits":[
@@ -591,6 +596,7 @@
                 "height":20.0,
                 "x":120.0,
                 "y":90.0,
+                "orientation":0,
                 "entries":[
                 ],
                 "exits":[
@@ -635,6 +641,7 @@
                 "height":630.0,
                 "x":70.0,
                 "y":170.0,
+                "orientation":0,
                 "entries":[
                 ],
                 "exits":[
@@ -776,6 +783,7 @@
                 "height":110.0,
                 "x":370.0,
                 "y":160.0,
+                "orientation":0,
                 "entries":[
                 ],
                 "exits":[
@@ -795,6 +803,7 @@
                         "height":250.0,
                         "x":920.0,
                         "y":110.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -818,6 +827,7 @@
                                 "height":80.0,
                                 "x":40.0,
                                 "y":80.0,
+                                "orientation":0,
                                 "entries":[
                                 ],
                                 "exits":[
@@ -871,6 +881,7 @@
                                 "height":80.0,
                                 "x":400.0,
                                 "y":80.0,
+                                "orientation":0,
                                 "entries":[
                                 ],
                                 "exits":[
@@ -970,6 +981,7 @@
                         "height":20.0,
                         "x":1620.0,
                         "y":250.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -987,6 +999,7 @@
                         "height":20.0,
                         "x":1630.0,
                         "y":630.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -1004,6 +1017,7 @@
                         "height":410.0,
                         "x":760.0,
                         "y":390.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -1031,6 +1045,7 @@
                                 "height":90.0,
                                 "x":20.0,
                                 "y":100.0,
+                                "orientation":0,
                                 "entries":[
                                 ],
                                 "exits":[
@@ -1084,6 +1099,7 @@
                                 "height":140.0,
                                 "x":420.0,
                                 "y":100.0,
+                                "orientation":0,
                                 "entries":[
                                 ],
                                 "exits":[
@@ -1213,6 +1229,7 @@
                                 "height":70.0,
                                 "x":200.0,
                                 "y":260.0,
+                                "orientation":0,
                                 "entries":[
                                 ],
                                 "exits":[
@@ -1302,6 +1319,7 @@
                                 "height":20.0,
                                 "x":620.0,
                                 "y":280.0,
+                                "orientation":0,
                                 "entries":[
                                 ],
                                 "exits":[
@@ -1352,6 +1370,7 @@
                         "height":20.0,
                         "x":840.0,
                         "y":100.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -1369,6 +1388,7 @@
                         "height":20.0,
                         "x":610.0,
                         "y":170.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -1386,6 +1406,7 @@
                         "height":20.0,
                         "x":840.0,
                         "y":130.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -1403,6 +1424,7 @@
                         "height":20.0,
                         "x":610.0,
                         "y":210.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -1420,6 +1442,7 @@
                         "height":20.0,
                         "x":490.0,
                         "y":330.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -1437,6 +1460,7 @@
                         "height":20.0,
                         "x":490.0,
                         "y":410.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -1454,6 +1478,7 @@
                         "height":20.0,
                         "x":490.0,
                         "y":460.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -1471,6 +1496,7 @@
                         "height":1060.0,
                         "x":80.0,
                         "y":90.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -1848,6 +1874,7 @@
                         "height":20.0,
                         "x":120.0,
                         "y":20.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -1892,6 +1919,7 @@
                         "height":140.0,
                         "x":350.0,
                         "y":1010.0,
+                        "orientation":0,
                         "entries":[
                           {
                             "id":"b554d397-d1bd-4ee2-b322-475aa1fd8301",
@@ -1919,6 +1947,7 @@
                                 "height":130.0,
                                 "x":120.0,
                                 "y":160.0,
+                                "orientation":0,
                                 "entries":[
                                 ],
                                 "exits":[
@@ -1964,6 +1993,7 @@
                                 "height":20.0,
                                 "x":190.0,
                                 "y":90.0,
+                                "orientation":0,
                                 "entries":[
                                 ],
                                 "exits":[
@@ -2008,6 +2038,7 @@
                                 "height":340.0,
                                 "x":460.0,
                                 "y":160.0,
+                                "orientation":0,
                                 "entries":[
                                   {
                                     "id":"90c88a58-f8c2-421e-8381-7a490f17d16f",
@@ -2031,6 +2062,7 @@
                                         "height":110.0,
                                         "x":40.0,
                                         "y":170.0,
+                                        "orientation":0,
                                         "entries":[
                                         ],
                                         "exits":[
@@ -2088,6 +2120,7 @@
                                         "height":20.0,
                                         "x":70.0,
                                         "y":90.0,
+                                        "orientation":0,
                                         "entries":[
                                         ],
                                         "exits":[
@@ -2166,6 +2199,7 @@
                                 "height":140.0,
                                 "x":460.0,
                                 "y":630.0,
+                                "orientation":0,
                                 "entries":[
                                   {
                                     "id":"d4611a54-8666-42ab-be28-7fdd895af109",
@@ -2214,6 +2248,7 @@
                                 "height":20.0,
                                 "x":600.0,
                                 "y":840.0,
+                                "orientation":0,
                                 "entries":[
                                 ],
                                 "exits":[
@@ -2264,6 +2299,7 @@
                         "height":20.0,
                         "x":770.0,
                         "y":1060.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -2314,6 +2350,7 @@
                 "height":110.0,
                 "x":370.0,
                 "y":290.0,
+                "orientation":0,
                 "entries":[
                 ],
                 "exits":[
@@ -2333,6 +2370,7 @@
                         "height":20.0,
                         "x":710.0,
                         "y":390.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -2350,6 +2388,7 @@
                         "height":20.0,
                         "x":710.0,
                         "y":320.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -2367,6 +2406,7 @@
                         "height":20.0,
                         "x":710.0,
                         "y":260.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -2384,6 +2424,7 @@
                         "height":570.0,
                         "x":140.0,
                         "y":250.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -2604,6 +2645,42 @@
                             ],
                             "state-condition":[
                             ]
+                          },
+                          {
+                            "id":"45d45a37-4700-4ee2-bf3f-9822fc3af472",
+                            "trigger":"faf24206-d5cc-4593-8f94-2951717e6154",
+                            "source":{
+                              "state":"9dcc0d0a-9027-433a-98a9-6484ee801210",
+                              "side":"right",
+                              "offset":420.0
+                            },
+                            "dest":{
+                              "state":"78c6d973-748a-449f-b308-5c479973bc33",
+                              "side":"left",
+                              "offset":20.0
+                            },
+                            "text-block":{
+                              "x":270.0,
+                              "y":620.0,
+                              "w":330.0,
+                              "h":40.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                              {
+                                "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
+                                "id":"de25a685-4a48-4bff-85c7-c1377f80def3"
+                              }
+                            ],
+                            "actions":[
+                              {
+                                "action-id":"63548cf6-7163-4ec5-89fb-839f1a0a5a72",
+                                "id":"cb22b9d2-98ec-4f77-9a5d-d749cfe02a03"
+                              }
+                            ],
+                            "state-condition":[
+                            ]
                           }
                         ]
                       },
@@ -2615,6 +2692,7 @@
                         "height":20.0,
                         "x":710.0,
                         "y":530.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -2632,6 +2710,7 @@
                         "height":20.0,
                         "x":190.0,
                         "y":140.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -2676,6 +2755,7 @@
                         "height":20.0,
                         "x":710.0,
                         "y":600.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -2693,6 +2773,25 @@
                         "height":20.0,
                         "x":710.0,
                         "y":450.0,
+                        "orientation":0,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                        ]
+                      },
+                      {
+                        "id":"78c6d973-748a-449f-b308-5c479973bc33",
+                        "name":"Final",
+                        "kind":"final",
+                        "width":20.0,
+                        "height":20.0,
+                        "x":710.0,
+                        "y":660.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -2743,6 +2842,7 @@
                 "height":110.0,
                 "x":370.0,
                 "y":420.0,
+                "orientation":0,
                 "entries":[
                 ],
                 "exits":[
@@ -2762,6 +2862,7 @@
                         "height":20.0,
                         "x":470.0,
                         "y":120.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -2779,6 +2880,7 @@
                         "height":20.0,
                         "x":470.0,
                         "y":200.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -2796,6 +2898,7 @@
                         "height":20.0,
                         "x":470.0,
                         "y":270.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -2813,6 +2916,7 @@
                         "height":730.0,
                         "x":90.0,
                         "y":110.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -3075,6 +3179,7 @@
                         "height":20.0,
                         "x":130.0,
                         "y":20.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -3119,6 +3224,7 @@
                         "height":20.0,
                         "x":470.0,
                         "y":330.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -3136,6 +3242,7 @@
                         "height":20.0,
                         "x":470.0,
                         "y":450.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -3153,6 +3260,7 @@
                         "height":20.0,
                         "x":470.0,
                         "y":510.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -3170,6 +3278,7 @@
                         "height":20.0,
                         "x":470.0,
                         "y":390.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -3350,6 +3459,7 @@
         "height":20.0,
         "x":860.0,
         "y":170.0,
+        "orientation":0,
         "entries":[
         ],
         "exits":[
@@ -3398,6 +3508,7 @@
         "height":290.0,
         "x":1180.0,
         "y":300.0,
+        "orientation":0,
         "entries":[
           {
             "id":"9bbe200f-f1f8-459f-b964-9bc89915ef0c",
@@ -3421,6 +3532,7 @@
                 "height":20.0,
                 "x":140.0,
                 "y":16.250000000000028,
+                "orientation":0,
                 "entries":[
                 ],
                 "exits":[
@@ -3465,6 +3577,7 @@
                 "height":770.0,
                 "x":70.0,
                 "y":100.0,
+                "orientation":0,
                 "entries":[
                 ],
                 "exits":[
@@ -3575,6 +3688,7 @@
                 "height":120.0,
                 "x":560.0,
                 "y":750.0,
+                "orientation":0,
                 "entries":[
                 ],
                 "exits":[
@@ -3594,6 +3708,7 @@
                         "height":90.0,
                         "x":1330.0,
                         "y":100.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -3651,6 +3766,7 @@
                         "height":80.0,
                         "x":1330.0,
                         "y":310.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -3708,6 +3824,7 @@
                         "height":130.0,
                         "x":670.0,
                         "y":70.0,
+                        "orientation":0,
                         "entries":[
                           {
                             "id":"830247ad-87a3-4aa8-baef-f4d5b3f5983a",
@@ -3795,6 +3912,7 @@
                         "height":20.0,
                         "x":800.0,
                         "y":20.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -3839,6 +3957,7 @@
                         "height":110.0,
                         "x":670.0,
                         "y":280.0,
+                        "orientation":0,
                         "entries":[
                           {
                             "id":"dffcc43c-1bcd-4b09-932e-5ea0e8b49814",
@@ -4009,6 +4128,7 @@
                         "height":60.0,
                         "x":170.0,
                         "y":160.0,
+                        "orientation":0,
                         "entries":[
                           {
                             "id":"1d3740ba-6206-4de1-8eb5-2f02fe647fa2",
@@ -4070,6 +4190,7 @@
                         "height":60.0,
                         "x":310.0,
                         "y":320.0,
+                        "orientation":0,
                         "entries":[
                           {
                             "id":"4f644ac5-d60d-452b-bcf1-1e076eceea32",
@@ -4137,6 +4258,7 @@
                 "height":120.0,
                 "x":560.0,
                 "y":590.0,
+                "orientation":0,
                 "entries":[
                 ],
                 "exits":[
@@ -4156,6 +4278,7 @@
                         "height":320.0,
                         "x":900.0,
                         "y":40.0,
+                        "orientation":0,
                         "entries":[
                           {
                             "id":"b7b04605-7e8a-4310-877b-8a6e41969e34",
@@ -4191,6 +4314,7 @@
                                 "height":110.0,
                                 "x":40.0,
                                 "y":140.0,
+                                "orientation":0,
                                 "entries":[
                                 ],
                                 "exits":[
@@ -4254,6 +4378,7 @@
                         "height":100.0,
                         "x":870.0,
                         "y":610.0,
+                        "orientation":0,
                         "entries":[
                           {
                             "id":"80d892d7-8f52-4436-9bb1-b47d81a0b675",
@@ -4319,6 +4444,7 @@
                         "height":110.0,
                         "x":160.0,
                         "y":210.0,
+                        "orientation":0,
                         "entries":[
                           {
                             "id":"e149cd17-441b-4525-a60a-2b836f0b4f17",
@@ -4403,6 +4529,7 @@
                         "height":20.0,
                         "x":280.0,
                         "y":130.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -4453,6 +4580,7 @@
                 "height":120.0,
                 "x":560.0,
                 "y":430.0,
+                "orientation":0,
                 "entries":[
                 ],
                 "exits":[
@@ -4472,6 +4600,7 @@
                         "height":390.0,
                         "x":400.0,
                         "y":30.0,
+                        "orientation":0,
                         "entries":[
                           {
                             "id":"ee0bb0aa-1621-4e2e-966d-98aeddcdf843",
@@ -4499,6 +4628,7 @@
                                 "height":150.0,
                                 "x":50.0,
                                 "y":180.0,
+                                "orientation":0,
                                 "entries":[
                                 ],
                                 "exits":[
@@ -4562,6 +4692,7 @@
                         "height":160.0,
                         "x":430.0,
                         "y":510.0,
+                        "orientation":0,
                         "entries":[
                           {
                             "id":"acc71ec2-ac0b-4d98-8097-b18871163fcc",
@@ -4716,6 +4847,7 @@
                         "height":90.0,
                         "x":980.0,
                         "y":720.0,
+                        "orientation":0,
                         "entries":[
                           {
                             "id":"e2efd678-f38f-4508-a7e5-bc6c0b02df09",
@@ -4777,6 +4909,7 @@
                         "height":80.0,
                         "x":190.0,
                         "y":780.0,
+                        "orientation":0,
                         "entries":[
                           {
                             "id":"a6d10177-e5a7-4a5a-b3c7-78e875d504ed",
@@ -4838,6 +4971,7 @@
                         "height":20.0,
                         "x":460.0,
                         "y":450.0,
+                        "orientation":0,
                         "entries":[
                         ],
                         "exits":[
@@ -4882,6 +5016,7 @@
                         "height":380.0,
                         "x":1280.0,
                         "y":340.0,
+                        "orientation":0,
                         "entries":[
                           {
                             "id":"33068695-7b0a-4101-83f5-6afdb964af08",
@@ -4909,6 +5044,7 @@
                                 "height":140.0,
                                 "x":60.0,
                                 "y":160.0,
+                                "orientation":0,
                                 "entries":[
                                 ],
                                 "exits":[
@@ -5012,6 +5148,7 @@
         "height":120.0,
         "x":280.0,
         "y":300.0,
+        "orientation":0,
         "entries":[
         ],
         "exits":[
@@ -5101,6 +5238,7 @@
         "height":110.0,
         "x":280.0,
         "y":480.0,
+        "orientation":0,
         "entries":[
         ],
         "exits":[

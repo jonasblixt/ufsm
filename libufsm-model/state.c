@@ -164,6 +164,9 @@ int ufsmm_state_serialize(struct ufsmm_state *state, json_object *region,
     json_object_object_add(j_state, "y",
                 json_object_new_double(state->y));
 
+    json_object_object_add(j_state, "orientation",
+                json_object_new_int(state->orientation));
+
     rc = serialize_action_list(&state->entries, j_entries);
     if (rc != UFSMM_OK)
         goto err_out;
@@ -300,6 +303,11 @@ int ufsmm_state_deserialize(struct ufsmm_model *model,
         state->h = 0;
     else
         state->h = json_object_get_double(jobj);
+
+    if (!json_object_object_get_ex(j_state, "orientation", &jobj))
+        state->orientation = UFSMM_ORIENTATION_NA;
+    else
+        state->orientation = json_object_get_int(jobj);
 
     state->name = strdup(json_object_get_string(j_state_name));
     state->parent_region = region;

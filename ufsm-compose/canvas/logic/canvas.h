@@ -155,11 +155,12 @@ void canvas_create_join_start(void *context);
 void canvas_update_join_preview(void *context);
 void canvas_add_join_to_region(void *context);
 void canvas_resize_state_end(void *context);
+void canvas_rotate_state(void *context);
 
 struct canvas_machine {
     struct ufsm_machine machine;
     struct ufsm_region_data region_data[17];
-    struct ufsm_state_data state_data[80];
+    struct ufsm_state_data state_data[81];
     void *stack_data[49];
     void *stack_data2[3];
 };

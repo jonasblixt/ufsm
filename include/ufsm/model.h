@@ -213,6 +213,7 @@ struct ufsmm_state
     bool resizeable;
     unsigned int branch_concurrency_count;
     enum ufsmm_state_kind kind;
+    enum ufsmm_orientation orientation;
     struct ufsmm_transitions transitions;
     struct ufsmm_action_refs entries;
     struct ufsmm_action_refs exits;
