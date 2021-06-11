@@ -1645,6 +1645,22 @@ void canvas_add_vertice(void *context)
     priv->redraw = true;
 }
 
+void canvas_move_vertice_begin(void *context)
+{
+}
+
+void canvas_move_vertice_end(void *context)
+{
+}
+
+void canvas_resize_text_block_begin(void *context)
+{
+}
+
+void canvas_resize_text_block_end(void *context)
+{
+}
+
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     struct ufsmm_canvas *priv =
