@@ -210,9 +210,14 @@ bool canvas_transition_text_block_selected(void *context)
 
     ox = priv->current_region->ox;
     oy = priv->current_region->oy;
-
+/*
     ufsmm_get_region_absolute_coords(t->source.state->parent_region,
                                        &x, &y, &w, &h);
+*/
+    transition_calc_begin_end_point(t->source.state,
+                                    t->source.side,
+                                    t->source.offset,
+                                    &x, &y);
     double tx = t->text_block_coords.x + x + ox;
     double ty = t->text_block_coords.y + y + oy;
     double tw = t->text_block_coords.w;
@@ -411,10 +416,8 @@ void canvas_process_selection(void *context)
                     t->focus = false;
                 }
 
-                ufsmm_get_region_absolute_coords(t->source.state->parent_region,
-                                                   &x, &y, &w, &h);
-                double tx = t->text_block_coords.x + x + ox;
-                double ty = t->text_block_coords.y + y + oy;
+                double tx = t->text_block_coords.x + tsx + ox;
+                double ty = t->text_block_coords.y + tsy + oy;
                 double tw = t->text_block_coords.w;
                 double th = t->text_block_coords.h;
 

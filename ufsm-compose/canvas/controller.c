@@ -1144,8 +1144,17 @@ void canvas_create_transition(void *context)
                                                  dest_state->name);
         op->t->dest.side = dest_side;
         op->t->dest.offset = dest_offset;
-        op->t->text_block_coords.x = op->t->source.state->x;
-        op->t->text_block_coords.y = op->t->source.state->y;
+/*
+        transition_calc_begin_end_point(op->t->source.state,
+                             op->t->source.side,
+                             op->t->source.offset,
+                             &op->t->text_block_coords.x,
+                             &op->t->text_block_coords.y);
+*/
+
+        op->t->text_block_coords.x = 0;
+        op->t->text_block_coords.y = 0;
+
         op->t->text_block_coords.w = 100;
         op->t->text_block_coords.h = 30;
 

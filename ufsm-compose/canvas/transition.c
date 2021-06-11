@@ -124,9 +124,15 @@ static void render_selection_boxes(cairo_t *cr, struct ufsmm_transition *t)
     cairo_restore(cr);
 
     /* Dashed rectangle around the text block */
+
+    transition_calc_begin_end_point(t->source.state,
+                         t->source.side,
+                         t->source.offset,
+                         &fbx, &fby);
+
     double tx, ty, th, tw;
-    tx = t->text_block_coords.x + rx;
-    ty = t->text_block_coords.y + ry;
+    tx = t->text_block_coords.x + fbx;
+    ty = t->text_block_coords.y + fby;
     th = t->text_block_coords.h;
     tw = t->text_block_coords.w;
 
@@ -210,8 +216,11 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
     cairo_set_font_size (cr, 14);
     ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
 
-    ufsmm_get_region_absolute_coords(t->source.state->parent_region,
-                                    &rx, &ry, &rw, &rh);
+    transition_calc_begin_end_point(t->source.state,
+                         t->source.side,
+                         t->source.offset,
+                         &rx,
+                         &ry);
 
     tx = t->text_block_coords.x;
     ty = t->text_block_coords.y;
