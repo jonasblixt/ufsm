@@ -40,14 +40,34 @@ static int render_history_state(struct ufsmm_canvas *canvas,
     cairo_save(cr);
     ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
     cairo_set_line_width(cr, 2);
-    cairo_move_to(cr, x + w/2 - 3, y + h/2 - 5);
-    cairo_line_to(cr, x + w/2 - 3, y + h/2 + 5);
 
-    cairo_move_to(cr, x + w/2 + 3, y + h/2 - 5);
-    cairo_line_to(cr, x + w/2 + 3, y + h/2 + 5);
+    if (deep) {
+        cairo_move_to(cr, x + w/2 - 5, y + h/2 - 5);
+        cairo_line_to(cr, x + w/2 - 5, y + h/2 + 5);
 
-    cairo_move_to(cr, x + w/2 - 3, y + h/2);
-    cairo_line_to(cr, x + w/2 + 3, y + h/2);
+        cairo_move_to(cr, x + w/2 + 1, y + h/2 - 5);
+        cairo_line_to(cr, x + w/2 + 1, y + h/2 + 5);
+
+        cairo_move_to(cr, x + w/2 - 5, y + h/2);
+        cairo_line_to(cr, x + w/2 + 1, y + h/2);
+
+        cairo_move_to(cr, x + w/2 + 6, y + h/2 - 3);
+        cairo_line_to(cr, x + w/2 + 6, y + h/2 + 3);
+
+        cairo_move_to(cr, x + w/2 + 3, y + h/2);
+        cairo_line_to(cr, x + w/2 + 9, y + h/2);
+    } else {
+        cairo_move_to(cr, x + w/2 - 3, y + h/2 - 5);
+        cairo_line_to(cr, x + w/2 - 3, y + h/2 + 5);
+
+        cairo_move_to(cr, x + w/2 + 3, y + h/2 - 5);
+        cairo_line_to(cr, x + w/2 + 3, y + h/2 + 5);
+
+        cairo_move_to(cr, x + w/2 - 3, y + h/2);
+        cairo_line_to(cr, x + w/2 + 3, y + h/2);
+    }
+
+
 
     cairo_stroke(cr);
     cairo_restore(cr);

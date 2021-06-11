@@ -528,8 +528,10 @@ void canvas_move_state(void *context)
         diff_y -= y;
 
         if (ufsmm_state_move_to_region(priv->model, s, new_pr) == UFSMM_OK) {
-            ufsmm_get_region_absolute_coords(new_pr, &x, &y, &w, &h);
-
+            if (new_pr->parent_state) {
+                ufsmm_get_state_absolute_coords(new_pr->parent_state, &x, &y, &w, &h);
+                y += 30;
+            }
             priv->tx = priv->px - x - r->ox - priv->t[0];
             priv->ty = priv->py - y - r->oy - priv->t[1];
 
@@ -930,55 +932,6 @@ void canvas_delete_state(void *context)
     priv->redraw = true;
 }
 
-void canvas_new_state_set_scoords(void *context)
-{
-    int rc;
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_region *r = priv->selected_region;
-    struct ufsmm_state *new_state = ufsmm_state_new(UFSMM_STATE_NORMAL);
-
-    ufsmm_state_set_name(new_state, "New state");
-    rc = ufsmm_region_append_state(priv->selected_region, new_state);
-
-    priv->new_state = new_state;
-
-
-    new_state->x = priv->px;
-    new_state->y = priv->py;
-    L_DEBUG("New state: sx=%.2f, sy=%.2f", new_state->x, new_state->y);
-}
-
-void canvas_create_new_state(void *context)
-{
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_state *s = priv->new_state;
-    struct ufsmm_region *r = priv->selected_region;
-    double x, y, w, h;
-    double tx = s->x;
-    double ty = s->y;
-    double ox = priv->current_region->ox;
-    double oy = priv->current_region->oy;
-
-    if (r->parent_state) {
-        ufsmm_get_state_absolute_coords(r->parent_state, &x, &y, &w, &h);
-    } else {
-        x = 0;
-        y = 0;
-    }
-
-    s->x = ufsmm_canvas_nearest_grid_point(tx - (x + ox));
-    s->y = ufsmm_canvas_nearest_grid_point(ty - (y + oy));
-    s->w = ufsmm_canvas_nearest_grid_point(priv->px - tx);
-    s->h = ufsmm_canvas_nearest_grid_point(priv->py - ty);
-
-    if (s->w < 50)
-        s->w = 50.0;
-    if (s->h < 50)
-        s->h = 50.0;
-
-    priv->redraw = true;
-}
-
 void canvas_update_state_hint(void *context)
 {
 }
@@ -1008,12 +961,96 @@ void canvas_create_transition_start(void *context)
     }
 }
 
+struct state_op {
+    struct ufsmm_state *state;
+    struct ufsmm_region *pr;
+    bool commit;
+};
+
 void canvas_create_state_begin(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    L_DEBUG("%s", __func__);
+    priv->command_data = malloc(sizeof(struct state_op));
+    memset(priv->command_data, 0, sizeof(struct state_op));
+    struct state_op *op = (struct state_op *) priv->command_data;
+    op->state = ufsmm_state_new(UFSMM_STATE_NORMAL);
+    op->state->w = 200;
+    op->state->h = 100;
+    op->state->parent_region = priv->current_region;
+    priv->preview_state = op->state;
+    ufsmm_state_set_name(op->state, "New state");
 }
 
 void canvas_create_state_end(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct state_op *op = (struct state_op *) priv->command_data;
+
+    if (!op->commit)
+        ufsmm_state_free(op->state);
+    free(op);
+    priv->preview_state = NULL;
+    priv->redraw = true;
+}
+
+void canvas_new_state_set_start(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct state_op *op = (struct state_op *) priv->command_data;
+
+    double ox = priv->current_region->ox;
+    double oy = priv->current_region->oy;
+
+    ufsmm_region_get_at_xy(priv, priv->current_region, priv->px, priv->py,
+                            &op->pr, NULL);
+
+    op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - ox - 10);
+    op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - oy - 20);
+    priv->redraw = true;
+}
+
+void canvas_new_state_set_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct state_op *op = (struct state_op *) priv->command_data;
+
+    double ox = priv->current_region->ox;
+    double oy = priv->current_region->oy;
+
+    ufsmm_region_get_at_xy(priv, priv->current_region, priv->px, priv->py,
+                            &op->pr, NULL);
+
+    op->state->w = ufsmm_canvas_nearest_grid_point(priv->px - ox - 10) - op->state->x;
+    op->state->h = ufsmm_canvas_nearest_grid_point(priv->py - oy - 20) - op->state->y;
+
+    if (op->state->w < 50)
+        op->state->w = 50.0;
+
+    if (op->state->h < 50)
+        op->state->h = 50.0;
+
+    priv->redraw = true;
+}
+
+void canvas_create_new_state(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct state_op *op = (struct state_op *) priv->command_data;
+    struct ufsmm_region *cr = priv->current_region;
+    double x, y, w, h;
+
+    if (op->pr->parent_state && (op->pr->draw_as_root != true)) {
+        ufsmm_get_state_absolute_coords(op->pr->parent_state, &x, &y, &w, &h);
+        y += 30.0;
+    }
+
+    op->commit = true;
+    op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - x - cr->ox - op->state->w - 10);
+    op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - y - cr->oy - op->state->h - 20);
+    ufsmm_region_append_state(op->pr, op->state);
+    priv->redraw = true;
+    L_DEBUG("Added new state to region '%s' cr='%s'", op->pr->name, cr->name);
 }
 
 void canvas_create_transition(void *context)
@@ -1081,76 +1118,6 @@ void canvas_add_transition_vertice(void *context)
 
     TAILQ_INSERT_TAIL(&priv->new_transition->vertices, v, tailq);
     L_DEBUG("Add vertice at <%f, %f>", v->x, v->y);
-}
-
-void canvas_create_init_state(void *context)
-{
-    int rc;
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    double x, y, w, h;
-    double new_state_sx = ufsmm_canvas_nearest_grid_point(priv->px);
-    double new_state_sy = ufsmm_canvas_nearest_grid_point(priv->py);
-    struct ufsmm_state *new_state = ufsmm_state_new(UFSMM_STATE_INIT);
-    struct ufsmm_region *r = priv->selected_region;
-
-    ufsmm_state_set_name(new_state, "Init");
-
-    rc = ufsmm_region_append_state(priv->selected_region, new_state);
-
-    if (rc == UFSMM_OK) {
-
-        if (r->parent_state) {
-            ufsmm_get_state_absolute_coords(r->parent_state, &x, &y, &w, &h);
-        } else {
-            x = 0;
-            y = 0;
-        }
-        //ufsmm_get_region_absolute_coords(priv->selected_region, &x, &y, &w, &h);
-        L_DEBUG("x, y = <%.2f, %.2f>, new_state_xy = <%.2f, %.2f>",
-                    x, y, new_state_sx, new_state_sy);
-        new_state->x = new_state_sx - (x + priv->current_region->ox);
-        new_state->y = new_state_sy - (y + priv->current_region->oy);
-        new_state->w = 20;
-        new_state->h = 20;
-        priv->redraw = true;
-        L_DEBUG("Created new state, pr = %s", priv->selected_region->name);
-    } else {
-        L_ERR("Could not create new state");
-    }
-
-}
-
-void canvas_create_final_state(void *context)
-{
-    int rc;
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    double x, y, w, h;
-    L_DEBUG("Adding final state");
-    double new_state_sx = ufsmm_canvas_nearest_grid_point(priv->px);
-    double new_state_sy = ufsmm_canvas_nearest_grid_point(priv->py);
-    struct ufsmm_state *new_state = ufsmm_state_new(UFSMM_STATE_FINAL);
-
-    ufsmm_state_set_name(new_state, "Final");
-
-    rc = ufsmm_region_append_state(priv->selected_region, new_state);
-
-    if (rc == UFSMM_OK) {
-        ufsmm_get_region_absolute_coords(priv->selected_region, &x, &y, &w, &h);
-        L_DEBUG("x, y = <%.2f, %.2f>, new_state_xy = <%.2f, %.2f>",
-                    x, y, new_state_sx, new_state_sy);
-        new_state->x = new_state_sx - (x + priv->current_region->ox);
-        new_state->y = new_state_sy - (y + priv->current_region->oy);
-        new_state->w = 20;
-        new_state->h = 20;
-        priv->redraw = true;
-        L_DEBUG("Created new state, pr = %s", priv->selected_region->name);
-    } else {
-        L_ERR("Could not create new state");
-    }
-}
-
-void canvas_save_model(void *context)
-{
 }
 
 void canvas_set_transition_trigger(void *context)
@@ -1337,30 +1304,32 @@ void canvas_add_fork_to_region(void *context)
     op->state = NULL;
 }
 
-struct terminate_op {
+struct sstate_op {
     struct ufsmm_state *state;
+    struct ufsmm_region *pr;
     bool commit;
 };
 
-void canvas_create_terminate_begin(void *context)
+static void create_simple_state_begin(void *context, enum ufsmm_state_kind kind,
+                                        const char *name)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     L_DEBUG("%s", __func__);
-    priv->command_data = malloc(sizeof(struct terminate_op));
-    memset(priv->command_data, 0, sizeof(struct terminate_op));
-    struct terminate_op *op = (struct terminate_op *) priv->command_data;
-    op->state = ufsmm_state_new(UFSMM_STATE_TERMINATE);
+    priv->command_data = malloc(sizeof(struct sstate_op));
+    memset(priv->command_data, 0, sizeof(struct sstate_op));
+    struct sstate_op *op = (struct sstate_op *) priv->command_data;
+    op->state = ufsmm_state_new(kind);
     op->state->w = 20;
     op->state->h = 20;
-    op->state->parent_region = priv->selected_region;
+    op->state->parent_region = priv->current_region;
     priv->preview_state = op->state;
-    ufsmm_state_set_name(op->state, "Terminate");
+    ufsmm_state_set_name(op->state, name);
 }
 
-void canvas_create_terminate_end(void *context)
+static void create_simple_state_end(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct terminate_op *op = (struct terminate_op *) priv->command_data;
+    struct sstate_op *op = (struct sstate_op *) priv->command_data;
 
     if (!op->commit)
         ufsmm_state_free(op->state);
@@ -1369,30 +1338,145 @@ void canvas_create_terminate_end(void *context)
     priv->redraw = true;
 }
 
-void canvas_add_terminate_to_region(void *context)
+static void add_simple_state_to_region(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct terminate_op *op = (struct terminate_op *) priv->command_data;
+    struct sstate_op *op = (struct sstate_op *) priv->command_data;
+    struct ufsmm_region *cr = priv->current_region;
+    double x, y, w, h;
+
+    if (op->pr->parent_state && (op->pr->draw_as_root != true)) {
+        ufsmm_get_state_absolute_coords(op->pr->parent_state, &x, &y, &w, &h);
+        y += 30.0;
+    }
+
     op->commit = true;
-    ufsmm_region_append_state(priv->selected_region, op->state);
+    op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - x - cr->ox - 10);
+    op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - y - cr->oy - 20);
+    ufsmm_region_append_state(op->pr, op->state);
     priv->redraw = true;
+    L_DEBUG("Added sstate to region '%s'", op->pr->name);
 }
 
-void canvas_terminate_update_preview(void *context)
+static void simple_state_update_preview(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct terminate_op *op = (struct terminate_op *) priv->command_data;
+    struct sstate_op *op = (struct sstate_op *) priv->command_data;
+
     double ox = priv->current_region->ox;
     double oy = priv->current_region->oy;
+
+    ufsmm_region_get_at_xy(priv, priv->current_region, priv->px, priv->py,
+                            &op->pr, NULL);
+
     op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - ox - 10);
     op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - oy - 20);
     priv->redraw = true;
 }
 
+void canvas_create_terminate_begin(void *context)
+{
+    create_simple_state_begin(context, UFSMM_STATE_TERMINATE, "Terminate");
+}
+
+void canvas_create_terminate_end(void *context)
+{
+    create_simple_state_end(context);
+}
+
+void canvas_add_terminate_to_region(void *context)
+{
+    add_simple_state_to_region(context);
+}
+
+void canvas_terminate_update_preview(void *context)
+{
+    simple_state_update_preview(context);
+}
+
+void canvas_create_history_begin(void *context)
+{
+    create_simple_state_begin(context, UFSMM_STATE_SHALLOW_HISTORY, "Shallow history");
+}
+
+void canvas_create_history_end(void *context)
+{
+    create_simple_state_end(context);
+}
+
+void canvas_history_update_preview(void *context)
+{
+    simple_state_update_preview(context);
+}
+
+void canvas_add_history_to_region(void *context)
+{
+    add_simple_state_to_region(context);
+}
+
+void canvas_create_dhistory_begin(void *context)
+{
+    create_simple_state_begin(context, UFSMM_STATE_DEEP_HISTORY, "Deep history");
+}
+
+void canvas_create_dhistory_end(void *context)
+{
+    create_simple_state_end(context);
+}
+
+void canvas_dhistory_update_preview(void *context)
+{
+    simple_state_update_preview(context);
+}
+
+void canvas_add_dhistory_to_region(void *context)
+{
+    add_simple_state_to_region(context);
+}
+
+void canvas_create_init_begin(void *context)
+{
+    create_simple_state_begin(context, UFSMM_STATE_INIT, "Init");
+}
+
+void canvas_create_init_end(void *context)
+{
+    create_simple_state_end(context);
+}
+
+void canvas_update_init_preview(void *context)
+{
+    simple_state_update_preview(context);
+}
+
+void canvas_add_init_to_region(void *context)
+{
+    add_simple_state_to_region(context);
+}
+
+void canvas_create_final_begin(void *context)
+{
+    create_simple_state_begin(context, UFSMM_STATE_FINAL, "Final");
+}
+
+void canvas_create_final_end(void *context)
+{
+    create_simple_state_end(context);
+}
+
+void canvas_update_final_preview(void *context)
+{
+    simple_state_update_preview(context);
+}
+
+void canvas_add_final_to_region(void *context)
+{
+    add_simple_state_to_region(context);
+}
 
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
-    struct ufsmm_canvas *priv = 
+    struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
     if (event->keyval == GDK_KEY_A) {
@@ -1424,6 +1508,10 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eKey_t_down);
     } else if (event->keyval == GDK_KEY_T) {
         canvas_machine_process(&priv->machine, eKey_T_down);
+    } else if (event->keyval == GDK_KEY_h) {
+        canvas_machine_process(&priv->machine, eKey_h_down);
+    } else if (event->keyval == GDK_KEY_H) {
+        canvas_machine_process(&priv->machine, eKey_H_down);
     } else if (event->keyval == GDK_KEY_i) {
         canvas_machine_process(&priv->machine, eKey_i_down);
     } else if (event->keyval == GDK_KEY_j) {
@@ -1454,7 +1542,7 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 
 gboolean keyrelease_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
-    struct ufsmm_canvas *priv = 
+    struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
     if (event->keyval == GDK_KEY_Shift_L) {
@@ -1472,7 +1560,7 @@ gboolean keyrelease_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 
 static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
 {
-    struct ufsmm_canvas *priv = 
+    struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
     priv->sx = ufsmm_canvas_nearest_grid_point(event->x / priv->current_region->scale);
@@ -1507,7 +1595,7 @@ static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
 
 static gboolean buttonrelease_cb(GtkWidget *widget, GdkEventButton *event)
 {
-    struct ufsmm_canvas *priv = 
+    struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
     if (event->type == GDK_BUTTON_RELEASE && event->button == 3) {
@@ -1525,7 +1613,7 @@ static gboolean buttonrelease_cb(GtkWidget *widget, GdkEventButton *event)
 
 static gboolean scroll_event_cb(GtkWidget *widget, GdkEventScroll *event)
 {
-    struct ufsmm_canvas *priv = 
+    struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
     if (event->direction == GDK_SCROLL_UP)
@@ -1545,7 +1633,7 @@ static gboolean motion_notify_event_cb(GtkWidget      *widget,
                                        GdkEventMotion *event,
                                        gpointer        data)
 {
-    struct ufsmm_canvas *priv = 
+    struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
     double px = event->x / priv->current_region->scale;
@@ -1570,7 +1658,7 @@ static gboolean motion_notify_event_cb(GtkWidget      *widget,
 
 static void draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
-    struct ufsmm_canvas *priv = 
+    struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
     gint width, height;
@@ -1664,7 +1752,7 @@ void ufsmm_canvas_free(GtkWidget *widget)
 
 int ufsmm_canvas_load_model(GtkWidget *widget, struct ufsmm_model *model)
 {
-    struct ufsmm_canvas *priv = 
+    struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
     priv->model = model;

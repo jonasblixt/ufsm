@@ -36,7 +36,6 @@ struct ufsmm_canvas {
     struct ufsmm_region *selected_region;
     struct ufsmm_region *current_region;
     struct ufsmm_state *selected_state;
-    struct ufsmm_state *new_state;
     struct ufsmm_state *preview_state;
     enum ufsmm_resize_selector selected_corner;
     struct ufsmm_transition *selected_transition;
