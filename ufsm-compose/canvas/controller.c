@@ -1614,6 +1614,37 @@ void canvas_move_text_block_end(void *context)
 {
 }
 
+void canvas_add_vertice(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *t = priv->selected_transition;
+    struct ufsmm_vertice *v;
+    double x, y, w, h;
+
+    v = malloc(sizeof(*v));
+    memset(v, 0, sizeof(*v));
+
+    if (t->source.state->parent_region) {
+        ufsmm_get_region_absolute_coords(t->source.state->parent_region,
+                                            &x, &y, &w, &h);
+    }
+
+    double ox = priv->current_region->ox;
+    double oy = priv->current_region->oy;
+
+    v->x = ufsmm_canvas_nearest_grid_point(priv->px - x - ox);
+    v->y = ufsmm_canvas_nearest_grid_point(priv->py - y - oy);
+
+    if (TAILQ_FIRST(&t->vertices)) {
+        TAILQ_INSERT_TAIL(&t->vertices, v, tailq);
+    } else {
+        /* Had no vertices */
+        TAILQ_INSERT_TAIL(&t->vertices, v, tailq);
+    }
+
+    priv->redraw = true;
+}
+
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     struct ufsmm_canvas *priv =
@@ -1644,6 +1675,8 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eKey_O_down);
     } else if (event->keyval == GDK_KEY_r) {
         canvas_machine_process(&priv->machine, eKey_r_down);
+    } else if (event->keyval == GDK_KEY_v) {
+        canvas_machine_process(&priv->machine, eKey_v_down);
     } else if (event->keyval == GDK_KEY_t) {
         canvas_machine_process(&priv->machine, eKey_t_down);
     } else if (event->keyval == GDK_KEY_T) {

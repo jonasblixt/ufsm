@@ -150,6 +150,10 @@
     {
       "name":"eKey_backspace_down",
       "id":"9d381acf-d99d-4a5d-8320-3218bb2d45e9"
+    },
+    {
+      "name":"eKey_v_down",
+      "id":"5349540e-9a6f-491f-af54-6ecb652967a3"
     }
   ],
   "actions":[
@@ -676,6 +680,10 @@
     {
       "name":"canvas_delete_transition_tvertice",
       "id":"bc533db2-1532-42d2-ae31-55bf68a6dc63"
+    },
+    {
+      "name":"canvas_add_vertice",
+      "id":"7d97a4c7-b143-4256-b8ef-83d3ead671de"
     }
   ],
   "entries":null,
@@ -2753,6 +2761,42 @@
                                     "guards":[
                                     ],
                                     "actions":[
+                                    ],
+                                    "state-condition":[
+                                    ]
+                                  },
+                                  {
+                                    "id":"e5fa22f3-36dd-4d29-b98d-974a24bfd517",
+                                    "trigger":"5349540e-9a6f-491f-af54-6ecb652967a3",
+                                    "source":{
+                                      "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
+                                      "side":"right",
+                                      "offset":80.0
+                                    },
+                                    "dest":{
+                                      "state":"b46766f9-a8f5-4313-8b7e-6f7d8e30a734",
+                                      "side":"left",
+                                      "offset":10.0
+                                    },
+                                    "text-block":{
+                                      "x":20.0,
+                                      "y":-30.0,
+                                      "w":610.0,
+                                      "h":30.0
+                                    },
+                                    "vertices":[
+                                    ],
+                                    "guards":[
+                                      {
+                                        "action-id":"4fc9cd36-8433-4d7d-a182-0458175a8109",
+                                        "id":"82ff1631-3aef-46bc-986b-26f61898a1e3"
+                                      }
+                                    ],
+                                    "actions":[
+                                      {
+                                        "action-id":"7d97a4c7-b143-4256-b8ef-83d3ead671de",
+                                        "id":"d1f2b5a1-4216-4d81-b44b-8d8ecedad5ec"
+                                      }
                                     ],
                                     "state-condition":[
                                     ]
@@ -5064,6 +5108,24 @@
                                 "height":20.0,
                                 "x":180.0,
                                 "y":370.0,
+                                "orientation":0,
+                                "entries":[
+                                ],
+                                "exits":[
+                                ],
+                                "region":[
+                                ],
+                                "transitions":[
+                                ]
+                              },
+                              {
+                                "id":"b46766f9-a8f5-4313-8b7e-6f7d8e30a734",
+                                "name":"Final",
+                                "kind":"final",
+                                "width":20.0,
+                                "height":20.0,
+                                "x":1580.0,
+                                "y":160.0,
                                 "orientation":0,
                                 "entries":[
                                 ],
