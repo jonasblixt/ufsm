@@ -164,7 +164,7 @@ int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK)
     {
         TAILQ_FOREACH(s, &r->states, tailq) {
-            ufsmm_canvas_render_transition(canvas->cr, &s->transitions);
+            ufsmm_canvas_render_transition(canvas, &s->transitions);
             TAILQ_FOREACH(r2, &s->regions, tailq) {
                 if (r2->off_page)
                     continue;
@@ -177,6 +177,9 @@ int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
 
     if (canvas->preview_state)
         ufsmm_canvas_render_state(canvas, canvas->preview_state);
+
+    if (canvas->preview_transition)
+        ufsmm_canvas_render_one_transition(canvas, canvas->preview_transition);
 
     ufsmm_stack_free(stack);
 

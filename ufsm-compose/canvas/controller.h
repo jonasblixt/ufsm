@@ -33,24 +33,24 @@ enum ufsmm_resize_selector {
 struct ufsmm_canvas {
     struct canvas_machine machine;
     struct ufsmm_model *model;
-    struct ufsmm_region *selected_region;
     struct ufsmm_region *current_region;
+    struct ufsmm_region *selected_region;
     struct ufsmm_state *selected_state;
-    struct ufsmm_state *preview_state;
     enum ufsmm_resize_selector selected_corner;
-    struct ufsmm_transition *selected_transition;
     enum ufsmm_transition_vertice_kind selected_transition_vertice;
     struct ufsmm_vertice *selected_transition_vertice_data;
     struct ufsmm_action_ref *selected_aref;
-    struct ufsmm_transition *new_transition;
+    struct ufsmm_transition *selected_transition;
+    struct ufsmm_state *preview_state;
+    struct ufsmm_transition *preview_transition;
     /* Common stuff */
+    double t[10];
     void *command_data;
     bool redraw;
     double dx, dy;
     double px, py; /* Location of mouse pointer */
     double sx, sy; /* Start coordinates */
     double tx, ty, th, tw; /* Temporary coordinates */
-    double t[10];
     enum ufsmm_selection selection;
     GtkWidget *widget;
     GtkWidget *root_window;

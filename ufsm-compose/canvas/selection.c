@@ -309,7 +309,7 @@ void canvas_process_selection(void *context)
 
         if (point_in_box2(priv->px - priv->current_region->ox,
                           priv->py - priv->current_region->oy,
-                                                    x, y, w, h)) {
+                                                    x - 3, y - 3, w + 3, h + 10)) {
             L_DEBUG("Region '%s' selected", r->name);
             priv->selection = UFSMM_SELECTION_REGION;
             priv->selected_region = r;

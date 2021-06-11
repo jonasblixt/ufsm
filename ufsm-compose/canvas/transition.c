@@ -320,86 +320,103 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
     cairo_restore(cr);
 }
 
-int ufsmm_canvas_render_transition(cairo_t *cr,
-                                  struct ufsmm_transitions *transitions)
+int ufsmm_canvas_render_one_transition(struct ufsmm_canvas *canvas,
+                                       struct ufsmm_transition *t)
 {
     double begin_x, begin_y, end_x, end_y;
     cairo_text_extents_t extents;
     struct ufsmm_vertice *v;
-    struct ufsmm_transition *t;
+    cairo_t *cr = canvas->cr;
     double rx, ry, rw, rh;
+
+    transition_calc_begin_end_point(t->source.state,
+                         t->source.side,
+                         t->source.offset,
+                         &begin_x, &begin_y);
+
+    if (t->dest.state) {
+        transition_calc_begin_end_point(t->dest.state,
+                             t->dest.side,
+                             t->dest.offset,
+                             &end_x, &end_y);
+    } else {
+        double ox = canvas->current_region->ox;
+        double oy = canvas->current_region->oy;
+        end_x = ufsmm_canvas_nearest_grid_point(canvas->px - ox);
+        end_y = ufsmm_canvas_nearest_grid_point(canvas->py - oy);
+    }
+
+    ufsmm_get_region_absolute_coords(t->source.state->parent_region,
+                                    &rx, &ry, &rw, &rh);
+
+    cairo_save(cr);
+    cairo_move_to (cr, begin_x, begin_y);
+    cairo_set_line_width (cr, 2.0);
+
+    double y_off = 0.0;
+    struct ufsmm_state *ps = NULL;
+    /*
+    if (t->source.state->parent_region) {
+        if (t->source.state->parent_region->parent_state) {
+            ps = t->source.state->parent_region->parent_state;
+            y_off = ps->region_y_offset;
+        }
+    }*/
+
+    TAILQ_FOREACH(v, &t->vertices, tailq) {
+        cairo_line_to(cr, v->x + rx, v->y + ry - y_off);
+        ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
+        cairo_stroke (cr);
+        cairo_move_to (cr, v->x + rx, v->y + ry - y_off);
+        begin_x = v->x + rx;
+        begin_y = v->y + ry - y_off;
+    }
+
+    cairo_line_to(cr, end_x, end_y);
+
+    ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
+    cairo_set_line_width (cr, 2.0);
+    cairo_stroke (cr);
+    cairo_restore(cr);
+
+    /* Draw arrow */
+    double angle = atan2 (end_y - begin_y, end_x - begin_x) + M_PI;
+
+    double x1 = end_x + 15 * cos(angle - 0.4);
+    double y1 = end_y + 15 * sin(angle - 0.4);
+    double x2 = end_x + 15 * cos(angle + 0.4);
+    double y2 = end_y + 15 * sin(angle + 0.4);
+
+    cairo_save(cr);
+
+    ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
+    cairo_new_sub_path(cr);
+    cairo_move_to (cr, end_x, end_y);
+    cairo_line_to(cr, x1, y1);
+    cairo_line_to(cr, x2, y2);
+    cairo_close_path(cr);
+    cairo_fill(cr);
+    cairo_restore(cr);
+
+    render_transition_text(cr, t);
+
+    if (t->dest.state) {
+        /* Draw selection boxes if focused */
+        if (t->focus)
+            render_selection_boxes(cr, t);
+    }
+}
+
+int ufsmm_canvas_render_transition(struct ufsmm_canvas *canvas,
+                                  struct ufsmm_transitions *transitions)
+{
+    struct ufsmm_transition *t;
 
     if (transitions == NULL)
         return UFSMM_OK;
 
     TAILQ_FOREACH(t, transitions, tailq) {
-        transition_calc_begin_end_point(t->source.state,
-                             t->source.side,
-                             t->source.offset,
-                             &begin_x, &begin_y);
-
-        transition_calc_begin_end_point(t->dest.state,
-                             t->dest.side,
-                             t->dest.offset,
-                             &end_x, &end_y);
-
-        ufsmm_get_region_absolute_coords(t->source.state->parent_region,
-                                        &rx, &ry, &rw, &rh);
-
-        cairo_save(cr);
-        cairo_move_to (cr, begin_x, begin_y);
-        cairo_set_line_width (cr, 2.0);
-
-        double y_off = 0.0;
-        struct ufsmm_state *ps = NULL;
-        /*
-        if (t->source.state->parent_region) {
-            if (t->source.state->parent_region->parent_state) {
-                ps = t->source.state->parent_region->parent_state;
-                y_off = ps->region_y_offset;
-            }
-        }*/
-
-        TAILQ_FOREACH(v, &t->vertices, tailq) {
-            cairo_line_to(cr, v->x + rx, v->y + ry - y_off);
-            ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
-            cairo_stroke (cr);
-            cairo_move_to (cr, v->x + rx, v->y + ry - y_off);
-            begin_x = v->x + rx;
-            begin_y = v->y + ry - y_off;
-        }
-
-        cairo_line_to(cr, end_x, end_y);
-        ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
-        cairo_set_line_width (cr, 2.0);
-        cairo_stroke (cr);
-        cairo_restore(cr);
-
-        /* Draw arrow */
-        double angle = atan2 (end_y - begin_y, end_x - begin_x) + M_PI;
-
-        double x1 = end_x + 15 * cos(angle - 0.4);
-        double y1 = end_y + 15 * sin(angle - 0.4);
-        double x2 = end_x + 15 * cos(angle + 0.4);
-        double y2 = end_y + 15 * sin(angle + 0.4);
-
-        cairo_save(cr);
-
-        ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
-        cairo_new_sub_path(cr);
-        cairo_move_to (cr, end_x, end_y);
-        cairo_line_to(cr, x1, y1);
-        cairo_line_to(cr, x2, y2);
-        cairo_close_path(cr);
-        cairo_fill(cr);
-        cairo_restore(cr);
-
-        render_transition_text(cr, t);
-
-        /* Draw selection boxes if focused */
-        if (t->focus)
-            render_selection_boxes(cr, t);
-
+        ufsmm_canvas_render_one_transition(canvas, t);
     }
 
     return UFSMM_OK;

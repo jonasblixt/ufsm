@@ -413,14 +413,6 @@ void canvas_show_state_hint(void *context)
 {
 }
 
-void canvas_create_transition_begin(void *context)
-{
-}
-
-void canvas_create_transition_end(void *context)
-{
-}
-
 bool canvas_guard_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -936,30 +928,6 @@ void canvas_update_state_hint(void *context)
 {
 }
 
-void canvas_create_transition_start(void *context)
-{
-    int rc;
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_region *cr = priv->current_region;
-    struct ufsmm_state *source_state;
-
-    L_DEBUG("Looking for source state at <%f, %f>", priv->px,
-                                                    priv->py);
-    rc = ufsmm_state_get_at_xy(priv, priv->current_region,
-                                    priv->px,
-                                    priv->py,
-                                    &source_state, NULL);
-
-    if (rc == UFSMM_OK) {
-        L_DEBUG("Found source state: %s", source_state->name);
-        ufsmm_transition_new(&priv->new_transition);
-        priv->new_transition->source.state = source_state;
-        ufsmm_state_get_closest_side(priv, source_state,
-                                    &priv->new_transition->source.side,
-                                    &priv->new_transition->source.offset);
-
-    }
-}
 
 struct state_op {
     struct ufsmm_state *state;
@@ -1053,71 +1021,12 @@ void canvas_create_new_state(void *context)
     L_DEBUG("Added new state to region '%s' cr='%s'", op->pr->name, cr->name);
 }
 
-void canvas_create_transition(void *context)
-{
-    int rc;
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_region *cr = priv->current_region;
-    struct ufsmm_state *dest_state;
-    double dest_offset;
-    enum ufsmm_side source_side, dest_side;
-
-    L_DEBUG("Looking for dest state at <%f, %f>", priv->px,
-                                                  priv->py);
-    rc = ufsmm_state_get_at_xy(priv, priv->current_region,
-                                    priv->px,
-                                    priv->py,
-                                    &dest_state, NULL);
-
-    if (rc == UFSMM_OK) {
-        L_DEBUG("Found destination state: %s", dest_state->name);
-
-        ufsmm_state_get_closest_side(priv, dest_state, &dest_side,
-                                    &dest_offset);
-        L_DEBUG("Creating transition %s --> %s", priv->new_transition->source.state->name,
-                                                 dest_state->name);
-        priv->new_transition->dest.side = dest_side;
-        priv->new_transition->dest.offset = dest_offset;
-        priv->new_transition->text_block_coords.x = priv->new_transition->source.state->x;
-        priv->new_transition->text_block_coords.y = priv->new_transition->source.state->y;
-        priv->new_transition->text_block_coords.w = 100;
-        priv->new_transition->text_block_coords.h = 30;
-
-        ufsmm_state_add_transition(priv->new_transition->source.state,
-                                   dest_state,
-                                   priv->new_transition);
-    }
-
-    priv->redraw = true;
-}
 
 void canvas_toggle_region_offpage(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     priv->selected_region->off_page = !priv->selected_region->off_page;
     priv->redraw = true;
-}
-
-void canvas_transition_vdel_last(void *context)
-{
-}
-
-void canvas_add_transition_vertice(void *context)
-{
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_vertice *v;
-    double x, y, w, h;
-
-    v = malloc(sizeof(*v));
-    memset(v, 0, sizeof(*v));
-
-    ufsmm_get_region_absolute_coords(priv->selected_region, &x, &y, &w, &h);
-
-    v->x = ufsmm_canvas_nearest_grid_point(priv->px) - (x + priv->current_region->ox);
-    v->y = ufsmm_canvas_nearest_grid_point(priv->py) - (y + priv->current_region->oy);
-
-    TAILQ_INSERT_TAIL(&priv->new_transition->vertices, v, tailq);
-    L_DEBUG("Add vertice at <%f, %f>", v->x, v->y);
 }
 
 void canvas_set_transition_trigger(void *context)
@@ -1136,172 +1045,153 @@ void canvas_add_transition_action(void *context)
                                             priv->selected_transition);
 }
 
-struct join_op {
-    struct ufsmm_state *state;
-    double sx, sy;
+/* ADD: Transition */
+
+struct transition_op {
+    struct ufsmm_transition *t;
+    bool commit;
 };
 
-void canvas_create_join_begin(void *context)
+void canvas_create_transition_begin(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    L_DEBUG("%s", __func__);
-    priv->command_data = malloc(sizeof(struct join_op));
-    memset(priv->command_data, 0, sizeof(struct join_op));
-    struct join_op *op = (struct join_op *) priv->command_data;
-    op->state = ufsmm_state_new(UFSMM_STATE_JOIN);
-    ufsmm_state_set_name(op->state, "Join");
+
+    priv->command_data = malloc(sizeof(struct transition_op));
+    memset(priv->command_data, 0, sizeof(struct transition_op));
+
+    struct transition_op *op = (struct transition_op *) priv->command_data;
+    ufsmm_transition_new(&op->t);
+    priv->preview_transition = NULL;
 }
 
-void canvas_create_join_end(void *context)
+void canvas_create_transition_end(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct join_op *op = (struct join_op *) priv->command_data;
-    L_DEBUG("%s", __func__);
-    if (op->state) {
-        ufsmm_state_free(op->state);
+    struct transition_op *op = (struct transition_op *) priv->command_data;
+
+    priv->preview_transition = NULL;
+
+    if (op->commit == false) {
+        L_DEBUG("Freeing transition");
+        ufsmm_transition_free_one(op->t);
+
+        L_DEBUG("Freeing transition done");
     }
 
-    free(priv->command_data);
+    free(op);
+    priv->redraw = true;
 }
 
-void canvas_create_join_start(void *context)
+void canvas_create_transition_start(void *context)
 {
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_region *r;
     int rc;
-    struct join_op *op = (struct join_op *) priv->command_data;
-    L_DEBUG("%s", __func__);
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct transition_op *op = (struct transition_op *) priv->command_data;
+    struct ufsmm_region *cr = priv->current_region;
+    struct ufsmm_state *source_state;
 
-    rc = ufsmm_region_get_at_xy(priv, priv->current_region,
-                                priv->px, priv->py, &r, NULL);
+    L_DEBUG("Looking for source state at <%f, %f>", priv->px,
+                                                    priv->py);
+    rc = ufsmm_state_get_at_xy(priv, priv->current_region,
+                                    priv->px,
+                                    priv->py,
+                                    &source_state, NULL);
 
     if (rc == UFSMM_OK) {
-        L_DEBUG("Setting pr = %s", r->name);
-        op->state->parent_region = r;
-    } else {
-        L_ERR("Could not find parent region");
+        L_DEBUG("Found source state: %s", source_state->name);
+        op->t->source.state = source_state;
+        ufsmm_state_get_closest_side(priv, source_state,
+                                    &op->t->source.side,
+                                    &op->t->source.offset);
+        op->t->dest.state = NULL;
+        priv->preview_transition = op->t;
     }
 
-
-    op->state->x = ufsmm_canvas_nearest_grid_point(priv->px);
-    op->state->y = ufsmm_canvas_nearest_grid_point(priv->py);
-}
-
-void canvas_update_join_preview(void *context)
-{
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct join_op *op = (struct join_op *) priv->command_data;
-    L_DEBUG("%s", __func__);
-
-    op->state->w = priv->px - op->state->x;
-    op->state->h = priv->py - op->state->y;
     priv->redraw = true;
 }
 
-void canvas_add_join_to_region(void *context)
+void canvas_transition_update_preview(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct join_op *op = (struct join_op *) priv->command_data;
-    L_DEBUG("%s", __func__);
+    struct transition_op *op = (struct transition_op *) priv->command_data;
 
-    if (op->state->w > op->state->h) {
-        op->state->orientation = UFSMM_ORIENTATION_HORIZONTAL;
-        op->state->h = 10;
-    } else {
-        op->state->orientation = UFSMM_ORIENTATION_VERTICAL;
-        op->state->w = 10;
-    }
-
-    op->state->h = ufsmm_canvas_nearest_grid_point(op->state->h);
-    op->state->w = ufsmm_canvas_nearest_grid_point(op->state->w);
-
-    ufsmm_region_append_state(op->state->parent_region, op->state);
     priv->redraw = true;
-    op->state = NULL;
 }
 
-struct fork_op {
-    struct ufsmm_state *state;
-    double sx, sy;
-};
-
-void canvas_create_fork_begin(void *context)
+void canvas_create_transition(void *context)
 {
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    L_DEBUG("%s", __func__);
-    priv->command_data = malloc(sizeof(struct fork_op));
-    memset(priv->command_data, 0, sizeof(struct fork_op));
-    struct fork_op *op = (struct fork_op *) priv->command_data;
-    op->state = ufsmm_state_new(UFSMM_STATE_FORK);
-    ufsmm_state_set_name(op->state, "Fork");
-}
-
-void canvas_create_fork_end(void *context)
-{
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct fork_op *op = (struct fork_op *) priv->command_data;
-    L_DEBUG("%s", __func__);
-    if (op->state) {
-        ufsmm_state_free(op->state);
-    }
-
-    free(priv->command_data);
-}
-
-void canvas_create_fork_start(void *context)
-{
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_region *r;
     int rc;
-    struct fork_op *op = (struct fork_op *) priv->command_data;
-    L_DEBUG("%s", __func__);
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct transition_op *op = (struct transition_op *) priv->command_data;
+    struct ufsmm_region *cr = priv->current_region;
+    struct ufsmm_state *dest_state;
+    double dest_offset;
+    enum ufsmm_side source_side, dest_side;
 
-    rc = ufsmm_region_get_at_xy(priv, priv->current_region,
-                                priv->px, priv->py, &r, NULL);
+    L_DEBUG("Looking for dest state at <%f, %f>", priv->px,
+                                                  priv->py);
+    rc = ufsmm_state_get_at_xy(priv, priv->current_region,
+                                    priv->px,
+                                    priv->py,
+                                    &dest_state, NULL);
 
     if (rc == UFSMM_OK) {
-        L_DEBUG("Setting pr = %s", r->name);
-        op->state->parent_region = r;
-    } else {
-        L_ERR("Could not find parent region");
+        L_DEBUG("Found destination state: %s", dest_state->name);
+
+        ufsmm_state_get_closest_side(priv, dest_state, &dest_side,
+                                    &dest_offset);
+        L_DEBUG("Creating transition %s --> %s", op->t->source.state->name,
+                                                 dest_state->name);
+        op->t->dest.side = dest_side;
+        op->t->dest.offset = dest_offset;
+        op->t->text_block_coords.x = op->t->source.state->x;
+        op->t->text_block_coords.y = op->t->source.state->y;
+        op->t->text_block_coords.w = 100;
+        op->t->text_block_coords.h = 30;
+
+        ufsmm_state_add_transition(op->t->source.state,
+                                   dest_state,
+                                   op->t);
+        op->commit = true;
     }
 
-
-    op->state->x = ufsmm_canvas_nearest_grid_point(priv->px);
-    op->state->y = ufsmm_canvas_nearest_grid_point(priv->py);
-}
-
-void canvas_update_fork_preview(void *context)
-{
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct fork_op *op = (struct fork_op *) priv->command_data;
-    L_DEBUG("%s", __func__);
-
-    op->state->w = priv->px - op->state->x;
-    op->state->h = priv->py - op->state->y;
     priv->redraw = true;
 }
 
-void canvas_add_fork_to_region(void *context)
+void canvas_transition_vdel_last(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct fork_op *op = (struct fork_op *) priv->command_data;
+    struct transition_op *op = (struct transition_op *) priv->command_data;
+    struct ufsmm_vertice *v = TAILQ_LAST(&op->t->vertices, ufsmm_vertices);
     L_DEBUG("%s", __func__);
+    if (v) {
+        TAILQ_REMOVE(&op->t->vertices, v, tailq);
+    }
+}
 
-    if (op->state->w > op->state->h) {
-        op->state->orientation = UFSMM_ORIENTATION_HORIZONTAL;
-        op->state->h = 10;
-    } else {
-        op->state->orientation = UFSMM_ORIENTATION_VERTICAL;
-        op->state->w = 10;
+void canvas_add_transition_vertice(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct transition_op *op = (struct transition_op *) priv->command_data;
+    struct ufsmm_vertice *v;
+    double x, y, w, h;
+
+    v = malloc(sizeof(*v));
+    memset(v, 0, sizeof(*v));
+
+    if (op->t->source.state->parent_region) {
+        ufsmm_get_region_absolute_coords(op->t->source.state->parent_region,
+                                            &x, &y, &w, &h);
     }
 
-    op->state->h = ufsmm_canvas_nearest_grid_point(op->state->h);
-    op->state->w = ufsmm_canvas_nearest_grid_point(op->state->w);
+    double ox = priv->current_region->ox;
+    double oy = priv->current_region->oy;
 
-    ufsmm_region_append_state(op->state->parent_region, op->state);
-    priv->redraw = true;
-    op->state = NULL;
+    v->x = ufsmm_canvas_nearest_grid_point(priv->px - x - ox);
+    v->y = ufsmm_canvas_nearest_grid_point(priv->py - y - oy);
+
+    TAILQ_INSERT_TAIL(&op->t->vertices, v, tailq);
+    L_DEBUG("Add vertice at <%f, %f>", v->x, v->y);
 }
 
 struct sstate_op {
@@ -1374,6 +1264,8 @@ static void simple_state_update_preview(void *context)
     priv->redraw = true;
 }
 
+/* ADD: Terminate */
+
 void canvas_create_terminate_begin(void *context)
 {
     create_simple_state_begin(context, UFSMM_STATE_TERMINATE, "Terminate");
@@ -1393,6 +1285,8 @@ void canvas_terminate_update_preview(void *context)
 {
     simple_state_update_preview(context);
 }
+
+/* ADD: History */
 
 void canvas_create_history_begin(void *context)
 {
@@ -1414,6 +1308,8 @@ void canvas_add_history_to_region(void *context)
     add_simple_state_to_region(context);
 }
 
+/* ADD: Deep history */
+
 void canvas_create_dhistory_begin(void *context)
 {
     create_simple_state_begin(context, UFSMM_STATE_DEEP_HISTORY, "Deep history");
@@ -1433,6 +1329,8 @@ void canvas_add_dhistory_to_region(void *context)
 {
     add_simple_state_to_region(context);
 }
+
+/* ADD: Init */
 
 void canvas_create_init_begin(void *context)
 {
@@ -1454,6 +1352,8 @@ void canvas_add_init_to_region(void *context)
     add_simple_state_to_region(context);
 }
 
+/* ADD: Final */
+
 void canvas_create_final_begin(void *context)
 {
     create_simple_state_begin(context, UFSMM_STATE_FINAL, "Final");
@@ -1472,6 +1372,211 @@ void canvas_update_final_preview(void *context)
 void canvas_add_final_to_region(void *context)
 {
     add_simple_state_to_region(context);
+}
+
+struct fork_join_op {
+    struct ufsmm_state *state;
+    struct ufsmm_region *pr;
+    bool commit;
+};
+
+static void create_fork_join_begin(void *context, bool fork)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    L_DEBUG("%s", __func__);
+    priv->command_data = malloc(sizeof(struct fork_join_op));
+    memset(priv->command_data, 0, sizeof(struct fork_join_op));
+    struct fork_join_op *op = (struct fork_join_op *) priv->command_data;
+    if (fork)
+        op->state = ufsmm_state_new(UFSMM_STATE_FORK);
+    else
+        op->state = ufsmm_state_new(UFSMM_STATE_JOIN);
+    op->state->parent_region = priv->current_region;
+    op->state->orientation = UFSMM_ORIENTATION_VERTICAL;
+    op->state->w = 10;
+    op->state->h = 200;
+    priv->preview_state = op->state;
+
+    if (fork)
+        ufsmm_state_set_name(op->state, "Fork");
+    else
+        ufsmm_state_set_name(op->state, "Join");
+}
+
+static void create_fork_join_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct fork_join_op *op = (struct fork_join_op *) priv->command_data;
+    L_DEBUG("%s", __func__);
+
+    priv->preview_state = NULL;
+
+    if (op->commit == false) {
+        ufsmm_state_free(op->state);
+    }
+
+    free(priv->command_data);
+    priv->redraw = true;
+}
+
+static void create_fork_join_start(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct fork_join_op *op = (struct fork_join_op *) priv->command_data;
+    struct ufsmm_region *cr = priv->current_region;
+    double x, y, w, h;
+
+    if (op->pr->parent_state && (op->pr->draw_as_root != true)) {
+        ufsmm_get_state_absolute_coords(op->pr->parent_state, &x, &y, &w, &h);
+        y += 30.0;
+    }
+
+    op->state->parent_region = op->pr;
+    op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - x - cr->ox - 10);
+    op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - y - cr->oy - 20);
+    priv->redraw = true;
+    priv->sx = priv->px;
+    priv->sy = priv->py;
+}
+
+static void update_fork_join_preview(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct fork_join_op *op = (struct fork_join_op *) priv->command_data;
+    L_DEBUG("%s", __func__);
+
+    if (op->state->orientation == UFSMM_ORIENTATION_HORIZONTAL) {
+        op->state->w = ufsmm_canvas_nearest_grid_point(priv->dx);
+        if (op->state->w < 50)
+            op->state->w = 50;
+    } else {
+        op->state->h = ufsmm_canvas_nearest_grid_point(priv->dy);
+        if (op->state->h < 50)
+            op->state->h = 50;
+    }
+    priv->redraw = true;
+}
+
+static void add_fork_join_to_region(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct fork_join_op *op = (struct fork_join_op *) priv->command_data;
+    L_DEBUG("%s", __func__);
+
+    op->state->h = ufsmm_canvas_nearest_grid_point(op->state->h);
+    op->state->w = ufsmm_canvas_nearest_grid_point(op->state->w);
+
+    ufsmm_region_append_state(op->pr, op->state);
+    priv->redraw = true;
+    op->commit = true;
+}
+
+static void toggle_fork_join_orientation(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct fork_join_op *op = (struct fork_join_op *) priv->command_data;
+
+    if (op->state->orientation == UFSMM_ORIENTATION_VERTICAL) {
+        op->state->orientation = UFSMM_ORIENTATION_HORIZONTAL;
+        op->state->w = 200;
+        op->state->h = 10;
+    } else {
+        op->state->orientation = UFSMM_ORIENTATION_VERTICAL;
+        op->state->w = 10;
+        op->state->h = 200;
+    }
+
+    priv->redraw = true;
+}
+
+static void update_fork_join_start(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct fork_join_op *op = (struct fork_join_op *) priv->command_data;
+
+    double ox = priv->current_region->ox;
+    double oy = priv->current_region->oy;
+
+    ufsmm_region_get_at_xy(priv, priv->current_region, priv->px, priv->py,
+                            &op->pr, NULL);
+
+    op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - ox - 10);
+    op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - oy - 20);
+    priv->redraw = true;
+}
+
+/* ADD: Fork */
+
+void canvas_create_fork_begin(void *context)
+{
+    create_fork_join_begin(context, true);
+}
+
+void canvas_create_fork_end(void *context)
+{
+    create_fork_join_end(context);
+}
+
+void canvas_create_fork_start(void *context)
+{
+    create_fork_join_start(context);
+}
+
+void canvas_update_fork_preview(void *context)
+{
+    update_fork_join_preview(context);
+}
+
+void canvas_add_fork_to_region(void *context)
+{
+    add_fork_join_to_region(context);
+}
+
+void canvas_toggle_fork_orientation(void *context)
+{
+    toggle_fork_join_orientation(context);
+}
+
+void canvas_update_fork_start(void *context)
+{
+    update_fork_join_start(context);
+}
+
+/* ADD: Join */
+
+void canvas_create_join_begin(void *context)
+{
+    create_fork_join_begin(context, false);
+}
+
+void canvas_create_join_end(void *context)
+{
+    create_fork_join_end(context);
+}
+
+void canvas_create_join_start(void *context)
+{
+    create_fork_join_start(context);
+}
+
+void canvas_update_join_preview(void *context)
+{
+    update_fork_join_preview(context);
+}
+
+void canvas_add_join_to_region(void *context)
+{
+    add_fork_join_to_region(context);
+}
+
+void canvas_toggle_join_orientation(void *context)
+{
+    toggle_fork_join_orientation(context);
+}
+
+void canvas_update_join_start(void *context)
+{
+    update_fork_join_start(context);
 }
 
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)

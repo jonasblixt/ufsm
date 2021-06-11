@@ -193,11 +193,16 @@ void canvas_update_init_preview(void *context);
 void canvas_add_init_to_region(void *context);
 void canvas_update_final_preview(void *context);
 void canvas_add_final_to_region(void *context);
+void canvas_update_fork_start(void *context);
+void canvas_toggle_fork_orientation(void *context);
+void canvas_update_join_start(void *context);
+void canvas_toggle_join_orientation(void *context);
+void canvas_transition_update_preview(void *context);
 
 struct canvas_machine {
     struct ufsm_machine machine;
     struct ufsm_region_data region_data[26];
-    struct ufsm_state_data state_data[124];
+    struct ufsm_state_data state_data[123];
     void *stack_data[71];
     void *stack_data2[3];
 };
