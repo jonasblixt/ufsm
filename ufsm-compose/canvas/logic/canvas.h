@@ -49,6 +49,7 @@ enum {
     eKey_T_down,
     eKey_h_down,
     eKey_H_down,
+    eKey_backspace_down,
 };
 
 /* Guard function prototypes */

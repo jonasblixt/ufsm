@@ -1661,6 +1661,8 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eKey_x_down);
     } else if (event->keyval == GDK_KEY_Delete) {
         canvas_machine_process(&priv->machine, eKey_delete_down);
+    } else if (event->keyval == GDK_KEY_BackSpace) {
+        canvas_machine_process(&priv->machine, eKey_backspace_down);
     } else if (event->keyval == GDK_KEY_s) {
         canvas_machine_process(&priv->machine, eKey_s_down);
     }

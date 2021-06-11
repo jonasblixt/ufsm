@@ -337,6 +337,11 @@ const struct ufsm_trigger trigger_7914eef5_44a2_46a7_a54e_1bb0c81fa5b7 = {
     .trigger = eKey_H_down,
 };
 
+const struct ufsm_trigger trigger_9d381acf_d99d_4a5d_8320_3218bb2d45e9 = {
+    .name = "eKey_backspace_down",
+    .trigger = eKey_backspace_down,
+};
+
 const struct ufsm_region r_00000000_0000_0000_0000_000000000000 = {
     .index = 0,
     .name = "Root",
@@ -4526,7 +4531,7 @@ const struct ufsm_action a_a85611d6_acab_4773_ab56_2fda4974fafb = {
 
 const struct ufsm_transition t_75bf6d51_b12a_4965_88af_8322eed7532b = {
     .kind = UFSM_TRANSITION_EXTERNAL,
-    .trigger = &trigger_ff3ba5c8_93e8_430e_b37a_8196a4be36fa,
+    .trigger = &trigger_9d381acf_d99d_4a5d_8320_3218bb2d45e9,
     .action = &a_a85611d6_acab_4773_ab56_2fda4974fafb,
     .guard = NULL,
     .source = &s_fc6399d1_c9b5_4a38_88d7_755d83db66e7,

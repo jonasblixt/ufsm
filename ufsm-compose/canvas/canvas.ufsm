@@ -146,6 +146,10 @@
     {
       "name":"eKey_H_down",
       "id":"7914eef5-44a2-46a7-a54e-1bb0c81fa5b7"
+    },
+    {
+      "name":"eKey_backspace_down",
+      "id":"9d381acf-d99d-4a5d-8320-3218bb2d45e9"
     }
   ],
   "actions":[
@@ -1813,7 +1817,7 @@
                                         "transitions":[
                                           {
                                             "id":"75bf6d51-b12a-4965-88af-8322eed7532b",
-                                            "trigger":"ff3ba5c8-93e8-430e-b37a-8196a4be36fa",
+                                            "trigger":"9d381acf-d99d-4a5d-8320-3218bb2d45e9",
                                             "source":{
                                               "state":"fc6399d1-c9b5-4a38-88d7-755d83db66e7",
                                               "side":"left",
