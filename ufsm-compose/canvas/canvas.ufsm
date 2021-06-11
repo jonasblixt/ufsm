@@ -660,6 +660,14 @@
     {
       "name":"canvas_transition_update_preview",
       "id":"91436c14-578f-43c5-b4cd-df4e8904006f"
+    },
+    {
+      "name":"canvas_move_text_block_begin",
+      "id":"f74dd626-1c95-41aa-9e4e-e64329e9a85a"
+    },
+    {
+      "name":"canvas_move_text_block_end",
+      "id":"dabd922b-9dbf-46b7-8fae-55b03386e6a9"
     }
   ],
   "entries":null,
@@ -6508,12 +6516,12 @@
                                     "source":{
                                       "state":"71b9383e-a54c-4c13-94a9-75f5674af90f",
                                       "side":"bottom",
-                                      "offset":260.0
+                                      "offset":140.0
                                     },
                                     "dest":{
                                       "state":"4b1878b4-404c-407e-8a33-4e2ef72cdae6",
                                       "side":"top",
-                                      "offset":260.0
+                                      "offset":140.0
                                     },
                                     "text-block":{
                                       "x":30.0,
@@ -6523,7 +6531,7 @@
                                     },
                                     "vertices":[
                                       {
-                                        "x":930.0,
+                                        "x":810.0,
                                         "y":240.0
                                       }
                                     ],
@@ -6609,46 +6617,6 @@
                                 "region":[
                                 ],
                                 "transitions":[
-                                  {
-                                    "id":"f42275e1-7e49-40d1-88e0-df4e07040e22",
-                                    "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
-                                    "source":{
-                                      "state":"4b1878b4-404c-407e-8a33-4e2ef72cdae6",
-                                      "side":"top",
-                                      "offset":80.0
-                                    },
-                                    "dest":{
-                                      "state":"4b1878b4-404c-407e-8a33-4e2ef72cdae6",
-                                      "side":"top",
-                                      "offset":140.0
-                                    },
-                                    "text-block":{
-                                      "x":-130.0,
-                                      "y":-70.0,
-                                      "w":280.0,
-                                      "h":30.0
-                                    },
-                                    "vertices":[
-                                      {
-                                        "x":750.0,
-                                        "y":250.0
-                                      },
-                                      {
-                                        "x":810.0,
-                                        "y":250.0
-                                      }
-                                    ],
-                                    "guards":[
-                                    ],
-                                    "actions":[
-                                      {
-                                        "action-id":"b582388e-06b4-4c1f-9419-dc6c462faeae",
-                                        "id":"54f193ba-27c6-4e56-b5e0-f4860fbb2cdf"
-                                      }
-                                    ],
-                                    "state-condition":[
-                                    ]
-                                  },
                                   {
                                     "id":"1056be5e-6925-4fc0-b8b1-506d7f7b5c75",
                                     "source":{
@@ -6748,6 +6716,38 @@
                                         "action-id":"d7b48730-e050-43ff-a063-6a5187d35f10",
                                         "id":"47449948-224d-4903-968f-b1aa5ad73f22"
                                       }
+                                    ],
+                                    "actions":[
+                                    ],
+                                    "state-condition":[
+                                    ]
+                                  },
+                                  {
+                                    "id":"38809818-394c-4cd0-aa29-3e479701e79a",
+                                    "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                    "source":{
+                                      "state":"4b1878b4-404c-407e-8a33-4e2ef72cdae6",
+                                      "side":"bottom",
+                                      "offset":210.0
+                                    },
+                                    "dest":{
+                                      "state":"708c0dd3-6a6f-40f4-8b4e-8d6dadfd297e",
+                                      "side":"left",
+                                      "offset":40.0
+                                    },
+                                    "text-block":{
+                                      "x":-130.0,
+                                      "y":260.0,
+                                      "w":100.0,
+                                      "h":30.0
+                                    },
+                                    "vertices":[
+                                      {
+                                        "x":880.0,
+                                        "y":720.0
+                                      }
+                                    ],
+                                    "guards":[
                                     ],
                                     "actions":[
                                     ],
@@ -6878,6 +6878,102 @@
                                     "state-condition":[
                                     ]
                                   }
+                                ]
+                              },
+                              {
+                                "id":"13045231-d2b2-403a-af36-80560517896e",
+                                "name":"Move text block",
+                                "kind":"state",
+                                "width":340.0,
+                                "height":420.0,
+                                "x":1010.0,
+                                "y":480.0,
+                                "orientation":0,
+                                "entries":[
+                                  {
+                                    "id":"f79e7ffc-ec6a-47f3-9791-f1dbad149e70",
+                                    "action-id":"f74dd626-1c95-41aa-9e4e-e64329e9a85a"
+                                  }
+                                ],
+                                "exits":[
+                                  {
+                                    "id":"64d4989d-928c-4c65-bf81-f971ae5852c7",
+                                    "action-id":"dabd922b-9dbf-46b7-8fae-55b03386e6a9"
+                                  }
+                                ],
+                                "region":[
+                                  {
+                                    "id":"b6290854-2e7c-4767-8f3c-bc2bbf4768ee",
+                                    "name":"New region",
+                                    "off_page":false,
+                                    "height":320,
+                                    "states":[
+                                      {
+                                        "id":"708c0dd3-6a6f-40f4-8b4e-8d6dadfd297e",
+                                        "name":"Move inner",
+                                        "kind":"state",
+                                        "width":260.0,
+                                        "height":100.0,
+                                        "x":40.0,
+                                        "y":170.0,
+                                        "orientation":0,
+                                        "entries":[
+                                          {
+                                            "id":"d2a3d790-a039-4d8d-a1f9-d4ec359ec6bd",
+                                            "action-id":"b582388e-06b4-4c1f-9419-dc6c462faeae"
+                                          }
+                                        ],
+                                        "exits":[
+                                        ],
+                                        "region":[
+                                        ],
+                                        "transitions":[
+                                          {
+                                            "id":"f42275e1-7e49-40d1-88e0-df4e07040e22",
+                                            "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "source":{
+                                              "state":"708c0dd3-6a6f-40f4-8b4e-8d6dadfd297e",
+                                              "side":"top",
+                                              "offset":60.0
+                                            },
+                                            "dest":{
+                                              "state":"708c0dd3-6a6f-40f4-8b4e-8d6dadfd297e",
+                                              "side":"top",
+                                              "offset":200.0
+                                            },
+                                            "text-block":{
+                                              "x":-70.0,
+                                              "y":-60.0,
+                                              "w":280.0,
+                                              "h":30.0
+                                            },
+                                            "vertices":[
+                                              {
+                                                "x":100.0,
+                                                "y":90.0
+                                              },
+                                              {
+                                                "x":240.0,
+                                                "y":90.0
+                                              }
+                                            ],
+                                            "guards":[
+                                            ],
+                                            "actions":[
+                                              {
+                                                "action-id":"b582388e-06b4-4c1f-9419-dc6c462faeae",
+                                                "id":"54f193ba-27c6-4e56-b5e0-f4860fbb2cdf"
+                                              }
+                                            ],
+                                            "state-condition":[
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "transitions":[
                                 ]
                               }
                             ]

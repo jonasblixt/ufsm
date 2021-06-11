@@ -1588,6 +1588,23 @@ void canvas_update_join_start(void *context)
     update_fork_join_start(context);
 }
 
+void canvas_delete_transition_tvertice(void *context)
+{
+}
+
+bool canvas_transition_tvertice_selected(void *context)
+{
+    return false;
+}
+
+void canvas_move_text_block_begin(void *context)
+{
+}
+
+void canvas_move_text_block_end(void *context)
+{
+}
+
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     struct ufsmm_canvas *priv =
