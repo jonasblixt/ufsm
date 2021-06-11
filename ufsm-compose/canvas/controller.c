@@ -1590,11 +1590,20 @@ void canvas_update_join_start(void *context)
 
 void canvas_delete_transition_tvertice(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+
+    TAILQ_REMOVE(&priv->selected_transition->vertices,
+                 priv->selected_transition_vertice_data, tailq);
+
+    priv->selected_transition_vertice_data = NULL;
+
+    priv->redraw = true;
 }
 
 bool canvas_transition_tvertice_selected(void *context)
 {
-    return false;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    return (priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE);
 }
 
 void canvas_move_text_block_begin(void *context)

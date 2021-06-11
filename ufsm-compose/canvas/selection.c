@@ -142,7 +142,18 @@ bool canvas_state_entry_selected(void *context)
 bool canvas_transition_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+
     return (priv->selection == UFSMM_SELECTION_TRANSITION);
+    /*return (priv->selection == UFSMM_SELECTION_TRANSITION) &&
+            (priv->selected_transition_vertice != UFSMM_TRANSITION_VERTICE);*/
+}
+
+bool canvas_transition_selected2(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+
+    return (priv->selection == UFSMM_SELECTION_TRANSITION) &&
+            (priv->selected_transition_vertice != UFSMM_TRANSITION_VERTICE);
 }
 
 bool canvas_transition_vertice_selected(void *context)

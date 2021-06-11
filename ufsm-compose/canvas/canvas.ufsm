@@ -672,6 +672,10 @@
     {
       "name":"canvas_move_text_block_end",
       "id":"dabd922b-9dbf-46b7-8fae-55b03386e6a9"
+    },
+    {
+      "name":"canvas_delete_transition_tvertice",
+      "id":"bc533db2-1532-42d2-ae31-55bf68a6dc63"
     }
   ],
   "entries":null,
@@ -740,6 +744,10 @@
     {
       "name":"canvas_transition_vertice_selected",
       "id":"e45dcb67-82ca-47ca-a8a9-d909096b2224"
+    },
+    {
+      "name":"canvas_transition_selected2",
+      "id":"c6f8369a-1df4-4226-8361-9581c73ee9d2"
     }
   ],
   "region":{
@@ -5799,17 +5807,17 @@
                                       "offset":10.0
                                     },
                                     "text-block":{
-                                      "x":30.0,
+                                      "x":20.0,
                                       "y":-50.0,
-                                      "w":310.0,
+                                      "w":340.0,
                                       "h":40.0
                                     },
                                     "vertices":[
                                     ],
                                     "guards":[
                                       {
-                                        "action-id":"4fc9cd36-8433-4d7d-a182-0458175a8109",
-                                        "id":"ddd0e7bb-cf42-464b-b331-9fa5459fea5a"
+                                        "action-id":"c6f8369a-1df4-4226-8361-9581c73ee9d2",
+                                        "id":"6cf1fc2a-959a-4bd1-af74-a6f8ba708128"
                                       }
                                     ],
                                     "actions":[
@@ -5925,6 +5933,41 @@
                                     ],
                                     "state-condition":[
                                     ]
+                                  },
+                                  {
+                                    "id":"27b43bb0-16a8-42ab-b1af-fce3185d2f70",
+                                    "source":{
+                                      "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
+                                      "side":"right",
+                                      "offset":480.0
+                                    },
+                                    "dest":{
+                                      "state":"9c0dfddd-d0c2-4c85-997b-9e023ca3504c",
+                                      "side":"left",
+                                      "offset":10.0
+                                    },
+                                    "text-block":{
+                                      "x":30.0,
+                                      "y":-60.0,
+                                      "w":410.0,
+                                      "h":50.0
+                                    },
+                                    "vertices":[
+                                    ],
+                                    "guards":[
+                                      {
+                                        "action-id":"b98c0ef6-9ef8-475e-9d48-e9fcbd026772",
+                                        "id":"3c582656-9824-434f-ae26-62f3afc3036c"
+                                      }
+                                    ],
+                                    "actions":[
+                                      {
+                                        "action-id":"bc533db2-1532-42d2-ae31-55bf68a6dc63",
+                                        "id":"eb6be828-bd3e-4e2f-8a95-cfbe92671822"
+                                      }
+                                    ],
+                                    "state-condition":[
+                                    ]
                                   }
                                 ]
                               },
@@ -6035,6 +6078,24 @@
                                 "height":20.0,
                                 "x":470.0,
                                 "y":390.0,
+                                "orientation":0,
+                                "entries":[
+                                ],
+                                "exits":[
+                                ],
+                                "region":[
+                                ],
+                                "transitions":[
+                                ]
+                              },
+                              {
+                                "id":"9c0dfddd-d0c2-4c85-997b-9e023ca3504c",
+                                "name":"Final",
+                                "kind":"final",
+                                "width":20.0,
+                                "height":20.0,
+                                "x":470.0,
+                                "y":580.0,
                                 "orientation":0,
                                 "entries":[
                                 ],
