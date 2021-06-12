@@ -99,7 +99,7 @@ static void debug_reset(struct ufsm_machine *m)
     printf (" -- | RESET      | %s\n", m->name);
 }
 
-static void debug_entry_exit(const struct ufsm_entry_exit *e)
+static void debug_entry_exit(const struct ufsm_action *e)
 {
     printf ("    | Call       | %s\n", e->name);
 }

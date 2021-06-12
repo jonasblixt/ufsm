@@ -138,12 +138,12 @@ static void generate_entry_and_exits(FILE *fp, struct ufsmm_state *s)
 
     TAILQ_FOREACH(ar, &s->entries, tailq) {
         uu_to_str(ar->id, uu_str);
-        fprintf(fp, "const struct ufsm_entry_exit entry_%s;\n", uu_str);
+        fprintf(fp, "const struct ufsm_action entry_%s;\n", uu_str);
     }
 
     TAILQ_FOREACH(ar, &s->entries, tailq) {
         uu_to_str(ar->id, uu_str);
-        fprintf(fp, "const struct ufsm_entry_exit entry_%s = {\n", uu_str);
+        fprintf(fp, "const struct ufsm_action entry_%s = {\n", uu_str);
         fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
         fprintf(fp, "    .f = &%s,\n", ar->act->name);
         if (TAILQ_NEXT(ar, tailq)) {
@@ -161,12 +161,12 @@ static void generate_entry_and_exits(FILE *fp, struct ufsmm_state *s)
 
     TAILQ_FOREACH(ar, &s->exits, tailq) {
         uu_to_str(ar->id, uu_str);
-        fprintf(fp, "const struct ufsm_entry_exit exit_%s;\n", uu_str);
+        fprintf(fp, "const struct ufsm_action exit_%s;\n", uu_str);
     }
 
     TAILQ_FOREACH(ar, &s->exits, tailq) {
         uu_to_str(ar->id, uu_str);
-        fprintf(fp, "const struct ufsm_entry_exit exit_%s = {\n", uu_str);
+        fprintf(fp, "const struct ufsm_action exit_%s = {\n", uu_str);
         fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
         fprintf(fp, "    .f = &%s,\n", ar->act->name);
         if (TAILQ_NEXT(ar, tailq)) {

@@ -467,8 +467,6 @@ void canvas_move_state_begin(void *context)
 
     L_DEBUG("%s: ", __func__);
 
-    //priv->sx = priv->px - s->x;
-    //priv->sy = priv->py - s->y;
     ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
 
     /* Store current position and size */
@@ -536,8 +534,6 @@ void canvas_move_state(void *context)
             /* Update vertice coordinates on outgoing transitions */
             struct ufsmm_transition *t;
             TAILQ_FOREACH(t, &s->transitions, tailq) {
-                t->text_block_coords.x += diff_x;
-                t->text_block_coords.y += diff_y;
                 struct ufsmm_vertice *v;
                 TAILQ_FOREACH(v, &t->vertices, tailq) {
                     v->x += diff_x;

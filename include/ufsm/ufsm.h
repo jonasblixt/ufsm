@@ -48,11 +48,9 @@ struct ufsm_action;
 struct ufsm_guard;
 struct ufsm_transition;
 struct ufsm_region;
-struct ufsm_entry_exit;
 
 typedef bool (*ufsm_guard_func_t) (void *context);
 typedef void (*ufsm_action_func_t) (void *context);
-typedef void (*ufsm_entry_exit_func_t) (void *context);
 
 /* Debug callbacks */
 typedef void (*ufsm_debug_event_t) (int ev);
@@ -63,7 +61,7 @@ typedef void (*ufsm_debug_guard_t) (const struct ufsm_guard *guard, bool result)
 typedef void (*ufsm_debug_action_t) (const struct ufsm_action *action);
 typedef void (*ufsm_debug_enter_state_t) (const struct ufsm_state *s);
 typedef void (*ufsm_debug_exit_state_t) (const struct ufsm_state *s);
-typedef void (*ufsm_debug_entry_exit_t) (const struct ufsm_entry_exit *f);
+typedef void (*ufsm_debug_entry_exit_t) (const struct ufsm_action *action);
 typedef void (*ufsm_debug_reset_t) (struct ufsm_machine *m);
 
 enum ufsm_transition_kind
@@ -110,13 +108,6 @@ struct ufsm_guard
     const struct ufsm_guard *next;
 };
 
-struct ufsm_entry_exit
-{
-    const char *name;
-    const ufsm_entry_exit_func_t f;
-    const struct ufsm_entry_exit *next;
-};
-
 struct ufsm_trigger
 {
     const char *name;
@@ -150,8 +141,8 @@ struct ufsm_state
     const char *name;
     const enum ufsm_state_kind kind;
     const struct ufsm_transition *transition;
-    const struct ufsm_entry_exit *entry;
-    const struct ufsm_entry_exit *exit;
+    const struct ufsm_action *entry;
+    const struct ufsm_action *exit;
     const struct ufsm_region *region;
     const struct ufsm_region *parent_region;
     const struct ufsm_state *next;
