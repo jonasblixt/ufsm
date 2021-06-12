@@ -89,8 +89,16 @@ static int serialize_action_list(struct ufsmm_action_refs *list,
         action = json_object_new_object();
         uuid_unparse(tmp->id, uuid_str);
         json_object_object_add(action, "id", json_object_new_string(uuid_str));
-        uuid_unparse(tmp->act->id, uuid_str);
-        json_object_object_add(action, "action-id", json_object_new_string(uuid_str));
+        json_object_object_add(action, "kind", json_object_new_int(tmp->kind));
+
+        if (tmp->kind == UFSMM_ACTION_REF_NORMAL) {
+            uuid_unparse(tmp->act->id, uuid_str);
+            json_object_object_add(action, "action-id", json_object_new_string(uuid_str));
+        } else {
+            uuid_unparse(tmp->signal->id, uuid_str);
+            json_object_object_add(action, "signal-id", json_object_new_string(uuid_str));
+        }
+
         json_object_array_add(output, action);
     }
 
@@ -321,13 +329,29 @@ int ufsmm_state_deserialize(struct ufsmm_model *model,
             j_entry = json_object_array_get_idx(j_entries, n);
             json_object *j_entry_id;
             json_object *j_id;
+            json_object *j_kind;
             uuid_t entry_id;
             uuid_t id_uu;
-            if (json_object_object_get_ex(j_entry, "action-id", &j_entry_id)) {
+            enum ufsmm_action_ref_kind kind = UFSMM_ACTION_REF_NORMAL;
+
+            if (json_object_object_get_ex(j_entry, "kind", &j_kind)) {
+                kind = json_object_get_int(j_kind);
+            }
+
+            if (kind == UFSMM_ACTION_REF_NORMAL) {
+                json_object_object_get_ex(j_entry, "action-id", &j_entry_id);
                 json_object_object_get_ex(j_entry, "id", &j_id);
                 uuid_parse(json_object_get_string(j_id), id_uu);
                 uuid_parse(json_object_get_string(j_entry_id), entry_id);
                 rc = ufsmm_state_add_entry(model, state, id_uu, entry_id);
+                if (rc != UFSMM_OK)
+                    goto err_free_name_out;
+            } else if (kind == UFSMM_ACTION_REF_SIGNAL) {
+                json_object_object_get_ex(j_entry, "signal-id", &j_entry_id);
+                json_object_object_get_ex(j_entry, "id", &j_id);
+                uuid_parse(json_object_get_string(j_id), id_uu);
+                uuid_parse(json_object_get_string(j_entry_id), entry_id);
+                rc = ufsmm_state_add_entry_signal(model, state, id_uu, entry_id);
                 if (rc != UFSMM_OK)
                     goto err_free_name_out;
             }
@@ -343,13 +367,29 @@ int ufsmm_state_deserialize(struct ufsmm_model *model,
             j_exit = json_object_array_get_idx(j_exits, n);
             json_object *j_exit_id;
             json_object *j_id;
+            json_object *j_kind;
             uuid_t exit_id;
             uuid_t id_uu;
-            if (json_object_object_get_ex(j_exit, "action-id", &j_exit_id)) {
+            enum ufsmm_action_ref_kind kind = UFSMM_ACTION_REF_NORMAL;
+
+            if (json_object_object_get_ex(j_exit, "kind", &j_kind)) {
+                kind = json_object_get_int(j_kind);
+            }
+
+            if (kind == UFSMM_ACTION_REF_NORMAL) {
+                json_object_object_get_ex(j_exit, "action-id", &j_exit_id);
                 json_object_object_get_ex(j_exit, "id", &j_id);
                 uuid_parse(json_object_get_string(j_id), id_uu);
                 uuid_parse(json_object_get_string(j_exit_id), exit_id);
                 rc = ufsmm_state_add_exit(model, state, id_uu, exit_id);
+                if (rc != UFSMM_OK)
+                    goto err_free_name_out;
+            } else if (kind == UFSMM_ACTION_REF_SIGNAL) {
+                json_object_object_get_ex(j_exit, "signal-id", &j_exit_id);
+                json_object_object_get_ex(j_exit, "id", &j_id);
+                uuid_parse(json_object_get_string(j_id), id_uu);
+                uuid_parse(json_object_get_string(j_exit_id), exit_id);
+                rc = ufsmm_state_add_exit_signal(model, state, id_uu, exit_id);
                 if (rc != UFSMM_OK)
                     goto err_free_name_out;
             }
@@ -425,6 +465,65 @@ int ufsmm_state_add_entry(struct ufsmm_model *model,
     action_ref->act = action;
     memcpy(action_ref->id, id, 16);
     TAILQ_INSERT_TAIL(&state->entries, action_ref, tailq);
+    return UFSMM_OK;
+}
+
+
+int ufsmm_state_add_entry_signal(struct ufsmm_model *model,
+                                 struct ufsmm_state *state,
+                                 uuid_t id,
+                                 uuid_t signal_id)
+{
+    struct ufsmm_trigger *trigger;
+    struct ufsmm_action_ref *action_ref;
+    int rc;
+
+    rc = ufsmm_model_get_trigger(model, signal_id, &trigger);
+
+    if (rc != UFSMM_OK) {
+        char uuid_str[37];
+        uuid_unparse(id, uuid_str);
+        L_ERR("Unkown trigger %s", uuid_str);
+        return rc;
+    }
+
+    L_DEBUG("Adding signal entry action '%s' to state '%s'", trigger->name, state->name);
+
+    action_ref = malloc(sizeof(struct ufsmm_action_ref));
+    memset(action_ref, 0, sizeof(*action_ref));
+    action_ref->kind = UFSMM_ACTION_REF_SIGNAL;
+    action_ref->signal = trigger;
+    memcpy(action_ref->id, id, 16);
+    TAILQ_INSERT_TAIL(&state->entries, action_ref, tailq);
+    return UFSMM_OK;
+}
+
+int ufsmm_state_add_exit_signal(struct ufsmm_model *model,
+                                 struct ufsmm_state *state,
+                                 uuid_t id,
+                                 uuid_t signal_id)
+{
+    struct ufsmm_trigger *trigger;
+    struct ufsmm_action_ref *action_ref;
+    int rc;
+
+    rc = ufsmm_model_get_trigger(model, signal_id, &trigger);
+
+    if (rc != UFSMM_OK) {
+        char uuid_str[37];
+        uuid_unparse(id, uuid_str);
+        L_ERR("Unkown trigger %s", uuid_str);
+        return rc;
+    }
+
+    L_DEBUG("Adding signal exit action '%s' to state '%s'", trigger->name, state->name);
+
+    action_ref = malloc(sizeof(struct ufsmm_action_ref));
+    memset(action_ref, 0, sizeof(*action_ref));
+    action_ref->signal = trigger;
+    action_ref->kind = UFSMM_ACTION_REF_SIGNAL;
+    memcpy(action_ref->id, id, 16);
+    TAILQ_INSERT_TAIL(&state->exits, action_ref, tailq);
     return UFSMM_OK;
 }
 

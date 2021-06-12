@@ -75,6 +75,12 @@ enum ufsmm_action_kind
     UFSMM_ACTION_GUARD,
 };
 
+enum ufsmm_action_ref_kind
+{
+    UFSMM_ACTION_REF_NORMAL,
+    UFSMM_ACTION_REF_SIGNAL,
+};
+
 enum ufsmm_side
 {
     UFSMM_SIDE_NONE,
@@ -114,7 +120,9 @@ struct ufsmm_action_ref
     uuid_t id;
     bool focus;
     double x, y, w, h; /* Support variables for the canvas */
+    enum ufsmm_action_ref_kind kind;
     struct ufsmm_action *act;
+    struct ufsmm_trigger *signal;
     TAILQ_ENTRY(ufsmm_action_ref) tailq;
 };
 
@@ -319,6 +327,16 @@ int ufsmm_state_add_exit(struct ufsmm_model *model,
                         uuid_t id,
                         uuid_t action_id);
 
+int ufsmm_state_add_entry_signal(struct ufsmm_model *model,
+                                 struct ufsmm_state *state,
+                                 uuid_t id,
+                                 uuid_t signal_id);
+
+int ufsmm_state_add_exit_signal(struct ufsmm_model *model,
+                                 struct ufsmm_state *state,
+                                 uuid_t id,
+                                 uuid_t signal_id);
+
 int ufsmm_state_delete_entry(struct ufsmm_state *state, uuid_t id);
 int ufsmm_state_delete_exit(struct ufsmm_state *state, uuid_t id);
 
@@ -377,6 +395,11 @@ int ufsmm_transition_add_action(struct ufsmm_model *model,
                                struct ufsmm_transition *transition,
                                uuid_t id,
                                uuid_t action_id);
+
+int ufsmm_transition_add_signal_action(struct ufsmm_model *model,
+                               struct ufsmm_transition *transition,
+                               uuid_t id,
+                               uuid_t signal_id);
 
 int ufsmm_transition_delete_action(struct ufsmm_transition *transition, uuid_t id);
 

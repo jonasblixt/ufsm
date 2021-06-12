@@ -4,7 +4,7 @@
 #include "test_ev_repeat_orth.gen.h"
 
 static bool flag_eB3, flag_xB3, flag_eB2, flag_xB2,flag_eB1, flag_xB1,
-            flag_eA1;
+            flag_eA1, flag_emitter;
 
 static void reset_flags(void)
 {
@@ -15,6 +15,7 @@ static void reset_flags(void)
     flag_eB1 = false;
     flag_xB1 = false;
     flag_eA1 = false;
+    flag_emitter = false;
 }
 
 void eB3(void *ctx)
@@ -52,12 +53,20 @@ void eA1(void *ctx)
     flag_eA1 = true;
 }
 
+void ufsm_signal(void *ctx, int ev)
+{
+    printf("Machine emitted event: %i\n", ev);
+    if (ev == 1)
+        flag_emitter = true;
+}
+
 int main(void)
 {
     int rc;
     struct ev_repeat_orth_machine machine;
     struct ufsm_machine *m = &machine.machine;
     ufsm_debug_machine(&machine.machine);
+    m->emit_signal = ufsm_signal;
 
     reset_flags();
 
@@ -78,5 +87,6 @@ int main(void)
             flag_xB1 && flag_xB2 && !flag_xB3 &&
             "Exit B2 enter B3");
 
+    assert(flag_emitter);
     return 0;
 }

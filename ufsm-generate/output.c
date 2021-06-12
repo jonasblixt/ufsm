@@ -62,8 +62,18 @@ static void generate_transitions(FILE *fp, struct ufsmm_state *s)
         TAILQ_FOREACH(ar, &t->actions, tailq) {
             uu_to_str(ar->id, uu_str);
             fprintf(fp, "const struct ufsm_action a_%s = {\n", uu_str);
-            fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
-            fprintf(fp, "    .f = &%s,\n", ar->act->name);
+            if (ar->kind == UFSMM_ACTION_REF_NORMAL) {
+                fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
+                fprintf(fp, "    .f = &%s,\n", ar->act->name);
+                fprintf(fp, "    .signal = NULL,\n");
+                fprintf(fp, "    .kind = UFSM_ACTION_KIND_NORMAL,\n");
+            } else if (ar->kind == UFSMM_ACTION_REF_SIGNAL) {
+                fprintf(fp, "    .name = \"%s\",\n", ar->signal->name);
+                fprintf(fp, "    .f = NULL,\n");
+                uu_to_str(ar->signal->id, uu_str);
+                fprintf(fp, "    .signal = &trigger_%s,\n", uu_str);
+                fprintf(fp, "    .kind = UFSM_ACTION_KIND_SIGNAL,\n");
+            }
             if (TAILQ_NEXT(ar, tailq)) {
                 uu_to_str(TAILQ_NEXT(ar, tailq)->id, uu_str);
                 fprintf(fp, "    .next = &a_%s,\n", uu_str);
@@ -144,8 +154,20 @@ static void generate_entry_and_exits(FILE *fp, struct ufsmm_state *s)
     TAILQ_FOREACH(ar, &s->entries, tailq) {
         uu_to_str(ar->id, uu_str);
         fprintf(fp, "const struct ufsm_action entry_%s = {\n", uu_str);
-        fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
-        fprintf(fp, "    .f = &%s,\n", ar->act->name);
+
+        if (ar->kind == UFSMM_ACTION_REF_NORMAL) {
+            fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
+            fprintf(fp, "    .f = &%s,\n", ar->act->name);
+            fprintf(fp, "    .signal = NULL,\n");
+            fprintf(fp, "    .kind = UFSM_ACTION_KIND_NORMAL,\n");
+        } else if (ar->kind == UFSMM_ACTION_REF_SIGNAL) {
+            fprintf(fp, "    .name = \"%s\",\n", ar->signal->name);
+            fprintf(fp, "    .f = NULL,\n");
+            uu_to_str(ar->signal->id, uu_str);
+            fprintf(fp, "    .signal = &trigger_%s,\n", uu_str);
+            fprintf(fp, "    .kind = UFSM_ACTION_KIND_SIGNAL,\n");
+        }
+
         if (TAILQ_NEXT(ar, tailq)) {
             uu_to_str(TAILQ_NEXT(ar, tailq)->id, uu_str);
             fprintf(fp, "    .next = &entry_%s,\n", uu_str);
@@ -167,8 +189,18 @@ static void generate_entry_and_exits(FILE *fp, struct ufsmm_state *s)
     TAILQ_FOREACH(ar, &s->exits, tailq) {
         uu_to_str(ar->id, uu_str);
         fprintf(fp, "const struct ufsm_action exit_%s = {\n", uu_str);
-        fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
-        fprintf(fp, "    .f = &%s,\n", ar->act->name);
+        if (ar->kind == UFSMM_ACTION_REF_NORMAL) {
+            fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
+            fprintf(fp, "    .f = &%s,\n", ar->act->name);
+            fprintf(fp, "    .signal = NULL,\n");
+            fprintf(fp, "    .kind = UFSM_ACTION_KIND_NORMAL,\n");
+        } else if (ar->kind == UFSMM_ACTION_REF_SIGNAL) {
+            fprintf(fp, "    .name = \"%s\",\n", ar->signal->name);
+            fprintf(fp, "    .f = NULL,\n");
+            uu_to_str(ar->signal->id, uu_str);
+            fprintf(fp, "    .signal = &trigger_%s,\n", uu_str);
+            fprintf(fp, "    .kind = UFSM_ACTION_KIND_SIGNAL,\n");
+        }
         if (TAILQ_NEXT(ar, tailq)) {
             uu_to_str(TAILQ_NEXT(ar, tailq)->id, uu_str);
             fprintf(fp, "    .next = &exit_%s,\n", uu_str);

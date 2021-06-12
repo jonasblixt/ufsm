@@ -296,19 +296,36 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
                 json_object *j_action;
                 json_object *j_action_id;
                 json_object *j_id;
+                json_object *j_kind;
                 uuid_t action_uu;
                 uuid_t id_uu;
+                enum ufsmm_action_ref_kind kind = UFSMM_ACTION_REF_NORMAL;
 
                 j_action = json_object_array_get_idx(j_actions, n);
 
-                if (json_object_object_get_ex(j_action, "action-id", &j_action_id)) {
-                    json_object_object_get_ex(j_action, "id", &j_id);
-                    uuid_parse(json_object_get_string(j_id), id_uu);
-                    uuid_parse(json_object_get_string(j_action_id), action_uu);
-                    rc = ufsmm_transition_add_action(model, transition, id_uu,
-                                                    action_uu);
-                    if (rc != UFSMM_OK)
-                        goto err_out;
+                if (json_object_object_get_ex(j_action, "kind", &j_kind))
+                    kind = json_object_get_int(j_kind);
+
+                if (kind == UFSMM_ACTION_REF_NORMAL) {
+                    if (json_object_object_get_ex(j_action, "action-id", &j_action_id)) {
+                        json_object_object_get_ex(j_action, "id", &j_id);
+                        uuid_parse(json_object_get_string(j_id), id_uu);
+                        uuid_parse(json_object_get_string(j_action_id), action_uu);
+                        rc = ufsmm_transition_add_action(model, transition, id_uu,
+                                                        action_uu);
+                        if (rc != UFSMM_OK)
+                            goto err_out;
+                    }
+                } else if (kind == UFSMM_ACTION_REF_SIGNAL) {
+                    if (json_object_object_get_ex(j_action, "signal-id", &j_action_id)) {
+                        json_object_object_get_ex(j_action, "id", &j_id);
+                        uuid_parse(json_object_get_string(j_id), id_uu);
+                        uuid_parse(json_object_get_string(j_action_id), action_uu);
+                        rc = ufsmm_transition_add_signal_action(model, transition, id_uu,
+                                                        action_uu);
+                        if (rc != UFSMM_OK)
+                            goto err_out;
+                    }
                 }
             }
         }
@@ -361,9 +378,15 @@ static int serialize_action_list(struct ufsmm_action_refs *list,
     struct ufsmm_action_ref *item;
 
     TAILQ_FOREACH(item, list, tailq) {
-        uuid_unparse(item->act->id, uuid_str);
         action = json_object_new_object();
-        json_object_object_add(action, "action-id", json_object_new_string(uuid_str));
+        if (item->kind == UFSMM_ACTION_REF_NORMAL) {
+            uuid_unparse(item->act->id, uuid_str);
+            json_object_object_add(action, "action-id", json_object_new_string(uuid_str));
+        } else {
+            uuid_unparse(item->signal->id, uuid_str);
+            json_object_object_add(action, "signal-id", json_object_new_string(uuid_str));
+        }
+        json_object_object_add(action, "kind", json_object_new_int(item->kind));
         uuid_unparse(item->id, uuid_str);
         json_object_object_add(action, "id", json_object_new_string(uuid_str));
         json_object_array_add(output, action);
@@ -653,6 +676,35 @@ int ufsmm_transition_add_action(struct ufsmm_model *model,
     aref = malloc(sizeof(struct ufsmm_action_ref));
     memset(aref, 0, sizeof(*aref));
     aref->act = action;
+    memcpy(aref->id, id, 16);
+    TAILQ_INSERT_TAIL(&transition->actions, aref, tailq);
+    return UFSMM_OK;
+}
+
+int ufsmm_transition_add_signal_action(struct ufsmm_model *model,
+                               struct ufsmm_transition *transition,
+                               uuid_t id,
+                               uuid_t signal_id)
+{
+    struct ufsmm_trigger *trigger;
+    struct ufsmm_action_ref *aref;
+    int rc;
+
+    rc = ufsmm_model_get_trigger(model, signal_id, &trigger);
+
+    if (rc != UFSMM_OK) {
+        char uuid_str[37];
+        uuid_unparse(id, uuid_str);
+        L_ERR("Unkown signal %s", uuid_str);
+        return rc;
+    }
+
+    L_DEBUG("Adding action signal '%s' to transition", trigger->name);
+
+    aref = malloc(sizeof(struct ufsmm_action_ref));
+    memset(aref, 0, sizeof(*aref));
+    aref->signal = trigger;
+    aref->kind = UFSMM_ACTION_REF_SIGNAL;
     memcpy(aref->id, id, 16);
     TAILQ_INSERT_TAIL(&transition->actions, aref, tailq);
     return UFSMM_OK;

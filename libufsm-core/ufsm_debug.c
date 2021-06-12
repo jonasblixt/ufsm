@@ -76,7 +76,12 @@ static void debug_event(int ev)
 
 static void debug_action(const struct ufsm_action *a)
 {
-    printf ("    | Action     | %s()\n",a->name);
+    if (a->kind == UFSM_ACTION_KIND_NORMAL)
+        printf("    | Action     | %s()\n", a->name);
+    else if (a->kind == UFSM_ACTION_KIND_SIGNAL)
+        printf("    | Signal     | %s\n", a->signal->name);
+    else
+        printf("    | Unknown action\n");
 }
 
 static void debug_guard(const struct ufsm_guard *g, bool result) 

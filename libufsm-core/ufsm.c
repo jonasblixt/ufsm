@@ -138,7 +138,14 @@ static int ufsm_enter_state(struct ufsm_machine *m, const struct ufsm_state *s)
     for (const struct ufsm_action *e = s->entry; e; e = e->next) {
         if (m->debug_entry_exit)
             m->debug_entry_exit(e);
-        e->f(m->context);
+
+        if (e->kind == UFSM_ACTION_KIND_NORMAL) {
+            e->f(m->context);
+        } else if (e->kind == UFSM_ACTION_KIND_SIGNAL) {
+            if (m->emit_signal) {
+                m->emit_signal(m->context, e->signal->trigger);
+            }
+        }
     }
 
     /* If it's a normal state, first asume that it can complete */
@@ -176,7 +183,14 @@ inline static void ufsm_leave_state(struct ufsm_machine *m,
     for (const struct ufsm_action *e = s->exit; e; e = e->next) {
         if (m->debug_entry_exit)
             m->debug_entry_exit(e);
-        e->f(m->context);
+
+        if (e->kind == UFSM_ACTION_KIND_NORMAL) {
+            e->f(m->context);
+        } else if (e->kind == UFSM_ACTION_KIND_SIGNAL) {
+            if (m->emit_signal) {
+                m->emit_signal(m->context, e->signal->trigger);
+            }
+        }
     }
 }
 
@@ -214,7 +228,13 @@ inline static void ufsm_execute_actions(struct ufsm_machine *m,
         if (m->debug_action)
             m->debug_action(a);
 
-        a->f(m->context);
+        if (a->kind == UFSM_ACTION_KIND_NORMAL) {
+            a->f(m->context);
+        } else if (a->kind == UFSM_ACTION_KIND_SIGNAL) {
+            if (m->emit_signal) {
+                m->emit_signal(m->context, a->signal->trigger);
+            }
+        }
     }
 }
 

@@ -305,7 +305,7 @@ TEST(delete_entry_action_from_state)
     ASSERT(aref != NULL);
     ASSERT(aref->act != NULL);
 
-    rc = ufsmm_state_delete_entry(a, aref->act->id);
+    rc = ufsmm_state_delete_entry(a, aref->id);
     ASSERT_EQ(rc, UFSMM_OK);
 
     rc = ufsmm_model_write("test_delete_entry_from_state.ufsm", model);
@@ -384,7 +384,7 @@ TEST(multiple_actions1)
     ASSERT(aref != NULL);
     ASSERT(aref->act != NULL);
 
-    rc = ufsmm_state_delete_entry(a, TAILQ_NEXT(aref, tailq)->act->id);
+    rc = ufsmm_state_delete_entry(a, TAILQ_NEXT(aref, tailq)->id);
     ASSERT_EQ(rc, UFSMM_OK);
 
     rc = ufsmm_model_write("test_multiple_actions1_1.ufsm", model);
@@ -404,7 +404,7 @@ TEST(multiple_actions1)
     ASSERT(aref != NULL);
     ASSERT(aref->act != NULL);
 
-    rc = ufsmm_state_delete_entry(a, aref->act->id);
+    rc = ufsmm_state_delete_entry(a, aref->id);
     ASSERT_EQ(rc, UFSMM_OK);
 
     rc = ufsmm_model_write("test_multiple_actions1_2.ufsm", model);
@@ -424,7 +424,7 @@ TEST(multiple_actions1)
     ASSERT(aref != NULL);
     ASSERT(aref->act != NULL);
 
-    rc = ufsmm_state_delete_entry(a, aref->act->id);
+    rc = ufsmm_state_delete_entry(a, aref->id);
     ASSERT_EQ(rc, UFSMM_OK);
 
     rc = ufsmm_model_write("test_multiple_actions1_3.ufsm", model);

@@ -163,7 +163,6 @@ void canvas_check_action_func(void *context)
         /* Check action functions */
         TAILQ_FOREACH(ar, &s->entries, tailq) {
             if (point_in_box2(priv->px, priv->py, ar->x + r->ox, ar->y + r->oy, ar->w, ar->h)) {
-                L_DEBUG("%s selected", ar->act->name);
                 priv->selected_aref = ar;
                 priv->selection = UFSMM_SELECTION_ENTRY;
                 ar->focus = true;
@@ -174,7 +173,6 @@ void canvas_check_action_func(void *context)
 
         TAILQ_FOREACH(ar, &s->exits, tailq) {
             if (point_in_box2(priv->px, priv->py, ar->x + r->ox, ar->y + r->oy, ar->w, ar->h)) {
-                L_DEBUG("%s selected", ar->act->name);
                 priv->selected_aref = ar;
                 priv->selection = UFSMM_SELECTION_EXIT;
                 ar->focus = true;
@@ -868,7 +866,7 @@ void canvas_delete_guard(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     ufsmm_transition_delete_guard(priv->selected_transition,
-                                  priv->selected_aref->act->id);
+                                  priv->selected_aref->id);
     priv->redraw = true;
 }
 
@@ -876,7 +874,7 @@ void canvas_delete_action(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     ufsmm_transition_delete_action(priv->selected_transition,
-                                   priv->selected_aref->act->id);
+                                   priv->selected_aref->id);
     priv->redraw = true;
 }
 
@@ -895,7 +893,7 @@ void canvas_delete_entry(void *context)
     struct ufsmm_action_ref *ar = priv->selected_aref;
     L_DEBUG("Deleting entry");
 
-    ufsmm_state_delete_entry(s, ar->act->id);
+    ufsmm_state_delete_entry(s, ar->id);
     priv->redraw = true;
 }
 
@@ -907,7 +905,7 @@ void canvas_delete_exit(void *context)
 
     L_DEBUG("Deleting exit");
 
-    ufsmm_state_delete_exit(s, ar->act->id);
+    ufsmm_state_delete_exit(s, ar->id);
     priv->redraw = true;
 }
 

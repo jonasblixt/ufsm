@@ -6,6 +6,10 @@
     {
       "name":"EV",
       "id":"d5514290-cfdc-4245-ba34-7a8b8f12e537"
+    },
+    {
+      "name":"TestSignal",
+      "id":"d53d75b9-69a4-4491-be91-6f16180e9e34"
     }
   ],
   "actions":[
@@ -84,12 +88,14 @@
                 "entries":[
                   {
                     "id":"0a806cd7-cca4-4ed0-88bc-7d7884782df1",
+                    "kind":0,
                     "action-id":"bc9bb136-ee29-41b2-ad0e-136a1a8cd62c"
                   }
                 ],
                 "exits":[
                   {
                     "id":"382f6481-1d6c-4ca3-a5db-20ac541f41e2",
+                    "kind":0,
                     "action-id":"00cce644-f9a1-41d3-ac0c-522bf88e8386"
                   }
                 ],
@@ -138,12 +144,19 @@
                 "entries":[
                   {
                     "id":"12a7ded3-7980-45ca-a380-afd9c45fabe8",
+                    "kind":0,
                     "action-id":"f3f42cb5-9a1d-4ff9-8881-99d46a53c402"
+                  },
+                  {
+                    "id":"f0017844-cf93-46e1-94ee-205ca34161aa",
+                    "kind":1,
+                    "signal-id":"d53d75b9-69a4-4491-be91-6f16180e9e34"
                   }
                 ],
                 "exits":[
                   {
                     "id":"c8b3ec85-316c-460c-b263-f686dca5e1d9",
+                    "kind":0,
                     "action-id":"f01d54dd-04c6-4e96-bbd7-5f41dabbf0c2"
                   }
                 ],
@@ -192,12 +205,14 @@
                 "entries":[
                   {
                     "id":"900a130e-f50b-4692-b31c-c063a5c19bca",
+                    "kind":0,
                     "action-id":"d9947a3a-7ba4-4e67-a04b-9bb340b349f4"
                   }
                 ],
                 "exits":[
                   {
                     "id":"3fd0d001-1bdd-4fdc-ad10-76551f408c42",
+                    "kind":0,
                     "action-id":"ae8654e0-f326-46fb-bc54-86eeddd523d1"
                   }
                 ],
@@ -271,6 +286,7 @@
                 "entries":[
                   {
                     "id":"7d89f3eb-5ba1-40d6-9e9a-3ba56bd20ebb",
+                    "kind":0,
                     "action-id":"9ad06d2b-7f3b-4bb4-995f-759d9ba54913"
                   }
                 ],

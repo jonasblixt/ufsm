@@ -530,7 +530,6 @@ static int serialize_action_list(struct ufsmm_actions *input,
         name = json_object_new_string(item->name);
         uuid_unparse(item->id, uuid_str);
         id = json_object_new_string(uuid_str);
-
         json_object_object_add(action, "name", name);
         json_object_object_add(action, "id", id);
         json_object_array_add(actions, action);
@@ -1572,7 +1571,7 @@ int delete_action_ref(struct ufsmm_action_refs *list, uuid_t id)
 
     for (item = TAILQ_FIRST(list); item != NULL; item = tmp_item) {
         tmp_item = TAILQ_NEXT(item, tailq);
-        if (uuid_compare(item->act->id, id) == 0) {
+        if (uuid_compare(item->id, id) == 0) {
             TAILQ_REMOVE(list, item, tailq);
             free(item);
             return UFSMM_OK;

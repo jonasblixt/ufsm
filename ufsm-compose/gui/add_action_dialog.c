@@ -6,10 +6,12 @@ enum
   COLUMN_MATCH_RATING,
   COLUMN_NAME,
   COLUMN_ACTION_REF,
+  COLUMN_SIGNAL,
   NUM_COLUMNS
 };
 
 struct ufsmm_action *selected_action;
+struct ufsmm_trigger *selected_signal;
 
 static void input_changed(GtkEntry *entry, gpointer user_data)
 {
@@ -104,6 +106,8 @@ static gboolean view_selection_func(GtkTreeSelection *selection,
         if (!path_currently_selected) {
             gtk_tree_model_get(model, &iter, COLUMN_ACTION_REF,
                                 &selected_action, -1);
+            gtk_tree_model_get(model, &iter, COLUMN_SIGNAL,
+                                &selected_signal, -1);
         }
 
         g_free(name);
@@ -127,8 +131,13 @@ static void list_row_activated_cb(GtkTreeView        *treeview,
 
        gtk_tree_model_get(model, &iter, COLUMN_NAME, &name, -1);
        gtk_tree_model_get(model, &iter, COLUMN_ACTION_REF, &selected_action, -1);
+       gtk_tree_model_get(model, &iter, COLUMN_SIGNAL, &selected_signal, -1);
 
-       g_print ("Selected action '%s'\n", name);
+       if (selected_action)
+           g_print ("Selected action '%s'\n", name);
+       if (selected_signal)
+           g_print ("Selected signal '^%s'\n", name);
+
        gtk_dialog_response(GTK_DIALOG(userdata), GTK_RESPONSE_ACCEPT);
        g_free(name);
     }
@@ -149,6 +158,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
     struct ufsmm_transition *transition = (struct ufsmm_transition *) p_input;
 
     selected_action = NULL;
+    selected_signal = NULL;
 
     switch (kind) {
         case UFSMM_ACTION_GUARD:
@@ -196,6 +206,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
     store = gtk_list_store_new (NUM_COLUMNS,
                                 G_TYPE_UINT,
                                 G_TYPE_STRING,
+                                G_TYPE_POINTER,
                                 G_TYPE_POINTER);
 
     TAILQ_FOREACH(a, list, tailq) {
@@ -205,6 +216,20 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                             COLUMN_NAME, a->name,
                             COLUMN_ACTION_REF, a,
                             -1);
+    }
+
+    if (kind != UFSMM_ACTION_GUARD) {
+        struct ufsmm_trigger *t;
+        TAILQ_FOREACH(t, &model->triggers, tailq) {
+            char tmp_buf[1024];
+            gtk_list_store_append(store, &iter);
+            snprintf(tmp_buf, sizeof(tmp_buf), "^%s", t->name);
+            gtk_list_store_set (store, &iter,
+                                COLUMN_MATCH_RATING, 0,
+                                COLUMN_NAME, tmp_buf,
+                                COLUMN_SIGNAL, t,
+                                -1);
+        }
     }
 
     gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store),
@@ -256,6 +281,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                                G_OBJECT(dialog));
 
     int result = gtk_dialog_run(GTK_DIALOG(dialog));
+    const char *action_name = gtk_entry_get_text(GTK_ENTRY(input));
 
     if (selected_action && (result == GTK_RESPONSE_ACCEPT)) {
         uuid_t id;
@@ -284,10 +310,9 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                 rc = -1;
             break;
         }
-    } else if (result == 1) { /* Create new action */
+    } else if ((result == 1) && (action_name[0] != '^')) { /* Create new action */
         uuid_t id;
         uuid_generate_random(id);
-        const char *action_name = gtk_entry_get_text(GTK_ENTRY(input));
 
         rc = ufsmm_model_get_action_by_name(model, action_name, kind,
                                                 &selected_action);
@@ -315,6 +340,53 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
             case UFSMM_ACTION_GUARD:
                 rc = ufsmm_transition_add_guard(model, transition, id,
                                                     selected_action->id);
+            break;
+            default:
+                rc = -1;
+            break;
+        }
+    } else if (selected_signal && (result == GTK_RESPONSE_ACCEPT)) {
+        uuid_t id;
+        uuid_generate_random(id);
+
+        rc = 0;
+
+        switch (kind) {
+            case UFSMM_ACTION_ENTRY:
+                rc = ufsmm_state_add_entry_signal(model, state, id,
+                                                selected_signal->id);
+            break;
+            case UFSMM_ACTION_EXIT:
+                rc = ufsmm_state_add_exit_signal(model, state, id,
+                                                selected_signal->id);
+            break;
+            case UFSMM_ACTION_ACTION:
+                rc = ufsmm_transition_add_signal_action(model, transition, id,
+                                                    selected_signal->id);
+            break;
+            default:
+                rc = -1;
+            break;
+        }
+    } else if (result == 1) {
+        uuid_t id;
+        uuid_generate_random(id);
+
+        ufsmm_model_add_trigger(model, &action_name[1], &selected_signal);
+        rc = 0;
+
+        switch (kind) {
+            case UFSMM_ACTION_ENTRY:
+                rc = ufsmm_state_add_entry_signal(model, state, id,
+                                                selected_signal->id);
+            break;
+            case UFSMM_ACTION_EXIT:
+                rc = ufsmm_state_add_exit_signal(model, state, id,
+                                                selected_signal->id);
+            break;
+            case UFSMM_ACTION_ACTION:
+                rc = ufsmm_transition_add_signal_action(model, transition, id,
+                                                    selected_signal->id);
             break;
             default:
                 rc = -1;

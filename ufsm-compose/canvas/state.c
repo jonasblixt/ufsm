@@ -273,7 +273,6 @@ static int render_normal_state(struct ufsmm_canvas *canvas,
     cairo_text_extents_t extents;
     cairo_t *cr = canvas->cr;
 
-
     ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
 
     //cairo_set_source_rgb (cr, 1, 1, 1);
@@ -337,24 +336,19 @@ static int render_normal_state(struct ufsmm_canvas *canvas,
     cairo_save(cr);
     cairo_set_font_size (cr, 14);
     TAILQ_FOREACH(entry, &state->entries, tailq) {
-        snprintf(action_str_buf, sizeof(action_str_buf),
-                    "e/ %s()", entry->act->name);
-
+        if (entry->kind == UFSMM_ACTION_REF_NORMAL) {
+            snprintf(action_str_buf, sizeof(action_str_buf),
+                        "e/ %s()", entry->act->name);
+        } else {
+            snprintf(action_str_buf, sizeof(action_str_buf),
+                        "e/ ^%s", entry->signal->name);
+        }
         cairo_text_extents(cr, action_str_buf, &extents);
         entry->x = x + 10;
         entry->y = y + y_offset - extents.height;
         entry->w = extents.width;
         entry->h = extents.height;
 
-/*
- * Debug selection box for action function
-        cairo_save(cr);
-        ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
-        cairo_set_line_width(cr, 1);
-        cairo_rectangle(cr, entry->x, entry->y, entry->w, entry->h);
-        cairo_stroke(cr);
-        cairo_restore(cr);
-*/
         if (entry->focus)
             ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
         else
@@ -366,9 +360,13 @@ static int render_normal_state(struct ufsmm_canvas *canvas,
     }
 
     TAILQ_FOREACH(entry, &state->exits, tailq) {
-        snprintf(action_str_buf, sizeof(action_str_buf),
-                    "x/ %s()", entry->act->name);
-
+        if (entry->kind == UFSMM_ACTION_REF_NORMAL) {
+            snprintf(action_str_buf, sizeof(action_str_buf),
+                        "x/ %s()", entry->act->name);
+        } else if (entry->kind == UFSMM_ACTION_REF_SIGNAL) {
+            snprintf(action_str_buf, sizeof(action_str_buf),
+                        "x/ ^%s", entry->signal->name);
+        }
         cairo_text_extents(cr, action_str_buf, &extents);
         entry->x = x + 10;
         entry->y = y + y_offset - extents.height;

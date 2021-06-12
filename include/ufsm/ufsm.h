@@ -51,6 +51,7 @@ struct ufsm_region;
 
 typedef bool (*ufsm_guard_func_t) (void *context);
 typedef void (*ufsm_action_func_t) (void *context);
+typedef void (*ufsm_emit_signal_t) (void *context, int signal);
 
 /* Debug callbacks */
 typedef void (*ufsm_debug_event_t) (int ev);
@@ -63,7 +64,6 @@ typedef void (*ufsm_debug_enter_state_t) (const struct ufsm_state *s);
 typedef void (*ufsm_debug_exit_state_t) (const struct ufsm_state *s);
 typedef void (*ufsm_debug_entry_exit_t) (const struct ufsm_action *action);
 typedef void (*ufsm_debug_reset_t) (struct ufsm_machine *m);
-
 enum ufsm_transition_kind
 {
     UFSM_TRANSITION_EXTERNAL,
@@ -85,6 +85,12 @@ enum ufsm_state_kind
     UFSM_STATE_TERMINATE,
 };
 
+enum ufsm_action_kind
+{
+    UFSM_ACTION_KIND_NORMAL,
+    UFSM_ACTION_KIND_SIGNAL,
+};
+
 extern const char *ufsm_state_kinds[];
 
 struct ufsm_stack
@@ -94,10 +100,14 @@ struct ufsm_stack
     int pos;
 };
 
+struct ufsm_trigger;
+
 struct ufsm_action
 {
     const char *name;
+    enum ufsm_action_kind kind;
     const ufsm_action_func_t f;
+    const struct ufsm_trigger *signal;
     const struct ufsm_action *next;
 };
 
@@ -174,6 +184,7 @@ struct ufsm_machine
     ufsm_debug_exit_state_t debug_exit_state;
     ufsm_debug_reset_t debug_reset;
     ufsm_debug_entry_exit_t debug_entry_exit;
+    ufsm_emit_signal_t emit_signal;
     bool terminated;
     struct ufsm_stack stack;
     struct ufsm_stack stack2;

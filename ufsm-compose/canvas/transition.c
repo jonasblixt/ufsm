@@ -286,14 +286,27 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
     }
 
     TAILQ_FOREACH(ar, &t->actions, tailq) {
-        if ((ar == TAILQ_FIRST(&t->actions)) && TAILQ_NEXT(ar, tailq))
-            sprintf(text_buf, " / %s(), ", ar->act->name);
-        else if ((ar == TAILQ_FIRST(&t->actions)) && (TAILQ_NEXT(ar, tailq) == NULL))
-            sprintf(text_buf, " / %s()", ar->act->name);
-        else if (TAILQ_NEXT(ar, tailq))
-            sprintf(text_buf, "%s(), ", ar->act->name);
-        else
-            sprintf(text_buf, "%s()", ar->act->name);
+        if ((ar == TAILQ_FIRST(&t->actions)) && TAILQ_NEXT(ar, tailq)) {
+            if (ar->kind == UFSMM_ACTION_REF_NORMAL)
+                sprintf(text_buf, " / %s(), ", ar->act->name);
+            else if (ar->kind == UFSMM_ACTION_REF_SIGNAL)
+                sprintf(text_buf, " / ^%s, ", ar->signal->name);
+        } else if ((ar == TAILQ_FIRST(&t->actions)) && (TAILQ_NEXT(ar, tailq) == NULL)) {
+            if (ar->kind == UFSMM_ACTION_REF_NORMAL)
+                sprintf(text_buf, " / %s()", ar->act->name);
+            else if (ar->kind == UFSMM_ACTION_REF_SIGNAL)
+                sprintf(text_buf, " / ^%s", ar->signal->name);
+        } else if (TAILQ_NEXT(ar, tailq)) {
+            if (ar->kind == UFSMM_ACTION_REF_NORMAL)
+                sprintf(text_buf, "%s(), ", ar->act->name);
+            else if (ar->kind == UFSMM_ACTION_REF_SIGNAL)
+                sprintf(text_buf, "^%s, ", ar->signal->name);
+        } else {
+            if (ar->kind == UFSMM_ACTION_REF_NORMAL)
+                sprintf(text_buf, "%s()", ar->act->name);
+            else if (ar->kind == UFSMM_ACTION_REF_SIGNAL)
+                sprintf(text_buf, "^%s", ar->signal->name);
+        }
 
         cairo_text_extents (cr, text_buf, &extents);
         x_space -= (extents.width + 10);
