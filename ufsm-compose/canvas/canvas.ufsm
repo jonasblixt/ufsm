@@ -700,6 +700,14 @@
     {
       "name":"canvas_move_vertice_end",
       "id":"b5c7e06e-fcb2-4ed7-a9c9-9509bf28d83b"
+    },
+    {
+      "name":"canvas_mselect_begin",
+      "id":"6156604f-be00-4cc1-bb56-13f9891c4b4c"
+    },
+    {
+      "name":"canvas_mselect_end",
+      "id":"ae4dae7b-525c-4a41-b122-77f4d4f2aa77"
     }
   ],
   "entries":null,
@@ -842,6 +850,7 @@
                     "actions":[
                       {
                         "action-id":"fade869b-99e6-417b-abe0-aad7c74bca86",
+                        "kind":0,
                         "id":"75d67fbb-4c7b-49d3-8dca-37738d7ea3b9"
                       }
                     ],
@@ -960,6 +969,7 @@
                     "actions":[
                       {
                         "action-id":"1a74b850-3076-428f-b1d5-9036d9b01e5e",
+                        "kind":0,
                         "id":"c87a0df9-6b2e-4590-98e3-f575ecd05cca"
                       }
                     ],
@@ -1022,6 +1032,7 @@
                     "actions":[
                       {
                         "action-id":"df9610a5-59c0-4083-9b92-21707f6dc7f7",
+                        "kind":0,
                         "id":"a252ea9f-f2ba-413c-b730-01c00fa84297"
                       }
                     ],
@@ -1094,6 +1105,7 @@
                     "actions":[
                       {
                         "action-id":"f1885b45-d833-4e88-ab48-b4f8277c47af",
+                        "kind":0,
                         "id":"1b1dc80d-75ad-43c3-8f1c-2c43750bdc18"
                       }
                     ],
@@ -1196,6 +1208,7 @@
                     "actions":[
                       {
                         "action-id":"0c862570-bbd2-4218-bce8-89a11d850111",
+                        "kind":0,
                         "id":"17420595-e8e5-48a1-8ebc-c9c022f13feb"
                       }
                     ],
@@ -1319,6 +1332,7 @@
                             "actions":[
                               {
                                 "action-id":"584b7717-688b-4e30-9f39-0bcd044448fc",
+                                "kind":0,
                                 "id":"bd3cd067-12ad-477e-b047-e36dfbc3c52a"
                               }
                             ],
@@ -1443,12 +1457,14 @@
                                 "entries":[
                                   {
                                     "id":"08c94cc0-0a18-4eb9-83a4-bf9a9df4f983",
+                                    "kind":0,
                                     "action-id":"365b6c0c-785c-4a9c-9e7f-d7d8562568c7"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"9c6b24b7-e226-4645-a617-d4457ec3a775",
+                                    "kind":0,
                                     "action-id":"acb18561-1180-42f6-a66d-94d8b88c3a45"
                                   }
                                 ],
@@ -1471,6 +1487,7 @@
                                         "entries":[
                                           {
                                             "id":"8d4ccb86-5c93-4983-ac59-94f6717aa76c",
+                                            "kind":0,
                                             "action-id":"4975219d-42b0-4baf-8409-d06282bbe596"
                                           }
                                         ],
@@ -1620,6 +1637,7 @@
                                         "entries":[
                                           {
                                             "id":"2927b47a-6c28-4c87-ae88-205608a9d434",
+                                            "kind":0,
                                             "action-id":"c861d78a-1fdf-4cbc-9c75-706fd509824e"
                                           }
                                         ],
@@ -1654,6 +1672,7 @@
                                             "actions":[
                                               {
                                                 "action-id":"d9b9c445-6b31-43ff-86ce-ffdb00b56c1a",
+                                                "kind":0,
                                                 "id":"fe15cd35-324a-4763-87db-adcac9e4e25b"
                                               }
                                             ],
@@ -1761,12 +1780,14 @@
                                 "entries":[
                                   {
                                     "id":"1e0690ae-870d-4537-8a49-a9f8916f21a4",
+                                    "kind":0,
                                     "action-id":"ecf56b3a-33a1-4acf-bc27-5433aafd8885"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"4be28f39-1c2e-4de2-b29d-ca2e5dbae431",
+                                    "kind":0,
                                     "action-id":"1a060b96-008d-4fed-b070-74056a72ccd2"
                                   }
                                 ],
@@ -1807,10 +1828,10 @@
                                               "offset":40.0
                                             },
                                             "text-block":{
-                                              "x":340.0,
-                                              "y":60.0,
+                                              "x":30.0,
+                                              "y":-60.0,
                                               "w":250.0,
-                                              "h":70.0
+                                              "h":50.0
                                             },
                                             "vertices":[
                                             ],
@@ -1819,6 +1840,7 @@
                                             "actions":[
                                               {
                                                 "action-id":"a2855783-8b07-4e1c-a1ef-37c11decdccd",
+                                                "kind":0,
                                                 "id":"d195f7c4-cd2c-41b4-b90e-83b456687c4a"
                                               }
                                             ],
@@ -1839,6 +1861,7 @@
                                         "entries":[
                                           {
                                             "id":"858d6417-f584-4400-80a2-00d7a67588c2",
+                                            "kind":0,
                                             "action-id":"91436c14-578f-43c5-b4cd-df4e8904006f"
                                           }
                                         ],
@@ -1881,6 +1904,7 @@
                                             "actions":[
                                               {
                                                 "action-id":"dc1a2c53-06b5-49a3-adf8-c4802d8298d4",
+                                                "kind":0,
                                                 "id":"a85611d6-acab-4773-ab56-2fda4974fafb"
                                               }
                                             ],
@@ -1941,6 +1965,7 @@
                                             "actions":[
                                               {
                                                 "action-id":"4eb2fcfb-eaf1-4156-820e-d57131d842fb",
+                                                "kind":0,
                                                 "id":"bdc1b4f7-b299-42c8-a02e-5c3af366f374"
                                               }
                                             ],
@@ -1997,6 +2022,7 @@
                                         "entries":[
                                           {
                                             "id":"6e3efdc7-03ac-4a71-b11f-24328db796e1",
+                                            "kind":0,
                                             "action-id":"91436c14-578f-43c5-b4cd-df4e8904006f"
                                           }
                                         ],
@@ -2039,6 +2065,7 @@
                                             "actions":[
                                               {
                                                 "action-id":"4110bd55-137e-47c0-a970-6ce79c4a1d43",
+                                                "kind":0,
                                                 "id":"efabebbd-1be5-4078-882c-59d71c084ed0"
                                               }
                                             ],
@@ -2409,12 +2436,14 @@
                                     "guards":[
                                       {
                                         "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
+                                        "kind":0,
                                         "id":"b7e96bf8-74c7-4973-9671-ae7e7afe43e2"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"bde2d56a-b513-4c5e-b305-e8b45b3c5ebb",
+                                        "kind":0,
                                         "id":"0222a355-0e6d-491c-adfb-1ee421385ebe"
                                       }
                                     ],
@@ -2445,12 +2474,14 @@
                                     "guards":[
                                       {
                                         "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
+                                        "kind":0,
                                         "id":"4935ce45-f1df-4544-9ebd-740f19273ee1"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"7e9e9f52-a883-49d2-b2d2-7c2540f57235",
+                                        "kind":0,
                                         "id":"e7ac0279-26ce-42f1-907b-c6c79bc5ed17"
                                       }
                                     ],
@@ -2481,12 +2512,14 @@
                                     "guards":[
                                       {
                                         "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
+                                        "kind":0,
                                         "id":"ff4df5d6-129d-43a4-b1fe-a1d31a88cca7"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"99744aa8-a0e6-4d70-aa61-69b71d26500c",
+                                        "kind":0,
                                         "id":"c2ec4bfc-819c-4827-9fc6-09b867dcb484"
                                       }
                                     ],
@@ -2525,12 +2558,14 @@
                                     "guards":[
                                       {
                                         "action-id":"4fc9cd36-8433-4d7d-a182-0458175a8109",
+                                        "kind":0,
                                         "id":"5e162f2e-8a1d-4ada-9781-5dcc54b1a96d"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"9267ddf8-8ae9-4840-bb7d-81e354f9b8e1",
+                                        "kind":0,
                                         "id":"1d3c3e01-e163-4409-9bc3-5f2b4f836f6d"
                                       }
                                     ],
@@ -2573,12 +2608,14 @@
                                     "guards":[
                                       {
                                         "action-id":"4fc9cd36-8433-4d7d-a182-0458175a8109",
+                                        "kind":0,
                                         "id":"20e12c5f-fb74-4edd-bbfc-0b026e1d5cda"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"432c4323-43fb-47be-9f3b-03027e2ea70a",
+                                        "kind":0,
                                         "id":"69100478-837c-44d0-b471-4156f4e7d35d"
                                       }
                                     ],
@@ -2805,12 +2842,14 @@
                                     "guards":[
                                       {
                                         "action-id":"4fc9cd36-8433-4d7d-a182-0458175a8109",
+                                        "kind":0,
                                         "id":"82ff1631-3aef-46bc-986b-26f61898a1e3"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"7d97a4c7-b143-4256-b8ef-83d3ead671de",
+                                        "kind":0,
                                         "id":"d1f2b5a1-4216-4d81-b44b-8d8ecedad5ec"
                                       }
                                     ],
@@ -2876,12 +2915,14 @@
                                 "entries":[
                                   {
                                     "id":"b554d397-d1bd-4ee2-b322-475aa1fd8301",
+                                    "kind":0,
                                     "action-id":"35b79f0b-8390-4cf8-ac6d-89cf5673037c"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"f2052a1c-aeae-4b61-af84-2b2689639c30",
+                                    "kind":0,
                                     "action-id":"e3a3e50f-cee8-4075-878b-2968e0e95f4d"
                                   }
                                 ],
@@ -2904,6 +2945,7 @@
                                         "entries":[
                                           {
                                             "id":"c082f8d2-d094-4453-906d-6882f5bae764",
+                                            "kind":0,
                                             "action-id":"96969e03-838c-4d33-83f4-387bc789fc43"
                                           }
                                         ],
@@ -3010,6 +3052,7 @@
                                             "actions":[
                                               {
                                                 "action-id":"c8f49bc6-6a53-471f-809b-ee89921d7895",
+                                                "kind":0,
                                                 "id":"43c420fb-bdb1-48a0-a598-6ff2608c9ff7"
                                               }
                                             ],
@@ -3075,6 +3118,7 @@
                                         "entries":[
                                           {
                                             "id":"90c88a58-f8c2-421e-8381-7a490f17d16f",
+                                            "kind":0,
                                             "action-id":"b4c89a56-14b3-42bd-816c-937d7870ab05"
                                           }
                                         ],
@@ -3137,6 +3181,7 @@
                                                     "actions":[
                                                       {
                                                         "action-id":"69b4b9af-f739-44b5-bc17-347a7d9955a7",
+                                                        "kind":0,
                                                         "id":"0399ac2b-5ee3-47d0-b684-df5e99ccc183"
                                                       }
                                                     ],
@@ -3191,6 +3236,7 @@
                                         "entries":[
                                           {
                                             "id":"d4611a54-8666-42ab-be28-7fdd895af109",
+                                            "kind":0,
                                             "action-id":"a3881dd6-e5fe-498d-b536-06996fdef603"
                                           }
                                         ],
@@ -3309,12 +3355,14 @@
                                 "entries":[
                                   {
                                     "id":"5af6f279-cb23-4b5f-bd85-df7b5df65713",
+                                    "kind":0,
                                     "action-id":"109a06d4-81e9-4232-9271-a51062ba2197"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"51b6af24-cf43-41e8-a5be-c22fb6e089f0",
+                                    "kind":0,
                                     "action-id":"7cc14ae2-f2a7-4065-a7ef-be8a675b5bbf"
                                   }
                                 ],
@@ -3337,6 +3385,7 @@
                                         "entries":[
                                           {
                                             "id":"9aa528dd-8060-4d3b-b383-78adf45fa223",
+                                            "kind":0,
                                             "action-id":"4746b4bd-0417-41a4-9667-2e03be57596b"
                                           }
                                         ],
@@ -3443,6 +3492,7 @@
                                             "actions":[
                                               {
                                                 "action-id":"b08c7ddf-ab35-4cf8-a373-b7e05f06b23f",
+                                                "kind":0,
                                                 "id":"c1113f78-52e4-4f13-9929-dfa5ba27a6f1"
                                               }
                                             ],
@@ -3508,6 +3558,7 @@
                                         "entries":[
                                           {
                                             "id":"a9c27ba5-a806-4836-a4f5-0fdee9a491d1",
+                                            "kind":0,
                                             "action-id":"cac04197-4b34-46f1-8942-dd3dcc3e9e70"
                                           }
                                         ],
@@ -3570,6 +3621,7 @@
                                                     "actions":[
                                                       {
                                                         "action-id":"9a1af420-e540-4029-bb44-985dd2ddd9ac",
+                                                        "kind":0,
                                                         "id":"bcd9cc6d-7436-4ef9-a3d0-5ee4b4baa5ed"
                                                       }
                                                     ],
@@ -3624,6 +3676,7 @@
                                         "entries":[
                                           {
                                             "id":"5dae9b38-e81e-4b40-a983-f4b0b3250538",
+                                            "kind":0,
                                             "action-id":"42ad4446-5230-4c9e-9896-8c5feeaf42c6"
                                           }
                                         ],
@@ -3760,12 +3813,14 @@
                                 "entries":[
                                   {
                                     "id":"874db661-5bae-498e-a999-8bee475e9f69",
+                                    "kind":0,
                                     "action-id":"c6fff661-768b-4195-a211-c1ae7e3d6a09"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"57b965e6-999a-4ce6-aa2a-6181a7979ecd",
+                                    "kind":0,
                                     "action-id":"cec8f415-3f7c-4463-a935-1fb38067a137"
                                   }
                                 ],
@@ -3788,6 +3843,7 @@
                                         "entries":[
                                           {
                                             "id":"a18769a3-81fd-42b1-938e-12b190afa982",
+                                            "kind":0,
                                             "action-id":"c7015d2d-fc1b-40dc-8db4-169a4a9ef883"
                                           }
                                         ],
@@ -3919,6 +3975,7 @@
                                         "entries":[
                                           {
                                             "id":"c877846b-d062-4f77-aca0-27765ca2af15",
+                                            "kind":0,
                                             "action-id":"b3e7e7f3-aa16-48da-b3f7-e82feaef652f"
                                           }
                                         ],
@@ -4037,12 +4094,14 @@
                                 "entries":[
                                   {
                                     "id":"b85c1977-af7c-4d93-8a3b-57e903602f3f",
+                                    "kind":0,
                                     "action-id":"4954e4ae-bead-401d-a993-27b15c857034"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"27991c8e-6706-49a6-806b-6b9763ad2fe3",
+                                    "kind":0,
                                     "action-id":"fb07063c-d26f-4c01-b807-e07a4f67fdb7"
                                   }
                                 ],
@@ -4065,6 +4124,7 @@
                                         "entries":[
                                           {
                                             "id":"64cc1224-a97d-46c9-b12e-f33a2b0ddee8",
+                                            "kind":0,
                                             "action-id":"33a0c7ab-b56c-4598-a98a-b6a6aa0fbce4"
                                           }
                                         ],
@@ -4196,6 +4256,7 @@
                                         "entries":[
                                           {
                                             "id":"278d9e2e-7e78-4653-91cf-01878b9a152c",
+                                            "kind":0,
                                             "action-id":"28492f77-210e-405d-bfdb-8427ecfc42b4"
                                           }
                                         ],
@@ -4315,12 +4376,14 @@
                                 "entries":[
                                   {
                                     "id":"b58b8939-0a1a-44b2-8506-df206139a16c",
+                                    "kind":0,
                                     "action-id":"30ef3450-a1c2-437d-984c-b2275bd097a5"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"b2a7dccb-e83b-48f2-b91a-7accebc7582f",
+                                    "kind":0,
                                     "action-id":"7ab82c7c-d25c-4ca7-b670-0650497ab4ee"
                                   }
                                 ],
@@ -4343,6 +4406,7 @@
                                         "entries":[
                                           {
                                             "id":"5ec4f4fe-b945-4478-8ad5-64fc0523b986",
+                                            "kind":0,
                                             "action-id":"cbd76047-2885-4770-812f-b9abc5c62cd6"
                                           }
                                         ],
@@ -4429,6 +4493,7 @@
                                         "entries":[
                                           {
                                             "id":"e54ef24a-69b6-4599-b4f6-8e989a11b25b",
+                                            "kind":0,
                                             "action-id":"9a98e49f-ca04-4d72-aa2e-74810819e35f"
                                           }
                                         ],
@@ -4592,12 +4657,14 @@
                                 "entries":[
                                   {
                                     "id":"df613b46-c7da-458e-b773-1bb69e9203ef",
+                                    "kind":0,
                                     "action-id":"e530e11a-eb6d-4020-879e-8e79906a86b5"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"a224575b-0b5f-49aa-9df4-fc0618475e73",
+                                    "kind":0,
                                     "action-id":"5f2f4f5a-18cf-47a2-98ba-33cacdab2197"
                                   }
                                 ],
@@ -4620,6 +4687,7 @@
                                         "entries":[
                                           {
                                             "id":"5e324c70-ae0a-4765-bd88-7bd45f120e54",
+                                            "kind":0,
                                             "action-id":"6ee5fc92-cb16-4768-aeb9-587feac65375"
                                           }
                                         ],
@@ -4706,6 +4774,7 @@
                                         "entries":[
                                           {
                                             "id":"eb1c666d-28a9-4e20-8c3e-f660a0d1225e",
+                                            "kind":0,
                                             "action-id":"eb62532c-1d98-4433-b42a-0cf1c187996b"
                                           }
                                         ],
@@ -4869,12 +4938,14 @@
                                 "entries":[
                                   {
                                     "id":"587792bf-1844-4a7c-89f2-3ecc43efa039",
+                                    "kind":0,
                                     "action-id":"b5d2d551-254c-437e-ba1a-80d54af996dc"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"36531102-2a60-46c7-b02e-a3a8267e4899",
+                                    "kind":0,
                                     "action-id":"2ae0a88d-85dd-4f0d-a8b1-33eb3cf228cd"
                                   }
                                 ],
@@ -4897,6 +4968,7 @@
                                         "entries":[
                                           {
                                             "id":"f90c8362-c7f4-4ea2-b1cd-274b33fe52f1",
+                                            "kind":0,
                                             "action-id":"c1216dfc-c9a0-4aee-b131-2edc984479de"
                                           }
                                         ],
@@ -5028,6 +5100,7 @@
                                         "entries":[
                                           {
                                             "id":"73dbc3bf-eee2-4574-bbd1-16d9a6f20c5f",
+                                            "kind":0,
                                             "action-id":"70b325f8-a29d-443f-92df-64c40038cf80"
                                           }
                                         ],
@@ -5298,12 +5371,14 @@
                                     "guards":[
                                       {
                                         "action-id":"326c793e-b769-48a8-9e42-b774d53f9016",
+                                        "kind":0,
                                         "id":"4d827bdb-c798-4829-93c4-90acd8a35d02"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"98dac228-e058-41f2-8aad-11c54d532edb",
+                                        "kind":0,
                                         "id":"16b8748a-5df8-4271-a01f-23f63429a579"
                                       }
                                     ],
@@ -5333,12 +5408,14 @@
                                     "guards":[
                                       {
                                         "action-id":"1942e58f-ce2d-410b-9125-3ae9df6031e3",
+                                        "kind":0,
                                         "id":"dbc3dc53-429b-4f24-bac5-d7bd9aeb78dc"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"1fbe2959-3d46-4bb9-9c50-473640f7312c",
+                                        "kind":0,
                                         "id":"c9138d12-f221-4866-863c-0332ab591df9"
                                       }
                                     ],
@@ -5369,12 +5446,14 @@
                                     "guards":[
                                       {
                                         "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
+                                        "kind":0,
                                         "id":"e97aacb6-87c7-4bed-b749-74baca7eb1d3"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"4deac4af-90f3-401d-a280-cbd53145b774",
+                                        "kind":0,
                                         "id":"86e9ffb9-8c7f-4d5b-ba2e-f51c1f47b6aa"
                                       }
                                     ],
@@ -5405,12 +5484,14 @@
                                     "guards":[
                                       {
                                         "action-id":"4fc9cd36-8433-4d7d-a182-0458175a8109",
+                                        "kind":0,
                                         "id":"ea013bc8-f5ec-49b7-8e8c-79cd1b8f31bd"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"37778636-2c2b-4a2f-92e8-dcbb2a3da3b3",
+                                        "kind":0,
                                         "id":"7d046b31-0818-465a-bf88-bbd5c97b6c04"
                                       }
                                     ],
@@ -5441,12 +5522,14 @@
                                     "guards":[
                                       {
                                         "action-id":"2c2fe276-a071-4670-bca4-0c22271b15d6",
+                                        "kind":0,
                                         "id":"a3181ef5-c39a-4a6c-88dc-ce41e7e4d650"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"5c5db228-dfea-49e5-aac7-9ad16b44263a",
+                                        "kind":0,
                                         "id":"0251059c-122b-4b48-a4ac-0be7371e5abf"
                                       }
                                     ],
@@ -5477,12 +5560,14 @@
                                     "guards":[
                                       {
                                         "action-id":"2c2fe276-a071-4670-bca4-0c22271b15d6",
+                                        "kind":0,
                                         "id":"dee733cd-c882-4c83-83c2-b37e5a20a6ce"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"e04f4b16-cfef-4af5-af1d-9529f81431cf",
+                                        "kind":0,
                                         "id":"f46ecd34-64df-41b0-b76a-c1ff23c0e9c6"
                                       }
                                     ],
@@ -5513,12 +5598,14 @@
                                     "guards":[
                                       {
                                         "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
+                                        "kind":0,
                                         "id":"de25a685-4a48-4bff-85c7-c1377f80def3"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"63548cf6-7163-4ec5-89fb-839f1a0a5a72",
+                                        "kind":0,
                                         "id":"cb22b9d2-98ec-4f77-9a5d-d749cfe02a03"
                                       }
                                     ],
@@ -5790,12 +5877,14 @@
                                     "guards":[
                                       {
                                         "action-id":"326c793e-b769-48a8-9e42-b774d53f9016",
+                                        "kind":0,
                                         "id":"0c6ce15e-c154-44d9-a245-e06a16fdb797"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"0064f386-f46d-45a8-8a69-acba09220fdb",
+                                        "kind":0,
                                         "id":"3d8bdfbb-4bf6-4eb3-ae61-2b559a580c50"
                                       }
                                     ],
@@ -5825,12 +5914,14 @@
                                     "guards":[
                                       {
                                         "action-id":"1942e58f-ce2d-410b-9125-3ae9df6031e3",
+                                        "kind":0,
                                         "id":"000027ce-24f7-4fb0-9a42-b38f06de0d4d"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"244b985f-bb9a-4c2c-b32c-5e8de3bee035",
+                                        "kind":0,
                                         "id":"0aec359d-b65a-42f5-8a13-f021b5dae536"
                                       }
                                     ],
@@ -5860,12 +5951,14 @@
                                     "guards":[
                                       {
                                         "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
+                                        "kind":0,
                                         "id":"0fd0a697-7e31-4660-9ffe-a059daac0d49"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"4a173be4-65b9-4088-8c97-ef93dae0d921",
+                                        "kind":0,
                                         "id":"feb47dbd-4c8a-46c1-a041-e23bcc7e23b1"
                                       }
                                     ],
@@ -5895,12 +5988,14 @@
                                     "guards":[
                                       {
                                         "action-id":"c6f8369a-1df4-4226-8361-9581c73ee9d2",
+                                        "kind":0,
                                         "id":"6cf1fc2a-959a-4bd1-af74-a6f8ba708128"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"20f3e2e4-e0f5-40c3-a8b1-e8d9525e540f",
+                                        "kind":0,
                                         "id":"72fe8522-133c-49bd-a027-1afb6a387653"
                                       }
                                     ],
@@ -5930,12 +6025,14 @@
                                     "guards":[
                                       {
                                         "action-id":"1e5f8899-41d1-40b1-b530-414bd0789803",
+                                        "kind":0,
                                         "id":"30e8c43e-c172-466e-89db-2221875dfaa2"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"475b1f2d-cfea-4921-a95f-c6e105b97225",
+                                        "kind":0,
                                         "id":"12cb9647-9c9f-44e7-a664-d4e7ea47a9e9"
                                       }
                                     ],
@@ -5965,12 +6062,14 @@
                                     "guards":[
                                       {
                                         "action-id":"4da1cef2-491b-4835-9f3f-115ad2ec20cb",
+                                        "kind":0,
                                         "id":"3267395b-d1d1-4614-9fd8-060da2ebcf77"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"d58460f0-e26c-4c70-aa9d-72e3e230cb96",
+                                        "kind":0,
                                         "id":"9abb840d-dd82-47b3-8112-c7eeb0b6a124"
                                       }
                                     ],
@@ -6000,12 +6099,14 @@
                                     "guards":[
                                       {
                                         "action-id":"2c2fe276-a071-4670-bca4-0c22271b15d6",
+                                        "kind":0,
                                         "id":"93b99aac-abf1-4673-ad65-e215aa6a37fb"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"263779b7-1d93-4590-8d15-df1d6fe726bc",
+                                        "kind":0,
                                         "id":"20f6587d-8786-42fd-bc7a-3117dfc8f90b"
                                       }
                                     ],
@@ -6035,12 +6136,14 @@
                                     "guards":[
                                       {
                                         "action-id":"b98c0ef6-9ef8-475e-9d48-e9fcbd026772",
+                                        "kind":0,
                                         "id":"3c582656-9824-434f-ae26-62f3afc3036c"
                                       }
                                     ],
                                     "actions":[
                                       {
                                         "action-id":"bc533db2-1532-42d2-ae31-55bf68a6dc63",
+                                        "kind":0,
                                         "id":"eb6be828-bd3e-4e2f-8a95-cfbe92671822"
                                       }
                                     ],
@@ -6299,6 +6402,7 @@
                 "entries":[
                   {
                     "id":"9bbe200f-f1f8-459f-b964-9bc89915ef0c",
+                    "kind":0,
                     "action-id":"38f3fae3-8582-4b9f-aa5b-45dc5b30be80"
                   }
                 ],
@@ -6395,6 +6499,7 @@
                             "guards":[
                               {
                                 "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
+                                "kind":0,
                                 "id":"b4ee4f42-946d-4e5d-b2bc-ed44fdd10df5"
                               }
                             ],
@@ -6426,6 +6531,7 @@
                             "guards":[
                               {
                                 "action-id":"2c2fe276-a071-4670-bca4-0c22271b15d6",
+                                "kind":0,
                                 "id":"070dc5b4-104f-4b61-b2e3-c7a25a93693d"
                               }
                             ],
@@ -6457,6 +6563,7 @@
                             "guards":[
                               {
                                 "action-id":"4fc9cd36-8433-4d7d-a182-0458175a8109",
+                                "kind":0,
                                 "id":"82cd571f-3318-4549-bbcf-a16918c493db"
                               }
                             ],
@@ -6499,6 +6606,7 @@
                                 "entries":[
                                   {
                                     "id":"830247ad-87a3-4aa8-baef-f4d5b3f5983a",
+                                    "kind":0,
                                     "action-id":"1bff94e6-98f4-4544-aca5-f7398726ff13"
                                   }
                                 ],
@@ -6538,6 +6646,7 @@
                                     "guards":[
                                       {
                                         "action-id":"e45dcb67-82ca-47ca-a8a9-d909096b2224",
+                                        "kind":0,
                                         "id":"4ab1a6bf-49d2-4c30-a4b4-f6f9efd2c7f6"
                                       }
                                     ],
@@ -6573,6 +6682,7 @@
                                     "guards":[
                                       {
                                         "action-id":"e0fd3acf-c379-4284-a892-39fa408ac5e7",
+                                        "kind":0,
                                         "id":"488a5c67-b937-401c-a1db-3bb1987b334b"
                                       }
                                     ],
@@ -6640,10 +6750,12 @@
                                 "entries":[
                                   {
                                     "id":"dffcc43c-1bcd-4b09-932e-5ea0e8b49814",
+                                    "kind":0,
                                     "action-id":"b18b0e64-608f-433e-96b7-566a2124389c"
                                   },
                                   {
                                     "id":"9401f8de-c1b6-4b76-a376-9d01332fa663",
+                                    "kind":0,
                                     "action-id":"2468dddf-14be-4439-835e-865a56469890"
                                   }
                                 ],
@@ -6683,6 +6795,7 @@
                                     "guards":[
                                       {
                                         "action-id":"4da1cef2-491b-4835-9f3f-115ad2ec20cb",
+                                        "kind":0,
                                         "id":"4f16985b-2a99-475b-bf3b-09dbeac17206"
                                       }
                                     ],
@@ -6714,6 +6827,7 @@
                                     "guards":[
                                       {
                                         "action-id":"1e5f8899-41d1-40b1-b530-414bd0789803",
+                                        "kind":0,
                                         "id":"589e02f8-8ee8-42db-b040-b357ba6b0978"
                                       }
                                     ],
@@ -6753,6 +6867,7 @@
                                     "guards":[
                                       {
                                         "action-id":"d7b48730-e050-43ff-a063-6a5187d35f10",
+                                        "kind":0,
                                         "id":"47449948-224d-4903-968f-b1aa5ad73f22"
                                       }
                                     ],
@@ -6807,6 +6922,7 @@
                                 "entries":[
                                   {
                                     "id":"1d3740ba-6206-4de1-8eb5-2f02fe647fa2",
+                                    "kind":0,
                                     "action-id":"d3b07f5c-b78b-46a1-b207-691f7a71b154"
                                   }
                                 ],
@@ -6849,6 +6965,7 @@
                                     "actions":[
                                       {
                                         "action-id":"36fd046f-2288-4ae0-bab1-392dce9940bd",
+                                        "kind":0,
                                         "id":"26349aa8-a025-44e9-b7e6-7ec4b3d83001"
                                       }
                                     ],
@@ -6869,6 +6986,7 @@
                                 "entries":[
                                   {
                                     "id":"4f644ac5-d60d-452b-bcf1-1e076eceea32",
+                                    "kind":0,
                                     "action-id":"7d1cdd40-85cd-4756-a042-ebf0e7baacb2"
                                   }
                                 ],
@@ -6911,6 +7029,7 @@
                                     "actions":[
                                       {
                                         "action-id":"6ab7c0c4-d793-401b-ad1c-b3758ae1145e",
+                                        "kind":0,
                                         "id":"17b54a22-897a-46d6-af7c-030a5fc83961"
                                       }
                                     ],
@@ -6931,12 +7050,14 @@
                                 "entries":[
                                   {
                                     "id":"f79e7ffc-ec6a-47f3-9791-f1dbad149e70",
+                                    "kind":0,
                                     "action-id":"f74dd626-1c95-41aa-9e4e-e64329e9a85a"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"64d4989d-928c-4c65-bf81-f971ae5852c7",
+                                    "kind":0,
                                     "action-id":"dabd922b-9dbf-46b7-8fae-55b03386e6a9"
                                   }
                                 ],
@@ -6959,6 +7080,7 @@
                                         "entries":[
                                           {
                                             "id":"d2a3d790-a039-4d8d-a1f9-d4ec359ec6bd",
+                                            "kind":0,
                                             "action-id":"b582388e-06b4-4c1f-9419-dc6c462faeae"
                                           }
                                         ],
@@ -7001,6 +7123,7 @@
                                             "actions":[
                                               {
                                                 "action-id":"b582388e-06b4-4c1f-9419-dc6c462faeae",
+                                                "kind":0,
                                                 "id":"54f193ba-27c6-4e56-b5e0-f4860fbb2cdf"
                                               }
                                             ],
@@ -7027,12 +7150,14 @@
                                 "entries":[
                                   {
                                     "id":"1f2e1f2b-01a0-4cf5-b346-d8c3c345e8c7",
+                                    "kind":0,
                                     "action-id":"a41650ad-6f71-41b5-b6fc-ec85017b448a"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"d1bce521-75a3-42b9-ad4e-4613ff83b510",
+                                    "kind":0,
                                     "action-id":"88cc814d-3b64-4505-8aaf-4d2513fd3ca9"
                                   }
                                 ],
@@ -7093,6 +7218,7 @@
                                             "actions":[
                                               {
                                                 "action-id":"01881f6b-7b31-4b62-af8a-7bc7cecb930c",
+                                                "kind":0,
                                                 "id":"a55ef547-954c-46da-8648-506362374f51"
                                               }
                                             ],
@@ -7119,12 +7245,14 @@
                                 "entries":[
                                   {
                                     "id":"e5caa87c-c9b2-45c0-98f9-07c2795d12f7",
+                                    "kind":0,
                                     "action-id":"30ae2e5b-8daa-4c04-8505-2d233edcee8f"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"2e940181-01fe-4fab-86bd-291ef0a73465",
+                                    "kind":0,
                                     "action-id":"b5c7e06e-fcb2-4ed7-a9c9-9509bf28d83b"
                                   }
                                 ],
@@ -7185,6 +7313,7 @@
                                             "actions":[
                                               {
                                                 "action-id":"a3759f68-9051-4756-a143-78ee88f12740",
+                                                "kind":0,
                                                 "id":"1fa06c3f-cac5-4d24-9aec-989b28aa07e0"
                                               }
                                             ],
@@ -7237,12 +7366,14 @@
                                 "entries":[
                                   {
                                     "id":"b7b04605-7e8a-4310-877b-8a6e41969e34",
+                                    "kind":0,
                                     "action-id":"969fb8af-6ec1-4166-9990-1243a3ffa457"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"9a727306-d9cb-4a31-8204-0c234e9199b3",
+                                    "kind":0,
                                     "action-id":"d070bb61-9e93-461a-aa97-9dccf0c07710"
                                   }
                                 ],
@@ -7311,6 +7442,7 @@
                                             "actions":[
                                               {
                                                 "action-id":"3a1a7d06-1f63-4cfd-ae76-172c831fe527",
+                                                "kind":0,
                                                 "id":"eb0a9e49-3785-4c03-a452-7f45f8172efd"
                                               }
                                             ],
@@ -7326,72 +7458,6 @@
                                 ]
                               },
                               {
-                                "id":"c5650f0f-0bdd-4ab5-8b90-d37ba79c7a10",
-                                "name":"Multi select",
-                                "kind":"state",
-                                "width":220.0,
-                                "height":100.0,
-                                "x":870.0,
-                                "y":610.0,
-                                "orientation":0,
-                                "entries":[
-                                  {
-                                    "id":"80d892d7-8f52-4436-9bb1-b47d81a0b675",
-                                    "action-id":"09d92742-9c1e-42ca-8542-e11dcdb8fa4d"
-                                  }
-                                ],
-                                "exits":[
-                                  {
-                                    "id":"ac79b491-2580-4287-8556-ef15584067a1",
-                                    "action-id":"371dcc32-86ac-4e63-b3ee-a074c0157800"
-                                  }
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                  {
-                                    "id":"da088bd7-62af-4c59-8b0c-fee2bff0d575",
-                                    "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
-                                    "source":{
-                                      "state":"c5650f0f-0bdd-4ab5-8b90-d37ba79c7a10",
-                                      "side":"top",
-                                      "offset":80.0
-                                    },
-                                    "dest":{
-                                      "state":"c5650f0f-0bdd-4ab5-8b90-d37ba79c7a10",
-                                      "side":"top",
-                                      "offset":140.0
-                                    },
-                                    "text-block":{
-                                      "x":-90.0,
-                                      "y":-60.0,
-                                      "w":280.0,
-                                      "h":30.0
-                                    },
-                                    "vertices":[
-                                      {
-                                        "x":950.0,
-                                        "y":590.0
-                                      },
-                                      {
-                                        "x":1010.0,
-                                        "y":590.0
-                                      }
-                                    ],
-                                    "guards":[
-                                    ],
-                                    "actions":[
-                                      {
-                                        "action-id":"5a0337a5-4399-43e4-bbc6-80993c4bbdfd",
-                                        "id":"6323cb5d-6eb8-4807-96e8-5859ab24f563"
-                                      }
-                                    ],
-                                    "state-condition":[
-                                    ]
-                                  }
-                                ]
-                              },
-                              {
                                 "id":"353c633d-e736-4464-81a1-90466dade15d",
                                 "name":"Region",
                                 "kind":"state",
@@ -7403,6 +7469,7 @@
                                 "entries":[
                                   {
                                     "id":"e149cd17-441b-4525-a60a-2b836f0b4f17",
+                                    "kind":0,
                                     "action-id":"328aa7d4-a8a3-4030-b946-6672efaa3e78"
                                   }
                                 ],
@@ -7434,6 +7501,7 @@
                                     "guards":[
                                       {
                                         "action-id":"ffc3067d-402d-4473-b051-ce60258c65af",
+                                        "kind":0,
                                         "id":"b2b3dfa5-c27c-4fbc-98a9-8058345cf84e"
                                       }
                                     ],
@@ -7456,15 +7524,15 @@
                                       "offset":50.0
                                     },
                                     "text-block":{
-                                      "x":250.0,
-                                      "y":300.0,
+                                      "x":260.0,
+                                      "y":410.0,
                                       "w":100.0,
                                       "h":30.0
                                     },
                                     "vertices":[
                                       {
                                         "x":290.0,
-                                        "y":660.0
+                                        "y":780.0
                                       }
                                     ],
                                     "guards":[
@@ -7520,6 +7588,101 @@
                                     ]
                                   }
                                 ]
+                              },
+                              {
+                                "id":"7482ea56-15f8-4c6e-b93f-1f42b83a8a9e",
+                                "name":"Multi select",
+                                "kind":"state",
+                                "width":350.0,
+                                "height":480.0,
+                                "x":910.0,
+                                "y":410.0,
+                                "orientation":0,
+                                "entries":[
+                                  {
+                                    "id":"8618ff6e-221a-44e2-8f78-0c0b7b19fe27",
+                                    "kind":0,
+                                    "action-id":"6156604f-be00-4cc1-bb56-13f9891c4b4c"
+                                  }
+                                ],
+                                "exits":[
+                                  {
+                                    "id":"040fdc03-5d7a-42b8-95d8-3e9328949870",
+                                    "kind":0,
+                                    "action-id":"ae4dae7b-525c-4a41-b122-77f4d4f2aa77"
+                                  }
+                                ],
+                                "region":[
+                                  {
+                                    "id":"4b7ee70a-28ff-4ef6-8c44-542fcfe093aa",
+                                    "name":"New region",
+                                    "off_page":false,
+                                    "height":370,
+                                    "states":[
+                                      {
+                                        "id":"c5650f0f-0bdd-4ab5-8b90-d37ba79c7a10",
+                                        "name":"Multi select",
+                                        "kind":"state",
+                                        "width":220.0,
+                                        "height":100.0,
+                                        "x":70.0,
+                                        "y":290.0,
+                                        "orientation":0,
+                                        "entries":[
+                                          {
+                                            "id":"b6587e1f-bf21-49e0-8af5-ce240d2c2043",
+                                            "kind":0,
+                                            "action-id":"5a0337a5-4399-43e4-bbc6-80993c4bbdfd"
+                                          }
+                                        ],
+                                        "exits":[
+                                        ],
+                                        "region":[
+                                        ],
+                                        "transitions":[
+                                          {
+                                            "id":"da088bd7-62af-4c59-8b0c-fee2bff0d575",
+                                            "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "source":{
+                                              "state":"c5650f0f-0bdd-4ab5-8b90-d37ba79c7a10",
+                                              "side":"top",
+                                              "offset":80.0
+                                            },
+                                            "dest":{
+                                              "state":"c5650f0f-0bdd-4ab5-8b90-d37ba79c7a10",
+                                              "side":"top",
+                                              "offset":140.0
+                                            },
+                                            "text-block":{
+                                              "x":-10.0,
+                                              "y":-80.0,
+                                              "w":80.0,
+                                              "h":30.0
+                                            },
+                                            "vertices":[
+                                              {
+                                                "x":150.0,
+                                                "y":200.0
+                                              },
+                                              {
+                                                "x":210.0,
+                                                "y":200.0
+                                              }
+                                            ],
+                                            "guards":[
+                                            ],
+                                            "actions":[
+                                            ],
+                                            "state-condition":[
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "transitions":[
+                                ]
                               }
                             ]
                           }
@@ -7559,12 +7722,14 @@
                                 "entries":[
                                   {
                                     "id":"ee0bb0aa-1621-4e2e-966d-98aeddcdf843",
+                                    "kind":0,
                                     "action-id":"e79d0eab-6f57-410d-863a-3148902719d5"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"e9c54775-5b80-4b00-b1f1-03dfa5e5bb2d",
+                                    "kind":0,
                                     "action-id":"2a14825c-afd6-48d9-9de4-bd96554f13ca"
                                   }
                                 ],
@@ -7625,6 +7790,7 @@
                                             "actions":[
                                               {
                                                 "action-id":"626bb479-1fdd-4834-ac25-fea811a45f72",
+                                                "kind":0,
                                                 "id":"6918dc69-c703-45d0-b52f-b3f1f61807c7"
                                               }
                                             ],
@@ -7651,10 +7817,12 @@
                                 "entries":[
                                   {
                                     "id":"acc71ec2-ac0b-4d98-8097-b18871163fcc",
+                                    "kind":0,
                                     "action-id":"53b1f896-a374-4664-bee1-5249f28b4102"
                                   },
                                   {
                                     "id":"7977a736-1b6d-4516-8f5b-3268f5b58097",
+                                    "kind":0,
                                     "action-id":"03eec91f-dcc3-46ed-9f2c-87931aa72740"
                                   }
                                 ],
@@ -7686,6 +7854,7 @@
                                     "guards":[
                                       {
                                         "action-id":"b19506c9-11c0-47b5-b2f9-16744974d631",
+                                        "kind":0,
                                         "id":"f9d5b4d4-5ffe-4e1e-add4-11cb3e0782a9"
                                       }
                                     ],
@@ -7721,6 +7890,7 @@
                                     "guards":[
                                       {
                                         "action-id":"326c793e-b769-48a8-9e42-b774d53f9016",
+                                        "kind":0,
                                         "id":"3878b253-54a4-4eee-9185-d88f3f2126d1"
                                       }
                                     ],
@@ -7756,6 +7926,7 @@
                                     "guards":[
                                       {
                                         "action-id":"1942e58f-ce2d-410b-9125-3ae9df6031e3",
+                                        "kind":0,
                                         "id":"7d572f7b-a690-4072-b499-5bb256f9feb4"
                                       }
                                     ],
@@ -7806,6 +7977,7 @@
                                 "entries":[
                                   {
                                     "id":"e2efd678-f38f-4508-a7e5-bc6c0b02df09",
+                                    "kind":0,
                                     "action-id":"11b7eeb2-7e6d-4c03-a46f-7650d41a8e8c"
                                   }
                                 ],
@@ -7848,6 +8020,7 @@
                                     "actions":[
                                       {
                                         "action-id":"7a456578-dff0-49d1-9e4b-ba02ec72ac15",
+                                        "kind":0,
                                         "id":"717852d1-9b12-4e3a-a5c2-23afb76ae947"
                                       }
                                     ],
@@ -7868,6 +8041,7 @@
                                 "entries":[
                                   {
                                     "id":"a6d10177-e5a7-4a5a-b3c7-78e875d504ed",
+                                    "kind":0,
                                     "action-id":"84c4b295-058a-4d61-83c9-1f1410005ece"
                                   }
                                 ],
@@ -7910,6 +8084,7 @@
                                     "actions":[
                                       {
                                         "action-id":"5257ca9e-ed40-4fd3-a280-193763181f6a",
+                                        "kind":0,
                                         "id":"fbc928a9-cb58-414d-9eb4-ef84cd453df4"
                                       }
                                     ],
@@ -7975,12 +8150,14 @@
                                 "entries":[
                                   {
                                     "id":"33068695-7b0a-4101-83f5-6afdb964af08",
+                                    "kind":0,
                                     "action-id":"1462342b-a1ba-479b-90e7-bd327585d996"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"04fc50f4-9b3b-4476-9c3f-5c34b7aca4ab",
+                                    "kind":0,
                                     "action-id":"81c803db-40a6-44a9-b231-d36878fb92b0"
                                   }
                                 ],
@@ -8041,6 +8218,7 @@
                                             "actions":[
                                               {
                                                 "action-id":"ce88c7da-be83-4da9-b7f6-de8702599a31",
+                                                "kind":0,
                                                 "id":"239df017-ddd2-4b00-9f1a-dc4a628a642d"
                                               }
                                             ],

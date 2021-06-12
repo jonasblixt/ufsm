@@ -196,9 +196,6 @@ void canvas_focus_region(void *context)
 {
 }
 
-void canvas_begin_mselect(void *context)
-{
-}
 
 void canvas_focus_transition(void *context)
 {
@@ -396,10 +393,6 @@ void canvas_check_text_block(void *context)
 
 /* Exit action function prototypes */
 void canvas_hide_tool_help(void *context)
-{
-}
-
-void canvas_end_mselect(void *context)
 {
 }
 
@@ -613,9 +606,6 @@ void canvas_reorder_entry_func(void *context)
     }
 }
 
-void canvas_update_mselect(void *context)
-{
-}
 
 void canvas_move_text_block(void *context)
 {
@@ -1655,11 +1645,51 @@ void canvas_resize_text_block_end(void *context)
 {
 }
 
+struct mselect_op {
+    double sx, sy;
+};
+/*
+int ufsmm_canvas_set_selection(bool active, double sx,
+                                           double sy,
+                                           double ex,
+                                           double ey)*/
+void canvas_mselect_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+
+    priv->command_data = malloc(sizeof(struct mselect_op));
+    memset(priv->command_data, 0, sizeof(struct mselect_op));
+    struct mselect_op *op = (struct mselect_op *) priv->command_data;
+    op->sx = priv->px;
+    op->sy = priv->py;
+}
+
+void canvas_mselect_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct mselect_op *op = (struct mselect_op *) priv->command_data;
+    free(op);
+    ufsmm_canvas_set_selection(false, 0, 0, 0, 0);
+    priv->redraw = true;
+}
+
+void canvas_update_mselect(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct mselect_op *op = (struct mselect_op *) priv->command_data;
+    double ox = priv->current_region->ox;
+    double oy = priv->current_region->oy;
+    ufsmm_canvas_set_selection(true, op->sx - ox, op->sy - oy,
+                                     priv->px - ox, priv->py - oy);
+    priv->redraw = true;
+}
+
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
+    L_DEBUG("keyval = %i", event->keyval);
     if (event->keyval == GDK_KEY_A) {
         if (priv->current_region->parent_state) {
             L_DEBUG("Ascending to region: %s",
