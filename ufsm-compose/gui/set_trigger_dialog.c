@@ -246,6 +246,10 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
                                             selected_trigger);
     } else if (result == 1) { /* Create new action */
         const char *new_name = gtk_entry_get_text(GTK_ENTRY(input));
+
+        if (strlen(new_name) == 0 && (selected_trigger != NULL))
+            new_name = selected_trigger->name;
+
         rc = ufsmm_model_add_trigger(model, new_name, &selected_trigger);
 
         if (rc != UFSMM_OK)

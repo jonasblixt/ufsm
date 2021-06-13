@@ -322,6 +322,10 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 
     int result = gtk_dialog_run(GTK_DIALOG(dialog));
     const char *action_name = gtk_entry_get_text(GTK_ENTRY(input));
+
+    if (strlen(action_name) == 0 && (selected_action != NULL))
+        action_name = selected_action->name;
+
     enum ufsmm_guard_kind guard_kind = UFSMM_GUARD_TRUE;
     int guard_value = 0;
 
