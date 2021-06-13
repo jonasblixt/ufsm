@@ -87,8 +87,15 @@ static void generate_transitions(FILE *fp, struct ufsmm_state *s)
         TAILQ_FOREACH(guard, &t->guards, tailq) {
             uu_to_str(guard->id, uu_str);
             fprintf(fp, "const struct ufsm_guard g_%s = {\n", uu_str);
-            fprintf(fp, "    .name = \"%s\",\n", guard->act->name);
-            fprintf(fp, "    .f = &%s,\n", guard->act->name);
+            if ((guard->kind != UFSMM_GUARD_PSTATE) &&
+                (guard->kind != UFSMM_GUARD_NSTATE)) {
+                fprintf(fp, "    .name = \"%s\",\n", guard->act->name);
+                fprintf(fp, "    .f = &%s,\n", guard->act->name);
+            } else {
+                uu_to_str(guard->state->id, uu_str);
+                fprintf(fp, "    .name = \"%s\",\n", guard->state->name);
+                fprintf(fp, "    .state = &s_%s,\n", uu_str);
+            }
             fprintf(fp, "    .kind = %i,\n", guard->kind);
             fprintf(fp, "    .value = %i,\n", guard->value);
             if (TAILQ_NEXT(guard, tailq)) {

@@ -52,10 +52,6 @@ TEST(load_transitions)
     ASSERT_EQ(a1->act->name, "aFirst");
     ASSERT_EQ(a2->act->name, "aSecond");
 
-    struct ufsmm_transition_state_condition *sconds = TAILQ_FIRST(&t->state_conditions);
-    ASSERT_EQ(sconds->state->name, "C31");
-    ASSERT(sconds->positive == false);
-
     rc = ufsmm_model_free(model);
     ASSERT_EQ(rc, UFSMM_OK);
 }

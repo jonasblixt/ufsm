@@ -86,7 +86,13 @@ static void debug_action(const struct ufsm_action *a)
 
 static void debug_guard(const struct ufsm_guard *g, int result) 
 {
-    printf ("    | Guard      | %s() = %i\n", g->name, result);
+    if (g->kind == UFSM_GUARD_PSTATE) {
+        printf ("    | Guard      | <%s>\n", g->state->name);
+    } else if (g->kind == UFSM_GUARD_NSTATE) {
+        printf ("    | Guard      | !<%s>\n", g->state->name);
+    } else {
+        printf ("    | Guard      | %s() = %i\n", g->name, result);
+    }
 }
 
 static void debug_enter_state(const struct ufsm_state *s)

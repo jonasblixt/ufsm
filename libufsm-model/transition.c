@@ -3,60 +3,6 @@
 #include <ufsm/model.h>
 #include <json.h>
 
-
-static int deserialize_state_conditions(struct ufsmm_model *model,
-                                        json_object *j_state_conds,
-                                        struct ufsmm_transition *t)
-{
-    struct ufsmm_transition_state_condition *state_cond;
-    json_object *j_state_cond;
-    json_object *j_state_id;
-    json_object *j_positive;
-    uuid_t state_uu;
-    struct ufsmm_state *state;
-    bool positive;
-    size_t n_entries = json_object_array_length(j_state_conds);
-
-    if (n_entries == 0)
-        return UFSMM_OK;
-
-    L_DEBUG("Found %i transition state conditions", n_entries);
-
-    for (int n = 0; n < n_entries; n++) {
-        j_state_cond = json_object_array_get_idx(j_state_conds, n);
-
-        if (!json_object_object_get_ex(j_state_cond, "state-id", &j_state_id)) {
-            L_ERR("Could not read state condition");
-            return -UFSMM_ERROR;
-        }
-
-        uuid_parse(json_object_get_string(j_state_id), state_uu);
-        state = ufsmm_model_get_state_from_uuid(model, state_uu);
-
-        if (state == NULL) {
-            L_ERR("Could not find state '%s'",
-                        json_object_get_string(j_state_id));
-            return -UFSMM_ERROR;
-        }
-
-        if (!json_object_object_get_ex(j_state_cond, "positive", &j_positive)) {
-            L_ERR("Could not read positive");
-            return -UFSMM_ERROR;
-        }
-
-        positive = json_object_get_boolean(j_positive);
-
-        state_cond = malloc(sizeof(*state_cond));
-        memset(state_cond, 0, sizeof(*state_cond));
-        state_cond->state = state;
-        state_cond->positive = positive;
-
-        TAILQ_INSERT_TAIL(&t->state_conditions, state_cond, tailq);
-    }
-
-    return UFSMM_OK;
-}
-
 static int deserialize_vertices(json_object *j_vertices,
                                 struct ufsmm_transition *t)
 {
@@ -273,19 +219,6 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
             goto err_out;
         }
 
-        if (!json_object_object_get_ex(j_t, "state-condition", &j_state_conds)) {
-            L_ERR("Could not read transition state conditions");
-            rc = -UFSMM_ERR_PARSE;
-            goto err_out;
-        }
-
-        rc = deserialize_state_conditions(model, j_state_conds, transition);
-
-        if (rc != UFSMM_OK) {
-            L_ERR("Could not de-serialize transition state conditions");
-            goto err_out;
-        }
-
         /* Parse actions */
         if (json_object_object_get_ex(j_t, "actions", &j_actions)) {
             size_t n_entries = json_object_array_length(j_actions);
@@ -339,31 +272,47 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
             {
                 json_object *j_guard;
                 json_object *j_guard_id;
+                json_object *j_state_id;
                 json_object *j_id;
                 json_object *j_kind;
                 json_object *j_value;
                 uuid_t guard_uu;
+                uuid_t state_uu;
                 uuid_t id_uu;
                 enum ufsmm_guard_kind guard_kind = UFSMM_GUARD_TRUE;
                 int guard_value = 0;
                 j_guard = json_object_array_get_idx(j_guards, n);
 
-                if (json_object_object_get_ex(j_guard, "action-id", &j_guard_id)) {
+                if (json_object_object_get_ex(j_guard, "kind", &j_kind)) {
+                    guard_kind = json_object_get_int(j_kind);
+                }
+
+                if ((guard_kind != UFSMM_GUARD_PSTATE) &&
+                    (guard_kind != UFSMM_GUARD_NSTATE)) {
+                    json_object_object_get_ex(j_guard, "action-id", &j_guard_id);
                     json_object_object_get_ex(j_guard, "id", &j_id);
                     uuid_parse(json_object_get_string(j_id), id_uu);
                     uuid_parse(json_object_get_string(j_guard_id), guard_uu);
 
-                    if (json_object_object_get_ex(j_guard, "kind", &j_kind)) {
-                        guard_kind = json_object_get_int(j_kind);
-                    }
 
                     if (json_object_object_get_ex(j_guard, "value", &j_value)) {
                         guard_value = json_object_get_int(j_value);
                     }
 
                     rc = ufsmm_transition_add_guard(model, transition, id_uu,
-                                                    guard_uu, guard_kind,
+                                                    guard_uu, NULL, guard_kind,
                                                     guard_value);
+                    if (rc != UFSMM_OK)
+                        goto err_out;
+                } else {
+                    json_object_object_get_ex(j_guard, "state-id", &j_state_id);
+                    json_object_object_get_ex(j_guard, "id", &j_id);
+                    uuid_parse(json_object_get_string(j_id), id_uu);
+                    uuid_parse(json_object_get_string(j_state_id), state_uu);
+
+                    rc = ufsmm_transition_add_guard(model, transition, id_uu,
+                                                    NULL, state_uu, guard_kind,
+                                                    0);
                     if (rc != UFSMM_OK)
                         goto err_out;
                 }
@@ -422,12 +371,14 @@ static int serialize_guard_list(struct ufsmm_guard_refs *list,
             (item->kind != UFSMM_GUARD_NSTATE)) {
             uuid_unparse(item->act->id, uuid_str);
             json_object_object_add(guard, "action-id", json_object_new_string(uuid_str));
+            json_object_object_add(guard, "value", json_object_new_int(item->value));
+        } else {
+            uuid_unparse(item->state->id, uuid_str);
+            json_object_object_add(guard, "state-id", json_object_new_string(uuid_str));
         }
         json_object_object_add(guard, "kind", json_object_new_int(item->kind));
-        json_object_object_add(guard, "value", json_object_new_int(item->value));
         uuid_unparse(item->id, uuid_str);
         json_object_object_add(guard, "id", json_object_new_string(uuid_str));
-        //json_object_object_add(
         json_object_array_add(output, guard);
     }
 
@@ -569,20 +520,6 @@ int ufsmm_transitions_serialize(struct ufsmm_state *state,
 
         json_object_object_add(j_t, "actions", j_actions);
 
-        /* State transitions conditions */
-        json_object *j_state_conds = json_object_new_array();
-        struct ufsmm_transition_state_condition *sconds;
-        TAILQ_FOREACH(sconds, &t->state_conditions, tailq) {
-            json_object *j_state_cond = json_object_new_object();
-            uuid_unparse(sconds->state->id, uuid_str);
-            json_object_object_add(j_state_cond, "state-id",
-                                    json_object_new_string(uuid_str));
-            json_object_object_add(j_state_cond, "positive",
-                                    json_object_new_boolean(sconds->positive));
-            json_object_array_add(j_state_conds, j_state_cond);
-        }
-
-        json_object_object_add(j_t, "state-condition", j_state_conds);
         json_object_array_add(j_output, j_t);
     }
 
@@ -595,7 +532,6 @@ int ufsmm_transition_free_list(struct ufsmm_transitions *transitions)
 {
     struct ufsmm_transition *t;
     struct ufsmm_vertice *v;
-    struct ufsmm_transition_state_condition *sc, *sc_tmp;
 
     if (transitions == NULL)
         return UFSMM_OK;
@@ -615,7 +551,6 @@ int ufsmm_transition_free_one(struct ufsmm_transition *transition)
 {
     struct ufsmm_vertice *v, *v_tmp;
     struct ufsmm_state *source;
-    struct ufsmm_transition_state_condition *sc, *sc_tmp;
 
     if (transition == NULL)
         return UFSMM_OK;
@@ -638,11 +573,6 @@ int ufsmm_transition_free_one(struct ufsmm_transition *transition)
         free(v);
     }
 
-    while (sc = TAILQ_FIRST(&transition->state_conditions)) {
-        TAILQ_REMOVE(&transition->state_conditions, sc, tailq);
-        free(sc);
-    }
-
     free(transition);
     return UFSMM_OK;
 }
@@ -659,33 +589,56 @@ int ufsmm_transition_add_guard(struct ufsmm_model *model,
                               struct ufsmm_transition *transition,
                               uuid_t id,
                               uuid_t action_id,
+                              uuid_t state_id,
                               enum ufsmm_guard_kind kind,
                               int guard_value)
 {
     struct ufsmm_action *action;
+    struct ufsmm_state *state;
     struct ufsmm_guard_ref *guard;
     int rc;
 
     L_DEBUG("%s", __func__);
 
-    rc = ufsmm_model_get_action(model, action_id, UFSMM_ACTION_GUARD, &action);
+    if ((kind == UFSMM_GUARD_PSTATE) ||
+        (kind == UFSMM_GUARD_NSTATE)) {
 
-    if (rc != UFSMM_OK) {
-        char uuid_str[37];
-        uuid_unparse(action_id, uuid_str);
-        L_ERR("Unkown guard function %s", uuid_str);
-        return rc;
+        state = ufsmm_model_get_state_from_uuid(model, state_id);
+
+        if (state == NULL) {
+            char uuid_str[37];
+            uuid_unparse(state_id, uuid_str);
+            L_ERR("Unkown state %s", uuid_str);
+            return -1;
+        }
+    } else {
+        rc = ufsmm_model_get_action(model, action_id, UFSMM_ACTION_GUARD, &action);
+
+        if (rc != UFSMM_OK) {
+            char uuid_str[37];
+            uuid_unparse(action_id, uuid_str);
+            L_ERR("Unkown guard function %s", uuid_str);
+            return rc;
+        }
+
+        L_DEBUG("Adding guard '%s' to transition", action->name);
     }
-
-    L_DEBUG("Adding guard '%s' to transition", action->name);
 
     guard = malloc(sizeof(struct ufsmm_guard_ref));
     memset(guard, 0, sizeof(*guard));
     guard->kind = kind;
-    guard->value = guard_value;
-    guard->act = action;
     memcpy(guard->id, id, 16);
 
+    if ((kind == UFSMM_GUARD_PSTATE) ||
+        (kind == UFSMM_GUARD_NSTATE)) {
+        guard->value = 0;
+        guard->act = NULL;
+        guard->state = state;
+    } else {
+        guard->value = guard_value;
+        guard->act = action;
+        guard->state = NULL;
+    }
     TAILQ_INSERT_TAIL(&transition->guards, guard, tailq);
 
     return UFSMM_OK;
@@ -771,20 +724,6 @@ int ufsmm_transition_delete_action(struct ufsmm_transition *transition, uuid_t i
     return delete_action_ref(&transition->actions, id);
 }
 
-int ufsmm_transition_add_state_condition(struct ufsmm_model *model,
-                                        struct ufsmm_transition *transition,
-                                        uuid_t id,
-                                        bool positive)
-{
-    return UFSMM_OK;
-}
-
-int ufsmm_transition_delete_state_condition(struct ufsmm_transition *transition,
-                                            uuid_t id)
-{
-    return UFSMM_OK;
-}
-
 int ufsmm_transition_new(struct ufsmm_transition **transition)
 {
     struct ufsmm_transition *t;
@@ -803,7 +742,6 @@ int ufsmm_transition_new(struct ufsmm_transition **transition)
     TAILQ_INIT(&t->vertices);
     TAILQ_INIT(&t->actions);
     TAILQ_INIT(&t->guards);
-    TAILQ_INIT(&t->state_conditions);
     uuid_generate_random(t->id);
     return 0;
 }

@@ -149,8 +149,7 @@ struct ufsmm_guard_ref
     enum ufsmm_guard_kind kind;
     struct ufsmm_action *act;
     int value;
-    struct ufsmm_state *pstate;
-    struct ufsmm_state *nstate;
+    struct ufsmm_state *state;
     TAILQ_ENTRY(ufsmm_guard_ref) tailq;
 };
 
@@ -189,15 +188,6 @@ struct ufsmm_coords
     double h;
 };
 
-struct ufsmm_transition_state_condition
-{
-    struct ufsmm_state *state;
-    bool positive;
-    TAILQ_ENTRY(ufsmm_transition_state_condition) tailq;
-};
-
-TAILQ_HEAD(ufsmm_transition_state_conditions, ufsmm_transition_state_condition);
-
 struct ufsmm_transition
 {
     uuid_t id;
@@ -209,7 +199,6 @@ struct ufsmm_transition
     struct ufsmm_transition_state_ref dest;
     struct ufsmm_coords text_block_coords;
     struct ufsmm_vertices vertices;
-    struct ufsmm_transition_state_conditions state_conditions;
     bool focus;
     TAILQ_ENTRY(ufsmm_transition) tailq;
 };
@@ -417,6 +406,7 @@ int ufsmm_transition_add_guard(struct ufsmm_model *model,
                               struct ufsmm_transition *transition,
                               uuid_t id,
                               uuid_t action_id,
+                              uuid_t state_id,
                               enum ufsmm_guard_kind kind,
                               int guard_value);
 
@@ -434,13 +424,6 @@ int ufsmm_transition_add_signal_action(struct ufsmm_model *model,
 
 int ufsmm_transition_delete_action(struct ufsmm_transition *transition, uuid_t id);
 
-int ufsmm_transition_add_state_condition(struct ufsmm_model *model,
-                                        struct ufsmm_transition *transition,
-                                        uuid_t id,
-                                        bool positive);
-
-int ufsmm_transition_delete_state_condition(struct ufsmm_transition *transition,
-                                            uuid_t id);
 int ufsmm_transition_new(struct ufsmm_transition **transition);
 int ufsmm_transition_free_one(struct ufsmm_transition *transition);
 

@@ -209,10 +209,16 @@ inline static bool ufsm_test_guards(struct ufsm_machine *m,
     bool result = true;
 
     for (const struct ufsm_guard *g = t->guard; g; g = g->next) {
-        int guard_result = g->f(m->context);
+        int guard_result = 0;
+
+        if ((g->kind != UFSM_GUARD_PSTATE) &&
+            (g->kind != UFSM_GUARD_NSTATE)) {
+            guard_result = g->f(m->context);
+        }
 
         if (m->debug_guard)
             m->debug_guard(g, guard_result);
+
         switch (g->kind) {
             case UFSM_GUARD_TRUE:
                 result = (guard_result == 1);

@@ -300,13 +300,14 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
         g_signal_connect(G_OBJECT(guard_op_value), "key_press_event",
                                           G_CALLBACK(input_key_cb),
                                           G_OBJECT(dialog));
+
+        g_signal_connect (guard_op, "changed", G_CALLBACK (guard_op_changed),
+                                guard_op_value);
     }
 
     /* Connect signals */
     gtk_widget_show_all(vbox);
 
-    g_signal_connect (guard_op, "changed", G_CALLBACK (guard_op_changed),
-                            guard_op_value);
 
     g_signal_connect(G_OBJECT(input), "changed",
                                       G_CALLBACK(input_changed),
@@ -359,6 +360,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
             case UFSMM_ACTION_GUARD:
                 rc = ufsmm_transition_add_guard(model, transition, id,
                                                     selected_action->id,
+                                                    NULL,
                                                     guard_kind,
                                                     guard_value);
             break;
@@ -396,6 +398,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
             case UFSMM_ACTION_GUARD:
                 rc = ufsmm_transition_add_guard(model, transition, id,
                                                     selected_action->id,
+                                                    NULL,
                                                     guard_kind,
                                                     guard_value);
             break;

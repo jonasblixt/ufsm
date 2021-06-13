@@ -319,6 +319,26 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
                 else
                     sprintf(text_buf, "%s() <= %i, ", guard->act->name, guard->value);
              break;
+             case UFSMM_GUARD_PSTATE:
+                if ((guard == TAILQ_FIRST(&t->guards)) && TAILQ_NEXT(guard, tailq))
+                    sprintf(text_buf, "[<%s>, ", guard->state->name);
+                else if ((guard == TAILQ_FIRST(&t->guards)) && (TAILQ_NEXT(guard, tailq) == NULL))
+                    sprintf(text_buf, "[<%s>]", guard->state->name);
+                else if (TAILQ_NEXT(guard, tailq) == NULL)
+                    sprintf(text_buf, "<%s>]", guard->state->name);
+                else
+                    sprintf(text_buf, "<%s>, ", guard->state->name);
+             break;
+             case UFSMM_GUARD_NSTATE:
+                if ((guard == TAILQ_FIRST(&t->guards)) && TAILQ_NEXT(guard, tailq))
+                    sprintf(text_buf, "[!<%s>, ", guard->state->name);
+                else if ((guard == TAILQ_FIRST(&t->guards)) && (TAILQ_NEXT(guard, tailq) == NULL))
+                    sprintf(text_buf, "[!<%s>]", guard->state->name);
+                else if (TAILQ_NEXT(guard, tailq) == NULL)
+                    sprintf(text_buf, "!<%s>]", guard->state->name);
+                else
+                    sprintf(text_buf, "!<%s>, ", guard->state->name);
+             break;
              default:
                 sprintf(text_buf, "????");
              break;

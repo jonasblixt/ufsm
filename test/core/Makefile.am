@@ -22,7 +22,8 @@ dist_noinst_DATA = test_transition_conflict.ufsm \
 				   test_ev_repeat_orth.ufsm \
 				   test_fork.ufsm \
 				   test_terminate.ufsm \
-				   test_guards2.ufsm
+				   test_guards2.ufsm \
+				   test_state_conditions.ufsm
 
 MOSTLYCLEANFILES = test_transition_conflict.gen.c test_transition_conflict.gen.h \
 				   test_xmi_machine.gen.c test_xmi_machine.gen.h \
@@ -34,7 +35,8 @@ MOSTLYCLEANFILES = test_transition_conflict.gen.c test_transition_conflict.gen.h
 				   test_ev_repeat_orth.gen.c test_ev_repeat_orth.gen.h \
 				   test_fork.gen.c test_fork.gen.h \
 				   test_terminate.gen.c test_terminate.gen.h \
-				   test_guards2.gen.c test_guards2.gen.h
+				   test_guards2.gen.c test_guards2.gen.h \
+				   test_state_conditions.gen.c test_state_conditions.gen.h
 
 BUILTSOURCES: test_transition_conflict.gen.c test_transition_conflict.gen.h \
 		      test_xmi_machine.gen.c test_xmi_machine.gen.h \
@@ -46,7 +48,8 @@ BUILTSOURCES: test_transition_conflict.gen.c test_transition_conflict.gen.h \
 			  test_ev_repeat_orth.gen.c test_ev_repeat_orth.gen.h \
 			  test_fork.gen.c test_fork.gen.h \
 			  test_terminate.gen.c test_terminate.gen.h \
-			  test_guards2.gen.c test_guards2.gen.h
+			  test_guards2.gen.c test_guards2.gen.h \
+			  test_state_conditions.gen.c test_state_conditions.gen.h
 
 ################################################################################
 
@@ -64,7 +67,8 @@ check_PROGRAMS = test_simple \
 				 test_ev_repeat_orth \
 				 test_fork \
 				 test_terminate \
-				 test_guards2
+				 test_guards2 \
+				 test_state_conditions
 
 test_simple_SOURCES = test_simple.c
 test_simple_LDADD = $(COMMON_TEST_LDADD)
@@ -142,6 +146,11 @@ test_guards2_SOURCES = test_guards2.c $(builddir)/test_guards2.gen.c
 test_guards2_LDADD = $(COMMON_TEST_LDADD)
 test_guards2_CFLAGS = $(COMMON_TEST_CFLAGS)
 
+test_state_conditions.c: test_state_conditions.gen.c
+test_state_conditions_SOURCES = test_state_conditions.c $(builddir)/test_state_conditions.gen.c
+test_state_conditions_LDADD = $(COMMON_TEST_LDADD)
+test_state_conditions_CFLAGS = $(COMMON_TEST_CFLAGS)
+
 TESTS = test_simple \
         test_simple_substate \
         test_simple_completion \
@@ -156,4 +165,5 @@ TESTS = test_simple \
 		test_ev_repeat_orth \
 		test_fork \
 		test_terminate \
-		test_guards2
+		test_guards2 \
+		test_state_conditions
