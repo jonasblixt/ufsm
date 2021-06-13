@@ -22,7 +22,7 @@ static void reset_flags(void)
 }
 
 
-bool Guard(void *ctx)
+int Guard(void *ctx)
 {
     return true;
 }

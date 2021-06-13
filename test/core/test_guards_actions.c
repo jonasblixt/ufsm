@@ -21,12 +21,12 @@ static void reset_test_flags(void) {
     guard2_ret_val = true;
 }
 
-static bool guard1_f(void *ctx) {
+static int guard1_f(void *ctx) {
     flag_guard1_called = true;
     return true;
 }
 
-static bool guard2_f(void *ctx) {
+static int guard2_f(void *ctx) {
     flag_guard2_called = true;
     return guard2_ret_val;
 }
@@ -43,6 +43,7 @@ static struct ufsm_guard guard1 =
 {
     .f = &guard1_f,
     .name = "guard1_f",
+    .kind = UFSM_GUARD_TRUE,
     .next = &guard2,
 };
 
@@ -50,6 +51,7 @@ static struct ufsm_guard guard2 =
 {
     .f = &guard2_f,
     .name = "guard2_f",
+    .kind = UFSM_GUARD_TRUE,
     .next = NULL,
 };
 

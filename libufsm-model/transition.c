@@ -340,16 +340,30 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
                 json_object *j_guard;
                 json_object *j_guard_id;
                 json_object *j_id;
+                json_object *j_kind;
+                json_object *j_value;
                 uuid_t guard_uu;
                 uuid_t id_uu;
+                enum ufsmm_guard_kind guard_kind = UFSMM_GUARD_TRUE;
+                int guard_value = 0;
                 j_guard = json_object_array_get_idx(j_guards, n);
 
                 if (json_object_object_get_ex(j_guard, "action-id", &j_guard_id)) {
                     json_object_object_get_ex(j_guard, "id", &j_id);
                     uuid_parse(json_object_get_string(j_id), id_uu);
                     uuid_parse(json_object_get_string(j_guard_id), guard_uu);
+
+                    if (json_object_object_get_ex(j_guard, "kind", &j_kind)) {
+                        guard_kind = json_object_get_int(j_kind);
+                    }
+
+                    if (json_object_object_get_ex(j_guard, "value", &j_value)) {
+                        guard_value = json_object_get_int(j_value);
+                    }
+
                     rc = ufsmm_transition_add_guard(model, transition, id_uu,
-                                                    guard_uu);
+                                                    guard_uu, guard_kind,
+                                                    guard_value);
                     if (rc != UFSMM_OK)
                         goto err_out;
                 }
@@ -390,6 +404,31 @@ static int serialize_action_list(struct ufsmm_action_refs *list,
         uuid_unparse(item->id, uuid_str);
         json_object_object_add(action, "id", json_object_new_string(uuid_str));
         json_object_array_add(output, action);
+    }
+
+    return UFSMM_OK;
+}
+
+static int serialize_guard_list(struct ufsmm_guard_refs *list,
+                                 json_object *output)
+{
+    json_object *guard;
+    char uuid_str[37];
+    struct ufsmm_guard_ref *item;
+
+    TAILQ_FOREACH(item, list, tailq) {
+        guard = json_object_new_object();
+        if ((item->kind != UFSMM_GUARD_PSTATE) &&
+            (item->kind != UFSMM_GUARD_NSTATE)) {
+            uuid_unparse(item->act->id, uuid_str);
+            json_object_object_add(guard, "action-id", json_object_new_string(uuid_str));
+        }
+        json_object_object_add(guard, "kind", json_object_new_int(item->kind));
+        json_object_object_add(guard, "value", json_object_new_int(item->value));
+        uuid_unparse(item->id, uuid_str);
+        json_object_object_add(guard, "id", json_object_new_string(uuid_str));
+        //json_object_object_add(
+        json_object_array_add(output, guard);
     }
 
     return UFSMM_OK;
@@ -515,7 +554,7 @@ int ufsmm_transitions_serialize(struct ufsmm_state *state,
         /* Add guards */
         json_object *j_guards = json_object_new_array();
 
-        rc = serialize_action_list(&t->guards, j_guards);
+        rc = serialize_guard_list(&t->guards, j_guards);
         if (rc != UFSMM_OK)
            goto err_out;
 
@@ -592,7 +631,7 @@ int ufsmm_transition_free_one(struct ufsmm_transition *transition)
     L_DEBUG("Freeing actions");
     free_action_ref_list(&transition->actions);
     L_DEBUG("Freeing guards");
-    free_action_ref_list(&transition->guards);
+    free_guard_ref_list(&transition->guards);
 
     while (v = TAILQ_FIRST(&transition->vertices)) {
         TAILQ_REMOVE(&transition->vertices, v, tailq);
@@ -619,10 +658,12 @@ int ufsmm_transition_set_trigger(struct ufsmm_model *model,
 int ufsmm_transition_add_guard(struct ufsmm_model *model,
                               struct ufsmm_transition *transition,
                               uuid_t id,
-                              uuid_t action_id)
+                              uuid_t action_id,
+                              enum ufsmm_guard_kind kind,
+                              int guard_value)
 {
     struct ufsmm_action *action;
-    struct ufsmm_action_ref *aref;
+    struct ufsmm_guard_ref *guard;
     int rc;
 
     L_DEBUG("%s", __func__);
@@ -638,19 +679,21 @@ int ufsmm_transition_add_guard(struct ufsmm_model *model,
 
     L_DEBUG("Adding guard '%s' to transition", action->name);
 
-    aref = malloc(sizeof(struct ufsmm_action_ref));
-    memset(aref, 0, sizeof(*aref));
-    aref->act = action;
-    memcpy(aref->id, id, 16);
+    guard = malloc(sizeof(struct ufsmm_guard_ref));
+    memset(guard, 0, sizeof(*guard));
+    guard->kind = kind;
+    guard->value = guard_value;
+    guard->act = action;
+    memcpy(guard->id, id, 16);
 
-    TAILQ_INSERT_TAIL(&transition->guards, aref, tailq);
+    TAILQ_INSERT_TAIL(&transition->guards, guard, tailq);
 
     return UFSMM_OK;
 }
 
 int ufsmm_transition_delete_guard(struct ufsmm_transition *transition, uuid_t id)
 {
-    return delete_action_ref(&transition->guards, id);
+    return delete_guard_ref(&transition->guards, id);
 }
 
 int ufsmm_transition_add_action(struct ufsmm_model *model,

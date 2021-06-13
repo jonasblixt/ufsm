@@ -26,8 +26,10 @@ struct ufsmm_state *ufsmm_state_new(enum ufsmm_state_kind kind)
 
 void ufsmm_state_free(struct ufsmm_state *state)
 {
-    if (state->name)
+    if (state->name) {
         free((void *) state->name);
+        state->name = NULL;
+    }
     free(state);
 }
 

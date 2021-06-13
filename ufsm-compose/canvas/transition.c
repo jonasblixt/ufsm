@@ -211,6 +211,7 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
     unsigned int line_no = 0;
     const char *text_ptr = NULL;
     struct ufsmm_action_ref *ar;
+    struct ufsmm_guard_ref *guard;
 
     cairo_save(cr);
     cairo_set_font_size (cr, 14);
@@ -245,15 +246,83 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
     x_space -= extents.width;
     x += extents.width + 10;
 
-    TAILQ_FOREACH(ar, &t->guards, tailq) {
-        if ((ar == TAILQ_FIRST(&t->guards)) && TAILQ_NEXT(ar, tailq))
-            sprintf(text_buf, "[%s(), ", ar->act->name);
-        else if ((ar == TAILQ_FIRST(&t->guards)) && (TAILQ_NEXT(ar, tailq) == NULL))
-            sprintf(text_buf, "[%s()]", ar->act->name);
-        else if (TAILQ_NEXT(ar, tailq) == NULL)
-            sprintf(text_buf, "%s()]", ar->act->name);
-        else
-            sprintf(text_buf, "%s(), ", ar->act->name);
+    TAILQ_FOREACH(guard, &t->guards, tailq) {
+
+        switch(guard->kind) {
+            case UFSMM_GUARD_TRUE:
+                if ((guard == TAILQ_FIRST(&t->guards)) && TAILQ_NEXT(guard, tailq))
+                    sprintf(text_buf, "[%s(), ", guard->act->name);
+                else if ((guard == TAILQ_FIRST(&t->guards)) && (TAILQ_NEXT(guard, tailq) == NULL))
+                    sprintf(text_buf, "[%s()]", guard->act->name);
+                else if (TAILQ_NEXT(guard, tailq) == NULL)
+                    sprintf(text_buf, "%s()]", guard->act->name);
+                else
+                    sprintf(text_buf, "%s(), ", guard->act->name);
+             break;
+            case UFSMM_GUARD_FALSE:
+                if ((guard == TAILQ_FIRST(&t->guards)) && TAILQ_NEXT(guard, tailq))
+                    sprintf(text_buf, "[!%s(), ", guard->act->name);
+                else if ((guard == TAILQ_FIRST(&t->guards)) && (TAILQ_NEXT(guard, tailq) == NULL))
+                    sprintf(text_buf, "[!%s()]", guard->act->name);
+                else if (TAILQ_NEXT(guard, tailq) == NULL)
+                    sprintf(text_buf, "!%s()]", guard->act->name);
+                else
+                    sprintf(text_buf, "!%s(), ", guard->act->name);
+             break;
+             case UFSMM_GUARD_GT:
+                if ((guard == TAILQ_FIRST(&t->guards)) && TAILQ_NEXT(guard, tailq))
+                    sprintf(text_buf, "[%s() > %i, ", guard->act->name, guard->value);
+                else if ((guard == TAILQ_FIRST(&t->guards)) && (TAILQ_NEXT(guard, tailq) == NULL))
+                    sprintf(text_buf, "[%s() > %i]", guard->act->name, guard->value);
+                else if (TAILQ_NEXT(guard, tailq) == NULL)
+                    sprintf(text_buf, "%s() > %i]", guard->act->name, guard->value);
+                else
+                    sprintf(text_buf, "%s() > %i, ", guard->act->name, guard->value);
+             break;
+             case UFSMM_GUARD_GTE:
+                if ((guard == TAILQ_FIRST(&t->guards)) && TAILQ_NEXT(guard, tailq))
+                    sprintf(text_buf, "[%s() >= %i, ", guard->act->name, guard->value);
+                else if ((guard == TAILQ_FIRST(&t->guards)) && (TAILQ_NEXT(guard, tailq) == NULL))
+                    sprintf(text_buf, "[%s() >= %i]", guard->act->name, guard->value);
+                else if (TAILQ_NEXT(guard, tailq) == NULL)
+                    sprintf(text_buf, "%s() >= %i]", guard->act->name, guard->value);
+                else
+                    sprintf(text_buf, "%s() >= %i, ", guard->act->name, guard->value);
+             break;
+             case UFSMM_GUARD_EQ:
+                if ((guard == TAILQ_FIRST(&t->guards)) && TAILQ_NEXT(guard, tailq))
+                    sprintf(text_buf, "[%s() == %i, ", guard->act->name, guard->value);
+                else if ((guard == TAILQ_FIRST(&t->guards)) && (TAILQ_NEXT(guard, tailq) == NULL))
+                    sprintf(text_buf, "[%s() == %i]", guard->act->name, guard->value);
+                else if (TAILQ_NEXT(guard, tailq) == NULL)
+                    sprintf(text_buf, "%s() == %i]", guard->act->name, guard->value);
+                else
+                    sprintf(text_buf, "%s() == %i, ", guard->act->name, guard->value);
+             break;
+             case UFSMM_GUARD_LT:
+                if ((guard == TAILQ_FIRST(&t->guards)) && TAILQ_NEXT(guard, tailq))
+                    sprintf(text_buf, "[%s() < %i, ", guard->act->name, guard->value);
+                else if ((guard == TAILQ_FIRST(&t->guards)) && (TAILQ_NEXT(guard, tailq) == NULL))
+                    sprintf(text_buf, "[%s() < %i]", guard->act->name, guard->value);
+                else if (TAILQ_NEXT(guard, tailq) == NULL)
+                    sprintf(text_buf, "%s() < %i]", guard->act->name, guard->value);
+                else
+                    sprintf(text_buf, "%s() < %i, ", guard->act->name, guard->value);
+             break;
+             case UFSMM_GUARD_LTE:
+                if ((guard == TAILQ_FIRST(&t->guards)) && TAILQ_NEXT(guard, tailq))
+                    sprintf(text_buf, "[%s() <= %i, ", guard->act->name, guard->value);
+                else if ((guard == TAILQ_FIRST(&t->guards)) && (TAILQ_NEXT(guard, tailq) == NULL))
+                    sprintf(text_buf, "[%s() <= %i]", guard->act->name, guard->value);
+                else if (TAILQ_NEXT(guard, tailq) == NULL)
+                    sprintf(text_buf, "%s() <= %i]", guard->act->name, guard->value);
+                else
+                    sprintf(text_buf, "%s() <= %i, ", guard->act->name, guard->value);
+             break;
+             default:
+                sprintf(text_buf, "????");
+             break;
+        }
 
         cairo_text_extents (cr, text_buf, &extents);
         x_space -= (extents.width + 10);
@@ -266,16 +335,16 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
 
         y = ry + ty + 20 + 20 * line_no;
 
-        ar->x = x;
-        ar->y = y - extents.height / 2;
-        ar->w = extents.width;
-        ar->h = extents.height;
+        guard->x = x;
+        guard->y = y - extents.height / 2;
+        guard->w = extents.width;
+        guard->h = extents.height;
 
         if (!t->focus)
-            ar->focus = false;
+            guard->focus = false;
 
         cairo_move_to (cr, x, y);
-        if (ar->focus)
+        if (guard->focus)
             ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
         else
             ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);

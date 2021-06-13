@@ -49,7 +49,7 @@ struct ufsm_guard;
 struct ufsm_transition;
 struct ufsm_region;
 
-typedef bool (*ufsm_guard_func_t) (void *context);
+typedef int (*ufsm_guard_func_t) (void *context);
 typedef void (*ufsm_action_func_t) (void *context);
 typedef void (*ufsm_emit_signal_t) (void *context, int signal);
 
@@ -58,7 +58,7 @@ typedef void (*ufsm_debug_event_t) (int ev);
 typedef void (*ufsm_debug_transition_t) (const struct ufsm_transition *t);
 typedef void (*ufsm_debug_enter_region_t) (const struct ufsm_region *region);
 typedef void (*ufsm_debug_leave_region_t) (const struct ufsm_region *region);
-typedef void (*ufsm_debug_guard_t) (const struct ufsm_guard *guard, bool result);
+typedef void (*ufsm_debug_guard_t) (const struct ufsm_guard *guard, int result);
 typedef void (*ufsm_debug_action_t) (const struct ufsm_action *action);
 typedef void (*ufsm_debug_enter_state_t) (const struct ufsm_state *s);
 typedef void (*ufsm_debug_exit_state_t) (const struct ufsm_state *s);
@@ -91,6 +91,19 @@ enum ufsm_action_kind
     UFSM_ACTION_KIND_SIGNAL,
 };
 
+enum ufsm_guard_kind
+{
+    UFSM_GUARD_TRUE,
+    UFSM_GUARD_FALSE,
+    UFSM_GUARD_EQ,
+    UFSM_GUARD_GT,
+    UFSM_GUARD_GTE,
+    UFSM_GUARD_LT,
+    UFSM_GUARD_LTE,
+    UFSM_GUARD_PSTATE,
+    UFSM_GUARD_NSTATE,
+};
+
 extern const char *ufsm_state_kinds[];
 
 struct ufsm_stack
@@ -105,7 +118,7 @@ struct ufsm_trigger;
 struct ufsm_action
 {
     const char *name;
-    enum ufsm_action_kind kind;
+    const enum ufsm_action_kind kind;
     const ufsm_action_func_t f;
     const struct ufsm_trigger *signal;
     const struct ufsm_action *next;
@@ -114,7 +127,10 @@ struct ufsm_action
 struct ufsm_guard
 {
     const char *name;
+    const enum ufsm_guard_kind kind;
+    const int value;
     const ufsm_guard_func_t f;
+    const struct ufsm_state *state;
     const struct ufsm_guard *next;
 };
 

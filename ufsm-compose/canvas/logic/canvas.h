@@ -54,23 +54,23 @@ enum {
 };
 
 /* Guard function prototypes */
-bool canvas_region_selected(void *context);
-bool canvas_state_selected(void *context);
-bool canvas_state_resize_selected(void *context);
-bool canvas_region_resize_selected(void *context);
-bool canvas_state_entry_selected(void *context);
-bool canvas_transition_selected(void *context);
-bool canvas_transition_tvertice_selected(void *context);
-bool canvas_transition_svertice_selected(void *context);
-bool canvas_transition_text_block_selected(void *context);
-bool canvas_transition_dvertice_selected(void *context);
-bool canvas_guard_selected(void *context);
-bool canvas_action_selected(void *context);
-bool canvas_state_exit_selected(void *context);
-bool canvas_textblock_resize_selected(void *context);
-bool canvas_only_state_selected(void *context);
-bool canvas_transition_vertice_selected(void *context);
-bool canvas_transition_selected2(void *context);
+int canvas_region_selected(void *context);
+int canvas_state_selected(void *context);
+int canvas_state_resize_selected(void *context);
+int canvas_region_resize_selected(void *context);
+int canvas_state_entry_selected(void *context);
+int canvas_transition_selected(void *context);
+int canvas_transition_tvertice_selected(void *context);
+int canvas_transition_svertice_selected(void *context);
+int canvas_transition_text_block_selected(void *context);
+int canvas_transition_dvertice_selected(void *context);
+int canvas_guard_selected(void *context);
+int canvas_action_selected(void *context);
+int canvas_state_exit_selected(void *context);
+int canvas_textblock_resize_selected(void *context);
+int canvas_only_state_selected(void *context);
+int canvas_transition_vertice_selected(void *context);
+int canvas_transition_selected2(void *context);
 
 /* Action function prototypes */
 void canvas_select_root_region(void *context);

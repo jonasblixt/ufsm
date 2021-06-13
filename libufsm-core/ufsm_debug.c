@@ -84,7 +84,7 @@ static void debug_action(const struct ufsm_action *a)
         printf("    | Unknown action\n");
 }
 
-static void debug_guard(const struct ufsm_guard *g, bool result) 
+static void debug_guard(const struct ufsm_guard *g, int result) 
 {
     printf ("    | Guard      | %s() = %i\n", g->name, result);
 }

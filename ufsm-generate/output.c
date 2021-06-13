@@ -36,6 +36,7 @@ static void generate_transitions(FILE *fp, struct ufsmm_state *s)
     char uu_str[37];
     struct ufsmm_transition *t;
     struct ufsmm_action_ref *ar;
+    struct ufsmm_guard_ref *guard;
 
     if (s->transitions.tqh_first) {
         fprintf(fp, "/* Transitions originating from '%s' */\n", s->name);
@@ -50,8 +51,8 @@ static void generate_transitions(FILE *fp, struct ufsmm_state *s)
             uu_to_str(ar->id, uu_str);
             fprintf(fp, "const struct ufsm_action a_%s;\n", uu_str);
         }
-        TAILQ_FOREACH(ar, &t->guards, tailq) {
-            uu_to_str(ar->id, uu_str);
+        TAILQ_FOREACH(guard, &t->guards, tailq) {
+            uu_to_str(guard->id, uu_str);
             fprintf(fp, "const struct ufsm_guard g_%s;\n", uu_str);
         }
     }
@@ -83,13 +84,15 @@ static void generate_transitions(FILE *fp, struct ufsmm_state *s)
             fprintf(fp, "};\n\n");
         }
 
-        TAILQ_FOREACH(ar, &t->guards, tailq) {
-            uu_to_str(ar->id, uu_str);
+        TAILQ_FOREACH(guard, &t->guards, tailq) {
+            uu_to_str(guard->id, uu_str);
             fprintf(fp, "const struct ufsm_guard g_%s = {\n", uu_str);
-            fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
-            fprintf(fp, "    .f = &%s,\n", ar->act->name);
-            if (TAILQ_NEXT(ar, tailq)) {
-                uu_to_str(TAILQ_NEXT(ar, tailq)->id, uu_str);
+            fprintf(fp, "    .name = \"%s\",\n", guard->act->name);
+            fprintf(fp, "    .f = &%s,\n", guard->act->name);
+            fprintf(fp, "    .kind = %i,\n", guard->kind);
+            fprintf(fp, "    .value = %i,\n", guard->value);
+            if (TAILQ_NEXT(guard, tailq)) {
+                uu_to_str(TAILQ_NEXT(guard, tailq)->id, uu_str);
                 fprintf(fp, "    .next = &g_%s,\n", uu_str);
             } else {
                 fprintf(fp, "    .next = NULL,\n");
@@ -523,7 +526,7 @@ static int generate_header_file(struct ufsmm_model *model,
         fprintf(fp, "/* Guard function prototypes */\n");
         struct ufsmm_action *a;
         TAILQ_FOREACH(a, &model->guards, tailq) {
-            fprintf(fp, "bool %s(void *context);\n", a->name);
+            fprintf(fp, "int %s(void *context);\n", a->name);
         }
 
         fprintf(fp, "\n");

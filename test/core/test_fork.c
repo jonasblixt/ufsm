@@ -32,8 +32,8 @@ void reset_flags(void)
     flag_xAB = false;
 }
 
-bool gA(void *ctx) { flag_gA = true; return gA_val; }
-bool g2(void *ctx) { flag_g2 = true; return g2_val; }
+int gA(void *ctx) { flag_gA = true; return gA_val; }
+int g2(void *ctx) { flag_g2 = true; return g2_val; }
 void finalC(void *ctx) { flag_finalC = true; }
 void eB2(void *ctx) { flag_eB2 = true; }
 void xB2(void *ctx) { flag_xB2 = true; }

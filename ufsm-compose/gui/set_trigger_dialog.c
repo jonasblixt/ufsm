@@ -151,7 +151,7 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
                                        parent,
                                        flags,
                                        "_OK",
-                                       GTK_RESPONSE_ACCEPT,
+                                       1,
                                        "_Cancel",
                                        GTK_RESPONSE_REJECT,
                                        NULL);

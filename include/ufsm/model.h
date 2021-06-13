@@ -105,6 +105,19 @@ enum ufsmm_orientation
     UFSMM_ORIENTATION_HORIZONTAL,
 };
 
+enum ufsmm_guard_kind
+{
+    UFSMM_GUARD_TRUE,
+    UFSMM_GUARD_FALSE,
+    UFSMM_GUARD_EQ,
+    UFSMM_GUARD_GT,
+    UFSMM_GUARD_GTE,
+    UFSMM_GUARD_LT,
+    UFSMM_GUARD_LTE,
+    UFSMM_GUARD_PSTATE,
+    UFSMM_GUARD_NSTATE,
+};
+
 struct ufsmm_action
 {
     uuid_t id;
@@ -127,6 +140,21 @@ struct ufsmm_action_ref
 };
 
 TAILQ_HEAD(ufsmm_action_refs, ufsmm_action_ref);
+
+struct ufsmm_guard_ref
+{
+    uuid_t id;
+    bool focus;
+    double x, y, w, h; /* Support variables for the canvas */
+    enum ufsmm_guard_kind kind;
+    struct ufsmm_action *act;
+    int value;
+    struct ufsmm_state *pstate;
+    struct ufsmm_state *nstate;
+    TAILQ_ENTRY(ufsmm_guard_ref) tailq;
+};
+
+TAILQ_HEAD(ufsmm_guard_refs, ufsmm_guard_ref);
 
 struct ufsmm_trigger
 {
@@ -176,7 +204,7 @@ struct ufsmm_transition
     struct ufsmm_trigger *trigger;
     enum ufsmm_transition_kind kind;
     struct ufsmm_action_refs actions;
-    struct ufsmm_action_refs guards;
+    struct ufsmm_guard_refs guards;
     struct ufsmm_transition_state_ref source;
     struct ufsmm_transition_state_ref dest;
     struct ufsmm_coords text_block_coords;
@@ -283,7 +311,7 @@ struct ufsmm_state *ufsmm_model_get_state_from_uuid(struct ufsmm_model *model,
 struct ufsmm_trigger * ufsmm_model_get_trigger_from_uuid(struct ufsmm_model *model,
                                                        uuid_t id);
 int free_action_ref_list(struct ufsmm_action_refs *list);
-
+int free_guard_ref_list(struct ufsmm_guard_refs *list);
 int ufsmm_model_delete_region(struct ufsmm_model *model,
                               struct ufsmm_region *region);
 
@@ -292,6 +320,7 @@ int ufsmm_model_delete_state(struct ufsmm_model *model,
 
 
 int delete_action_ref(struct ufsmm_action_refs *list, uuid_t id);
+int delete_guard_ref(struct ufsmm_guard_refs *list, uuid_t id);
 
 /* Region api */
 int ufsmm_add_region(struct ufsmm_state *state, bool off_page,
@@ -387,7 +416,9 @@ int ufsmm_transition_set_trigger(struct ufsmm_model *model,
 int ufsmm_transition_add_guard(struct ufsmm_model *model,
                               struct ufsmm_transition *transition,
                               uuid_t id,
-                              uuid_t action_id);
+                              uuid_t action_id,
+                              enum ufsmm_guard_kind kind,
+                              int guard_value);
 
 int ufsmm_transition_delete_guard(struct ufsmm_transition *transition, uuid_t id);
 

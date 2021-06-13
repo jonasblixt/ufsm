@@ -42,7 +42,7 @@ TEST(load_transitions)
     ASSERT_EQ(v2->x, 100.0);
     ASSERT_EQ(v2->y, 110.0);
 */
-    struct ufsmm_action_ref *guards = TAILQ_FIRST(&t->guards);
+    struct ufsmm_guard_ref *guards = TAILQ_FIRST(&t->guards);
     ASSERT_EQ(guards->act->name, "gSecond");
 
     struct ufsmm_action_ref *a1, *a2;

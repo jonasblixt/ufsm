@@ -40,6 +40,7 @@ struct ufsmm_canvas {
     enum ufsmm_transition_vertice_kind selected_transition_vertice;
     struct ufsmm_vertice *selected_transition_vertice_data;
     struct ufsmm_action_ref *selected_aref;
+    struct ufsmm_guard_ref *selected_guard;
     struct ufsmm_transition *selected_transition;
     struct ufsmm_state *preview_state;
     struct ufsmm_transition *preview_transition;

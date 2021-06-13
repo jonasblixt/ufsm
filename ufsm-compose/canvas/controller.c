@@ -330,7 +330,7 @@ void canvas_check_guard(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
     struct ufsmm_region *cr = priv->current_region;
-    struct ufsmm_action_ref *ar;
+    struct ufsmm_guard_ref *ar;
 
     TAILQ_FOREACH(ar, &t->guards, tailq) {
         ar->focus = false;
@@ -341,7 +341,7 @@ void canvas_check_guard(void *context)
                                               ar->y + cr->oy, ar->w, ar->h)) {
             ar->focus = true;
             priv->redraw = true;
-            priv->selected_aref = ar;
+            priv->selected_guard = ar;
             priv->selection = UFSMM_SELECTION_GUARD;
             L_DEBUG("Selected guard!");
         }
@@ -404,31 +404,31 @@ void canvas_show_state_hint(void *context)
 {
 }
 
-bool canvas_guard_selected(void *context)
+int canvas_guard_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     return (priv->selection == UFSMM_SELECTION_GUARD);
 }
 
-bool canvas_action_selected(void *context)
+int canvas_action_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     return (priv->selection == UFSMM_SELECTION_ACTION);
 }
 
-bool canvas_state_exit_selected(void *context)
+int canvas_state_exit_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     return (priv->selection == UFSMM_SELECTION_EXIT);
 }
 
-bool canvas_textblock_resize_selected(void *context)
+int canvas_textblock_resize_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     return (priv->selected_corner != UFSMM_NO_SELECTION);
 }
 
-bool canvas_only_state_selected(void *context)
+int canvas_only_state_selected(void *context)
 {
     return false;
 }
@@ -649,24 +649,24 @@ void canvas_reorder_guard_func(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *transition = priv->selected_transition;
-    struct ufsmm_action_ref *aref = priv->selected_aref;
-    struct ufsmm_action_ref *next, *prev;
+    struct ufsmm_guard_ref *guard = priv->selected_guard;
+    struct ufsmm_guard_ref *next, *prev;
 
     if (priv->dx > 10.0) {
         ufsmm_canvas_reset_delta(priv);
-        next = TAILQ_NEXT(aref, tailq);
+        next = TAILQ_NEXT(guard, tailq);
         if (next) {
-            TAILQ_REMOVE(&transition->guards, aref, tailq);
-            TAILQ_INSERT_AFTER(&transition->guards, next, aref, tailq);
+            TAILQ_REMOVE(&transition->guards, guard, tailq);
+            TAILQ_INSERT_AFTER(&transition->guards, next, guard, tailq);
             priv->redraw = true;
         }
     } else if (priv->dx < -10.0) {
         ufsmm_canvas_reset_delta(priv);
-        prev = TAILQ_PREV(aref, ufsmm_action_refs, tailq);
+        prev = TAILQ_PREV(guard, ufsmm_guard_refs, tailq);
 
         if (prev) {
-            TAILQ_REMOVE(&transition->guards, aref, tailq);
-            TAILQ_INSERT_BEFORE(prev, aref, tailq);
+            TAILQ_REMOVE(&transition->guards, guard, tailq);
+            TAILQ_INSERT_BEFORE(prev, guard, tailq);
             priv->redraw = true;
         }
     }
@@ -856,7 +856,7 @@ void canvas_delete_guard(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     ufsmm_transition_delete_guard(priv->selected_transition,
-                                  priv->selected_aref->id);
+                                  priv->selected_guard->id);
     priv->redraw = true;
 }
 
@@ -1584,7 +1584,7 @@ void canvas_delete_transition_tvertice(void *context)
     priv->redraw = true;
 }
 
-bool canvas_transition_tvertice_selected(void *context)
+int canvas_transition_tvertice_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     return (priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE);

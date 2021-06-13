@@ -5,19 +5,19 @@
 
 /* Guard function prototypes */
 
-bool canvas_state_selected(void *context)
+int canvas_state_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     return (priv->selection == UFSMM_SELECTION_STATE);
 }
 
-bool canvas_state_resize_selected(void *context)
+int canvas_state_resize_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     return (priv->selected_corner != UFSMM_NO_SELECTION);
 }
 
-bool canvas_region_selected(void *context)
+int canvas_region_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     return (priv->selection == UFSMM_SELECTION_REGION);
@@ -127,19 +127,19 @@ void canvas_resize_state(void *context)
     selected_state->h = ufsmm_canvas_nearest_grid_point(selected_state->h);
 }
 
-bool canvas_region_resize_selected(void *context)
+int canvas_region_resize_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     return (priv->selected_corner != UFSMM_NO_SELECTION);
 }
 
-bool canvas_state_entry_selected(void *context)
+int canvas_state_entry_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     return (priv->selection == UFSMM_SELECTION_ENTRY);
 }
 
-bool canvas_transition_selected(void *context)
+int canvas_transition_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
 
@@ -148,7 +148,7 @@ bool canvas_transition_selected(void *context)
             (priv->selected_transition_vertice != UFSMM_TRANSITION_VERTICE);*/
 }
 
-bool canvas_transition_selected2(void *context)
+int canvas_transition_selected2(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
 
@@ -156,7 +156,7 @@ bool canvas_transition_selected2(void *context)
             (priv->selected_transition_vertice != UFSMM_TRANSITION_VERTICE);
 }
 
-bool canvas_transition_vertice_selected(void *context)
+int canvas_transition_vertice_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
@@ -212,7 +212,7 @@ bool canvas_transition_vertice_selected(void *context)
     return (priv->selected_transition_vertice != UFSMM_TRANSITION_VERTICE_NONE);
 }
 
-bool canvas_transition_text_block_selected(void *context)
+int canvas_transition_text_block_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
@@ -264,7 +264,7 @@ bool canvas_transition_text_block_selected(void *context)
     return selected;
 }
 
-bool canvas_transition_dvertice_selected(void *context)
+int canvas_transition_dvertice_selected(void *context)
 {
     return false;
 }
