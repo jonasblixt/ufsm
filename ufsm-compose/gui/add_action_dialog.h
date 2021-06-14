@@ -7,8 +7,5 @@ int ufsm_add_entry_action_dialog(GtkWindow *parent, struct ufsmm_model *model,
 int ufsm_add_exit_action_dialog(GtkWindow *parent, struct ufsmm_model *model,
                                 struct ufsmm_state *state);
 
-int ufsm_add_transition_guard_dialog(GtkWindow *parent, struct ufsmm_model *model,
-                            struct ufsmm_transition *transition);
-
 int ufsm_add_transition_action_dialog(GtkWindow *parent, struct ufsmm_model *model,
                             struct ufsmm_transition *transition);

@@ -6,12 +6,10 @@ enum
   COLUMN_MATCH_RATING,
   COLUMN_NAME,
   COLUMN_ACTION_REF,
-  COLUMN_SIGNAL,
   NUM_COLUMNS
 };
 
 static struct ufsmm_action *selected_action;
-static struct ufsmm_trigger *selected_signal;
 
 static void input_changed(GtkEntry *entry, gpointer user_data)
 {
@@ -106,8 +104,6 @@ static gboolean view_selection_func(GtkTreeSelection *selection,
         if (!path_currently_selected) {
             gtk_tree_model_get(model, &iter, COLUMN_ACTION_REF,
                                 &selected_action, -1);
-            gtk_tree_model_get(model, &iter, COLUMN_SIGNAL,
-                                &selected_signal, -1);
         }
 
         g_free(name);
@@ -131,15 +127,24 @@ static void list_row_activated_cb(GtkTreeView        *treeview,
 
        gtk_tree_model_get(model, &iter, COLUMN_NAME, &name, -1);
        gtk_tree_model_get(model, &iter, COLUMN_ACTION_REF, &selected_action, -1);
-       gtk_tree_model_get(model, &iter, COLUMN_SIGNAL, &selected_signal, -1);
 
        if (selected_action)
            g_print ("Selected action '%s'\n", name);
-       if (selected_signal)
-           g_print ("Selected signal '^%s'\n", name);
 
        gtk_dialog_response(GTK_DIALOG(userdata), GTK_RESPONSE_ACCEPT);
        g_free(name);
+    }
+}
+
+static void guard_op_changed(GtkComboBox *widget, gpointer user_data)
+{
+    GtkComboBox *combo_box = widget;
+    GtkWidget *entry = (GtkWidget *) user_data;
+
+    if (gtk_combo_box_get_active(combo_box) > 1) {
+        gtk_widget_set_sensitive(entry, TRUE);
+    } else {
+        gtk_widget_set_sensitive(entry, FALSE);
     }
 }
 
@@ -149,33 +154,15 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 {
     int rc;
     const char *msg;
-    GtkWidget *dialog, *vbox, *content_area;
+    GtkWidget *dialog, *vbox, *content_area, *guard_op, *guard_op_value;
     GtkWidget *treeview;
     GtkDialogFlags flags;
-    struct ufsmm_actions *list;
+    struct ufsmm_actions *list = &model->guards;
     struct ufsmm_action *a;
     struct ufsmm_state *state = (struct ufsmm_state *) p_input;
     struct ufsmm_transition *transition = (struct ufsmm_transition *) p_input;
 
     selected_action = NULL;
-    selected_signal = NULL;
-
-    switch (kind) {
-        case UFSMM_ACTION_ENTRY:
-            msg = "Add entry";
-            list = &model->actions;
-        break;
-        case UFSMM_ACTION_EXIT:
-            msg = "Add exit";
-            list = &model->actions;
-        break;
-        case UFSMM_ACTION_ACTION:
-            msg = "Add action";
-            list = &model->actions;
-        break;
-        default:
-            return -1;
-    }
 
     flags = GTK_DIALOG_MODAL;
     dialog = gtk_dialog_new_with_buttons(msg,
@@ -214,18 +201,6 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                             -1);
     }
 
-    struct ufsmm_trigger *t;
-    TAILQ_FOREACH(t, &model->triggers, tailq) {
-        char tmp_buf[1024];
-        gtk_list_store_append(store, &iter);
-        snprintf(tmp_buf, sizeof(tmp_buf), "^%s", t->name);
-        gtk_list_store_set (store, &iter,
-                            COLUMN_MATCH_RATING, 0,
-                            COLUMN_NAME, tmp_buf,
-                            COLUMN_SIGNAL, t,
-                            -1);
-    }
-
     gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store),
                                             COLUMN_MATCH_RATING,
                                             GTK_SORT_DESCENDING);
@@ -259,6 +234,32 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
     gtk_tree_selection_set_select_function(selection, view_selection_func,
                                             input, NULL);
 
+    GtkWidget *guard_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
+    GtkWidget *lbl = gtk_label_new("Guard expression");
+    gtk_box_pack_start(GTK_BOX(guard_hbox), lbl, FALSE, FALSE, 0);
+    guard_op = gtk_combo_box_text_new();
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(guard_op), "True");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(guard_op), "False");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(guard_op), "==");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(guard_op), ">");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(guard_op), ">=");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(guard_op), "<");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(guard_op), "<=");
+    gtk_combo_box_set_active(GTK_COMBO_BOX(guard_op), 0);
+
+    guard_op_value = gtk_entry_new();
+    gtk_widget_set_sensitive(guard_op_value, FALSE);
+    gtk_box_pack_start(GTK_BOX(guard_hbox), guard_op, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(guard_hbox), guard_op_value, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), guard_hbox, FALSE, TRUE, 0);
+
+    g_signal_connect(G_OBJECT(guard_op_value), "key_press_event",
+                                      G_CALLBACK(input_key_cb),
+                                      G_OBJECT(dialog));
+
+    g_signal_connect (guard_op, "changed", G_CALLBACK (guard_op_changed),
+                            guard_op_value);
+
     /* Connect signals */
     gtk_widget_show_all(vbox);
 
@@ -281,30 +282,25 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
     if (strlen(action_name) == 0 && (selected_action != NULL))
         action_name = selected_action->name;
 
+    enum ufsmm_guard_kind guard_kind = UFSMM_GUARD_TRUE;
+    int guard_value = 0;
+
+    guard_kind = gtk_combo_box_get_active(GTK_COMBO_BOX(guard_op));
+    guard_value = strtoul(gtk_entry_get_text(GTK_ENTRY(guard_op_value)), NULL, 0);
+    L_DEBUG("guard_value = %i\n", guard_value);
+
+    L_DEBUG("%p %i", selected_action, result);
+
     if (selected_action && (result == GTK_RESPONSE_ACCEPT)) {
         uuid_t id;
         uuid_generate_random(id);
 
-        rc = 0;
-
-        switch (kind) {
-            case UFSMM_ACTION_ENTRY:
-                rc = ufsmm_state_add_entry(model, state, id,
-                                                selected_action->id);
-            break;
-            case UFSMM_ACTION_EXIT:
-                rc = ufsmm_state_add_exit(model, state, id,
-                                                selected_action->id);
-            break;
-            case UFSMM_ACTION_ACTION:
-                rc = ufsmm_transition_add_action(model, transition, id,
-                                                    selected_action->id);
-            break;
-            default:
-                rc = -1;
-            break;
-        }
-    } else if ((result == 1) && (action_name[0] != '^')) { /* Create new action */
+        rc = ufsmm_transition_add_guard(model, transition, id,
+                                            selected_action->id,
+                                            NULL,
+                                            guard_kind,
+                                            guard_value);
+    } else if (result == 1) { /* Create new guard */
         uuid_t id;
         uuid_generate_random(id);
 
@@ -312,7 +308,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                                                 &selected_action);
 
         if (rc != UFSMM_OK) {
-            /* Create new action */
+            /* Create new guard action */
             rc = ufsmm_model_add_action(model, kind, action_name,
                                             &selected_action);
         }
@@ -320,68 +316,11 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
         if (rc != UFSMM_OK)
             goto err_out;
 
-        switch (kind) {
-            case UFSMM_ACTION_ENTRY:
-                rc = ufsmm_state_add_entry(model, state, id, selected_action->id);
-            break;
-            case UFSMM_ACTION_EXIT:
-                rc = ufsmm_state_add_exit(model, state, id, selected_action->id);
-            break;
-            case UFSMM_ACTION_ACTION:
-                rc = ufsmm_transition_add_action(model, transition, id,
-                                                    selected_action->id);
-            break;
-            default:
-                rc = -1;
-            break;
-        }
-    } else if (selected_signal && (result == GTK_RESPONSE_ACCEPT)) {
-        uuid_t id;
-        uuid_generate_random(id);
-
-        rc = 0;
-
-        switch (kind) {
-            case UFSMM_ACTION_ENTRY:
-                rc = ufsmm_state_add_entry_signal(model, state, id,
-                                                selected_signal->id);
-            break;
-            case UFSMM_ACTION_EXIT:
-                rc = ufsmm_state_add_exit_signal(model, state, id,
-                                                selected_signal->id);
-            break;
-            case UFSMM_ACTION_ACTION:
-                rc = ufsmm_transition_add_signal_action(model, transition, id,
-                                                    selected_signal->id);
-            break;
-            default:
-                rc = -1;
-            break;
-        }
-    } else if (result == 1) {
-        uuid_t id;
-        uuid_generate_random(id);
-
-        ufsmm_model_add_trigger(model, &action_name[1], &selected_signal);
-        rc = 0;
-
-        switch (kind) {
-            case UFSMM_ACTION_ENTRY:
-                rc = ufsmm_state_add_entry_signal(model, state, id,
-                                                selected_signal->id);
-            break;
-            case UFSMM_ACTION_EXIT:
-                rc = ufsmm_state_add_exit_signal(model, state, id,
-                                                selected_signal->id);
-            break;
-            case UFSMM_ACTION_ACTION:
-                rc = ufsmm_transition_add_signal_action(model, transition, id,
-                                                    selected_signal->id);
-            break;
-            default:
-                rc = -1;
-            break;
-        }
+        rc = ufsmm_transition_add_guard(model, transition, id,
+                                            selected_action->id,
+                                            NULL,
+                                            guard_kind,
+                                            guard_value);
     } else {
         rc = -1;
     }
@@ -392,20 +331,8 @@ err_out:
     return rc;
 }
 
-int ufsm_add_entry_action_dialog(GtkWindow *parent, struct ufsmm_model *model,
-                            struct ufsmm_state *state)
-{
-    return add_action(parent, model, state, UFSMM_ACTION_ENTRY);
-}
-
-int ufsm_add_exit_action_dialog(GtkWindow *parent, struct ufsmm_model *model,
-                            struct ufsmm_state *state)
-{
-    return add_action(parent, model, state, UFSMM_ACTION_EXIT);
-}
-
-int ufsm_add_transition_action_dialog(GtkWindow *parent, struct ufsmm_model *model,
+int ufsm_add_transition_guard_dialog(GtkWindow *parent, struct ufsmm_model *model,
                             struct ufsmm_transition *transition)
 {
-    return add_action(parent, model, transition, UFSMM_ACTION_ACTION);
+    return add_action(parent, model, transition, UFSMM_ACTION_GUARD);
 }

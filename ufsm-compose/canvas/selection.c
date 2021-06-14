@@ -8,7 +8,8 @@
 int canvas_state_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    return (priv->selection == UFSMM_SELECTION_STATE);
+    return ((priv->selection == UFSMM_SELECTION_STATE) &&
+           (priv->selected_state != NULL));
 }
 
 int canvas_state_resize_selected(void *context)
