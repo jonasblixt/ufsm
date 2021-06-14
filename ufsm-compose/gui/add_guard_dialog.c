@@ -3,6 +3,13 @@
 
 enum
 {
+    SC_COL_TEXT,
+    SC_COL_OBJ,
+    SC_NUM_COLS
+};
+
+enum
+{
   COLUMN_MATCH_RATING,
   COLUMN_NAME,
   COLUMN_ACTION_REF,
@@ -10,6 +17,7 @@ enum
 };
 
 static struct ufsmm_action *selected_action;
+static struct ufsmm_state *selected_state;
 
 static void input_changed(GtkEntry *entry, gpointer user_data)
 {
@@ -112,6 +120,29 @@ static gboolean view_selection_func(GtkTreeSelection *selection,
     return TRUE; /* allow selection state to change */
 }
 
+static gboolean sc_selection_func(GtkTreeSelection *selection,
+                               GtkTreeModel     *model,
+                               GtkTreePath      *path,
+                               gboolean          path_currently_selected,
+                               gpointer          userdata)
+{
+    GtkTreeIter iter;
+
+    if (gtk_tree_model_get_iter(model, &iter, path)) {
+        gchar *name;
+
+        gtk_tree_model_get(model, &iter, SC_COL_TEXT, &name, -1);
+
+        gtk_tree_model_get(model, &iter, SC_COL_OBJ,
+                            &selected_state, -1);
+
+        g_free(name);
+    }
+
+    return TRUE; /* allow selection state to change */
+}
+
+
 static void list_row_activated_cb(GtkTreeView        *treeview,
                                    GtkTreePath        *path,
                                    GtkTreeViewColumn  *col,
@@ -136,6 +167,30 @@ static void list_row_activated_cb(GtkTreeView        *treeview,
     }
 }
 
+static void sc_row_activated_cb(GtkTreeView        *treeview,
+                                   GtkTreePath        *path,
+                                   GtkTreeViewColumn  *col,
+                                   gpointer            userdata)
+{
+    GtkTreeModel *model;
+    GtkTreeIter   iter;
+
+    model = gtk_tree_view_get_model(treeview);
+
+    if (gtk_tree_model_get_iter(model, &iter, path)) {
+       gchar *name;
+
+       gtk_tree_model_get(model, &iter, SC_COL_TEXT, &name, -1);
+       gtk_tree_model_get(model, &iter, SC_COL_OBJ, &selected_state, -1);
+
+       if (selected_state)
+           g_print ("Selected state '%s'\n", name);
+
+       gtk_dialog_response(GTK_DIALOG(userdata), GTK_RESPONSE_ACCEPT);
+       g_free(name);
+    }
+}
+
 static void guard_op_changed(GtkComboBox *widget, gpointer user_data)
 {
     GtkComboBox *combo_box = widget;
@@ -146,6 +201,88 @@ static void guard_op_changed(GtkComboBox *widget, gpointer user_data)
     } else {
         gtk_widget_set_sensitive(entry, FALSE);
     }
+}
+
+static int stack_push_r_iter_pair(struct ufsmm_stack *stack,
+                                  struct ufsmm_region *r,
+                                  GtkTreeIter *iter)
+{
+    int rc;
+
+    rc = ufsmm_stack_push(stack, r);
+
+    if (rc != UFSMM_OK)
+        return rc;
+
+    return ufsmm_stack_push(stack, iter);
+}
+
+static int stack_pop_r_iter_pair(struct ufsmm_stack *stack,
+                                 struct ufsmm_region **r,
+                                 GtkTreeIter **iter)
+{
+    int rc;
+
+    rc = ufsmm_stack_pop(stack, (void **) iter);
+
+    if (rc != UFSMM_OK)
+        return rc;
+
+    return ufsmm_stack_pop(stack, (void **) r);
+}
+
+static int update_sc_tree(struct ufsmm_model *model,
+                          GtkTreeStore *store)
+{
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_state *s;
+    static struct ufsmm_stack *stack;
+    struct ufsmm_stack *cleanup_stack;
+    int rc;
+    GtkTreeIter *s_iter = NULL;
+    GtkTreeIter r_iter;
+    GtkTreeIter *parent = NULL;
+
+    rc = ufsmm_stack_init(&cleanup_stack, UFSMM_MAX_R_S);
+
+    if (rc != UFSMM_OK)
+        return rc;
+
+    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+
+    if (rc != UFSMM_OK)
+        return rc;
+
+    rc = stack_push_r_iter_pair(stack, model->root, NULL);
+
+    while (stack_pop_r_iter_pair(stack, &r, &parent) == UFSMM_OK)
+    {
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            s_iter = malloc(sizeof(*s_iter));
+            ufsmm_stack_push(cleanup_stack, (void *) s_iter);
+
+            gtk_tree_store_append(store, s_iter, parent);
+            gtk_tree_store_set (store, s_iter,
+                                SC_COL_TEXT, s->name,
+                                SC_COL_OBJ, s,
+                                -1);
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                stack_push_r_iter_pair(stack, r2, s_iter);
+            }
+        }
+    }
+
+    /* Free temprary iterators */
+    void *p;
+
+    while(ufsmm_stack_pop(cleanup_stack, &p) == UFSMM_OK) {
+        free(p);
+    }
+
+    ufsmm_stack_free(cleanup_stack);
+    ufsmm_stack_free(stack);
+
+    return UFSMM_OK;
 }
 
 static int add_action(GtkWindow *parent, struct ufsmm_model *model,
@@ -176,8 +313,8 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 
     content_area = gtk_dialog_get_content_area(GTK_DIALOG (dialog));
 
+
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-    gtk_box_pack_start(GTK_BOX(content_area), vbox, TRUE, TRUE, 0);
     gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
 
     GtkWidget *input = gtk_entry_new();
@@ -260,8 +397,68 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
     g_signal_connect (guard_op, "changed", G_CALLBACK (guard_op_changed),
                             guard_op_value);
 
+    /* State condition tree */
+
+    GtkWidget *sc_scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+    GtkTreeViewColumn *sc_col;
+    GtkCellRenderer *sc_renderer;
+    GtkWidget *sc_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
+    gtk_container_set_border_width(GTK_CONTAINER(sc_vbox), 8);
+
+    GtkTreeStore *sc_store = gtk_tree_store_new(SC_NUM_COLS,
+                                             G_TYPE_STRING,
+                                             G_TYPE_POINTER);
+    GtkWidget *tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(sc_store));
+
+    gtk_tree_view_set_show_expanders(GTK_TREE_VIEW(tree), TRUE);
+    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
+    gtk_tree_view_set_enable_tree_lines(GTK_TREE_VIEW(tree), TRUE);
+    gtk_tree_view_set_enable_search(GTK_TREE_VIEW(tree), FALSE);
+
+    sc_col = gtk_tree_view_column_new();
+    gtk_tree_view_column_set_title(sc_col, "Title");
+
+    sc_renderer = gtk_cell_renderer_text_new();
+    gtk_tree_view_column_pack_start(sc_col, sc_renderer, TRUE);
+    gtk_tree_view_column_set_attributes(sc_col, sc_renderer,
+                                        "text", SC_COL_TEXT,
+                                        NULL);
+
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree), sc_col);
+
+    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
+
+    gtk_tree_selection_set_select_function(selection, sc_selection_func,
+                                            NULL, NULL);
+    update_sc_tree(model, sc_store);
+
+    gtk_container_add(GTK_CONTAINER(sc_scrolled_window), tree);
+    gtk_box_pack_start(GTK_BOX(sc_vbox), sc_scrolled_window, TRUE, TRUE, 0);
+
+    GtkWidget *sc_inv_chk = gtk_check_button_new_with_label("Inverted");
+    gtk_box_pack_start(GTK_BOX(sc_vbox), sc_inv_chk, FALSE, FALSE, 0);
+
+    /* Tabs */
+    GtkWidget *notebook = gtk_notebook_new();
+    GtkWidget *lbl_guard = gtk_label_new("Guard");
+    GtkWidget *lbl_statecond = gtk_label_new("State condition");
+
+    gtk_widget_show(lbl_guard);
+    gtk_widget_show(lbl_statecond);
+
+    gtk_notebook_set_tab_pos(GTK_NOTEBOOK(notebook), GTK_POS_TOP);
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, lbl_guard);
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), sc_vbox, lbl_statecond);
+    gtk_notebook_set_show_tabs(GTK_NOTEBOOK(notebook), true);
+
+    gtk_box_pack_start(GTK_BOX(content_area), notebook, TRUE, TRUE, 0);
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), 0);
+
     /* Connect signals */
-    gtk_widget_show_all(vbox);
+
+    gtk_widget_show(lbl_guard);
+    gtk_widget_show(lbl_statecond);
+    gtk_widget_show_all(notebook);
 
 
     g_signal_connect(G_OBJECT(input), "changed",
@@ -274,6 +471,10 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 
     g_signal_connect(treeview, "row-activated",
                                G_CALLBACK(list_row_activated_cb),
+                               G_OBJECT(dialog));
+
+    g_signal_connect(tree, "row-activated",
+                               G_CALLBACK(sc_row_activated_cb),
                                G_OBJECT(dialog));
 
     int result = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -291,7 +492,22 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 
     L_DEBUG("%p %i", selected_action, result);
 
-    if (selected_action && (result == GTK_RESPONSE_ACCEPT)) {
+    if (selected_state && (gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)) == 1)) {
+        L_DEBUG("Adding state condition! %s", selected_state->name);
+        uuid_t id;
+        uuid_generate_random(id);
+
+        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sc_inv_chk)))
+            guard_kind = UFSMM_GUARD_NSTATE;
+        else
+            guard_kind = UFSMM_GUARD_PSTATE;
+
+        rc = ufsmm_transition_add_guard(model, transition, id,
+                                            NULL,
+                                            selected_state->id,
+                                            guard_kind,
+                                            0);
+    } else if (selected_action && (result == GTK_RESPONSE_ACCEPT)) {
         uuid_t id;
         uuid_generate_random(id);
 
