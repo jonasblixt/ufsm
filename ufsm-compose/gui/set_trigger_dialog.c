@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <string.h>
 #include <ufsm/model.h>
 
 enum
@@ -22,27 +23,46 @@ static void input_changed(GtkEntry *entry, gpointer user_data)
     GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(user_data));
     GtkTreeIter iter;
 
+
+    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
+                                            COLUMN_NAME,
+                                            GTK_SORT_DESCENDING);
+
     if (gtk_tree_model_get_iter_first(model, &iter)) {
-        while (&iter) {
-            const char *iter_text;
+        do {
+            gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
+                                            COLUMN_MATCH_RATING,
+                                            0, -1);
+
+        } while (gtk_tree_model_iter_next(model, &iter));
+    }
+
+    if (gtk_tree_model_get_iter_first(model, &iter)) {
+        do {
+            char *iter_text;
             int match_rating = 0;
             gtk_tree_selection_unselect_iter(selection, &iter);
             gtk_tree_model_get(model, &iter, COLUMN_NAME, &iter_text, -1);
 
             if (strlen(text) > 1) {
                 match_rating = strstr(iter_text, text)?1:0;
-            } else {
-                match_rating = 0;
+
+                if (match_rating) {
+                    gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
+                                                    COLUMN_MATCH_RATING,
+                                                    match_rating, -1);
+                }
             }
 
-            gtk_list_store_set(GTK_LIST_STORE(model), &iter,
-                                            COLUMN_MATCH_RATING,
-                                            match_rating, -1);
-            if (!gtk_tree_model_iter_next(model, &iter))
-                break;
-        }
+            g_free(iter_text);
+
+
+        } while (gtk_tree_model_iter_next(model, &iter));
     }
 
+    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
+                                            COLUMN_MATCH_RATING,
+                                            GTK_SORT_DESCENDING);
 }
 
 static gboolean input_key_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
@@ -69,6 +89,11 @@ static void cell_data_func (GtkTreeViewColumn *col,
     const char *search_text = gtk_entry_get_text(GTK_ENTRY(user_data));
 
     gtk_tree_model_get(model, iter, COLUMN_NAME, &label, -1);
+/*
+    int match_rating = strstr(label, search_text)?1:0;
+    gtk_tree_store_set(GTK_TREE_STORE(model), iter,
+                                    COLUMN_MATCH_RATING,
+                                    match_rating, -1);*/
     char *needle_begin = strstr(label, search_text);
 
     if (needle_begin && (strlen(search_text) > 1)) {
@@ -86,6 +111,7 @@ static void cell_data_func (GtkTreeViewColumn *col,
 
     g_object_set(renderer, "markup", markuptxt, NULL);
     g_free(markuptxt);
+    g_free(label);
 }
 
 static gboolean view_selection_func(GtkTreeSelection *selection,
@@ -120,6 +146,7 @@ static void list_row_activated_cb(GtkTreeView        *treeview,
     GtkTreeModel *model;
     GtkTreeIter   iter;
 
+    L_DEBUG("%s", __func__);
     model = gtk_tree_view_get_model(treeview);
 
     if (gtk_tree_model_get_iter(model, &iter, path)) {
@@ -128,7 +155,7 @@ static void list_row_activated_cb(GtkTreeView        *treeview,
        gtk_tree_model_get(model, &iter, COLUMN_NAME, &name, -1);
        gtk_tree_model_get(model, &iter, COLUMN_TRIGGER_REF, &selected_trigger, -1);
 
-       g_print ("Selected trigger '%s'\n", name);
+       L_DEBUG("Selected trigger '%s'", name);
        gtk_dialog_response(GTK_DIALOG(userdata), GTK_RESPONSE_ACCEPT);
        g_free(name);
     }
@@ -166,16 +193,16 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
     gtk_box_pack_start(GTK_BOX(vbox), input, FALSE, FALSE, 0);
 
     /* Create list */
-    GtkListStore *store;
+    GtkTreeStore *store;
     GtkTreeIter iter;
-    store = gtk_list_store_new (NUM_COLUMNS,
+    store = gtk_tree_store_new (NUM_COLUMNS,
                                 G_TYPE_UINT,
                                 G_TYPE_STRING,
                                 G_TYPE_POINTER);
 
     /* Addd 'trigger-less' trigger */
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set (store, &iter,
+    gtk_tree_store_append(store, &iter, NULL);
+    gtk_tree_store_set (store, &iter,
                         COLUMN_MATCH_RATING, 0,
                         COLUMN_NAME, "trigger-less",
                         COLUMN_TRIGGER_REF, NULL,
@@ -183,8 +210,8 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
 
     struct ufsmm_trigger *t;
     TAILQ_FOREACH(t, &model->triggers, tailq) {
-        gtk_list_store_append(store, &iter);
-        gtk_list_store_set (store, &iter,
+        gtk_tree_store_append(store, &iter, NULL);
+        gtk_tree_store_set (store, &iter,
                             COLUMN_MATCH_RATING, 0,
                             COLUMN_NAME, t->name,
                             COLUMN_TRIGGER_REF, t,
@@ -240,6 +267,9 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
                                G_OBJECT(dialog));
 
     int result = gtk_dialog_run(GTK_DIALOG(dialog));
+
+
+    L_DEBUG("result = %i", result);
 
     if (result == GTK_RESPONSE_ACCEPT) {
         rc = ufsmm_transition_set_trigger(model, transition,

@@ -853,8 +853,6 @@
                         "kind":0,
                         "id":"75d67fbb-4c7b-49d3-8dca-37738d7ea3b9"
                       }
-                    ],
-                    "state-condition":[
                     ]
                   },
                   {
@@ -881,8 +879,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -927,8 +923,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   },
                   {
@@ -972,8 +966,6 @@
                         "kind":0,
                         "id":"c87a0df9-6b2e-4590-98e3-f575ecd05cca"
                       }
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -1035,8 +1027,6 @@
                         "kind":0,
                         "id":"a252ea9f-f2ba-413c-b730-01c00fa84297"
                       }
-                    ],
-                    "state-condition":[
                     ]
                   },
                   {
@@ -1063,8 +1053,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   },
                   {
@@ -1108,8 +1096,6 @@
                         "kind":0,
                         "id":"1b1dc80d-75ad-43c3-8f1c-2c43750bdc18"
                       }
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -1153,8 +1139,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -1211,8 +1195,6 @@
                         "kind":0,
                         "id":"17420595-e8e5-48a1-8ebc-c9c022f13feb"
                       }
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -1276,8 +1258,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -1335,8 +1315,6 @@
                                 "kind":0,
                                 "id":"bd3cd067-12ad-477e-b047-e36dfbc3c52a"
                               }
-                            ],
-                            "state-condition":[
                             ]
                           },
                           {
@@ -1363,8 +1341,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           },
                           {
@@ -1391,8 +1367,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           },
                           {
@@ -1419,8 +1393,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -1520,8 +1492,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -1556,8 +1526,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -1619,8 +1587,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -1675,8 +1641,6 @@
                                                 "kind":0,
                                                 "id":"fe15cd35-324a-4763-87db-adcac9e4e25b"
                                               }
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -1711,8 +1675,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -1744,8 +1706,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -1843,8 +1803,6 @@
                                                 "kind":0,
                                                 "id":"d195f7c4-cd2c-41b4-b90e-83b456687c4a"
                                               }
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -1907,8 +1865,6 @@
                                                 "kind":0,
                                                 "id":"a85611d6-acab-4773-ab56-2fda4974fafb"
                                               }
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -1935,8 +1891,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -1968,8 +1922,6 @@
                                                 "kind":0,
                                                 "id":"bdc1b4f7-b299-42c8-a02e-5c3af366f374"
                                               }
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -2004,8 +1956,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -2068,8 +2018,6 @@
                                                 "kind":0,
                                                 "id":"efabebbd-1be5-4078-882c-59d71c084ed0"
                                               }
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -2096,8 +2044,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -2132,8 +2078,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -2195,8 +2139,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -2228,8 +2170,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -2372,8 +2312,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -2408,8 +2346,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -2436,8 +2372,8 @@
                                     "guards":[
                                       {
                                         "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"b7e96bf8-74c7-4973-9671-ae7e7afe43e2"
                                       }
                                     ],
@@ -2447,8 +2383,6 @@
                                         "kind":0,
                                         "id":"0222a355-0e6d-491c-adfb-1ee421385ebe"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -2475,8 +2409,8 @@
                                     "guards":[
                                       {
                                         "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"4935ce45-f1df-4544-9ebd-740f19273ee1"
                                       }
                                     ],
@@ -2486,8 +2420,6 @@
                                         "kind":0,
                                         "id":"e7ac0279-26ce-42f1-907b-c6c79bc5ed17"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -2514,8 +2446,8 @@
                                     "guards":[
                                       {
                                         "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"ff4df5d6-129d-43a4-b1fe-a1d31a88cca7"
                                       }
                                     ],
@@ -2525,8 +2457,6 @@
                                         "kind":0,
                                         "id":"c2ec4bfc-819c-4827-9fc6-09b867dcb484"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -2561,8 +2491,8 @@
                                     "guards":[
                                       {
                                         "action-id":"4fc9cd36-8433-4d7d-a182-0458175a8109",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"5e162f2e-8a1d-4ada-9781-5dcc54b1a96d"
                                       }
                                     ],
@@ -2572,8 +2502,6 @@
                                         "kind":0,
                                         "id":"1d3c3e01-e163-4409-9bc3-5f2b4f836f6d"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -2612,8 +2540,8 @@
                                     "guards":[
                                       {
                                         "action-id":"4fc9cd36-8433-4d7d-a182-0458175a8109",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"20e12c5f-fb74-4edd-bbfc-0b026e1d5cda"
                                       }
                                     ],
@@ -2623,8 +2551,6 @@
                                         "kind":0,
                                         "id":"69100478-837c-44d0-b471-4156f4e7d35d"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -2651,8 +2577,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -2679,8 +2603,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -2707,8 +2629,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -2735,8 +2655,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -2763,8 +2681,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -2791,8 +2707,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -2819,8 +2733,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -2847,8 +2759,8 @@
                                     "guards":[
                                       {
                                         "action-id":"4fc9cd36-8433-4d7d-a182-0458175a8109",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"82ff1631-3aef-46bc-986b-26f61898a1e3"
                                       }
                                     ],
@@ -2858,8 +2770,6 @@
                                         "kind":0,
                                         "id":"d1f2b5a1-4216-4d81-b44b-8d8ecedad5ec"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -2903,8 +2813,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -2984,8 +2892,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -3020,8 +2926,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -3061,8 +2965,6 @@
                                                 "kind":0,
                                                 "id":"43c420fb-bdb1-48a0-a598-6ff2608c9ff7"
                                               }
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -3106,8 +3008,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -3190,8 +3090,6 @@
                                                         "kind":0,
                                                         "id":"0399ac2b-5ee3-47d0-b684-df5e99ccc183"
                                                       }
-                                                    ],
-                                                    "state-condition":[
                                                     ]
                                                   }
                                                 ]
@@ -3224,8 +3122,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -3274,8 +3170,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -3325,8 +3219,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -3424,8 +3316,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -3460,8 +3350,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -3501,8 +3389,6 @@
                                                 "kind":0,
                                                 "id":"c1113f78-52e4-4f13-9929-dfa5ba27a6f1"
                                               }
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -3546,8 +3432,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -3630,8 +3514,6 @@
                                                         "kind":0,
                                                         "id":"bcd9cc6d-7436-4ef9-a3d0-5ee4b4baa5ed"
                                                       }
-                                                    ],
-                                                    "state-condition":[
                                                     ]
                                                   }
                                                 ]
@@ -3664,8 +3546,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -3714,8 +3594,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -3765,8 +3643,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -3890,8 +3766,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -3918,8 +3792,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -3963,8 +3835,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -4013,8 +3883,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -4064,8 +3932,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -4171,8 +4037,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -4199,8 +4063,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -4244,8 +4106,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -4295,8 +4155,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -4346,8 +4204,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -4453,8 +4309,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -4481,8 +4335,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -4531,8 +4383,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -4594,8 +4444,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -4627,8 +4475,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -4734,8 +4580,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -4762,8 +4606,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -4812,8 +4654,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -4857,8 +4697,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -4908,8 +4746,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -5015,8 +4851,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           },
                                           {
@@ -5043,8 +4877,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -5088,8 +4920,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -5138,8 +4968,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -5189,8 +5017,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -5258,8 +5084,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -5377,8 +5201,8 @@
                                     "guards":[
                                       {
                                         "action-id":"326c793e-b769-48a8-9e42-b774d53f9016",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"4d827bdb-c798-4829-93c4-90acd8a35d02"
                                       }
                                     ],
@@ -5388,8 +5212,6 @@
                                         "kind":0,
                                         "id":"16b8748a-5df8-4271-a01f-23f63429a579"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -5415,8 +5237,8 @@
                                     "guards":[
                                       {
                                         "action-id":"1942e58f-ce2d-410b-9125-3ae9df6031e3",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"dbc3dc53-429b-4f24-bac5-d7bd9aeb78dc"
                                       }
                                     ],
@@ -5426,8 +5248,6 @@
                                         "kind":0,
                                         "id":"c9138d12-f221-4866-863c-0332ab591df9"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -5454,8 +5274,8 @@
                                     "guards":[
                                       {
                                         "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"e97aacb6-87c7-4bed-b749-74baca7eb1d3"
                                       }
                                     ],
@@ -5465,8 +5285,6 @@
                                         "kind":0,
                                         "id":"86e9ffb9-8c7f-4d5b-ba2e-f51c1f47b6aa"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -5493,8 +5311,8 @@
                                     "guards":[
                                       {
                                         "action-id":"4fc9cd36-8433-4d7d-a182-0458175a8109",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"ea013bc8-f5ec-49b7-8e8c-79cd1b8f31bd"
                                       }
                                     ],
@@ -5504,8 +5322,6 @@
                                         "kind":0,
                                         "id":"7d046b31-0818-465a-bf88-bbd5c97b6c04"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -5532,8 +5348,8 @@
                                     "guards":[
                                       {
                                         "action-id":"2c2fe276-a071-4670-bca4-0c22271b15d6",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"a3181ef5-c39a-4a6c-88dc-ce41e7e4d650"
                                       }
                                     ],
@@ -5543,8 +5359,6 @@
                                         "kind":0,
                                         "id":"0251059c-122b-4b48-a4ac-0be7371e5abf"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -5571,8 +5385,8 @@
                                     "guards":[
                                       {
                                         "action-id":"2c2fe276-a071-4670-bca4-0c22271b15d6",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"dee733cd-c882-4c83-83c2-b37e5a20a6ce"
                                       }
                                     ],
@@ -5582,8 +5396,6 @@
                                         "kind":0,
                                         "id":"f46ecd34-64df-41b0-b76a-c1ff23c0e9c6"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -5610,8 +5422,8 @@
                                     "guards":[
                                       {
                                         "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"de25a685-4a48-4bff-85c7-c1377f80def3"
                                       }
                                     ],
@@ -5621,8 +5433,6 @@
                                         "kind":0,
                                         "id":"cb22b9d2-98ec-4f77-9a5d-d749cfe02a03"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -5684,8 +5494,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -5771,8 +5579,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -5890,8 +5696,8 @@
                                     "guards":[
                                       {
                                         "action-id":"326c793e-b769-48a8-9e42-b774d53f9016",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"0c6ce15e-c154-44d9-a245-e06a16fdb797"
                                       }
                                     ],
@@ -5901,8 +5707,6 @@
                                         "kind":0,
                                         "id":"3d8bdfbb-4bf6-4eb3-ae61-2b559a580c50"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -5928,8 +5732,8 @@
                                     "guards":[
                                       {
                                         "action-id":"1942e58f-ce2d-410b-9125-3ae9df6031e3",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"000027ce-24f7-4fb0-9a42-b38f06de0d4d"
                                       }
                                     ],
@@ -5939,8 +5743,6 @@
                                         "kind":0,
                                         "id":"0aec359d-b65a-42f5-8a13-f021b5dae536"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -5966,8 +5768,8 @@
                                     "guards":[
                                       {
                                         "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"0fd0a697-7e31-4660-9ffe-a059daac0d49"
                                       }
                                     ],
@@ -5977,8 +5779,6 @@
                                         "kind":0,
                                         "id":"feb47dbd-4c8a-46c1-a041-e23bcc7e23b1"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -6004,8 +5804,8 @@
                                     "guards":[
                                       {
                                         "action-id":"c6f8369a-1df4-4226-8361-9581c73ee9d2",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"6cf1fc2a-959a-4bd1-af74-a6f8ba708128"
                                       }
                                     ],
@@ -6015,8 +5815,6 @@
                                         "kind":0,
                                         "id":"72fe8522-133c-49bd-a027-1afb6a387653"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -6042,8 +5840,8 @@
                                     "guards":[
                                       {
                                         "action-id":"1e5f8899-41d1-40b1-b530-414bd0789803",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"30e8c43e-c172-466e-89db-2221875dfaa2"
                                       }
                                     ],
@@ -6053,8 +5851,6 @@
                                         "kind":0,
                                         "id":"12cb9647-9c9f-44e7-a664-d4e7ea47a9e9"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -6080,8 +5876,8 @@
                                     "guards":[
                                       {
                                         "action-id":"4da1cef2-491b-4835-9f3f-115ad2ec20cb",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"3267395b-d1d1-4614-9fd8-060da2ebcf77"
                                       }
                                     ],
@@ -6091,8 +5887,6 @@
                                         "kind":0,
                                         "id":"9abb840d-dd82-47b3-8112-c7eeb0b6a124"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -6118,8 +5912,8 @@
                                     "guards":[
                                       {
                                         "action-id":"2c2fe276-a071-4670-bca4-0c22271b15d6",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"93b99aac-abf1-4673-ad65-e215aa6a37fb"
                                       }
                                     ],
@@ -6129,8 +5923,6 @@
                                         "kind":0,
                                         "id":"20f6587d-8786-42fd-bc7a-3117dfc8f90b"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -6156,8 +5948,8 @@
                                     "guards":[
                                       {
                                         "action-id":"b98c0ef6-9ef8-475e-9d48-e9fcbd026772",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"3c582656-9824-434f-ae26-62f3afc3036c"
                                       }
                                     ],
@@ -6167,8 +5959,6 @@
                                         "kind":0,
                                         "id":"eb6be828-bd3e-4e2f-8a95-cfbe92671822"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -6212,8 +6002,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -6335,8 +6123,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -6369,8 +6155,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   },
                   {
@@ -6405,8 +6189,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -6475,8 +6257,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -6520,14 +6300,12 @@
                             "guards":[
                               {
                                 "action-id":"4feb70c9-be03-4a49-824b-b3cba1cbd754",
-                                "kind":0,
                                 "value":0,
+                                "kind":0,
                                 "id":"b4ee4f42-946d-4e5d-b2bc-ed44fdd10df5"
                               }
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           },
                           {
@@ -6553,14 +6331,12 @@
                             "guards":[
                               {
                                 "action-id":"2c2fe276-a071-4670-bca4-0c22271b15d6",
-                                "kind":0,
                                 "value":0,
+                                "kind":0,
                                 "id":"070dc5b4-104f-4b61-b2e3-c7a25a93693d"
                               }
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           },
                           {
@@ -6586,14 +6362,12 @@
                             "guards":[
                               {
                                 "action-id":"4fc9cd36-8433-4d7d-a182-0458175a8109",
-                                "kind":0,
                                 "value":0,
+                                "kind":0,
                                 "id":"82cd571f-3318-4549-bbcf-a16918c493db"
                               }
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -6670,14 +6444,12 @@
                                     "guards":[
                                       {
                                         "action-id":"e45dcb67-82ca-47ca-a8a9-d909096b2224",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"4ab1a6bf-49d2-4c30-a4b4-f6f9efd2c7f6"
                                       }
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -6707,14 +6479,12 @@
                                     "guards":[
                                       {
                                         "action-id":"e0fd3acf-c379-4284-a892-39fa408ac5e7",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"488a5c67-b937-401c-a1db-3bb1987b334b"
                                       }
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -6758,8 +6528,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -6821,14 +6589,12 @@
                                     "guards":[
                                       {
                                         "action-id":"4da1cef2-491b-4835-9f3f-115ad2ec20cb",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"4f16985b-2a99-475b-bf3b-09dbeac17206"
                                       }
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -6854,14 +6620,12 @@
                                     "guards":[
                                       {
                                         "action-id":"1e5f8899-41d1-40b1-b530-414bd0789803",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"589e02f8-8ee8-42db-b040-b357ba6b0978"
                                       }
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -6895,14 +6659,12 @@
                                     "guards":[
                                       {
                                         "action-id":"d7b48730-e050-43ff-a063-6a5187d35f10",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"47449948-224d-4903-968f-b1aa5ad73f22"
                                       }
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -6933,8 +6695,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -6997,8 +6757,6 @@
                                         "kind":0,
                                         "id":"26349aa8-a025-44e9-b7e6-7ec4b3d83001"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -7061,8 +6819,6 @@
                                         "kind":0,
                                         "id":"17b54a22-897a-46d6-af7c-030a5fc83961"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -7155,8 +6911,6 @@
                                                 "kind":0,
                                                 "id":"54f193ba-27c6-4e56-b5e0-f4860fbb2cdf"
                                               }
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -7250,8 +7004,6 @@
                                                 "kind":0,
                                                 "id":"a55ef547-954c-46da-8648-506362374f51"
                                               }
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -7345,8 +7097,6 @@
                                                 "kind":0,
                                                 "id":"1fa06c3f-cac5-4d24-9aec-989b28aa07e0"
                                               }
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -7474,8 +7224,6 @@
                                                 "kind":0,
                                                 "id":"eb0a9e49-3785-4c03-a452-7f45f8172efd"
                                               }
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -7530,14 +7278,12 @@
                                     "guards":[
                                       {
                                         "action-id":"ffc3067d-402d-4473-b051-ce60258c65af",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"b2b3dfa5-c27c-4fbc-98a9-8058345cf84e"
                                       }
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -7568,8 +7314,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -7613,8 +7357,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -7702,8 +7444,6 @@
                                             "guards":[
                                             ],
                                             "actions":[
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -7823,8 +7563,6 @@
                                                 "kind":0,
                                                 "id":"6918dc69-c703-45d0-b52f-b3f1f61807c7"
                                               }
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -7884,14 +7622,12 @@
                                     "guards":[
                                       {
                                         "action-id":"b19506c9-11c0-47b5-b2f9-16744974d631",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"f9d5b4d4-5ffe-4e1e-add4-11cb3e0782a9"
                                       }
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -7921,14 +7657,12 @@
                                     "guards":[
                                       {
                                         "action-id":"326c793e-b769-48a8-9e42-b774d53f9016",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"3878b253-54a4-4eee-9185-d88f3f2126d1"
                                       }
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -7958,14 +7692,12 @@
                                     "guards":[
                                       {
                                         "action-id":"1942e58f-ce2d-410b-9125-3ae9df6031e3",
-                                        "kind":0,
                                         "value":0,
+                                        "kind":0,
                                         "id":"7d572f7b-a690-4072-b499-5bb256f9feb4"
                                       }
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   },
                                   {
@@ -7992,8 +7724,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -8056,8 +7786,6 @@
                                         "kind":0,
                                         "id":"717852d1-9b12-4e3a-a5c2-23afb76ae947"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -8120,8 +7848,6 @@
                                         "kind":0,
                                         "id":"fbc928a9-cb58-414d-9eb4-ef84cd453df4"
                                       }
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -8165,8 +7891,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -8254,8 +7978,6 @@
                                                 "kind":0,
                                                 "id":"239df017-ddd2-4b00-9f1a-dc4a628a642d"
                                               }
-                                            ],
-                                            "state-condition":[
                                             ]
                                           }
                                         ]
@@ -8300,8 +8022,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -8351,8 +8071,6 @@
             "guards":[
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]

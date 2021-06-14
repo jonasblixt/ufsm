@@ -30,6 +30,9 @@ static void input_changed(GtkEntry *entry, gpointer user_data)
     GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(user_data));
     GtkTreeIter iter;
 
+    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
+                                            COLUMN_NAME,
+                                            GTK_SORT_DESCENDING);
     if (gtk_tree_model_get_iter_first(model, &iter)) {
         while (&iter) {
             const char *iter_text;
@@ -51,6 +54,9 @@ static void input_changed(GtkEntry *entry, gpointer user_data)
         }
     }
 
+    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
+                                            COLUMN_MATCH_RATING,
+                                            GTK_SORT_DESCENDING);
 }
 
 static gboolean input_key_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
@@ -492,7 +498,8 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 
     L_DEBUG("%p %i", selected_action, result);
 
-    if (selected_state && (gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)) == 1)) {
+    if (selected_state && (gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)) == 1) &&
+        (result != -2)) {
         L_DEBUG("Adding state condition! %s", selected_state->name);
         uuid_t id;
         uuid_generate_random(id);
