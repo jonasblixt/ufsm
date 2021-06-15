@@ -28,7 +28,7 @@ int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
     struct ufsmm_state *ps;
     struct ufsmm_region *pr = r;
     double x_acc = 0.0;
-    double y_acc = 0.0;
+    double y_acc = 30.0;
 
     if (r == NULL)
         return -UFSMM_ERROR;
@@ -40,23 +40,8 @@ int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
         *w = 1684;
         return UFSMM_OK;
     } else {
-        y_acc += r->parent_state->region_y_offset;
-    }
-
-    /* Calculate offsets to current state */
-    while (pr) {
-        if (!pr->parent_state)
-            break;
-        ps = pr->parent_state;
-
-        x_acc += ps->x;
-        y_acc += ps->y + 30.0;
-
-        pr = ps->parent_region;
-
-        if (ufsmm_region_is_root_or_offpage(pr))
-            break;
-
+        y_acc += r->parent_state->region_y_offset + r->parent_state->y;
+        x_acc += r->parent_state->x;
     }
 
     /* Iterate through possible sibling regions */
@@ -84,7 +69,7 @@ int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
 
     return 0;
 }
-
+/*
 int ufsmm_get_state_absolute_coords(struct ufsmm_state *s, double *x,
                                                          double *y,
                                                          double *w,
@@ -117,7 +102,7 @@ int ufsmm_get_state_absolute_coords(struct ufsmm_state *s, double *x,
     *h = s->h;
     return 0;
 }
-
+*/
 
 int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
 {

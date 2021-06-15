@@ -166,20 +166,19 @@ int canvas_transition_vertice_selected(void *context)
     double tsx, tsy, tex, tey;
     double ox = r->ox;
     double oy = r->oy;
-    double rx, ry, rw, rh;
 
     priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE_NONE;
 
-    transition_calc_begin_end_point(t->source.state,
+    transition_calc_begin_end_point(priv,
+                                    t->source.state,
                                     t->source.side,
                                     t->source.offset,
                                     &tsx, &tsy);
-    transition_calc_begin_end_point(t->dest.state,
+    transition_calc_begin_end_point(priv,
+                                    t->dest.state,
                                     t->dest.side,
                                     t->dest.offset,
                                     &tex, &tey);
-
-    ufsmm_get_region_absolute_coords(t->source.state->parent_region, &rx, &ry, &rw, &rh);
 
     vex = tex + ox;
     vey = tey + oy;
@@ -195,7 +194,7 @@ int canvas_transition_vertice_selected(void *context)
 
     struct ufsmm_vertice *v;
     TAILQ_FOREACH(v, &t->vertices, tailq) {
-        if (point_in_box(priv->px, priv->py, v->x + ox + rx, v->y + oy + ry, 10, 10)) {
+        if (point_in_box(priv->px, priv->py, v->x + ox, v->y + oy, 10, 10)) {
             L_DEBUG("Vertice selected");
             priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE;
             priv->selected_transition_vertice_data = v;
@@ -218,7 +217,7 @@ int canvas_transition_text_block_selected(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
     bool selected = false;
-    double x, y, w, h, ox, oy;
+    double ox, oy;
 
     ox = priv->current_region->ox;
     oy = priv->current_region->oy;
@@ -226,12 +225,8 @@ int canvas_transition_text_block_selected(void *context)
     ufsmm_get_region_absolute_coords(t->source.state->parent_region,
                                        &x, &y, &w, &h);
 */
-    transition_calc_begin_end_point(t->source.state,
-                                    t->source.side,
-                                    t->source.offset,
-                                    &x, &y);
-    double tx = t->text_block_coords.x + x + ox;
-    double ty = t->text_block_coords.y + y + oy;
+    double tx = t->text_block_coords.x + ox;
+    double ty = t->text_block_coords.y + oy + 20;
     double tw = t->text_block_coords.w;
     double th = t->text_block_coords.h;
 
@@ -337,7 +332,11 @@ void canvas_process_selection(void *context)
 
         TAILQ_FOREACH(s, &r->states, tailq) {
             s->focus = false;
-            ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
+            //ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
+            x = s->x;// + priv->current_region->ox;
+            y = s->y;// + priv->current_region->oy;
+            w = s->w;
+            h = s->h;
 
             L_DEBUG("s '%s' <%f, %f> %f, %f, %f, %f", s->name,
                         priv->px + priv->current_region->ox,
@@ -372,28 +371,26 @@ void canvas_process_selection(void *context)
                 double vsx, vsy, vex, vey;
                 double tsx, tsy, tex, tey;
                 double d;
-                double rx, ry, rw, rh;
 
                 L_DEBUG("Checking transitions from %s", s->name);
                 t->focus = false;
-                transition_calc_begin_end_point(s,
+                transition_calc_begin_end_point(priv,
+                                                s,
                                                 t->source.side,
                                                 t->source.offset,
                                                 &tsx, &tsy);
-                transition_calc_begin_end_point(t->dest.state,
+                transition_calc_begin_end_point(priv, t->dest.state,
                                                 t->dest.side,
                                                 t->dest.offset,
                                                 &tex, &tey);
-
-                ufsmm_get_region_absolute_coords(r, &rx, &ry, &rw, &rh);
 
                 vsx = tsx + ox;
                 vsy = tsy + oy;
 
                 if (t->vertices.tqh_first != NULL) {
                     TAILQ_FOREACH(v, &t->vertices, tailq) {
-                        vex = v->x + ox + rx;
-                        vey = v->y + oy + ry;
+                        vex = v->x + ox;
+                        vey = v->y + oy;
 
                         d = distance_point_to_seg(priv->px, priv->py,
                                                   vsx, vsy,
@@ -405,8 +402,8 @@ void canvas_process_selection(void *context)
                             priv->selected_transition = t;
                             break;
                         }
-                        vsx = v->x + ox + rx;
-                        vsy = v->y + oy + ry;
+                        vsx = v->x + ox;
+                        vsy = v->y + oy;
                     }
                     vsx = vex;
                     vsy = vey;
@@ -428,8 +425,8 @@ void canvas_process_selection(void *context)
                     t->focus = false;
                 }
 
-                double tx = t->text_block_coords.x + tsx + ox;
-                double ty = t->text_block_coords.y + tsy + oy;
+                double tx = t->text_block_coords.x + ox;
+                double ty = t->text_block_coords.y + oy + 20;
                 double tw = t->text_block_coords.w;
                 double th = t->text_block_coords.h;
 

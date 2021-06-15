@@ -4,7 +4,8 @@
 
 #include "canvas/view.h"
 
-int transition_calc_begin_end_point(struct ufsmm_state *s,
+int transition_calc_begin_end_point(struct ufsmm_canvas *canvas,
+                                    struct ufsmm_state *s,
                                     enum ufsmm_side side,
                                     double offset,
                                     double *x,
@@ -12,7 +13,12 @@ int transition_calc_begin_end_point(struct ufsmm_state *s,
 {
     double sx, sy, sw, sh;
 
-    ufsmm_get_state_absolute_coords(s, &sx, &sy, &sw, &sh);
+    //ufsmm_get_state_absolute_coords(s, &sx, &sy, &sw, &sh);
+
+    sx = s->x;// + canvas->current_region->ox;
+    sy = s->y;// + canvas->current_region->oy;
+    sw = s->w;
+    sh = s->h;
 
     if (s->kind == UFSMM_STATE_NORMAL) {
         switch (side) {
@@ -84,26 +90,28 @@ int transition_calc_begin_end_point(struct ufsmm_state *s,
     }
 }
 
-static void render_selection_boxes(cairo_t *cr, struct ufsmm_transition *t)
+static void render_selection_boxes(cairo_t *cr,
+                                   struct ufsmm_canvas *canvas,
+                                   struct ufsmm_transition *t)
 {
     double fbx, fby;
-    double rx, ry, rw, rh;
     struct ufsmm_vertice *v;
     double begin_x, begin_y, end_x, end_y;
     const double dashes[] = {10.0,  /* ink */
                              10.0};  /* skip */
     struct ufsmm_region *pr = t->source.state->parent_region;
-    ufsmm_get_region_absolute_coords(pr, &rx, &ry, &rw, &rh);
 
-    transition_calc_begin_end_point(t->source.state,
-                         t->source.side,
-                         t->source.offset,
-                         &fbx, &fby);
+    transition_calc_begin_end_point(canvas,
+                                    t->source.state,
+                                    t->source.side,
+                                    t->source.offset,
+                                    &fbx, &fby);
 
-    transition_calc_begin_end_point(t->dest.state,
-                         t->dest.side,
-                         t->dest.offset,
-                         &end_x, &end_y);
+    transition_calc_begin_end_point(canvas,
+                                    t->dest.state,
+                                    t->dest.side,
+                                    t->dest.offset,
+                                    &end_x, &end_y);
     cairo_save(cr);
     ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
     cairo_rectangle (cr, fbx - 5, fby - 5, 10, 10);
@@ -112,11 +120,11 @@ static void render_selection_boxes(cairo_t *cr, struct ufsmm_transition *t)
     cairo_move_to (cr, fbx, fby);
 
     TAILQ_FOREACH(v, &t->vertices, tailq) {
-        cairo_rectangle (cr, rx + v->x - 5, ry + v->y - 5, 10, 10);
+        cairo_rectangle (cr, v->x - 5, v->y - 5, 10, 10);
         cairo_fill(cr);
-        cairo_move_to (cr, rx + v->x, ry + v->y);
-        fbx = rx + v->x;
-        fby = ry + v->y;
+        cairo_move_to (cr, v->x, v->y);
+        fbx = v->x;
+        fby = v->y;
     }
 
     cairo_rectangle (cr, end_x - 5, end_y - 5, 10, 10);
@@ -125,14 +133,9 @@ static void render_selection_boxes(cairo_t *cr, struct ufsmm_transition *t)
 
     /* Dashed rectangle around the text block */
 
-    transition_calc_begin_end_point(t->source.state,
-                         t->source.side,
-                         t->source.offset,
-                         &fbx, &fby);
-
     double tx, ty, th, tw;
-    tx = t->text_block_coords.x + fbx;
-    ty = t->text_block_coords.y + fby;
+    tx = t->text_block_coords.x;
+    ty = t->text_block_coords.y + 20;
     th = t->text_block_coords.h;
     tw = t->text_block_coords.w;
 
@@ -201,12 +204,13 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
 }
 */
 
-static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
+static void render_transition_text(cairo_t *cr,
+                                    struct ufsmm_canvas *canvas,
+                                    struct ufsmm_transition *t)
 {
     size_t text_pos = 0;
     char text_buf[1024];
     cairo_text_extents_t extents;
-    double rx, ry, rw, rh;
     double tx, ty, tw, th;
     unsigned int line_no = 0;
     const char *text_ptr = NULL;
@@ -217,19 +221,13 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
     cairo_set_font_size (cr, 14);
     ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
 
-    transition_calc_begin_end_point(t->source.state,
-                         t->source.side,
-                         t->source.offset,
-                         &rx,
-                         &ry);
-
     tx = t->text_block_coords.x;
-    ty = t->text_block_coords.y;
+    ty = t->text_block_coords.y + 20;
     tw = t->text_block_coords.w;
     th = t->text_block_coords.h;
 
-    double x = rx + tx;
-    double y = ry + ty + 20;
+    double x = tx;
+    double y = ty + 20;
     double x_space = tw;
 
     enum ufsmm_state_kind source_kind = t->source.state->kind;
@@ -350,10 +348,10 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
         if (x_space < 10) {
             line_no++;
             x_space = tw;
-            x = rx + tx;
+            x = tx;
         }
 
-        y = ry + ty + 20 + 20 * line_no;
+        y = ty + 20 + 20 * line_no;
 
         guard->x = x;
         guard->y = y - extents.height / 2;
@@ -403,10 +401,10 @@ static void render_transition_text(cairo_t *cr, struct ufsmm_transition *t)
         if (x_space < 10) {
             line_no++;
             x_space = tw;
-            x = rx + tx;
+            x = tx;
         }
 
-        y = ry + ty + 20 + 20 * line_no;
+        y = ty + 20 + 20 * line_no;
 
         ar->x = x;
         ar->y = y - extents.height / 2;
@@ -438,27 +436,24 @@ int ufsmm_canvas_render_one_transition(struct ufsmm_canvas *canvas,
     cairo_text_extents_t extents;
     struct ufsmm_vertice *v;
     cairo_t *cr = canvas->cr;
-    double rx, ry, rw, rh;
 
-    transition_calc_begin_end_point(t->source.state,
+    transition_calc_begin_end_point(canvas,
+                         t->source.state,
                          t->source.side,
                          t->source.offset,
                          &begin_x, &begin_y);
 
     if (t->dest.state) {
-        transition_calc_begin_end_point(t->dest.state,
+        transition_calc_begin_end_point(
+                             canvas,
+                            t->dest.state,
                              t->dest.side,
                              t->dest.offset,
                              &end_x, &end_y);
     } else {
-        double ox = canvas->current_region->ox;
-        double oy = canvas->current_region->oy;
-        end_x = ufsmm_canvas_nearest_grid_point(canvas->px - ox);
-        end_y = ufsmm_canvas_nearest_grid_point(canvas->py - oy);
+        end_x = ufsmm_canvas_nearest_grid_point(canvas->px - canvas->current_region->ox);
+        end_y = ufsmm_canvas_nearest_grid_point(canvas->py - canvas->current_region->oy);
     }
-
-    ufsmm_get_region_absolute_coords(t->source.state->parent_region,
-                                    &rx, &ry, &rw, &rh);
 
     cairo_save(cr);
     cairo_move_to (cr, begin_x, begin_y);
@@ -475,12 +470,12 @@ int ufsmm_canvas_render_one_transition(struct ufsmm_canvas *canvas,
     }*/
 
     TAILQ_FOREACH(v, &t->vertices, tailq) {
-        cairo_line_to(cr, v->x + rx, v->y + ry - y_off);
+        cairo_line_to(cr, v->x, v->y + - y_off);
         ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
         cairo_stroke (cr);
-        cairo_move_to (cr, v->x + rx, v->y + ry - y_off);
-        begin_x = v->x + rx;
-        begin_y = v->y + ry - y_off;
+        cairo_move_to (cr, v->x, v->y + - y_off);
+        begin_x = v->x;
+        begin_y = v->y - y_off;
     }
 
     cairo_line_to(cr, end_x, end_y);
@@ -509,12 +504,12 @@ int ufsmm_canvas_render_one_transition(struct ufsmm_canvas *canvas,
     cairo_fill(cr);
     cairo_restore(cr);
 
-    render_transition_text(cr, t);
+    render_transition_text(cr, canvas, t);
 
     if (t->dest.state) {
         /* Draw selection boxes if focused */
         if (t->focus)
-            render_selection_boxes(cr, t);
+            render_selection_boxes(cr, canvas, t);
     }
 }
 

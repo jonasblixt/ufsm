@@ -40,12 +40,14 @@
         "entries":[
           {
             "id":"b7b67631-db60-4978-8b18-6a52e1b28d08",
+            "kind":0,
             "action-id":"7247e1d8-b25e-4105-a67d-8f4189a46ffb"
           }
         ],
         "exits":[
           {
             "id":"27f9c8a3-b16f-4d93-9549-11c353e7ae4f",
+            "kind":0,
             "action-id":"8b1c587b-4136-420b-a2c8-33569544496c"
           }
         ],
@@ -57,13 +59,31 @@
             "height":430,
             "states":[
               {
+                "id":"6af2812e-3d93-4b64-9adf-00a1d03c147d",
+                "name":"Terminate",
+                "kind":"terminate",
+                "width":20.0,
+                "height":20.0,
+                "x":610.0,
+                "y":600.0,
+                "orientation":0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                ]
+              },
+              {
                 "id":"b4d75483-f1e8-4594-b59c-a6f65cb04971",
                 "name":"A1",
                 "kind":"state",
                 "width":200.0,
                 "height":210.0,
-                "x":50.0,
-                "y":240.0,
+                "x":350.0,
+                "y":510.0,
                 "orientation":0,
                 "entries":[
                 ],
@@ -86,8 +106,8 @@
                       "offset":10.0
                     },
                     "text-block":{
-                      "x":30.0,
-                      "y":-50.0,
+                      "x":560.0,
+                      "y":560.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -96,8 +116,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -108,8 +126,8 @@
                 "kind":"init",
                 "width":20.0,
                 "height":20.0,
-                "x":140.0,
-                "y":170.0,
+                "x":440.0,
+                "y":420.0,
                 "orientation":0,
                 "entries":[
                 ],
@@ -131,8 +149,8 @@
                       "offset":100.0
                     },
                     "text-block":{
-                      "x":30.0,
-                      "y":0.0,
+                      "x":470.0,
+                      "y":430.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -141,28 +159,8 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
-                ]
-              },
-              {
-                "id":"6af2812e-3d93-4b64-9adf-00a1d03c147d",
-                "name":"Terminate",
-                "kind":"terminate",
-                "width":20.0,
-                "height":20.0,
-                "x":330.0,
-                "y":330.0,
-                "orientation":0,
-                "entries":[
-                ],
-                "exits":[
-                ],
-                "region":[
-                ],
-                "transitions":[
                 ]
               }
             ]
@@ -200,8 +198,8 @@
               "offset":200.0
             },
             "text-block":{
-              "x":20.0,
-              "y":30.0,
+              "x":490.0,
+              "y":170.0,
               "w":100.0,
               "h":30.0
             },
@@ -210,8 +208,6 @@
             "guards":[
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]

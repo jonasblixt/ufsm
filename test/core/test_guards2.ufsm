@@ -86,8 +86,8 @@
               "offset":40.0
             },
             "text-block":{
-              "x":10.0,
-              "y":-60.0,
+              "x":530.0,
+              "y":190.0,
               "w":140.0,
               "h":50.0
             },
@@ -96,14 +96,12 @@
             "guards":[
               {
                 "action-id":"a359c7cd-1a7b-4ae6-9e44-430629c091af",
-                "kind":0,
                 "value":0,
+                "kind":0,
                 "id":"8079744b-a07f-4e22-ac49-1a99f87b0f03"
               }
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]
@@ -137,8 +135,8 @@
               "offset":90.0
             },
             "text-block":{
-              "x":10.0,
-              "y":20.0,
+              "x":320.0,
+              "y":150.0,
               "w":100.0,
               "h":30.0
             },
@@ -147,8 +145,6 @@
             "guards":[
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]
@@ -188,8 +184,8 @@
               "offset":80.0
             },
             "text-block":{
-              "x":20.0,
-              "y":30.0,
+              "x":780.0,
+              "y":370.0,
               "w":150.0,
               "h":30.0
             },
@@ -198,14 +194,12 @@
             "guards":[
               {
                 "action-id":"a359c7cd-1a7b-4ae6-9e44-430629c091af",
-                "kind":1,
                 "value":0,
+                "kind":1,
                 "id":"59752a27-ccfe-492c-902b-03be4db52cfa"
               }
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]
@@ -245,8 +239,8 @@
               "offset":80.0
             },
             "text-block":{
-              "x":20.0,
-              "y":30.0,
+              "x":790.0,
+              "y":590.0,
               "w":190.0,
               "h":30.0
             },
@@ -255,14 +249,12 @@
             "guards":[
               {
                 "action-id":"a359c7cd-1a7b-4ae6-9e44-430629c091af",
-                "kind":2,
                 "value":3,
+                "kind":2,
                 "id":"8fa6ac59-4f77-4704-8a0e-45c373843f53"
               }
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]
@@ -302,8 +294,8 @@
               "offset":70.0
             },
             "text-block":{
-              "x":-180.0,
-              "y":-60.0,
+              "x":490.0,
+              "y":730.0,
               "w":170.0,
               "h":30.0
             },
@@ -312,14 +304,12 @@
             "guards":[
               {
                 "action-id":"a359c7cd-1a7b-4ae6-9e44-430629c091af",
-                "kind":3,
                 "value":4,
+                "kind":3,
                 "id":"245a9185-af08-4a9e-853e-49ce87cc4cc0"
               }
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]
@@ -359,8 +349,8 @@
               "offset":70.0
             },
             "text-block":{
-              "x":10.0,
-              "y":-50.0,
+              "x":420.0,
+              "y":600.0,
               "w":200.0,
               "h":30.0
             },
@@ -369,14 +359,12 @@
             "guards":[
               {
                 "action-id":"a359c7cd-1a7b-4ae6-9e44-430629c091af",
-                "kind":4,
                 "value":10,
+                "kind":4,
                 "id":"702aa96d-ee85-47ea-ad43-227401a7c562"
               }
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]
@@ -416,8 +404,8 @@
               "offset":70.0
             },
             "text-block":{
-              "x":-120.0,
-              "y":-80.0,
+              "x":210.0,
+              "y":450.0,
               "w":100.0,
               "h":70.0
             },
@@ -426,14 +414,12 @@
             "guards":[
               {
                 "action-id":"a359c7cd-1a7b-4ae6-9e44-430629c091af",
-                "kind":5,
                 "value":-1,
+                "kind":5,
                 "id":"62bea521-b269-47e6-bd53-4a51a0026692"
               }
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]
@@ -473,8 +459,8 @@
               "offset":70.0
             },
             "text-block":{
-              "x":20.0,
-              "y":30.0,
+              "x":120.0,
+              "y":600.0,
               "w":190.0,
               "h":30.0
             },
@@ -483,14 +469,12 @@
             "guards":[
               {
                 "action-id":"a359c7cd-1a7b-4ae6-9e44-430629c091af",
-                "kind":6,
                 "value":5,
+                "kind":6,
                 "id":"bc6083c7-9ed8-442f-aaa6-34b85dafc072"
               }
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]
@@ -529,8 +513,8 @@
               "offset":70.0
             },
             "text-block":{
-              "x":20.0,
-              "y":20.0,
+              "x":130.0,
+              "y":810.0,
               "w":100.0,
               "h":30.0
             },
@@ -539,8 +523,6 @@
             "guards":[
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]

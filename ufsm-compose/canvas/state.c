@@ -18,7 +18,11 @@ static int render_history_state(struct ufsmm_canvas *canvas,
     cairo_text_extents_t extents;
     cairo_t *cr = canvas->cr;
 
-    ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
+    //ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
+    x = state->x;// + canvas->current_region->ox;
+    y = state->y;// + canvas->current_region->oy;
+    w = state->w;
+    h = state->h;
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
@@ -85,7 +89,12 @@ static int render_terminate_state(struct ufsmm_canvas *canvas,
     cairo_text_extents_t extents;
     cairo_t *cr = canvas->cr;
 
-    ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
+    //ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
+
+    x = state->x;// + canvas->current_region->ox;
+    y = state->y;// + canvas->current_region->oy;
+    w = state->w;
+    h = state->h;
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
@@ -130,7 +139,12 @@ static int render_init_state(struct ufsmm_canvas *canvas,
     cairo_text_extents_t extents;
     cairo_t *cr = canvas->cr;
 
-    ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
+    //ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
+
+    x = state->x;
+    y = state->y;
+    w = state->w;
+    h = state->h;
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
@@ -170,8 +184,12 @@ static int render_join_state(struct ufsmm_canvas *canvas,
     cairo_text_extents_t extents;
     cairo_t *cr = canvas->cr;
 
-    ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
+    //ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
 
+    x = state->x;// + canvas->current_region->ox;
+    y = state->y;// + canvas->current_region->oy;
+    w = state->w;
+    h = state->h;
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_set_line_width(cr, 4);
@@ -222,8 +240,11 @@ static int render_final_state(struct ufsmm_canvas *canvas,
     cairo_text_extents_t extents;
     cairo_t *cr = canvas->cr;
 
-    ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
-
+   // ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
+    x = state->x;// + canvas->current_region->ox;
+    y = state->y;// + canvas->current_region->oy;
+    w = state->w;
+    h = state->h;
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_set_line_width(cr, 4);
@@ -273,8 +294,12 @@ static int render_normal_state(struct ufsmm_canvas *canvas,
     cairo_text_extents_t extents;
     cairo_t *cr = canvas->cr;
 
-    ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
+    //ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
 
+    x = state->x;// + canvas->current_region->ox;
+    y = state->y;// + canvas->current_region->oy;
+    w = state->w;
+    h = state->h;
     //cairo_set_source_rgb (cr, 1, 1, 1);
     ufsmm_color_set(cr, UFSMM_COLOR_BG);
     cairo_save(cr);
@@ -501,8 +526,8 @@ int ufsmm_state_get_at_xy(struct ufsmm_canvas *canvas,
     double ox, oy;
     cairo_t *cr = canvas->cr;
 
-    ox = canvas->current_region->ox;
-    oy = canvas->current_region->oy;
+    //ox = canvas->current_region->ox;
+    //oy = canvas->current_region->oy;
 
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
     ufsmm_stack_push(stack, region);
@@ -514,10 +539,14 @@ int ufsmm_state_get_at_xy(struct ufsmm_canvas *canvas,
         d++;
 
         TAILQ_FOREACH(s, &r->states, tailq) {
-            ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
+            //ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
 
-            x += ox;
-            y += oy;
+            x = s->x + canvas->current_region->ox;
+            y = s->y + canvas->current_region->oy;
+            w = s->w;
+            h = s->h;
+            //x += ox;
+            //y += oy;
 
             if ( (px > (x-5)) && (px < (x + w + 5)) &&
                  (py > (y-5)) && (py < (y + h + 5))) {
@@ -550,17 +579,21 @@ int ufsmm_state_get_closest_side(struct ufsmm_canvas *canvas,
     double d, d2;
     double lx, ly;
 
-    ox = canvas->current_region->ox;
-    oy = canvas->current_region->oy;
+    //ox = canvas->current_region->ox;
+    //oy = canvas->current_region->oy;
 
     double px = canvas->px;
     double py = canvas->py;
 
-    ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
+    //ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
 
+    x = s->x + canvas->current_region->ox;
+    y = s->y + canvas->current_region->oy;
+    w = s->w;
+    h = s->h;
 
-    x += ox;
-    y += oy;
+    //x += ox;
+    //y += oy;
 
     /* Top segment */
     d = fabs(distance_point_to_seg2(px, py, x, y, x + w, y, &lx, &ly));

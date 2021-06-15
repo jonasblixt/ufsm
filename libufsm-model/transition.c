@@ -555,8 +555,10 @@ int ufsmm_transition_free_one(struct ufsmm_transition *transition)
     if (transition == NULL)
         return UFSMM_OK;
 
-    L_DEBUG("Freeing transition %s --> %s", transition->source.state->name,
-                    transition->dest.state?transition->dest.state->name:"?");
+    if (transition->source.state) {
+        L_DEBUG("Freeing transition %s --> %s", transition->source.state->name,
+                        transition->dest.state?transition->dest.state->name:"?");
+    }
 
     if (transition->dest.state) {
         TAILQ_REMOVE(&transition->source.state->transitions, transition, tailq);

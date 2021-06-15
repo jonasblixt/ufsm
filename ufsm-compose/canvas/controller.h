@@ -45,7 +45,6 @@ struct ufsmm_canvas {
     struct ufsmm_state *preview_state;
     struct ufsmm_transition *preview_transition;
     /* Common stuff */
-    double t[10];
     void *command_data;
     bool redraw;
     double dx, dy;

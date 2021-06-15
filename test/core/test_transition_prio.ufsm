@@ -96,12 +96,14 @@
         "entries":[
           {
             "id":"0f7945e0-95db-4514-a6fa-08abf78f19b6",
+            "kind":0,
             "action-id":"b3177bc7-980f-4594-98f4-00da7e9a09bb"
           }
         ],
         "exits":[
           {
             "id":"a876d303-e952-4811-8072-8b637000e488",
+            "kind":0,
             "action-id":"636529fb-4e33-4bb1-a075-cc162d70bea8"
           }
         ],
@@ -113,23 +115,68 @@
             "height":660,
             "states":[
               {
+                "id":"0688bc56-e17d-4d9a-a101-b458cdf5381d",
+                "name":"Init",
+                "kind":"init",
+                "width":20.0,
+                "height":20.0,
+                "x":610.0,
+                "y":510.0,
+                "orientation":0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                  {
+                    "id":"b7b85b2f-fae9-46c4-bcfa-2f246ed31efc",
+                    "source":{
+                      "state":"0688bc56-e17d-4d9a-a101-b458cdf5381d",
+                      "side":"bottom",
+                      "offset":10.0
+                    },
+                    "dest":{
+                      "state":"4bd22b10-302c-4ad4-9d7a-cae3e2e10df5",
+                      "side":"top",
+                      "offset":510.0
+                    },
+                    "text-block":{
+                      "x":640.0,
+                      "y":510.0,
+                      "w":100.0,
+                      "h":30.0
+                    },
+                    "vertices":[
+                    ],
+                    "guards":[
+                    ],
+                    "actions":[
+                    ]
+                  }
+                ]
+              },
+              {
                 "id":"4bd22b10-302c-4ad4-9d7a-cae3e2e10df5",
                 "name":"C",
                 "kind":"state",
                 "width":1030.0,
                 "height":560.0,
-                "x":30.0,
-                "y":460.0,
+                "x":110.0,
+                "y":570.0,
                 "orientation":0,
                 "entries":[
                   {
                     "id":"0e56f2e6-2d31-492c-b57f-61f714a1168c",
+                    "kind":0,
                     "action-id":"0ec700d3-5acb-495d-9c82-440abcba4207"
                   }
                 ],
                 "exits":[
                   {
                     "id":"243762ca-fb63-477d-979a-67d000e9c065",
+                    "kind":0,
                     "action-id":"efc78fbc-3d38-427e-872e-0a37d3253a00"
                   }
                 ],
@@ -146,18 +193,20 @@
                         "kind":"state",
                         "width":890.0,
                         "height":380.0,
-                        "x":80.0,
-                        "y":120.0,
+                        "x":180.0,
+                        "y":720.0,
                         "orientation":0,
                         "entries":[
                           {
                             "id":"e4676a5b-d857-47aa-9d8e-f5d351d956ae",
+                            "kind":0,
                             "action-id":"1d81369e-0f22-471d-aa11-6808b5c593f1"
                           }
                         ],
                         "exits":[
                           {
                             "id":"c545cb5d-9e88-4fb9-b840-9d038bc46df6",
+                            "kind":0,
                             "action-id":"bc56818e-ccfc-43e2-8a08-3258fbf5a94a"
                           }
                         ],
@@ -174,12 +223,13 @@
                                 "kind":"state",
                                 "width":150.0,
                                 "height":100.0,
-                                "x":140.0,
-                                "y":140.0,
+                                "x":270.0,
+                                "y":890.0,
                                 "orientation":0,
                                 "entries":[
                                   {
                                     "id":"bd89081a-5800-4f68-a09d-ad6ea6da058e",
+                                    "kind":0,
                                     "action-id":"947fce10-bbf5-454b-9f9e-64a8ab38604d"
                                   }
                                 ],
@@ -202,8 +252,8 @@
                                       "offset":20.0
                                     },
                                     "text-block":{
-                                      "x":30.0,
-                                      "y":-30.0,
+                                      "x":500.0,
+                                      "y":860.0,
                                       "w":100.0,
                                       "h":30.0
                                     },
@@ -212,8 +262,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -224,18 +272,20 @@
                                 "kind":"state",
                                 "width":160.0,
                                 "height":100.0,
-                                "x":430.0,
-                                "y":140.0,
+                                "x":670.0,
+                                "y":890.0,
                                 "orientation":0,
                                 "entries":[
                                   {
                                     "id":"7dc24ca3-8f40-487c-a32b-f52a43458855",
+                                    "kind":0,
                                     "action-id":"46f3b191-39ac-42d3-8b58-c8b8b2e7f299"
                                   }
                                 ],
                                 "exits":[
                                   {
                                     "id":"49cd7cd9-a5f6-4ac6-b381-e6482a65effd",
+                                    "kind":0,
                                     "action-id":"37820331-f297-4a18-a679-f997db0f1e50"
                                   }
                                 ],
@@ -256,8 +306,8 @@
                                       "offset":70.0
                                     },
                                     "text-block":{
-                                      "x":-110.0,
-                                      "y":-30.0,
+                                      "x":510.0,
+                                      "y":910.0,
                                       "w":100.0,
                                       "h":30.0
                                     },
@@ -266,8 +316,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -278,8 +326,8 @@
                                 "kind":"init",
                                 "width":20.0,
                                 "height":20.0,
-                                "x":210.0,
-                                "y":90.0,
+                                "x":340.0,
+                                "y":820.0,
                                 "orientation":0,
                                 "entries":[
                                 ],
@@ -301,8 +349,8 @@
                                       "offset":80.0
                                     },
                                     "text-block":{
-                                      "x":30.0,
-                                      "y":-20.0,
+                                      "x":370.0,
+                                      "y":830.0,
                                       "w":100.0,
                                       "h":30.0
                                     },
@@ -311,8 +359,6 @@
                                     "guards":[
                                     ],
                                     "actions":[
-                                    ],
-                                    "state-condition":[
                                     ]
                                   }
                                 ]
@@ -329,8 +375,8 @@
                         "kind":"init",
                         "width":20.0,
                         "height":20.0,
-                        "x":510.0,
-                        "y":70.0,
+                        "x":610.0,
+                        "y":670.0,
                         "orientation":0,
                         "entries":[
                         ],
@@ -352,8 +398,8 @@
                               "offset":440.0
                             },
                             "text-block":{
-                              "x":30.0,
-                              "y":-10.0,
+                              "x":650.0,
+                              "y":670.0,
                               "w":100.0,
                               "h":30.0
                             },
@@ -362,8 +408,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -372,51 +416,6 @@
                   }
                 ],
                 "transitions":[
-                ]
-              },
-              {
-                "id":"0688bc56-e17d-4d9a-a101-b458cdf5381d",
-                "name":"Init",
-                "kind":"init",
-                "width":20.0,
-                "height":20.0,
-                "x":530.0,
-                "y":410.0,
-                "orientation":0,
-                "entries":[
-                ],
-                "exits":[
-                ],
-                "region":[
-                ],
-                "transitions":[
-                  {
-                    "id":"b7b85b2f-fae9-46c4-bcfa-2f246ed31efc",
-                    "source":{
-                      "state":"0688bc56-e17d-4d9a-a101-b458cdf5381d",
-                      "side":"bottom",
-                      "offset":10.0
-                    },
-                    "dest":{
-                      "state":"4bd22b10-302c-4ad4-9d7a-cae3e2e10df5",
-                      "side":"top",
-                      "offset":510.0
-                    },
-                    "text-block":{
-                      "x":40.0,
-                      "y":-20.0,
-                      "w":100.0,
-                      "h":30.0
-                    },
-                    "vertices":[
-                    ],
-                    "guards":[
-                    ],
-                    "actions":[
-                    ],
-                    "state-condition":[
-                    ]
-                  }
                 ]
               }
             ]
@@ -425,203 +424,16 @@
             "id":"d91fd37c-0125-4f32-8492-b13a567b211e",
             "name":"Ar1",
             "off_page":false,
-            "height":320,
+            "height":340,
             "states":[
-              {
-                "id":"fa4d5583-0fdc-4abd-a206-c82455f4c073",
-                "name":"B",
-                "kind":"state",
-                "width":850.0,
-                "height":280.0,
-                "x":230.0,
-                "y":80.0,
-                "orientation":0,
-                "entries":[
-                  {
-                    "id":"3e10047e-a450-4df2-b9cb-b84d55228a35",
-                    "action-id":"6967b39b-0be6-4c24-a759-fb141cb087cf"
-                  }
-                ],
-                "exits":[
-                  {
-                    "id":"50d55974-0877-4134-8197-9a49c32498cf",
-                    "action-id":"0a159a30-cdd2-4f95-b672-628486a36876"
-                  }
-                ],
-                "region":[
-                  {
-                    "id":"6286ad58-4154-4373-a8e7-8d17426b2363",
-                    "name":"Br",
-                    "off_page":false,
-                    "height":180,
-                    "states":[
-                      {
-                        "id":"a267ea4a-857c-4a0f-99b7-da6208301a06",
-                        "name":"G",
-                        "kind":"state",
-                        "width":170.0,
-                        "height":100.0,
-                        "x":210.0,
-                        "y":100.0,
-                        "orientation":0,
-                        "entries":[
-                          {
-                            "id":"780a494a-d3b5-48a2-9847-2c3e1125f7e7",
-                            "action-id":"29b5b0a2-3563-4f6d-b822-748a3f4c8214"
-                          }
-                        ],
-                        "exits":[
-                          {
-                            "id":"eb435977-a3d0-4d13-b65a-b6d5506e54f7",
-                            "action-id":"6508e2d9-24a3-47fb-a344-118f22163e41"
-                          }
-                        ],
-                        "region":[
-                        ],
-                        "transitions":[
-                          {
-                            "id":"baec73c9-f238-430d-b470-b0861753e614",
-                            "trigger":"0d4ca5d9-e2d1-449b-8a3c-a63f60fcd114",
-                            "source":{
-                              "state":"a267ea4a-857c-4a0f-99b7-da6208301a06",
-                              "side":"right",
-                              "offset":20.0
-                            },
-                            "dest":{
-                              "state":"7cb099a6-8da8-4aea-b3a1-5c5ca4c7af2b",
-                              "side":"left",
-                              "offset":20.0
-                            },
-                            "text-block":{
-                              "x":40.0,
-                              "y":-50.0,
-                              "w":50.0,
-                              "h":40.0
-                            },
-                            "vertices":[
-                            ],
-                            "guards":[
-                            ],
-                            "actions":[
-                            ],
-                            "state-condition":[
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "id":"7cb099a6-8da8-4aea-b3a1-5c5ca4c7af2b",
-                        "name":"H",
-                        "kind":"state",
-                        "width":190.0,
-                        "height":100.0,
-                        "x":500.0,
-                        "y":100.0,
-                        "orientation":0,
-                        "entries":[
-                          {
-                            "id":"cd20c6ee-5131-43a1-86c4-506e6557de7a",
-                            "action-id":"8321d804-742a-4307-a8cf-af4c66966687"
-                          }
-                        ],
-                        "exits":[
-                          {
-                            "id":"26827f11-8afc-4590-bc69-617df54e7228",
-                            "action-id":"cfe6de28-7392-43a1-bc59-64ecd9fca931"
-                          }
-                        ],
-                        "region":[
-                        ],
-                        "transitions":[
-                          {
-                            "id":"99f2decc-5fbc-4dfc-ad8b-cf1440716b32",
-                            "trigger":"0d4ca5d9-e2d1-449b-8a3c-a63f60fcd114",
-                            "source":{
-                              "state":"7cb099a6-8da8-4aea-b3a1-5c5ca4c7af2b",
-                              "side":"left",
-                              "offset":80.0
-                            },
-                            "dest":{
-                              "state":"a267ea4a-857c-4a0f-99b7-da6208301a06",
-                              "side":"right",
-                              "offset":80.0
-                            },
-                            "text-block":{
-                              "x":-90.0,
-                              "y":-40.0,
-                              "w":50.0,
-                              "h":30.0
-                            },
-                            "vertices":[
-                            ],
-                            "guards":[
-                            ],
-                            "actions":[
-                            ],
-                            "state-condition":[
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "id":"8c903100-c8c8-43ae-a761-b9cecb138385",
-                        "name":"Init",
-                        "kind":"init",
-                        "width":20.0,
-                        "height":20.0,
-                        "x":80.0,
-                        "y":140.0,
-                        "orientation":0,
-                        "entries":[
-                        ],
-                        "exits":[
-                        ],
-                        "region":[
-                        ],
-                        "transitions":[
-                          {
-                            "id":"6008a180-2054-4e5d-83f2-1d742ae9516d",
-                            "source":{
-                              "state":"8c903100-c8c8-43ae-a761-b9cecb138385",
-                              "side":"right",
-                              "offset":10.0
-                            },
-                            "dest":{
-                              "state":"a267ea4a-857c-4a0f-99b7-da6208301a06",
-                              "side":"left",
-                              "offset":50.0
-                            },
-                            "text-block":{
-                              "x":10.0,
-                              "y":-40.0,
-                              "w":100.0,
-                              "h":30.0
-                            },
-                            "vertices":[
-                            ],
-                            "guards":[
-                            ],
-                            "actions":[
-                            ],
-                            "state-condition":[
-                            ]
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ],
-                "transitions":[
-                ]
-              },
               {
                 "id":"c61a3e08-306f-4713-8f3c-867e41cbf9a1",
                 "name":"Init",
                 "kind":"init",
                 "width":20.0,
                 "height":20.0,
-                "x":80.0,
-                "y":170.0,
+                "x":120.0,
+                "y":270.0,
                 "orientation":0,
                 "entries":[
                 ],
@@ -643,8 +455,8 @@
                       "offset":100.0
                     },
                     "text-block":{
-                      "x":20.0,
-                      "y":-50.0,
+                      "x":140.0,
+                      "y":220.0,
                       "w":70.0,
                       "h":30.0
                     },
@@ -653,10 +465,195 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
+                ]
+              },
+              {
+                "id":"fa4d5583-0fdc-4abd-a206-c82455f4c073",
+                "name":"B",
+                "kind":"state",
+                "width":850.0,
+                "height":280.0,
+                "x":240.0,
+                "y":180.0,
+                "orientation":0,
+                "entries":[
+                  {
+                    "id":"3e10047e-a450-4df2-b9cb-b84d55228a35",
+                    "kind":0,
+                    "action-id":"6967b39b-0be6-4c24-a759-fb141cb087cf"
+                  }
+                ],
+                "exits":[
+                  {
+                    "id":"50d55974-0877-4134-8197-9a49c32498cf",
+                    "kind":0,
+                    "action-id":"0a159a30-cdd2-4f95-b672-628486a36876"
+                  }
+                ],
+                "region":[
+                  {
+                    "id":"6286ad58-4154-4373-a8e7-8d17426b2363",
+                    "name":"Br",
+                    "off_page":false,
+                    "height":180,
+                    "states":[
+                      {
+                        "id":"7cb099a6-8da8-4aea-b3a1-5c5ca4c7af2b",
+                        "name":"H",
+                        "kind":"state",
+                        "width":190.0,
+                        "height":100.0,
+                        "x":810.0,
+                        "y":310.0,
+                        "orientation":0,
+                        "entries":[
+                          {
+                            "id":"cd20c6ee-5131-43a1-86c4-506e6557de7a",
+                            "kind":0,
+                            "action-id":"8321d804-742a-4307-a8cf-af4c66966687"
+                          }
+                        ],
+                        "exits":[
+                          {
+                            "id":"26827f11-8afc-4590-bc69-617df54e7228",
+                            "kind":0,
+                            "action-id":"cfe6de28-7392-43a1-bc59-64ecd9fca931"
+                          }
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                          {
+                            "id":"99f2decc-5fbc-4dfc-ad8b-cf1440716b32",
+                            "trigger":"0d4ca5d9-e2d1-449b-8a3c-a63f60fcd114",
+                            "source":{
+                              "state":"7cb099a6-8da8-4aea-b3a1-5c5ca4c7af2b",
+                              "side":"left",
+                              "offset":80.0
+                            },
+                            "dest":{
+                              "state":"a267ea4a-857c-4a0f-99b7-da6208301a06",
+                              "side":"right",
+                              "offset":80.0
+                            },
+                            "text-block":{
+                              "x":720.0,
+                              "y":340.0,
+                              "w":50.0,
+                              "h":30.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id":"a267ea4a-857c-4a0f-99b7-da6208301a06",
+                        "name":"G",
+                        "kind":"state",
+                        "width":170.0,
+                        "height":100.0,
+                        "x":520.0,
+                        "y":310.0,
+                        "orientation":0,
+                        "entries":[
+                          {
+                            "id":"780a494a-d3b5-48a2-9847-2c3e1125f7e7",
+                            "kind":0,
+                            "action-id":"29b5b0a2-3563-4f6d-b822-748a3f4c8214"
+                          }
+                        ],
+                        "exits":[
+                          {
+                            "id":"eb435977-a3d0-4d13-b65a-b6d5506e54f7",
+                            "kind":0,
+                            "action-id":"6508e2d9-24a3-47fb-a344-118f22163e41"
+                          }
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                          {
+                            "id":"baec73c9-f238-430d-b470-b0861753e614",
+                            "trigger":"0d4ca5d9-e2d1-449b-8a3c-a63f60fcd114",
+                            "source":{
+                              "state":"a267ea4a-857c-4a0f-99b7-da6208301a06",
+                              "side":"right",
+                              "offset":20.0
+                            },
+                            "dest":{
+                              "state":"7cb099a6-8da8-4aea-b3a1-5c5ca4c7af2b",
+                              "side":"left",
+                              "offset":20.0
+                            },
+                            "text-block":{
+                              "x":710.0,
+                              "y":270.0,
+                              "w":50.0,
+                              "h":40.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id":"8c903100-c8c8-43ae-a761-b9cecb138385",
+                        "name":"Init",
+                        "kind":"init",
+                        "width":20.0,
+                        "height":20.0,
+                        "x":420.0,
+                        "y":350.0,
+                        "orientation":0,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                          {
+                            "id":"6008a180-2054-4e5d-83f2-1d742ae9516d",
+                            "source":{
+                              "state":"8c903100-c8c8-43ae-a761-b9cecb138385",
+                              "side":"right",
+                              "offset":10.0
+                            },
+                            "dest":{
+                              "state":"a267ea4a-857c-4a0f-99b7-da6208301a06",
+                              "side":"left",
+                              "offset":50.0
+                            },
+                            "text-block":{
+                              "x":390.0,
+                              "y":290.0,
+                              "w":100.0,
+                              "h":30.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "transitions":[
                 ]
               }
             ]
@@ -677,8 +674,8 @@
               "offset":100.0
             },
             "text-block":{
-              "x":30.0,
-              "y":-30.0,
+              "x":1250.0,
+              "y":480.0,
               "w":100.0,
               "h":30.0
             },
@@ -687,8 +684,6 @@
             "guards":[
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]
@@ -722,8 +717,8 @@
               "offset":580.0
             },
             "text-block":{
-              "x":10.0,
-              "y":-10.0,
+              "x":660.0,
+              "y":0.0,
               "w":100.0,
               "h":30.0
             },
@@ -732,8 +727,6 @@
             "guards":[
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]

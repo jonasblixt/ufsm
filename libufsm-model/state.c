@@ -613,3 +613,16 @@ bool ufsmm_state_contains_region(struct ufsmm_model *model,
     ufsmm_stack_free(stack);
     return result;
 }
+
+bool ufsmm_state_is_descendant(struct ufsmm_state *state,
+                              struct ufsmm_state *possible_parent)
+{
+    struct ufsmm_state *s;
+
+    for (s = state; s; s = s->parent_region->parent_state) {
+        if (s == possible_parent)
+            return true;
+    }
+
+    return false;
+}

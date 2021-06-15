@@ -30,8 +30,8 @@
         "kind":"state",
         "width":730.0,
         "height":620.0,
-        "x":190.0,
-        "y":170.0,
+        "x":180.0,
+        "y":320.0,
         "orientation":0,
         "entries":[
         ],
@@ -50,8 +50,8 @@
                 "kind":"state",
                 "width":420.0,
                 "height":350.0,
-                "x":40.0,
-                "y":140.0,
+                "x":240.0,
+                "y":530.0,
                 "orientation":0,
                 "entries":[
                 ],
@@ -70,8 +70,8 @@
                         "kind":"state",
                         "width":120.0,
                         "height":110.0,
-                        "x":140.0,
-                        "y":180.0,
+                        "x":380.0,
+                        "y":730.0,
                         "orientation":0,
                         "entries":[
                         ],
@@ -85,7 +85,7 @@
                             "source":{
                               "state":"783b1e8a-98f7-4671-ba46-081a31bbc723",
                               "side":"right",
-                              "offset":70.0
+                              "offset":60.0
                             },
                             "dest":{
                               "state":"6b98851a-e858-4900-8718-56f9d0531dd8",
@@ -93,22 +93,20 @@
                               "offset":110.0
                             },
                             "text-block":{
-                              "x":40.0,
-                              "y":-40.0,
+                              "x":520.0,
+                              "y":740.0,
                               "w":100.0,
                               "h":30.0
                             },
                             "vertices":[
                               {
-                                "x":570.0,
-                                "y":100.0
+                                "x":830.0,
+                                "y":790.0
                               }
                             ],
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -119,8 +117,8 @@
                         "kind":"init",
                         "width":20.0,
                         "height":20.0,
-                        "x":50.0,
-                        "y":220.0,
+                        "x":290.0,
+                        "y":770.0,
                         "orientation":0,
                         "entries":[
                         ],
@@ -142,8 +140,8 @@
                               "offset":50.0
                             },
                             "text-block":{
-                              "x":-40.0,
-                              "y":-50.0,
+                              "x":270.0,
+                              "y":710.0,
                               "w":100.0,
                               "h":30.0
                             },
@@ -152,8 +150,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -164,7 +160,7 @@
                     "id":"1cff7833-004c-4f30-95ee-04bd9d8e4cc2",
                     "name":"New region",
                     "off_page":false,
-                    "height":150,
+                    "height":140,
                     "states":[
                       {
                         "id":"687d4548-6812-44ce-8b8b-924d30020b8f",
@@ -172,8 +168,8 @@
                         "kind":"state",
                         "width":120.0,
                         "height":100.0,
-                        "x":140.0,
-                        "y":20.0,
+                        "x":380.0,
+                        "y":580.0,
                         "orientation":0,
                         "entries":[
                         ],
@@ -195,22 +191,20 @@
                               "offset":30.0
                             },
                             "text-block":{
-                              "x":50.0,
-                              "y":-30.0,
+                              "x":520.0,
+                              "y":600.0,
                               "w":100.0,
                               "h":30.0
                             },
                             "vertices":[
                               {
-                                "x":490.0,
-                                "y":100.0
+                                "x":750.0,
+                                "y":660.0
                               }
                             ],
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -221,8 +215,8 @@
                         "kind":"init",
                         "width":20.0,
                         "height":20.0,
-                        "x":70.0,
-                        "y":50.0,
+                        "x":280.0,
+                        "y":610.0,
                         "orientation":0,
                         "entries":[
                         ],
@@ -244,8 +238,8 @@
                               "offset":40.0
                             },
                             "text-block":{
-                              "x":-70.0,
-                              "y":-50.0,
+                              "x":270.0,
+                              "y":550.0,
                               "w":100.0,
                               "h":30.0
                             },
@@ -254,8 +248,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -267,13 +259,99 @@
                 ]
               },
               {
+                "id":"3db0c027-9246-4581-84e9-76c9bdb07cc3",
+                "name":"Init",
+                "kind":"init",
+                "width":20.0,
+                "height":20.0,
+                "x":440.0,
+                "y":460.0,
+                "orientation":0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                  {
+                    "id":"52f2f72e-3a1b-42c3-8956-f451c92e958a",
+                    "source":{
+                      "state":"3db0c027-9246-4581-84e9-76c9bdb07cc3",
+                      "side":"bottom",
+                      "offset":10.0
+                    },
+                    "dest":{
+                      "state":"b0b5f4a5-95f0-4ae5-a556-af48465b69dc",
+                      "side":"top",
+                      "offset":210.0
+                    },
+                    "text-block":{
+                      "x":470.0,
+                      "y":460.0,
+                      "w":100.0,
+                      "h":30.0
+                    },
+                    "vertices":[
+                    ],
+                    "guards":[
+                    ],
+                    "actions":[
+                    ]
+                  }
+                ]
+              },
+              {
+                "id":"6b98851a-e858-4900-8718-56f9d0531dd8",
+                "name":"Join",
+                "kind":"join",
+                "width":140.0,
+                "height":10.0,
+                "x":720.0,
+                "y":550.0,
+                "orientation":2,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                  {
+                    "id":"e4795b8f-0e29-4ebf-abb0-3e4904af23b4",
+                    "source":{
+                      "state":"6b98851a-e858-4900-8718-56f9d0531dd8",
+                      "side":"top",
+                      "offset":70.0
+                    },
+                    "dest":{
+                      "state":"9dca4b7f-e3ae-467a-b307-c2650444fb32",
+                      "side":"bottom",
+                      "offset":60.0
+                    },
+                    "text-block":{
+                      "x":800.0,
+                      "y":480.0,
+                      "w":100.0,
+                      "h":30.0
+                    },
+                    "vertices":[
+                    ],
+                    "guards":[
+                    ],
+                    "actions":[
+                    ]
+                  }
+                ]
+              },
+              {
                 "id":"9dca4b7f-e3ae-467a-b307-c2650444fb32",
                 "name":"AEnd",
                 "kind":"state",
                 "width":150.0,
                 "height":100.0,
-                "x":510.0,
-                "y":50.0,
+                "x":730.0,
+                "y":380.0,
                 "orientation":0,
                 "entries":[
                 ],
@@ -296,8 +374,8 @@
                       "offset":40.0
                     },
                     "text-block":{
-                      "x":110.0,
-                      "y":-30.0,
+                      "x":920.0,
+                      "y":370.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -306,98 +384,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
-                    ]
-                  }
-                ]
-              },
-              {
-                "id":"6b98851a-e858-4900-8718-56f9d0531dd8",
-                "name":"Join",
-                "kind":"join",
-                "width":140.0,
-                "height":10.0,
-                "x":500.0,
-                "y":220.0,
-                "orientation":2,
-                "entries":[
-                ],
-                "exits":[
-                ],
-                "region":[
-                ],
-                "transitions":[
-                  {
-                    "id":"e4795b8f-0e29-4ebf-abb0-3e4904af23b4",
-                    "source":{
-                      "state":"6b98851a-e858-4900-8718-56f9d0531dd8",
-                      "side":"top",
-                      "offset":70.0
-                    },
-                    "dest":{
-                      "state":"9dca4b7f-e3ae-467a-b307-c2650444fb32",
-                      "side":"bottom",
-                      "offset":60.0
-                    },
-                    "text-block":{
-                      "x":20.0,
-                      "y":-50.0,
-                      "w":100.0,
-                      "h":30.0
-                    },
-                    "vertices":[
-                    ],
-                    "guards":[
-                    ],
-                    "actions":[
-                    ],
-                    "state-condition":[
-                    ]
-                  }
-                ]
-              },
-              {
-                "id":"3db0c027-9246-4581-84e9-76c9bdb07cc3",
-                "name":"Init",
-                "kind":"init",
-                "width":20.0,
-                "height":20.0,
-                "x":240.0,
-                "y":60.0,
-                "orientation":0,
-                "entries":[
-                ],
-                "exits":[
-                ],
-                "region":[
-                ],
-                "transitions":[
-                  {
-                    "id":"52f2f72e-3a1b-42c3-8956-f451c92e958a",
-                    "source":{
-                      "state":"3db0c027-9246-4581-84e9-76c9bdb07cc3",
-                      "side":"bottom",
-                      "offset":10.0
-                    },
-                    "dest":{
-                      "state":"b0b5f4a5-95f0-4ae5-a556-af48465b69dc",
-                      "side":"top",
-                      "offset":210.0
-                    },
-                    "text-block":{
-                      "x":10.0,
-                      "y":10.0,
-                      "w":100.0,
-                      "h":30.0
-                    },
-                    "vertices":[
-                    ],
-                    "guards":[
-                    ],
-                    "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -414,12 +400,13 @@
         "kind":"state",
         "width":160.0,
         "height":90.0,
-        "x":1070.0,
-        "y":260.0,
+        "x":1020.0,
+        "y":390.0,
         "orientation":0,
         "entries":[
           {
             "id":"127c7093-e6a9-4abf-aa2b-3d34d490369a",
+            "kind":0,
             "action-id":"29967990-4a3e-403f-b64d-fb29877aba19"
           }
         ],
@@ -436,8 +423,8 @@
         "kind":"init",
         "width":20.0,
         "height":20.0,
-        "x":540.0,
-        "y":100.0,
+        "x":530.0,
+        "y":250.0,
         "orientation":0,
         "entries":[
         ],
@@ -459,8 +446,8 @@
               "offset":360.0
             },
             "text-block":{
-              "x":40.0,
-              "y":0.0,
+              "x":580.0,
+              "y":250.0,
               "w":100.0,
               "h":30.0
             },
@@ -469,8 +456,6 @@
             "guards":[
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]

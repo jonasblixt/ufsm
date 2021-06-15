@@ -168,6 +168,8 @@ struct ufsmm_vertice
 {
     double x;
     double y;
+    double tx;
+    double ty;
     TAILQ_ENTRY(ufsmm_vertice) tailq;
 };
 
@@ -186,6 +188,7 @@ struct ufsmm_coords
     double y;
     double w;
     double h;
+    double tx, ty, tw, th;
 };
 
 struct ufsmm_transition
@@ -233,6 +236,7 @@ struct ufsmm_state
     double y;
     double w;
     double h;
+    double tx, ty, tw, th;
     double region_y_offset;
     bool focus;
     bool resizeable;
@@ -387,6 +391,9 @@ bool ufsmm_state_contains_region(struct ufsmm_model *model,
 int ufsmm_state_move_to_region(struct ufsmm_model *model,
                                struct ufsmm_state *state,
                                struct ufsmm_region *new_region);
+
+bool ufsmm_state_is_descendant(struct ufsmm_state *state,
+                              struct ufsmm_state *possible_parent);
 
 const char * ufsmm_model_name(struct ufsmm_model *model);
 

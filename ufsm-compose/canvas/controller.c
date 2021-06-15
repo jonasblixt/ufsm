@@ -61,10 +61,12 @@ void canvas_check_sresize_boxes(void *context)
     double px = priv->px;
     double py = priv->py;
 
-    ufsmm_get_state_absolute_coords(priv->selected_state, &x, &y, &w, &h);
+    //ufsmm_get_state_absolute_coords(priv->selected_state, &x, &y, &w, &h);
 
-    x += r->ox;
-    y += r->oy;
+    x = priv->selected_state->x + r->ox;
+    y = priv->selected_state->y + r->oy;
+    w = priv->selected_state->w;
+    h = priv->selected_state->h;
 
     /* Check re-size boxes */
 
@@ -453,24 +455,81 @@ void canvas_zoom_out(void *context)
 void canvas_move_state_begin(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_state *s = priv->selected_state;
+    struct ufsmm_state *state = priv->selected_state;
     struct ufsmm_region *r = priv->current_region;
-    double x, y, w, h;
+    struct ufsmm_state *s;
+    struct ufsmm_transition *t;
+    struct ufsmm_vertice *v;
 
     L_DEBUG("%s: ", __func__);
 
-    ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
+    /* Setup selected state */
+    state->tx = state->x;
+    state->ty = state->y;
+    state->tw = state->w;
+    state->th = state->h;
 
-    /* Store current position and size */
-    priv->tx = s->x;
-    priv->ty = s->y;
-    priv->tw = s->w;
-    priv->th = s->h;
 
-    /* Calculate the pointer offset inside the state */
-    priv->t[0] = priv->px - x - r->ox;
-    priv->t[1] = priv->py - y - r->oy;
+    /* Check for self transitions */
+    TAILQ_FOREACH(t, &state->transitions, tailq) {
+        if ((t->source.state == state) &&
+            (t->dest.state == state)) {
 
+            t->text_block_coords.tx = t->text_block_coords.x;
+            t->text_block_coords.ty = t->text_block_coords.y;
+
+            TAILQ_FOREACH(v,  &t->vertices, tailq) {
+                v->tx = v->x;
+                v->ty = v->y;
+            }
+        }
+    }
+
+    /* Update possible children */
+
+    static struct ufsmm_stack *stack;
+    struct ufsmm_region *r2;
+    /* Update possible children */
+
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+
+    TAILQ_FOREACH(r, &priv->selected_state->regions, tailq) {
+        if (r->off_page == false) {
+            ufsmm_stack_push(stack, r);
+        }
+    }
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            /* Store current position and size */
+            s->tx = s->x;
+            s->ty = s->y;
+            s->tw = s->w;
+            s->th = s->h;
+
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                if (r2->off_page == false) {
+                    ufsmm_stack_push(stack, r2);
+                }
+            }
+
+
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
+                if ((ufsmm_state_is_descendant(t->source.state, priv->selected_state)) &&
+                    (ufsmm_state_is_descendant(t->dest.state, priv->selected_state))) {
+
+                    t->text_block_coords.tx = t->text_block_coords.x;
+                    t->text_block_coords.ty = t->text_block_coords.y;
+                    TAILQ_FOREACH(v,  &t->vertices, tailq) {
+                        v->tx = v->x;
+                        v->ty = v->y;
+                    }
+                }
+            }
+        }
+    }
+
+    ufsmm_stack_free(stack);
     printf("State MOVE BEGIN %.2f, %.2f\n", priv->sx, priv->sy);
 }
 
@@ -485,14 +544,17 @@ void canvas_move_state(void *context)
     struct ufsmm_region *new_pr;
     struct ufsmm_state *s = priv->selected_state;
     struct ufsmm_region *r = priv->current_region;
+    struct ufsmm_transition *t;
+    struct ufsmm_vertice *v;
     double x, y, w, h;
     double tx_tmp, ty_tmp;
     double ox, oy;
     int rc;
-    printf("%s: %s --> %f %f\n", __func__, s->name, priv->px, priv->py);
 
-    s->x = ufsmm_canvas_nearest_grid_point(priv->tx + priv->dx);
-    s->y = ufsmm_canvas_nearest_grid_point(priv->ty + priv->dy);
+    s->x = ufsmm_canvas_nearest_grid_point(s->tx + priv->dx);
+    s->y = ufsmm_canvas_nearest_grid_point(s->ty + priv->dy);
+
+    /* Move all of the children */
 
     /* Check if state is dragged on top of another region, if so, re-parent state */
     rc = ufsmm_region_get_at_xy(priv, priv->current_region,
@@ -500,41 +562,69 @@ void canvas_move_state(void *context)
 
     if (rc == UFSMM_OK && (s->parent_region != new_pr)) {
         L_DEBUG("***** Re-parent '%s' to region: %s", s->name, new_pr->name);
+        ufsmm_state_move_to_region(priv->model, s, new_pr);
+    }
 
+    /* Check for self transitions */
+    TAILQ_FOREACH(t, &s->transitions, tailq) {
+        if ((t->source.state == s) &&
+            (t->dest.state == s)) {
 
-        ufsmm_get_region_absolute_coords(s->parent_region, &x, &y, &w, &h);
-        double diff_x = x;
-        double diff_y = y;
-        ufsmm_get_region_absolute_coords(new_pr, &x, &y, &w, &h);
-        diff_x -= x;
-        diff_y -= y;
+            t->text_block_coords.x = \
+                ufsmm_canvas_nearest_grid_point(t->text_block_coords.tx + priv->dx);
+            t->text_block_coords.y = \
+                ufsmm_canvas_nearest_grid_point(t->text_block_coords.ty + priv->dy);
 
-        if (ufsmm_state_move_to_region(priv->model, s, new_pr) == UFSMM_OK) {
-            if (new_pr->parent_state) {
-                ufsmm_get_state_absolute_coords(new_pr->parent_state, &x, &y, &w, &h);
-                y += 30;
+            TAILQ_FOREACH(v,  &t->vertices, tailq) {
+                v->x = ufsmm_canvas_nearest_grid_point(v->tx + priv->dx);
+                v->y = ufsmm_canvas_nearest_grid_point(v->ty + priv->dy);
             }
-            priv->tx = priv->px - x - r->ox - priv->t[0];
-            priv->ty = priv->py - y - r->oy - priv->t[1];
+        }
+    }
 
-            s->x = ufsmm_canvas_nearest_grid_point(priv->tx + priv->dx);
-            s->y = ufsmm_canvas_nearest_grid_point(priv->ty + priv->dy);
+    static struct ufsmm_stack *stack;
+    struct ufsmm_region *r2;
+    /* Update possible children */
 
-            priv->sx = priv->px;
-            priv->sy = priv->py;
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
 
-            /* Update vertice coordinates on outgoing transitions */
-            struct ufsmm_transition *t;
+    TAILQ_FOREACH(r, &priv->selected_state->regions, tailq) {
+        if (r->off_page == false) {
+            ufsmm_stack_push(stack, r);
+        }
+    }
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            /* Store current position and size */
+            s->x = ufsmm_canvas_nearest_grid_point(s->tx + priv->dx);
+            s->y = ufsmm_canvas_nearest_grid_point(s->ty + priv->dy);
+
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                if (r2->off_page == false) {
+                    ufsmm_stack_push(stack, r2);
+                }
+            }
+
             TAILQ_FOREACH(t, &s->transitions, tailq) {
-                struct ufsmm_vertice *v;
-                TAILQ_FOREACH(v, &t->vertices, tailq) {
-                    v->x += diff_x;
-                    v->y += diff_y;
+                if ((ufsmm_state_is_descendant(t->source.state, priv->selected_state)) &&
+                    (ufsmm_state_is_descendant(t->dest.state, priv->selected_state))) {
+
+                    t->text_block_coords.x = \
+                        ufsmm_canvas_nearest_grid_point(t->text_block_coords.tx + priv->dx);
+                    t->text_block_coords.y = \
+                        ufsmm_canvas_nearest_grid_point(t->text_block_coords.ty + priv->dy);
+
+                    TAILQ_FOREACH(v,  &t->vertices, tailq) {
+                        v->x = ufsmm_canvas_nearest_grid_point(v->tx + priv->dx);
+                        v->y = ufsmm_canvas_nearest_grid_point(v->ty + priv->dy);
+                    }
                 }
             }
         }
     }
 
+    ufsmm_stack_free(stack);
     priv->redraw = true;
 }
 
@@ -783,10 +873,31 @@ void canvas_add_entry(void *context)
 {
     int rc;
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+
     rc = ufsm_add_entry_action_dialog(GTK_WINDOW(priv->root_window),
                                         priv->model,
                                         priv->selected_state);
-    L_DEBUG("Add entry on state %s %i", priv->selected_state->name, rc);
+
+    struct ufsmm_region *r;
+    struct ufsmm_state *s;
+    struct ufsmm_transition *t;
+    struct ufsmm_vertice *v;
+    double y_off = 30;
+
+    L_DEBUG("Add entry on state %s %i %f", priv->selected_state->name, rc, y_off);
+    /* Update possible children */
+    TAILQ_FOREACH(r, &priv->selected_state->regions, tailq) {
+        if (r->off_page == false) {
+            TAILQ_FOREACH(s, &r->states, tailq) {
+                s->y += y_off;
+                TAILQ_FOREACH(t, &s->transitions, tailq) {
+                    TAILQ_FOREACH(v,  &t->vertices, tailq) {
+                        v->y += y_off;
+                    }
+                }
+            }
+        }
+    }
     priv->redraw = true;
 }
 
@@ -798,6 +909,26 @@ void canvas_add_exit(void *context)
                                         priv->model,
                                         priv->selected_state);
     L_DEBUG("Add exit on state %s %i", priv->selected_state->name, rc);
+
+    struct ufsmm_region *r;
+    struct ufsmm_state *s;
+    struct ufsmm_transition *t;
+    struct ufsmm_vertice *v;
+    double y_off = 30;
+
+    /* Update possible children */
+    TAILQ_FOREACH(r, &priv->selected_state->regions, tailq) {
+        if (r->off_page == false) {
+            TAILQ_FOREACH(s, &r->states, tailq) {
+                s->y += y_off;
+                TAILQ_FOREACH(t, &s->transitions, tailq) {
+                    TAILQ_FOREACH(v,  &t->vertices, tailq) {
+                        v->y += y_off;
+                    }
+                }
+            }
+        }
+    }
     priv->redraw = true;
 }
 
@@ -885,6 +1016,25 @@ void canvas_delete_entry(void *context)
     L_DEBUG("Deleting entry");
 
     ufsmm_state_delete_entry(s, ar->id);
+
+    struct ufsmm_region *r;
+    struct ufsmm_transition *t;
+    struct ufsmm_vertice *v;
+    double y_off = -30;
+
+    /* Update possible children */
+    TAILQ_FOREACH(r, &priv->selected_state->regions, tailq) {
+        if (r->off_page == false) {
+            TAILQ_FOREACH(s, &r->states, tailq) {
+                s->y += y_off;
+                TAILQ_FOREACH(t, &s->transitions, tailq) {
+                    TAILQ_FOREACH(v,  &t->vertices, tailq) {
+                        v->y += y_off;
+                    }
+                }
+            }
+        }
+    }
     priv->redraw = true;
 }
 
@@ -897,6 +1047,25 @@ void canvas_delete_exit(void *context)
     L_DEBUG("Deleting exit");
 
     ufsmm_state_delete_exit(s, ar->id);
+
+    struct ufsmm_region *r;
+    struct ufsmm_transition *t;
+    struct ufsmm_vertice *v;
+    double y_off = -30;
+
+    /* Update possible children */
+    TAILQ_FOREACH(r, &priv->selected_state->regions, tailq) {
+        if (r->off_page == false) {
+            TAILQ_FOREACH(s, &r->states, tailq) {
+                s->y += y_off;
+                TAILQ_FOREACH(t, &s->transitions, tailq) {
+                    TAILQ_FOREACH(v,  &t->vertices, tailq) {
+                        v->y += y_off;
+                    }
+                }
+            }
+        }
+    }
     priv->redraw = true;
 }
 
@@ -992,15 +1161,7 @@ void canvas_create_new_state(void *context)
     struct state_op *op = (struct state_op *) priv->command_data;
     struct ufsmm_region *cr = priv->current_region;
     double x, y, w, h;
-
-    if (op->pr->parent_state && (op->pr->draw_as_root != true)) {
-        ufsmm_get_state_absolute_coords(op->pr->parent_state, &x, &y, &w, &h);
-        y += 30.0;
-    }
-
     op->commit = true;
-    op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - x - cr->ox - op->state->w - 10);
-    op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - y - cr->oy - op->state->h - 20);
     ufsmm_region_append_state(op->pr, op->state);
     priv->redraw = true;
     L_DEBUG("Added new state to region '%s' cr='%s'", op->pr->name, cr->name);
@@ -1010,6 +1171,51 @@ void canvas_create_new_state(void *context)
 void canvas_toggle_region_offpage(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *r;
+    struct ufsmm_state *s;
+    struct ufsmm_transition *t;
+    struct ufsmm_vertice *v;
+    double y_off = 0;
+    double x_off = 0;
+
+    if (priv->selected_region->off_page) {
+        x_off = priv->selected_state->x;
+        y_off = priv->selected_state->y;
+    } else {
+        x_off = -priv->selected_state->x;
+        y_off = -priv->selected_state->y;
+    }
+
+    /* Update possible children */
+
+    static struct ufsmm_stack *stack;
+    struct ufsmm_region *r2;
+    /* Update possible children */
+
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_push(stack, priv->selected_region);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            s->y += y_off;
+            s->x += x_off;
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                if (r2->off_page == false) {
+                    ufsmm_stack_push(stack, r2);
+                }
+            }
+
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
+                t->text_block_coords.x += x_off;
+                t->text_block_coords.y += y_off;
+                TAILQ_FOREACH(v,  &t->vertices, tailq) {
+                    v->y += y_off;
+                    v->x += x_off;
+                }
+            }
+        }
+    }
+
     priv->selected_region->off_page = !priv->selected_region->off_page;
     priv->redraw = true;
 }
@@ -1168,21 +1374,12 @@ void canvas_add_transition_vertice(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct transition_op *op = (struct transition_op *) priv->command_data;
     struct ufsmm_vertice *v;
-    double x, y, w, h;
 
     v = malloc(sizeof(*v));
     memset(v, 0, sizeof(*v));
 
-    if (op->t->source.state->parent_region) {
-        ufsmm_get_region_absolute_coords(op->t->source.state->parent_region,
-                                            &x, &y, &w, &h);
-    }
-
-    double ox = priv->current_region->ox;
-    double oy = priv->current_region->oy;
-
-    v->x = ufsmm_canvas_nearest_grid_point(priv->px - x - ox);
-    v->y = ufsmm_canvas_nearest_grid_point(priv->py - y - oy);
+    v->x = ufsmm_canvas_nearest_grid_point(priv->px - priv->current_region->ox);
+    v->y = ufsmm_canvas_nearest_grid_point(priv->py - priv->current_region->oy);
 
     TAILQ_INSERT_TAIL(&op->t->vertices, v, tailq);
     L_DEBUG("Add vertice at <%f, %f>", v->x, v->y);
@@ -1229,14 +1426,7 @@ static void add_simple_state_to_region(void *context)
     struct ufsmm_region *cr = priv->current_region;
     double x, y, w, h;
 
-    if (op->pr->parent_state && (op->pr->draw_as_root != true)) {
-        ufsmm_get_state_absolute_coords(op->pr->parent_state, &x, &y, &w, &h);
-        y += 30.0;
-    }
-
     op->commit = true;
-    op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - x - cr->ox - 10);
-    op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - y - cr->oy - 20);
     ufsmm_region_append_state(op->pr, op->state);
     priv->redraw = true;
     L_DEBUG("Added sstate to region '%s'", op->pr->name);
@@ -1420,14 +1610,7 @@ static void create_fork_join_start(void *context)
     struct ufsmm_region *cr = priv->current_region;
     double x, y, w, h;
 
-    if (op->pr->parent_state && (op->pr->draw_as_root != true)) {
-        ufsmm_get_state_absolute_coords(op->pr->parent_state, &x, &y, &w, &h);
-        y += 30.0;
-    }
-
     op->state->parent_region = op->pr;
-    op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - x - cr->ox - 10);
-    op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - y - cr->oy - 20);
     priv->redraw = true;
     priv->sx = priv->px;
     priv->sy = priv->py;
@@ -1609,16 +1792,8 @@ void canvas_add_vertice(void *context)
     v = malloc(sizeof(*v));
     memset(v, 0, sizeof(*v));
 
-    if (t->source.state->parent_region) {
-        ufsmm_get_region_absolute_coords(t->source.state->parent_region,
-                                            &x, &y, &w, &h);
-    }
-
-    double ox = priv->current_region->ox;
-    double oy = priv->current_region->oy;
-
-    v->x = ufsmm_canvas_nearest_grid_point(priv->px - x - ox);
-    v->y = ufsmm_canvas_nearest_grid_point(priv->py - y - oy);
+    v->x = ufsmm_canvas_nearest_grid_point(priv->px - priv->current_region->ox);
+    v->y = ufsmm_canvas_nearest_grid_point(priv->py - priv->current_region->oy);
 
     if (TAILQ_FIRST(&t->vertices)) {
         TAILQ_INSERT_TAIL(&t->vertices, v, tailq);

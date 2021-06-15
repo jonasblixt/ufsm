@@ -70,12 +70,12 @@ int ufsmm_canvas_render_transition(struct ufsmm_canvas *canvas,
 int ufsmm_canvas_render_one_transition(struct ufsmm_canvas *canvas,
                                        struct ufsmm_transition *t);
 double ufsmm_canvas_get_scale(void);
-
+/*
 int ufsmm_get_state_absolute_coords(struct ufsmm_state *s, double *x,
                                                          double *y,
                                                          double *w,
                                                          double *h);
-
+*/
 int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
                                                            double *y,
                                                            double *w,
@@ -85,7 +85,8 @@ bool ufsmm_region_is_root_or_offpage(struct ufsmm_region *r);
 
 double ufsmm_canvas_nearest_grid_point(double in);
 int ufsmm_canvas_state_translate(struct ufsmm_state *s, double dx, double dy);
-int transition_calc_begin_end_point(struct ufsmm_state *s,
+int transition_calc_begin_end_point(struct ufsmm_canvas *canvas,
+                                    struct ufsmm_state *s,
                                     enum ufsmm_side side,
                                     double offset,
                                     double *x,

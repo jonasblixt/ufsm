@@ -120,12 +120,14 @@
                 "entries":[
                   {
                     "id":"a49dec30-0490-412b-931d-2ebad3996cad",
+                    "kind":0,
                     "action-id":"a41f6806-c4da-4ccc-9f5c-f445287dd635"
                   }
                 ],
                 "exits":[
                   {
                     "id":"9f054085-692e-4d16-9bf6-d6e3e54a4aad",
+                    "kind":0,
                     "action-id":"00ff58ef-cbc2-404c-830a-122b35becc39"
                   }
                 ],
@@ -146,8 +148,8 @@
                       "offset":20.0
                     },
                     "text-block":{
-                      "x":100.0,
-                      "y":-40.0,
+                      "x":620.0,
+                      "y":870.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -156,8 +158,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -174,12 +174,14 @@
                 "entries":[
                   {
                     "id":"2ea23b98-d0a5-49f5-b4e6-0081f98ce5f1",
+                    "kind":0,
                     "action-id":"1ca72980-0645-46aa-a06b-db4c4bed2220"
                   }
                 ],
                 "exits":[
                   {
                     "id":"89dd17cb-5d62-423b-ac04-ad037e903f5c",
+                    "kind":0,
                     "action-id":"cf5bacda-c5b5-45a5-96e0-b05906554b6d"
                   }
                 ],
@@ -200,8 +202,8 @@
                       "offset":80.0
                     },
                     "text-block":{
-                      "x":-200.0,
-                      "y":-40.0,
+                      "x":620.0,
+                      "y":940.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -210,8 +212,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -245,8 +245,8 @@
                       "offset":70.0
                     },
                     "text-block":{
-                      "x":-130.0,
-                      "y":-10.0,
+                      "x":310.0,
+                      "y":850.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -255,8 +255,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -267,114 +265,15 @@
             "id":"9289c582-7ad6-4a88-b672-c145801c7559",
             "name":"Ar1",
             "off_page":false,
-            "height":840,
+            "height":790,
             "states":[
-              {
-                "id":"52f12bad-ad7d-4376-adbd-9a9709f71446",
-                "name":"InitA",
-                "kind":"state",
-                "width":110.0,
-                "height":100.0,
-                "x":60.0,
-                "y":400.0,
-                "orientation":0,
-                "entries":[
-                  {
-                    "id":"03330929-80ae-4e9f-9a21-9248c4cf2967",
-                    "action-id":"bf1d2b0f-7fa7-4f13-af7d-859057aa5ee2"
-                  }
-                ],
-                "exits":[
-                  {
-                    "id":"7b5b3f49-bf2f-4386-bc32-5b203428a503",
-                    "action-id":"2739473c-4c23-4416-9432-bde79961c874"
-                  }
-                ],
-                "region":[
-                ],
-                "transitions":[
-                  {
-                    "id":"d4ae86ef-d8c2-4077-84b4-85754e9e380e",
-                    "trigger":"29cf8b16-5321-4ae5-a56c-e4468f4b19fa",
-                    "source":{
-                      "state":"52f12bad-ad7d-4376-adbd-9a9709f71446",
-                      "side":"right",
-                      "offset":50.0
-                    },
-                    "dest":{
-                      "state":"0e3d0721-3d3b-4844-a525-215f91c14b11",
-                      "side":"left",
-                      "offset":350.0
-                    },
-                    "text-block":{
-                      "x":30.0,
-                      "y":-40.0,
-                      "w":100.0,
-                      "h":30.0
-                    },
-                    "vertices":[
-                    ],
-                    "guards":[
-                    ],
-                    "actions":[
-                    ],
-                    "state-condition":[
-                    ]
-                  }
-                ]
-              },
-              {
-                "id":"b6311411-2b95-4be5-8ba4-bba613ddec8b",
-                "name":"Init",
-                "kind":"init",
-                "width":20.0,
-                "height":20.0,
-                "x":100.0,
-                "y":330.0,
-                "orientation":0,
-                "entries":[
-                ],
-                "exits":[
-                ],
-                "region":[
-                ],
-                "transitions":[
-                  {
-                    "id":"39cc2c8e-e004-4842-b480-b29480804ea3",
-                    "source":{
-                      "state":"b6311411-2b95-4be5-8ba4-bba613ddec8b",
-                      "side":"bottom",
-                      "offset":10.0
-                    },
-                    "dest":{
-                      "state":"52f12bad-ad7d-4376-adbd-9a9709f71446",
-                      "side":"top",
-                      "offset":50.0
-                    },
-                    "text-block":{
-                      "x":10.0,
-                      "y":10.0,
-                      "w":100.0,
-                      "h":30.0
-                    },
-                    "vertices":[
-                    ],
-                    "guards":[
-                    ],
-                    "actions":[
-                    ],
-                    "state-condition":[
-                    ]
-                  }
-                ]
-              },
               {
                 "id":"0e3d0721-3d3b-4844-a525-215f91c14b11",
                 "name":"A1",
                 "kind":"state",
                 "width":420.0,
                 "height":700.0,
-                "x":300.0,
+                "x":470.0,
                 "y":100.0,
                 "orientation":0,
                 "entries":[
@@ -394,18 +293,20 @@
                         "kind":"state",
                         "width":120.0,
                         "height":90.0,
-                        "x":150.0,
-                        "y":540.0,
+                        "x":720.0,
+                        "y":660.0,
                         "orientation":0,
                         "entries":[
                           {
                             "id":"ea27b0d5-2e1b-40c4-a1c3-834d6894ba66",
+                            "kind":0,
                             "action-id":"d01efe6a-312c-4893-95c5-0c91f0740b75"
                           }
                         ],
                         "exits":[
                           {
                             "id":"c21d6da2-e03a-49d1-a2b0-1fc951c1af1b",
+                            "kind":0,
                             "action-id":"3d8a8aba-63ff-4517-ac38-826780d960c2"
                           }
                         ],
@@ -425,22 +326,20 @@
                               "offset":130.0
                             },
                             "text-block":{
-                              "x":170.0,
-                              "y":-40.0,
+                              "x":950.0,
+                              "y":660.0,
                               "w":100.0,
                               "h":30.0
                             },
                             "vertices":[
                               {
-                                "x":800.0,
-                                "y":130.0
+                                "x":1250.0,
+                                "y":710.0
                               }
                             ],
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -451,8 +350,8 @@
                         "kind":"init",
                         "width":20.0,
                         "height":20.0,
-                        "x":50.0,
-                        "y":580.0,
+                        "x":550.0,
+                        "y":700.0,
                         "orientation":0,
                         "entries":[
                         ],
@@ -474,8 +373,8 @@
                               "offset":50.0
                             },
                             "text-block":{
-                              "x":-40.0,
-                              "y":-60.0,
+                              "x":590.0,
+                              "y":650.0,
                               "w":100.0,
                               "h":30.0
                             },
@@ -484,8 +383,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -499,23 +396,82 @@
                     "height":230,
                     "states":[
                       {
+                        "id":"70f413d6-49c4-414a-aba8-045c72f8e6d6",
+                        "name":"A12dummy",
+                        "kind":"state",
+                        "width":140.0,
+                        "height":100.0,
+                        "x":720.0,
+                        "y":460.0,
+                        "orientation":0,
+                        "entries":[
+                          {
+                            "id":"71e2c5b5-0aef-4ddb-abbb-ffd30f4c7c51",
+                            "kind":0,
+                            "action-id":"6bcac1e4-f2f4-4e3b-ac43-c718666704ae"
+                          }
+                        ],
+                        "exits":[
+                          {
+                            "id":"3708ba30-35f6-47d5-ae04-40f6582bd4e5",
+                            "kind":0,
+                            "action-id":"22264c1d-e62a-4795-8165-e4f3690a8c17"
+                          }
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                          {
+                            "id":"a8b65a8a-9ca4-4fc1-9cdb-fa4863076a41",
+                            "source":{
+                              "state":"70f413d6-49c4-414a-aba8-045c72f8e6d6",
+                              "side":"right",
+                              "offset":50.0
+                            },
+                            "dest":{
+                              "state":"c065a49b-dd8f-49ba-ae38-a0b91db3ff43",
+                              "side":"bottom",
+                              "offset":70.0
+                            },
+                            "text-block":{
+                              "x":950.0,
+                              "y":460.0,
+                              "w":100.0,
+                              "h":30.0
+                            },
+                            "vertices":[
+                              {
+                                "x":1190.0,
+                                "y":510.0
+                              }
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                            ]
+                          }
+                        ]
+                      },
+                      {
                         "id":"71f3dac4-ac49-4264-a097-062bfc2e5208",
                         "name":"A12",
                         "kind":"state",
                         "width":120.0,
                         "height":100.0,
-                        "x":30.0,
-                        "y":320.0,
+                        "x":540.0,
+                        "y":460.0,
                         "orientation":0,
                         "entries":[
                           {
                             "id":"1bd3784c-6c88-4995-a4a3-4d5838ac8451",
+                            "kind":0,
                             "action-id":"3501695a-dff1-47ae-b5d8-8e515dfb2744"
                           }
                         ],
                         "exits":[
                           {
                             "id":"3bea3480-04d1-4d6c-ac5a-b056ca94e69d",
+                            "kind":0,
                             "action-id":"05558c14-bf7e-4493-99c0-a4f1f3f9fb5d"
                           }
                         ],
@@ -536,8 +492,8 @@
                               "offset":50.0
                             },
                             "text-block":{
-                              "x":20.0,
-                              "y":-40.0,
+                              "x":670.0,
+                              "y":460.0,
                               "w":50.0,
                               "h":30.0
                             },
@@ -546,65 +502,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "id":"70f413d6-49c4-414a-aba8-045c72f8e6d6",
-                        "name":"A12dummy",
-                        "kind":"state",
-                        "width":140.0,
-                        "height":100.0,
-                        "x":230.0,
-                        "y":320.0,
-                        "orientation":0,
-                        "entries":[
-                          {
-                            "id":"71e2c5b5-0aef-4ddb-abbb-ffd30f4c7c51",
-                            "action-id":"6bcac1e4-f2f4-4e3b-ac43-c718666704ae"
-                          }
-                        ],
-                        "exits":[
-                          {
-                            "id":"3708ba30-35f6-47d5-ae04-40f6582bd4e5",
-                            "action-id":"22264c1d-e62a-4795-8165-e4f3690a8c17"
-                          }
-                        ],
-                        "region":[
-                        ],
-                        "transitions":[
-                          {
-                            "id":"a8b65a8a-9ca4-4fc1-9cdb-fa4863076a41",
-                            "source":{
-                              "state":"70f413d6-49c4-414a-aba8-045c72f8e6d6",
-                              "side":"right",
-                              "offset":50.0
-                            },
-                            "dest":{
-                              "state":"c065a49b-dd8f-49ba-ae38-a0b91db3ff43",
-                              "side":"bottom",
-                              "offset":70.0
-                            },
-                            "text-block":{
-                              "x":80.0,
-                              "y":-30.0,
-                              "w":100.0,
-                              "h":30.0
-                            },
-                            "vertices":[
-                              {
-                                "x":740.0,
-                                "y":140.0
-                              }
-                            ],
-                            "guards":[
-                            ],
-                            "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -615,8 +512,8 @@
                         "kind":"init",
                         "width":20.0,
                         "height":20.0,
-                        "x":70.0,
-                        "y":250.0,
+                        "x":580.0,
+                        "y":390.0,
                         "orientation":0,
                         "entries":[
                         ],
@@ -638,8 +535,8 @@
                               "offset":50.0
                             },
                             "text-block":{
-                              "x":10.0,
-                              "y":0.0,
+                              "x":490.0,
+                              "y":390.0,
                               "w":100.0,
                               "h":30.0
                             },
@@ -648,8 +545,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -668,18 +563,20 @@
                         "kind":"state",
                         "width":120.0,
                         "height":100.0,
-                        "x":150.0,
-                        "y":70.0,
+                        "x":660.0,
+                        "y":200.0,
                         "orientation":0,
                         "entries":[
                           {
                             "id":"4c907670-9673-4325-b88e-28582eff0fd5",
+                            "kind":0,
                             "action-id":"a351e0b5-232a-443c-a541-98d8e9dd77e1"
                           }
                         ],
                         "exits":[
                           {
                             "id":"131159be-e48d-4634-ac44-4e8ab4e6a1d8",
+                            "kind":0,
                             "action-id":"8b3c7f47-4eb6-4d16-9830-a4f04009ddf3"
                           }
                         ],
@@ -699,22 +596,20 @@
                               "offset":10.0
                             },
                             "text-block":{
-                              "x":220.0,
-                              "y":-40.0,
+                              "x":930.0,
+                              "y":210.0,
                               "w":100.0,
                               "h":30.0
                             },
                             "vertices":[
                               {
-                                "x":680.0,
-                                "y":130.0
+                                "x":1130.0,
+                                "y":260.0
                               }
                             ],
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -725,8 +620,8 @@
                         "kind":"init",
                         "width":20.0,
                         "height":20.0,
-                        "x":200.0,
-                        "y":20.0,
+                        "x":710.0,
+                        "y":140.0,
                         "orientation":0,
                         "entries":[
                         ],
@@ -748,9 +643,9 @@
                               "offset":60.0
                             },
                             "text-block":{
-                              "x":30.0,
-                              "y":-20.0,
-                              "w":100.0,
+                              "x":590.0,
+                              "y":140.0,
+                              "w":110.0,
                               "h":30.0
                             },
                             "vertices":[
@@ -758,8 +653,6 @@
                             "guards":[
                             ],
                             "actions":[
-                            ],
-                            "state-condition":[
                             ]
                           }
                         ]
@@ -776,12 +669,13 @@
                 "kind":"state",
                 "width":140.0,
                 "height":100.0,
-                "x":970.0,
-                "y":50.0,
+                "x":1120.0,
+                "y":70.0,
                 "orientation":0,
                 "entries":[
                   {
                     "id":"2de96de6-a4ed-4b78-83ca-d2e30d02222f",
+                    "kind":0,
                     "action-id":"d2acebc5-22af-45d0-90b9-82473d477e7a"
                   }
                 ],
@@ -798,7 +692,7 @@
                 "kind":"join",
                 "width":160.0,
                 "height":10.0,
-                "x":970.0,
+                "x":1120.0,
                 "y":220.0,
                 "orientation":2,
                 "entries":[
@@ -821,8 +715,8 @@
                       "offset":70.0
                     },
                     "text-block":{
-                      "x":20.0,
-                      "y":-60.0,
+                      "x":1200.0,
+                      "y":160.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -831,8 +725,103 @@
                     "guards":[
                     ],
                     "actions":[
+                    ]
+                  }
+                ]
+              },
+              {
+                "id":"52f12bad-ad7d-4376-adbd-9a9709f71446",
+                "name":"InitA",
+                "kind":"state",
+                "width":110.0,
+                "height":100.0,
+                "x":260.0,
+                "y":400.0,
+                "orientation":0,
+                "entries":[
+                  {
+                    "id":"03330929-80ae-4e9f-9a21-9248c4cf2967",
+                    "kind":0,
+                    "action-id":"bf1d2b0f-7fa7-4f13-af7d-859057aa5ee2"
+                  }
+                ],
+                "exits":[
+                  {
+                    "id":"7b5b3f49-bf2f-4386-bc32-5b203428a503",
+                    "kind":0,
+                    "action-id":"2739473c-4c23-4416-9432-bde79961c874"
+                  }
+                ],
+                "region":[
+                ],
+                "transitions":[
+                  {
+                    "id":"d4ae86ef-d8c2-4077-84b4-85754e9e380e",
+                    "trigger":"29cf8b16-5321-4ae5-a56c-e4468f4b19fa",
+                    "source":{
+                      "state":"52f12bad-ad7d-4376-adbd-9a9709f71446",
+                      "side":"right",
+                      "offset":50.0
+                    },
+                    "dest":{
+                      "state":"0e3d0721-3d3b-4844-a525-215f91c14b11",
+                      "side":"left",
+                      "offset":350.0
+                    },
+                    "text-block":{
+                      "x":390.0,
+                      "y":390.0,
+                      "w":100.0,
+                      "h":30.0
+                    },
+                    "vertices":[
                     ],
-                    "state-condition":[
+                    "guards":[
+                    ],
+                    "actions":[
+                    ]
+                  }
+                ]
+              },
+              {
+                "id":"b6311411-2b95-4be5-8ba4-bba613ddec8b",
+                "name":"Init",
+                "kind":"init",
+                "width":20.0,
+                "height":20.0,
+                "x":300.0,
+                "y":320.0,
+                "orientation":0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                  {
+                    "id":"39cc2c8e-e004-4842-b480-b29480804ea3",
+                    "source":{
+                      "state":"b6311411-2b95-4be5-8ba4-bba613ddec8b",
+                      "side":"bottom",
+                      "offset":10.0
+                    },
+                    "dest":{
+                      "state":"52f12bad-ad7d-4376-adbd-9a9709f71446",
+                      "side":"top",
+                      "offset":50.0
+                    },
+                    "text-block":{
+                      "x":320.0,
+                      "y":330.0,
+                      "w":100.0,
+                      "h":30.0
+                    },
+                    "vertices":[
+                    ],
+                    "guards":[
+                    ],
+                    "actions":[
                     ]
                   }
                 ]
@@ -872,8 +861,8 @@
               "offset":80.0
             },
             "text-block":{
-              "x":20.0,
-              "y":-30.0,
+              "x":60.0,
+              "y":50.0,
               "w":100.0,
               "h":30.0
             },
@@ -882,8 +871,6 @@
             "guards":[
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]

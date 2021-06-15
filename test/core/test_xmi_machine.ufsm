@@ -129,8 +129,8 @@
               "offset":100.0
             },
             "text-block":{
-              "x":20.0,
-              "y":10.0,
+              "x":1130.0,
+              "y":110.0,
               "w":100.0,
               "h":30.0
             },
@@ -139,8 +139,6 @@
             "guards":[
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]
@@ -177,6 +175,7 @@
                 "entries":[
                   {
                     "id":"e9a1b102-18a4-469c-bfec-7aab8bb17182",
+                    "kind":0,
                     "action-id":"99fb650a-634f-4283-b8c3-44d06a51f4b5"
                   }
                 ],
@@ -199,8 +198,8 @@
                       "offset":30.0
                     },
                     "text-block":{
-                      "x":-70.0,
-                      "y":20.0,
+                      "x":580.0,
+                      "y":360.0,
                       "w":50.0,
                       "h":30.0
                     },
@@ -209,8 +208,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -227,6 +224,7 @@
                 "entries":[
                   {
                     "id":"c0a086c8-0b89-4aa6-a3fa-33ccc9d757ee",
+                    "kind":0,
                     "action-id":"faaa886c-e6d9-4312-b4f5-db9b9252a2a4"
                   }
                 ],
@@ -249,8 +247,8 @@
                       "offset":150.0
                     },
                     "text-block":{
-                      "x":30.0,
-                      "y":-40.0,
+                      "x":800.0,
+                      "y":360.0,
                       "w":50.0,
                       "h":30.0
                     },
@@ -259,8 +257,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -294,8 +290,8 @@
                       "offset":90.0
                     },
                     "text-block":{
-                      "x":20.0,
-                      "y":10.0,
+                      "x":730.0,
+                      "y":110.0,
                       "w":90.0,
                       "h":30.0
                     },
@@ -304,8 +300,6 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -328,8 +322,8 @@
               "offset":160.0
             },
             "text-block":{
-              "x":-130.0,
-              "y":-50.0,
+              "x":890.0,
+              "y":280.0,
               "w":50.0,
               "h":30.0
             },
@@ -338,8 +332,6 @@
             "guards":[
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]
@@ -374,8 +366,8 @@
               "offset":40.0
             },
             "text-block":{
-              "x":70.0,
-              "y":-50.0,
+              "x":880.0,
+              "y":140.0,
               "w":50.0,
               "h":30.0
             },
@@ -384,8 +376,6 @@
             "guards":[
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           },
           {
@@ -402,8 +392,8 @@
               "offset":180.0
             },
             "text-block":{
-              "x":20.0,
-              "y":30.0,
+              "x":780.0,
+              "y":400.0,
               "w":50.0,
               "h":30.0
             },
@@ -412,8 +402,6 @@
             "guards":[
             ],
             "actions":[
-            ],
-            "state-condition":[
             ]
           }
         ]
@@ -439,13 +427,31 @@
             "height":200,
             "states":[
               {
+                "id":"02ee310d-34d8-4cd7-9c2f-df2c158cd9e3",
+                "name":"Final",
+                "kind":"final",
+                "width":20.0,
+                "height":20.0,
+                "x":980.0,
+                "y":1010.0,
+                "orientation":0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                ]
+              },
+              {
                 "id":"19662830-0373-47e3-a0e7-e80c23b1a67e",
                 "name":"E13",
                 "kind":"state",
                 "width":100.0,
                 "height":120.0,
-                "x":180.0,
-                "y":440.0,
+                "x":800.0,
+                "y":960.0,
                 "orientation":0,
                 "entries":[
                 ],
@@ -468,8 +474,8 @@
                       "offset":8.4413909912109943
                     },
                     "text-block":{
-                      "x":20.0,
-                      "y":-40.0,
+                      "x":920.0,
+                      "y":950.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -480,10 +486,9 @@
                     "actions":[
                       {
                         "action-id":"8f2d8b4d-b4a4-47cc-bc4c-7e6db0fae0d9",
+                        "kind":0,
                         "id":"47642c36-0419-49eb-9e51-6cf3627e4846"
                       }
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -494,8 +499,8 @@
                 "kind":"init",
                 "width":20.0,
                 "height":20.0,
-                "x":50.0,
-                "y":480.0,
+                "x":670.0,
+                "y":1000.0,
                 "orientation":0,
                 "entries":[
                 ],
@@ -517,8 +522,8 @@
                       "offset":50.0
                     },
                     "text-block":{
-                      "x":10.0,
-                      "y":-40.0,
+                      "x":690.0,
+                      "y":940.0,
                       "w":90.0,
                       "h":30.0
                     },
@@ -527,28 +532,8 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
-                ]
-              },
-              {
-                "id":"02ee310d-34d8-4cd7-9c2f-df2c158cd9e3",
-                "name":"Final",
-                "kind":"final",
-                "width":20.0,
-                "height":20.0,
-                "x":370.0,
-                "y":490.0,
-                "orientation":0,
-                "entries":[
-                ],
-                "exits":[
-                ],
-                "region":[
-                ],
-                "transitions":[
                 ]
               }
             ]
@@ -560,13 +545,31 @@
             "height":200,
             "states":[
               {
+                "id":"ff76c14e-f764-4ba4-a03c-f39a9412e272",
+                "name":"Final",
+                "kind":"final",
+                "width":20.0,
+                "height":20.0,
+                "x":970.0,
+                "y":790.0,
+                "orientation":0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                ]
+              },
+              {
                 "id":"fe183f3c-a6f8-4f65-97c6-4ac0d30925a2",
                 "name":"E12",
                 "kind":"state",
                 "width":100.0,
                 "height":120.0,
-                "x":170.0,
-                "y":240.0,
+                "x":800.0,
+                "y":750.0,
                 "orientation":0,
                 "entries":[
                 ],
@@ -589,8 +592,8 @@
                       "offset":14.006973266601847
                     },
                     "text-block":{
-                      "x":20.0,
-                      "y":-40.0,
+                      "x":920.0,
+                      "y":730.0,
                       "w":110.0,
                       "h":30.0
                     },
@@ -601,10 +604,9 @@
                     "actions":[
                       {
                         "action-id":"0c2158e5-6e94-42a9-858c-514d8bace1eb",
+                        "kind":0,
                         "id":"e086c07b-de72-4ada-9459-d0fb107e0112"
                       }
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -615,8 +617,8 @@
                 "kind":"init",
                 "width":20.0,
                 "height":20.0,
-                "x":40.0,
-                "y":280.0,
+                "x":660.0,
+                "y":790.0,
                 "orientation":0,
                 "entries":[
                 ],
@@ -638,8 +640,8 @@
                       "offset":49.24795297476004
                     },
                     "text-block":{
-                      "x":10.0,
-                      "y":-40.0,
+                      "x":690.0,
+                      "y":730.0,
                       "w":90.0,
                       "h":30.0
                     },
@@ -648,28 +650,8 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
-                ]
-              },
-              {
-                "id":"ff76c14e-f764-4ba4-a03c-f39a9412e272",
-                "name":"Final",
-                "kind":"final",
-                "width":20.0,
-                "height":20.0,
-                "x":380.0,
-                "y":280.0,
-                "orientation":0,
-                "entries":[
-                ],
-                "exits":[
-                ],
-                "region":[
-                ],
-                "transitions":[
                 ]
               }
             ]
@@ -681,13 +663,31 @@
             "height":200,
             "states":[
               {
+                "id":"76ac71a8-d67e-4f28-8f9c-f233918e37fa",
+                "name":"Final",
+                "kind":"final",
+                "width":20.0,
+                "height":20.0,
+                "x":970.0,
+                "y":590.0,
+                "orientation":0,
+                "entries":[
+                ],
+                "exits":[
+                ],
+                "region":[
+                ],
+                "transitions":[
+                ]
+              },
+              {
                 "id":"afde7095-173a-433e-b9ec-37ec47957722",
                 "name":"E11",
                 "kind":"state",
                 "width":100.0,
                 "height":90.0,
-                "x":170.0,
-                "y":50.0,
+                "x":810.0,
+                "y":560.0,
                 "orientation":0,
                 "entries":[
                 ],
@@ -710,8 +710,8 @@
                       "offset":0.0
                     },
                     "text-block":{
-                      "x":20.0,
-                      "y":-40.0,
+                      "x":930.0,
+                      "y":520.0,
                       "w":110.0,
                       "h":30.0
                     },
@@ -722,10 +722,9 @@
                     "actions":[
                       {
                         "action-id":"370015e5-a3f2-4383-9869-3c783ba923cb",
+                        "kind":0,
                         "id":"409e0950-965f-4e4d-9708-69e3a01d82cc"
                       }
-                    ],
-                    "state-condition":[
                     ]
                   }
                 ]
@@ -736,8 +735,8 @@
                 "kind":"init",
                 "width":20.0,
                 "height":20.0,
-                "x":43.333333333333258,
-                "y":79.166666666666515,
+                "x":670.0,
+                "y":590.0,
                 "orientation":0,
                 "entries":[
                 ],
@@ -759,8 +758,8 @@
                       "offset":39.723839393029209
                     },
                     "text-block":{
-                      "x":10.0,
-                      "y":-30.0,
+                      "x":710.0,
+                      "y":540.0,
                       "w":80.0,
                       "h":30.0
                     },
@@ -769,28 +768,8 @@
                     "guards":[
                     ],
                     "actions":[
-                    ],
-                    "state-condition":[
                     ]
                   }
-                ]
-              },
-              {
-                "id":"76ac71a8-d67e-4f28-8f9c-f233918e37fa",
-                "name":"Final",
-                "kind":"final",
-                "width":20.0,
-                "height":20.0,
-                "x":390.0,
-                "y":80.0,
-                "orientation":0,
-                "entries":[
-                ],
-                "exits":[
-                ],
-                "region":[
-                ],
-                "transitions":[
                 ]
               }
             ]
@@ -810,8 +789,8 @@
               "offset":9.9115600585939774
             },
             "text-block":{
-              "x":30.0,
-              "y":-40.0,
+              "x":1070.0,
+              "y":610.0,
               "w":150.0,
               "h":30.0
             },
@@ -822,10 +801,9 @@
             "actions":[
               {
                 "action-id":"5372f9cf-fe6b-4e7a-81a8-e033f6b5921b",
+                "kind":0,
                 "id":"ab4def12-007a-47d2-a272-2cb07e9ed6f1"
               }
-            ],
-            "state-condition":[
             ]
           },
           {
@@ -842,8 +820,8 @@
               "offset":40.0
             },
             "text-block":{
-              "x":-250.0,
-              "y":-70.0,
+              "x":390.0,
+              "y":400.0,
               "w":220.0,
               "h":30.0
             },
@@ -852,16 +830,17 @@
             "guards":[
               {
                 "action-id":"670711f0-2067-4c81-8730-1c26928ad217",
+                "value":0,
+                "kind":0,
                 "id":"fc8d91f9-afab-468f-ac0a-f8bd774f8f9a"
               }
             ],
             "actions":[
               {
                 "action-id":"4eb0a07f-233a-41a8-9ad7-1e5825b0648f",
+                "kind":0,
                 "id":"36fee967-4d47-4735-848b-3c0dfdd967c9"
               }
-            ],
-            "state-condition":[
             ]
           }
         ]
