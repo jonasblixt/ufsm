@@ -219,7 +219,6 @@ void canvas_move_vertice(void *context)
 
     double dx = priv->dx;// / priv->current_region->scale;
     double dy = priv->dy;// / priv->current_region->scale;
-    double tx = priv->tx;// / priv->current_region->scale;
     priv->redraw = true;
 
     switch (priv->selected_transition_vertice) {
@@ -248,27 +247,27 @@ void canvas_move_vertice(void *context)
 
             if (t->source.side != src_side) {
                 t->source.side = src_side;
-                t->source.offset = src_offset;
+                t->source.toffset = src_offset;
                 /* Reset offset and delta when switching sides */
-                priv->tx = src_offset;
                 priv->sx = priv->px;
                 priv->sy = priv->py;
                 dx = priv->dx;
                 dy = priv->dy;
-                tx = priv->tx;
             }
 
             if (t->source.side == UFSMM_SIDE_LEFT ||
                 t->source.side == UFSMM_SIDE_RIGHT) {
-                t->source.offset = ufsmm_canvas_nearest_grid_point(tx + dy);
+                t->source.offset = ufsmm_canvas_nearest_grid_point(t->source.toffset + dy);
             } else {
-                t->source.offset = ufsmm_canvas_nearest_grid_point(tx + dx);
+                t->source.offset = ufsmm_canvas_nearest_grid_point(t->source.toffset + dx);
             }
         }
         break;
         case UFSMM_TRANSITION_VERTICE:
-            priv->selected_transition_vertice_data->y = (priv->ty + dy);
-            priv->selected_transition_vertice_data->x = (priv->tx + dx);
+            priv->selected_transition_vertice_data->y = \
+                   (priv->selected_transition_vertice_data->ty + dy);
+            priv->selected_transition_vertice_data->x = \
+                   (priv->selected_transition_vertice_data->tx + dx);
 
             priv->selected_transition_vertice_data->y =
                 ufsmm_canvas_nearest_grid_point(priv->selected_transition_vertice_data->y);
@@ -302,22 +301,20 @@ void canvas_move_vertice(void *context)
                 L_DEBUG("Changing side from %i to %i",
                     t->dest.side, dest_side);
                 t->dest.side = dest_side;
-                t->dest.offset = dest_offset;
+                t->dest.toffset = dest_offset;
 
                 /* Reset offset and delta when switching sides */
-                priv->tx = dest_offset;
                 priv->sx = priv->px;
                 priv->sy = priv->py;
                 dx = priv->dx;
                 dy = priv->dy;
-                tx = priv->tx;
             }
 
             if (t->dest.side == UFSMM_SIDE_LEFT ||
                         t->dest.side == UFSMM_SIDE_RIGHT) {
-                t->dest.offset = ufsmm_canvas_nearest_grid_point(tx + dy);
+                t->dest.offset = ufsmm_canvas_nearest_grid_point(t->dest.toffset + dy);
             } else {
-                t->dest.offset = ufsmm_canvas_nearest_grid_point(tx + dx);
+                t->dest.offset = ufsmm_canvas_nearest_grid_point(t->dest.toffset + dx);
             }
         }
         break;
@@ -632,7 +629,7 @@ void canvas_resize_region_begin(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_region *r = priv->selected_region;
-    priv->th = r->h;
+    r->th = r->h;
 }
 
 void canvas_resize_region(void *context)
@@ -646,10 +643,10 @@ void canvas_resize_region(void *context)
 
     switch (priv->selected_corner) {
         case UFSMM_TOP_MIDDLE:
-            r->h = priv->th - dy;
+            r->h = r->th - dy;
         break;
         case UFSMM_BOT_MIDDLE:
-            r->h = priv->th + dy;
+            r->h = r->th + dy;
         break;
         default:
         break;
@@ -703,8 +700,8 @@ void canvas_move_text_block(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
 
-    t->text_block_coords.x = ufsmm_canvas_nearest_grid_point(priv->tx + priv->dx);
-    t->text_block_coords.y = ufsmm_canvas_nearest_grid_point(priv->ty + priv->dy);
+    t->text_block_coords.x = ufsmm_canvas_nearest_grid_point(t->text_block_coords.tx + priv->dx);
+    t->text_block_coords.y = ufsmm_canvas_nearest_grid_point(t->text_block_coords.ty + priv->dy);
 
     priv->redraw = true;
 }
@@ -804,39 +801,39 @@ void canvas_resize_textblock(void *context)
             if (t->text_block_coords.w <= 50) {
                 t->text_block_coords.w = 50;
             } else {
-                t->text_block_coords.w = priv->tw + dx;
+                t->text_block_coords.w = t->text_block_coords.tw + dx;
             }
 
-            if ((priv->th - dy) <= 30) {
+            if ((t->text_block_coords.th - dy) <= 30) {
                 t->text_block_coords.h = 30;
             } else {
-                t->text_block_coords.h = priv->th - dy;
-                t->text_block_coords.y = priv->ty + dy;
+                t->text_block_coords.h = t->text_block_coords.th - dy;
+                t->text_block_coords.y = t->text_block_coords.ty + dy;
             }
         }
         break;
         case UFSMM_BOT_RIGHT:
-            t->text_block_coords.w = priv->tw + dx;
-            t->text_block_coords.h = priv->th + dy;
+            t->text_block_coords.w = t->text_block_coords.tw + dx;
+            t->text_block_coords.h = t->text_block_coords.th + dy;
         break;
         case UFSMM_BOT_LEFT:
-            t->text_block_coords.w = priv->tw - dx;
-            t->text_block_coords.x = priv->tx + dx;
-            t->text_block_coords.h = priv->th + dy;
+            t->text_block_coords.w = t->text_block_coords.tw - dx;
+            t->text_block_coords.x = t->text_block_coords.tx + dx;
+            t->text_block_coords.h = t->text_block_coords.th + dy;
         break;
         case UFSMM_TOP_LEFT:
             if (t->text_block_coords.w <= 50) {
                 t->text_block_coords.w = 50;
             } else {
-                t->text_block_coords.w = priv->tw - dx;
-                t->text_block_coords.x = priv->tx + dx;
+                t->text_block_coords.w = t->text_block_coords.tw - dx;
+                t->text_block_coords.x = t->text_block_coords.tx + dx;
             }
 
-            if ((priv->th - dy) <= 30) {
+            if ((t->text_block_coords.th - dy) <= 30) {
                 t->text_block_coords.h = 30;
             } else {
-                t->text_block_coords.h = priv->th - dy;
-                t->text_block_coords.y = priv->ty + dy;
+                t->text_block_coords.h = t->text_block_coords.th - dy;
+                t->text_block_coords.y = t->text_block_coords.ty + dy;
             }
         break;
         default:

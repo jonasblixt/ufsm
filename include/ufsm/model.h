@@ -179,6 +179,7 @@ struct ufsmm_transition_state_ref
 {
     struct ufsmm_state *state;
     double offset;
+    double toffset;
     enum ufsmm_side side;
 };
 
@@ -215,11 +216,11 @@ struct ufsmm_region
     uuid_t id;
     const char *name;
     bool off_page;
-    double h;
+    double h, th;
     bool focus;
     bool draw_as_root;
     unsigned int depth;
-    double ox, oy;
+    double ox, oy, tox, toy;
     double scale;
     struct ufsmm_states states;
     struct ufsmm_state *parent_state;

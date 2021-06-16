@@ -116,10 +116,10 @@
         "id":"07046070-fe9a-414b-890a-15b275e6b0b5",
         "name":"BroadcastMode",
         "kind":"state",
-        "width":840.0,
-        "height":520.0,
-        "x":440.0,
-        "y":100.0,
+        "width":1090.0,
+        "height":530.0,
+        "x":320.0,
+        "y":90.0,
         "orientation":0,
         "entries":[
           {
@@ -169,16 +169,16 @@
                     "source":{
                       "state":"2c789dd8-8579-4696-814a-d46bea1428d8",
                       "side":"bottom",
-                      "offset":310.0
+                      "offset":330.0
                     },
                     "dest":{
                       "state":"41dd00c8-2325-4d7d-b05d-d6431a8e582a",
                       "side":"top",
-                      "offset":40.0
+                      "offset":60.0
                     },
                     "text-block":{
-                      "x":810.0,
-                      "y":380.0,
+                      "x":830.0,
+                      "y":370.0,
                       "w":60.0,
                       "h":30.0
                     },
@@ -218,15 +218,15 @@
                     "source":{
                       "state":"daf9bc4b-7be6-41af-9874-b99d98c48f15",
                       "side":"top",
-                      "offset":30.0
+                      "offset":100.0
                     },
                     "dest":{
                       "state":"2c789dd8-8579-4696-814a-d46bea1428d8",
                       "side":"bottom",
-                      "offset":560.0
+                      "offset":630.0
                     },
                     "text-block":{
-                      "x":1060.0,
+                      "x":1170.0,
                       "y":360.0,
                       "w":180.0,
                       "h":40.0
@@ -254,7 +254,7 @@
                     "dest":{
                       "state":"efc9fa5c-4dcb-4e34-ad5f-c38864d4e6c0",
                       "side":"top",
-                      "offset":610.0
+                      "offset":730.0
                     },
                     "text-block":{
                       "x":1060.0,
@@ -306,7 +306,7 @@
                       "offset":170.0
                     },
                     "text-block":{
-                      "x":890.0,
+                      "x":930.0,
                       "y":340.0,
                       "w":170.0,
                       "h":50.0
@@ -398,8 +398,8 @@
                       "offset":160.0
                     },
                     "text-block":{
-                      "x":630.0,
-                      "y":370.0,
+                      "x":640.0,
+                      "y":380.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -468,7 +468,7 @@
                     },
                     "text-block":{
                       "x":610.0,
-                      "y":330.0,
+                      "y":320.0,
                       "w":190.0,
                       "h":50.0
                     },
@@ -553,7 +553,7 @@
               "offset":90.0
             },
             "text-block":{
-              "x":550.0,
+              "x":420.0,
               "y":620.0,
               "w":190.0,
               "h":30.0
@@ -577,9 +577,9 @@
         "id":"efc9fa5c-4dcb-4e34-ad5f-c38864d4e6c0",
         "name":"NormalMode",
         "kind":"state",
-        "width":840.0,
+        "width":1090.0,
         "height":480.0,
-        "x":440.0,
+        "x":320.0,
         "y":690.0,
         "orientation":0,
         "entries":[
@@ -613,7 +613,7 @@
                 "name":"Renewing",
                 "kind":"state",
                 "width":190.0,
-                "height":140.0,
+                "height":250.0,
                 "x":1000.0,
                 "y":900.0,
                 "orientation":0,
@@ -635,16 +635,16 @@
                     "source":{
                       "state":"346a3994-a913-4307-90e1-9b2e737d57bc",
                       "side":"left",
-                      "offset":30.0
+                      "offset":70.0
                     },
                     "dest":{
                       "state":"b52d936f-44f7-4787-9d0a-f45ed6376066",
                       "side":"right",
-                      "offset":30.0
+                      "offset":70.0
                     },
                     "text-block":{
                       "x":850.0,
-                      "y":860.0,
+                      "y":910.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -661,9 +661,9 @@
                 "id":"b52d936f-44f7-4787-9d0a-f45ed6376066",
                 "name":"Bound",
                 "kind":"state",
-                "width":190.0,
-                "height":140.0,
-                "x":620.0,
+                "width":370.0,
+                "height":250.0,
+                "x":440.0,
                 "y":900.0,
                 "orientation":0,
                 "entries":[
@@ -681,6 +681,177 @@
                 "exits":[
                 ],
                 "region":[
+                  {
+                    "id":"2db1af1b-6fe2-4e42-83e3-362035b341fb",
+                    "name":"New region",
+                    "off_page":false,
+                    "height":160,
+                    "states":[
+                      {
+                        "id":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
+                        "name":"Bound inner",
+                        "kind":"state",
+                        "width":160.0,
+                        "height":120.0,
+                        "x":550.0,
+                        "y":1010.0,
+                        "orientation":0,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                          {
+                            "id":"2bc4da3e-736d-4cce-ae3e-51132f8e7796",
+                            "trigger":"7ec0c00a-de2a-49d9-b5fe-455ea4adf471",
+                            "source":{
+                              "state":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
+                              "side":"left",
+                              "offset":50.0
+                            },
+                            "dest":{
+                              "state":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
+                              "side":"left",
+                              "offset":30.0
+                            },
+                            "text-block":{
+                              "x":450.0,
+                              "y":980.0,
+                              "w":80.0,
+                              "h":30.0
+                            },
+                            "vertices":[
+                              {
+                                "x":520.0,
+                                "y":1060.0
+                              },
+                              {
+                                "x":520.0,
+                                "y":1040.0
+                              }
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                            ]
+                          },
+                          {
+                            "id":"1bcaccb4-e2e4-403a-965b-ef1653782019",
+                            "trigger":"29c0a737-2c8d-4fab-84e7-e27bb79d8ab3",
+                            "source":{
+                              "state":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
+                              "side":"left",
+                              "offset":100.0
+                            },
+                            "dest":{
+                              "state":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
+                              "side":"left",
+                              "offset":80.0
+                            },
+                            "text-block":{
+                              "x":450.0,
+                              "y":1040.0,
+                              "w":100.0,
+                              "h":30.0
+                            },
+                            "vertices":[
+                              {
+                                "x":520.0,
+                                "y":1110.0
+                              },
+                              {
+                                "x":520.0,
+                                "y":1090.0
+                              }
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                            ]
+                          },
+                          {
+                            "id":"f6620709-97e8-4772-9219-6cb27a8f6aa4",
+                            "trigger":"39a929a0-2ff4-4181-8127-c70b6a94ca0d",
+                            "source":{
+                              "state":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
+                              "side":"right",
+                              "offset":90.0
+                            },
+                            "dest":{
+                              "state":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
+                              "side":"right",
+                              "offset":70.0
+                            },
+                            "text-block":{
+                              "x":720.0,
+                              "y":1020.0,
+                              "w":100.0,
+                              "h":30.0
+                            },
+                            "vertices":[
+                              {
+                                "x":740.0,
+                                "y":1100.0
+                              },
+                              {
+                                "x":740.0,
+                                "y":1080.0
+                              }
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id":"b468e5f3-833a-455c-a83d-504609f852cd",
+                        "name":"Init",
+                        "kind":"init",
+                        "width":20.0,
+                        "height":20.0,
+                        "x":760.0,
+                        "y":1020.0,
+                        "orientation":0,
+                        "entries":[
+                        ],
+                        "exits":[
+                        ],
+                        "region":[
+                        ],
+                        "transitions":[
+                          {
+                            "id":"f57b0c4b-a956-487a-9b27-2b8dc6f8e316",
+                            "source":{
+                              "state":"b468e5f3-833a-455c-a83d-504609f852cd",
+                              "side":"left",
+                              "offset":10.0
+                            },
+                            "dest":{
+                              "state":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
+                              "side":"right",
+                              "offset":20.0
+                            },
+                            "text-block":{
+                              "x":710.0,
+                              "y":970.0,
+                              "w":100.0,
+                              "h":30.0
+                            },
+                            "vertices":[
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
                 ],
                 "transitions":[
                   {
@@ -689,122 +860,20 @@
                     "source":{
                       "state":"b52d936f-44f7-4787-9d0a-f45ed6376066",
                       "side":"right",
-                      "offset":110.0
+                      "offset":210.0
                     },
                     "dest":{
                       "state":"346a3994-a913-4307-90e1-9b2e737d57bc",
                       "side":"left",
-                      "offset":110.0
+                      "offset":210.0
                     },
                     "text-block":{
-                      "x":860.0,
-                      "y":960.0,
+                      "x":850.0,
+                      "y":1050.0,
                       "w":100.0,
                       "h":30.0
                     },
                     "vertices":[
-                    ],
-                    "guards":[
-                    ],
-                    "actions":[
-                    ]
-                  },
-                  {
-                    "id":"1bcaccb4-e2e4-403a-965b-ef1653782019",
-                    "trigger":"29c0a737-2c8d-4fab-84e7-e27bb79d8ab3",
-                    "source":{
-                      "state":"b52d936f-44f7-4787-9d0a-f45ed6376066",
-                      "side":"left",
-                      "offset":90.0
-                    },
-                    "dest":{
-                      "state":"b52d936f-44f7-4787-9d0a-f45ed6376066",
-                      "side":"left",
-                      "offset":60.0
-                    },
-                    "text-block":{
-                      "x":480.0,
-                      "y":940.0,
-                      "w":100.0,
-                      "h":30.0
-                    },
-                    "vertices":[
-                      {
-                        "x":590.0,
-                        "y":990.0
-                      },
-                      {
-                        "x":590.0,
-                        "y":960.0
-                      }
-                    ],
-                    "guards":[
-                    ],
-                    "actions":[
-                    ]
-                  },
-                  {
-                    "id":"2bc4da3e-736d-4cce-ae3e-51132f8e7796",
-                    "trigger":"7ec0c00a-de2a-49d9-b5fe-455ea4adf471",
-                    "source":{
-                      "state":"b52d936f-44f7-4787-9d0a-f45ed6376066",
-                      "side":"bottom",
-                      "offset":20.0
-                    },
-                    "dest":{
-                      "state":"b52d936f-44f7-4787-9d0a-f45ed6376066",
-                      "side":"bottom",
-                      "offset":50.0
-                    },
-                    "text-block":{
-                      "x":620.0,
-                      "y":1070.0,
-                      "w":80.0,
-                      "h":30.0
-                    },
-                    "vertices":[
-                      {
-                        "x":640.0,
-                        "y":1070.0
-                      },
-                      {
-                        "x":670.0,
-                        "y":1070.0
-                      }
-                    ],
-                    "guards":[
-                    ],
-                    "actions":[
-                    ]
-                  },
-                  {
-                    "id":"f6620709-97e8-4772-9219-6cb27a8f6aa4",
-                    "trigger":"39a929a0-2ff4-4181-8127-c70b6a94ca0d",
-                    "source":{
-                      "state":"b52d936f-44f7-4787-9d0a-f45ed6376066",
-                      "side":"bottom",
-                      "offset":120.0
-                    },
-                    "dest":{
-                      "state":"b52d936f-44f7-4787-9d0a-f45ed6376066",
-                      "side":"bottom",
-                      "offset":150.0
-                    },
-                    "text-block":{
-                      "x":730.0,
-                      "y":1070.0,
-                      "w":100.0,
-                      "h":30.0
-                    },
-                    "vertices":[
-                      {
-                        "x":740.0,
-                        "y":1070.0
-                      },
-                      {
-                        "x":770.0,
-                        "y":1070.0
-                      }
                     ],
                     "guards":[
                     ],
@@ -819,8 +888,8 @@
                 "kind":"init",
                 "width":20.0,
                 "height":20.0,
-                "x":700.0,
-                "y":820.0,
+                "x":620.0,
+                "y":830.0,
                 "orientation":0,
                 "entries":[
                 ],
@@ -839,11 +908,11 @@
                     "dest":{
                       "state":"b52d936f-44f7-4787-9d0a-f45ed6376066",
                       "side":"top",
-                      "offset":90.0
+                      "offset":190.0
                     },
                     "text-block":{
-                      "x":750.0,
-                      "y":820.0,
+                      "x":650.0,
+                      "y":840.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -866,15 +935,15 @@
             "source":{
               "state":"efc9fa5c-4dcb-4e34-ad5f-c38864d4e6c0",
               "side":"top",
-              "offset":780.0
+              "offset":1030.0
             },
             "dest":{
               "state":"07046070-fe9a-414b-890a-15b275e6b0b5",
               "side":"bottom",
-              "offset":780.0
+              "offset":1030.0
             },
             "text-block":{
-              "x":1240.0,
+              "x":1360.0,
               "y":620.0,
               "w":100.0,
               "h":30.0
@@ -892,7 +961,7 @@
             "source":{
               "state":"efc9fa5c-4dcb-4e34-ad5f-c38864d4e6c0",
               "side":"top",
-              "offset":730.0
+              "offset":850.0
             },
             "dest":{
               "state":"daf9bc4b-7be6-41af-9874-b99d98c48f15",
@@ -940,11 +1009,11 @@
             "dest":{
               "state":"07046070-fe9a-414b-890a-15b275e6b0b5",
               "side":"top",
-              "offset":410.0
+              "offset":530.0
             },
             "text-block":{
               "x":870.0,
-              "y":30.0,
+              "y":20.0,
               "w":100.0,
               "h":30.0
             },

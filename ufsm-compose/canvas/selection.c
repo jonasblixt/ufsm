@@ -32,10 +32,10 @@ void canvas_resize_state_begin(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_state *s = priv->selected_state;
-    priv->tx = s->x;
-    priv->ty = s->y;
-    priv->tw = s->w;
-    priv->th = s->h;
+    s->tx = s->x;
+    s->ty = s->y;
+    s->tw = s->w;
+    s->th = s->h;
 }
 
 void canvas_resize_state(void *context)
@@ -52,38 +52,38 @@ void canvas_resize_state(void *context)
     if (selected_state->kind == UFSMM_STATE_NORMAL) {
         switch (priv->selected_corner) {
             case UFSMM_TOP_MIDDLE:
-                selected_state->h = priv->th - dy;
-                selected_state->y = priv->ty + dy;
+                selected_state->h = selected_state->th - dy;
+                selected_state->y = selected_state->ty + dy;
             break;
             case UFSMM_BOT_MIDDLE:
-                selected_state->h = priv->th + dy;
+                selected_state->h = selected_state->th + dy;
             break;
             case UFSMM_TOP_RIGHT:
-                selected_state->h = priv->th - dy;
-                selected_state->w = priv->tw + dx;
-                selected_state->y = priv->ty + dy;
+                selected_state->h = selected_state->th - dy;
+                selected_state->w = selected_state->tw + dx;
+                selected_state->y = selected_state->ty + dy;
             break;
             case UFSMM_RIGHT_MIDDLE:
-                selected_state->w = priv->tw + dx;
+                selected_state->w = selected_state->tw + dx;
             break;
             case UFSMM_LEFT_MIDDLE:
-                selected_state->w = priv->tw - dx;
-                selected_state->x = priv->tx + dx;
+                selected_state->w = selected_state->tw - dx;
+                selected_state->x = selected_state->tx + dx;
             break;
             case UFSMM_BOT_RIGHT:
-                selected_state->w = priv->tw + dx;
-                selected_state->h = priv->th + dy;
+                selected_state->w = selected_state->tw + dx;
+                selected_state->h = selected_state->th + dy;
             break;
             case UFSMM_BOT_LEFT:
-                selected_state->w = priv->tw - dx;
-                selected_state->x = priv->tx + dx;
-                selected_state->h = priv->th + dy;
+                selected_state->w = selected_state->tw - dx;
+                selected_state->x = selected_state->tx + dx;
+                selected_state->h = selected_state->th + dy;
             break;
             case UFSMM_TOP_LEFT:
-                selected_state->w = priv->tw - dx;
-                selected_state->x = priv->tx + dx;
-                selected_state->h = priv->th - dy;
-                selected_state->y = priv->ty + dy;
+                selected_state->w = selected_state->tw - dx;
+                selected_state->x = selected_state->tx + dx;
+                selected_state->h = selected_state->th - dy;
+                selected_state->y = selected_state->ty + dy;
             break;
         }
 
@@ -99,24 +99,24 @@ void canvas_resize_state(void *context)
         switch (priv->selected_corner) {
             case UFSMM_TOP_LEFT:
                 if (selected_state->orientation == UFSMM_ORIENTATION_HORIZONTAL) {
-                    if (priv->tw - dx > 50) {
-                        selected_state->w = priv->tw - dx;
-                        selected_state->x = priv->tx + dx;
+                    if (selected_state->tw - dx > 50) {
+                        selected_state->w = selected_state->tw - dx;
+                        selected_state->x = selected_state->tx + dx;
                     }
                 } else {
-                    if (priv->th - dy > 50) {
-                        selected_state->h = priv->th - dy;
-                        selected_state->y = priv->ty + dy;
+                    if (selected_state->th - dy > 50) {
+                        selected_state->h = selected_state->th - dy;
+                        selected_state->y = selected_state->ty + dy;
                     }
                 }
             break;
             case UFSMM_TOP_RIGHT:
                 if (selected_state->orientation == UFSMM_ORIENTATION_HORIZONTAL) {
-                    if (priv->tw + dx > 50)
-                        selected_state->w = priv->tw + dx;
+                    if (selected_state->tw + dx > 50)
+                        selected_state->w = selected_state->tw + dx;
                 } else {
-                    if (priv->th + dy > 50)
-                        selected_state->h = priv->th + dy;
+                    if (selected_state->th + dy > 50)
+                        selected_state->h = selected_state->th + dy;
                 }
             break;
        }
@@ -189,7 +189,7 @@ int canvas_transition_vertice_selected(void *context)
     if (point_in_box(priv->px, priv->py, vsx, vsy, 10, 10)) {
         L_DEBUG("Start vertice selected");
         priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE_START;
-        priv->tx = t->source.offset;
+        t->source.toffset = t->source.offset;
     }
 
     struct ufsmm_vertice *v;
@@ -198,15 +198,15 @@ int canvas_transition_vertice_selected(void *context)
             L_DEBUG("Vertice selected");
             priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE;
             priv->selected_transition_vertice_data = v;
-            priv->tx = v->x;
-            priv->ty = v->y;
+            v->tx = v->x;
+            v->ty = v->y;
         }
     }
 
     if (point_in_box(priv->px, priv->py, vex, vey, 10, 10)) {
         priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE_END;
         L_DEBUG("End vertice selected");
-        priv->tx = t->dest.offset;
+        t->dest.toffset = t->dest.offset;
     }
 
     return (priv->selected_transition_vertice != UFSMM_TRANSITION_VERTICE_NONE);
@@ -231,10 +231,10 @@ int canvas_transition_text_block_selected(void *context)
     double th = t->text_block_coords.h;
 
     if (point_in_box2(priv->px, priv->py, tx - 10, ty - 10, tw + 20, th + 20)) {
-        priv->tx = t->text_block_coords.x;
-        priv->ty = t->text_block_coords.y;
-        priv->tw = t->text_block_coords.w;
-        priv->th = t->text_block_coords.h;
+        t->text_block_coords.tx = t->text_block_coords.x;
+        t->text_block_coords.ty = t->text_block_coords.y;
+        t->text_block_coords.tw = t->text_block_coords.w;
+        t->text_block_coords.th = t->text_block_coords.h;
         selected = true;
     }
 

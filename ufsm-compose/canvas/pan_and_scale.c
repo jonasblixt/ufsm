@@ -10,8 +10,8 @@ void canvas_update_offset(void *context)
     double dx = priv->px - priv->sx;
     double dy = priv->py - priv->sy;
 
-    priv->current_region->ox = priv->tx + dx;
-    priv->current_region->oy = priv->ty + dy;
+    priv->current_region->ox = priv->current_region->tox + dx;
+    priv->current_region->oy = priv->current_region->toy + dy;
 
     priv->redraw = true;
 }
@@ -20,8 +20,8 @@ void canvas_store_offset(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     printf("%s\n", __func__);
-    priv->tx = priv->current_region->ox;
-    priv->ty = priv->current_region->oy;
+    priv->current_region->tox = priv->current_region->ox;
+    priv->current_region->toy = priv->current_region->oy;
 }
 
 void canvas_inc_scale(void *context)

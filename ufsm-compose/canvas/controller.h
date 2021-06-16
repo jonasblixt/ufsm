@@ -50,7 +50,6 @@ struct ufsmm_canvas {
     double dx, dy;
     double px, py; /* Location of mouse pointer */
     double sx, sy; /* Start coordinates */
-    double tx, ty, th, tw; /* Temporary coordinates */
     enum ufsmm_selection selection;
     GtkWidget *widget;
     GtkWidget *root_window;
