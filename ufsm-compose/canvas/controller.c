@@ -1292,6 +1292,13 @@ void canvas_create_transition_start(void *context)
                                     &op->t->source.side,
                                     &op->t->source.offset);
         op->t->dest.state = NULL;
+
+        transition_calc_begin_end_point(priv, op->t->source.state,
+                             op->t->source.side,
+                             op->t->source.offset,
+                             &op->t->text_block_coords.x,
+                             &op->t->text_block_coords.y);
+
         priv->preview_transition = op->t;
     }
 
@@ -1332,16 +1339,6 @@ void canvas_create_transition(void *context)
                                                  dest_state->name);
         op->t->dest.side = dest_side;
         op->t->dest.offset = dest_offset;
-/*
-        transition_calc_begin_end_point(op->t->source.state,
-                             op->t->source.side,
-                             op->t->source.offset,
-                             &op->t->text_block_coords.x,
-                             &op->t->text_block_coords.y);
-*/
-
-        op->t->text_block_coords.x = 0;
-        op->t->text_block_coords.y = 0;
 
         op->t->text_block_coords.w = 100;
         op->t->text_block_coords.h = 30;
@@ -1857,12 +1854,16 @@ void canvas_update_mselect(void *context)
     priv->redraw = true;
 }
 
+void canvas_copy_selection(void *context)
+{
+    L_DEBUG("%s", __func__);
+}
+
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
-    L_DEBUG("keyval = %i", event->keyval);
     if (event->keyval == GDK_KEY_A) {
         if (priv->current_region->parent_state) {
             L_DEBUG("Ascending to region: %s",
@@ -1879,9 +1880,11 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
     } else if (event->keyval == GDK_KEY_Shift_L) {
         canvas_machine_process(&priv->machine, eKey_shift_down);
     } else if (event->keyval == GDK_KEY_Control_L) {
-        canvas_machine_process(&priv->machine, eEnableScale);
+        canvas_machine_process(&priv->machine, eKey_ctrl_down);
     } else if (event->keyval == GDK_KEY_a) {
         canvas_machine_process(&priv->machine, eKey_a_down);
+    } else if (event->keyval == GDK_KEY_c) {
+        canvas_machine_process(&priv->machine, eKey_c_down);
     } else if (event->keyval == GDK_KEY_n) {
         canvas_machine_process(&priv->machine, eKey_n_down);
     } else if (event->keyval == GDK_KEY_O) {
@@ -1936,7 +1939,7 @@ gboolean keyrelease_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
     if (event->keyval == GDK_KEY_Shift_L) {
         canvas_machine_process(&priv->machine, eKey_shift_up);
     } else if (event->keyval == GDK_KEY_Control_L) {
-        canvas_machine_process(&priv->machine, eDisableScale);
+        canvas_machine_process(&priv->machine, eKey_ctrl_up);
     }
 
     if (priv->redraw) {
