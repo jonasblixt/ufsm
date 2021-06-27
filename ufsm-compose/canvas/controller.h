@@ -34,6 +34,8 @@ struct ufsmm_canvas {
     struct canvas_machine machine;
     struct ufsmm_model *model;
     struct ufsmm_region *current_region;
+    /* Active selection */
+    enum ufsmm_selection selection;
     struct ufsmm_region *selected_region;
     struct ufsmm_state *selected_state;
     enum ufsmm_resize_selector selected_corner;
@@ -42,6 +44,8 @@ struct ufsmm_canvas {
     struct ufsmm_action_ref *selected_aref;
     struct ufsmm_guard_ref *selected_guard;
     struct ufsmm_transition *selected_transition;
+    unsigned int selection_count;
+    /* Preview for 'add' operations */
     struct ufsmm_state *preview_state;
     struct ufsmm_transition *preview_transition;
     /* Common stuff */
@@ -50,7 +54,6 @@ struct ufsmm_canvas {
     double dx, dy;
     double px, py; /* Location of mouse pointer */
     double sx, sy; /* Start coordinates */
-    enum ufsmm_selection selection;
     GtkWidget *widget;
     GtkWidget *root_window;
     cairo_t *cr;

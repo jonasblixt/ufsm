@@ -27,7 +27,7 @@ static int render_history_state(struct ufsmm_canvas *canvas,
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_set_line_width(cr, 4);
-    if (state->focus)
+    if (state->selected)
         ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
     else
         ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
@@ -99,7 +99,7 @@ static int render_terminate_state(struct ufsmm_canvas *canvas,
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_set_line_width(cr, 4);
-    if (state->focus)
+    if (state->selected)
         ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
     else
         ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
@@ -149,7 +149,7 @@ static int render_init_state(struct ufsmm_canvas *canvas,
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_set_line_width(cr, 4);
-    if (state->focus)
+    if (state->selected)
         ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
     else
         ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
@@ -193,7 +193,7 @@ static int render_join_state(struct ufsmm_canvas *canvas,
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_set_line_width(cr, 4);
-    if (state->focus)
+    if (state->selected)
         ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
     else
         ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
@@ -211,7 +211,7 @@ static int render_join_state(struct ufsmm_canvas *canvas,
     cairo_fill(cr);
     cairo_restore(cr);
 
-    if (state->focus) {
+    if (state->selected) {
         cairo_save(cr);
         ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
         if (state->orientation == UFSMM_ORIENTATION_HORIZONTAL) {
@@ -248,7 +248,7 @@ static int render_final_state(struct ufsmm_canvas *canvas,
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_set_line_width(cr, 4);
-    if (state->focus)
+    if (state->selected)
         ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
     else
         ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
@@ -265,7 +265,7 @@ static int render_final_state(struct ufsmm_canvas *canvas,
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_set_line_width(cr, 4);
-    if (state->focus)
+    if (state->selected)
         ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
     else
         ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
@@ -374,7 +374,7 @@ static int render_normal_state(struct ufsmm_canvas *canvas,
         entry->w = extents.width;
         entry->h = extents.height;
 
-        if (entry->focus)
+        if (entry->selected)
             ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
         else
             ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
@@ -398,7 +398,7 @@ static int render_normal_state(struct ufsmm_canvas *canvas,
         entry->w = extents.width;
         entry->h = extents.height;
 
-        if (entry->focus)
+        if (entry->selected)
             ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
         else
             ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
@@ -431,7 +431,7 @@ static int render_normal_state(struct ufsmm_canvas *canvas,
         cairo_restore(cr);
     }
 
-    if (state->focus) {
+    if (state->selected) {
         cairo_save(cr);
         ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
         cairo_rectangle (cr, (x + w/2) - 5, y - 5, 10, 10);     /* Top */

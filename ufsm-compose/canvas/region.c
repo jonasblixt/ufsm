@@ -16,7 +16,7 @@ int ufsmm_canvas_render_region(struct ufsmm_canvas *canvas,
 
     ufsmm_get_region_absolute_coords(region, &x, &y, &w, &h);
 
-    if (region->focus || region->off_page) {
+    if (region->selected || region->off_page) {
         cairo_save (cr);
         cairo_set_font_size (cr, 18);
         ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
@@ -25,7 +25,7 @@ int ufsmm_canvas_render_region(struct ufsmm_canvas *canvas,
         cairo_restore(cr);
     }
 
-    if (region->focus) {
+    if (region->selected) {
         cairo_save(cr);
         ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
         cairo_set_dash (cr, dashes, 2, 0);
@@ -34,7 +34,7 @@ int ufsmm_canvas_render_region(struct ufsmm_canvas *canvas,
         cairo_stroke (cr);
         cairo_restore (cr);
     } else if (TAILQ_NEXT(region, tailq)) {
-        if (!TAILQ_NEXT(region, tailq)->focus) {
+        if (!TAILQ_NEXT(region, tailq)->selected) {
             cairo_save(cr);
             ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
             cairo_set_dash(cr, dashes, 2, 0);
@@ -70,7 +70,7 @@ int ufsmm_canvas_render_region(struct ufsmm_canvas *canvas,
     }
 
     /* Render resize boxes */
-    if (region->focus) {
+    if (region->selected) {
         cairo_save(cr);
         ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
         cairo_rectangle (cr, x + w/2 - 5, y - 5, 10, 10);

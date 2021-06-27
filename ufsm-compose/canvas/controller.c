@@ -157,7 +157,7 @@ void canvas_check_action_func(void *context)
     struct ufsmm_action_ref *ar;
 
     if (priv->selected_aref != NULL) {
-        priv->selected_aref->focus = false;
+        priv->selected_aref->selected = false;
         priv->selected_aref = NULL;
     }
 
@@ -168,9 +168,9 @@ void canvas_check_action_func(void *context)
             if (point_in_box2(priv->px, priv->py, ar->x + r->ox, ar->y + r->oy, ar->w, ar->h)) {
                 priv->selected_aref = ar;
                 priv->selection = UFSMM_SELECTION_ENTRY;
-                ar->focus = true;
+                ar->selected = true;
             } else {
-                ar->focus = false;
+                ar->selected = false;
             }
         }
 
@@ -178,9 +178,9 @@ void canvas_check_action_func(void *context)
             if (point_in_box2(priv->px, priv->py, ar->x + r->ox, ar->y + r->oy, ar->w, ar->h)) {
                 priv->selected_aref = ar;
                 priv->selection = UFSMM_SELECTION_EXIT;
-                ar->focus = true;
+                ar->selected = true;
             } else {
-                ar->focus = false;
+                ar->selected = false;
             }
         }
     }
@@ -207,7 +207,7 @@ void canvas_focus_transition(void *context)
 
     L_DEBUG("Transition %s --> %s selected",
                 t->source.state->name, t->dest.state->name);
-    t->focus = true;
+    t->selected = true;
     priv->redraw = true;
 }
 
@@ -333,13 +333,13 @@ void canvas_check_guard(void *context)
     struct ufsmm_guard_ref *ar;
 
     TAILQ_FOREACH(ar, &t->guards, tailq) {
-        ar->focus = false;
+        ar->selected = false;
     }
 
     TAILQ_FOREACH(ar, &t->guards, tailq) {
         if (point_in_box2(priv->px, priv->py, ar->x + cr->ox,
                                               ar->y + cr->oy, ar->w, ar->h)) {
-            ar->focus = true;
+            ar->selected = true;
             priv->redraw = true;
             priv->selected_guard = ar;
             priv->selection = UFSMM_SELECTION_GUARD;
@@ -356,13 +356,13 @@ void canvas_check_action(void *context)
     struct ufsmm_region *cr = priv->current_region;
 
     TAILQ_FOREACH(ar, &t->actions, tailq) {
-        ar->focus = false;
+        ar->selected = false;
     }
 
     TAILQ_FOREACH(ar, &t->actions, tailq) {
         if (point_in_box2(priv->px, priv->py, ar->x + cr->ox,
                                               ar->y + cr->oy, ar->w, ar->h)) {
-            ar->focus = true;
+            ar->selected = true;
             priv->redraw = true;
             priv->selected_aref = ar;
             priv->selection = UFSMM_SELECTION_ACTION;
@@ -373,18 +373,26 @@ void canvas_check_action(void *context)
 
 void canvas_focus_guard(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    priv->redraw = true;
 }
 
 void canvas_focus_action(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    priv->redraw = true;
 }
 
 void canvas_focus_entry(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    priv->redraw = true;
 }
 
 void canvas_focus_exit(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    priv->redraw = true;
 }
 
 void canvas_check_text_block(void *context)
@@ -1817,6 +1825,7 @@ void canvas_resize_text_block_end(void *context)
 
 struct mselect_op {
     double sx, sy;
+    double ex, ey;
 };
 /*
 int ufsmm_canvas_set_selection(bool active, double sx,
@@ -1829,6 +1838,9 @@ void canvas_mselect_begin(void *context)
 
     priv->command_data = malloc(sizeof(struct mselect_op));
     memset(priv->command_data, 0, sizeof(struct mselect_op));
+
+    priv->selected_region->selected = false;
+
     struct mselect_op *op = (struct mselect_op *) priv->command_data;
     op->sx = priv->px;
     op->sy = priv->py;
@@ -1838,6 +1850,92 @@ void canvas_mselect_end(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct mselect_op *op = (struct mselect_op *) priv->command_data;
+    struct ufsmm_stack *stack;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_state *s;
+    struct ufsmm_state *selected_state;
+    struct ufsmm_region *selected_region;
+    struct ufsmm_coords *selected_text_block;
+    enum ufsmm_resize_selector selected_text_block_corner;
+    struct ufsmm_action_ref *selected_action_ref = NULL;
+    double x, y, w, h;
+    double ox, oy;
+
+    op->sx -= priv->current_region->ox;
+    op->sy -= priv->current_region->oy;
+    op->ex = priv->px - priv->current_region->ox;
+    op->ey = priv->py - priv->current_region->oy;
+
+    ox = priv->current_region->ox;
+    oy = priv->current_region->oy;
+
+    priv->selection = UFSMM_SELECTION_NONE;
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+
+    /* Check states and regions */
+    ufsmm_stack_push(stack, priv->current_region);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        ufsmm_get_region_absolute_coords(r, &x, &y, &w, &h);
+
+        if (r->off_page && !r->draw_as_root)
+            continue;
+
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            if ((s->x > op->sx) &&
+                (s->y > op->sy) &&
+                ((s->x + s->w) < op->ex) &&
+                ((s->y + s->h) < op->ey)) {
+                L_DEBUG("State '%s' selected", s->name);
+                s->selected = true;
+                priv->selection_count++;
+            }
+
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                ufsmm_stack_push(stack, r2);
+            }
+        }
+    }
+
+    /* Check transitions */
+    ufsmm_stack_push(stack, priv->current_region);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        if (r->off_page && !r->draw_as_root)
+            continue;
+
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            struct ufsmm_transition *t;
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
+                struct ufsmm_vertice *v;
+                double tsx, tsy, tex, tey;
+
+                transition_calc_begin_end_point(priv,
+                                                s,
+                                                t->source.side,
+                                                t->source.offset,
+                                                &tsx, &tsy);
+                transition_calc_begin_end_point(priv, t->dest.state,
+                                                t->dest.side,
+                                                t->dest.offset,
+                                                &tex, &tey);
+
+                if (point_in_box3(tsx, tsy, op->sx, op->sy, op->ex, op->ey) &&
+                    point_in_box3(tex, tey, op->sx, op->sy, op->ex, op->ey)) {
+                    t->selected = true;
+                    priv->selection_count++;
+                    continue;
+                }
+
+            }
+
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                ufsmm_stack_push(stack, r2);
+            }
+        }
+    }
+
+    ufsmm_stack_free(stack);
     free(op);
     ufsmm_canvas_set_selection(false, 0, 0, 0, 0);
     priv->redraw = true;
@@ -1857,6 +1955,18 @@ void canvas_update_mselect(void *context)
 void canvas_copy_selection(void *context)
 {
     L_DEBUG("%s", __func__);
+}
+
+void canvas_mselect_move_begin(void *context)
+{
+}
+
+void canvas_mselect_move_end(void *context)
+{
+}
+
+void canvas_mselect_move(void *context)
+{
 }
 
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)

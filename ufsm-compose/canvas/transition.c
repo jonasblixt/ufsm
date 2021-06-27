@@ -358,11 +358,11 @@ static void render_transition_text(cairo_t *cr,
         guard->w = extents.width;
         guard->h = extents.height;
 
-        if (!t->focus)
-            guard->focus = false;
+        if (!t->selected)
+            guard->selected = false;
 
         cairo_move_to (cr, x, y);
-        if (guard->focus)
+        if (guard->selected)
             ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
         else
             ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
@@ -411,12 +411,12 @@ static void render_transition_text(cairo_t *cr,
         ar->w = extents.width;
         ar->h = extents.height;
 
-        if (!t->focus)
-            ar->focus = false;
+        if (!t->selected)
+            ar->selected = false;
 
         cairo_move_to (cr, x, y);
 
-        if (ar->focus)
+        if (ar->selected)
             ufsmm_color_set(cr, UFSMM_COLOR_ACCENT);
         else
             ufsmm_color_set(cr, UFSMM_COLOR_NORMAL);
@@ -508,7 +508,7 @@ int ufsmm_canvas_render_one_transition(struct ufsmm_canvas *canvas,
 
     if (t->dest.state) {
         /* Draw selection boxes if focused */
-        if (t->focus)
+        if (t->selected)
             render_selection_boxes(cr, canvas, t);
     }
 }

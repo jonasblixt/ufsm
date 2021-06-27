@@ -131,7 +131,7 @@ TAILQ_HEAD(ufsmm_actions, ufsmm_action);
 struct ufsmm_action_ref
 {
     uuid_t id;
-    bool focus;
+    bool selected;
     double x, y, w, h; /* Support variables for the canvas */
     enum ufsmm_action_ref_kind kind;
     struct ufsmm_action *act;
@@ -144,7 +144,7 @@ TAILQ_HEAD(ufsmm_action_refs, ufsmm_action_ref);
 struct ufsmm_guard_ref
 {
     uuid_t id;
-    bool focus;
+    bool selected;
     double x, y, w, h; /* Support variables for the canvas */
     enum ufsmm_guard_kind kind;
     struct ufsmm_action *act;
@@ -203,7 +203,7 @@ struct ufsmm_transition
     struct ufsmm_transition_state_ref dest;
     struct ufsmm_coords text_block_coords;
     struct ufsmm_vertices vertices;
-    bool focus;
+    bool selected;
     TAILQ_ENTRY(ufsmm_transition) tailq;
 };
 
@@ -217,7 +217,7 @@ struct ufsmm_region
     const char *name;
     bool off_page;
     double h, th;
-    bool focus;
+    bool selected;
     bool draw_as_root;
     unsigned int depth;
     double ox, oy, tox, toy;
@@ -239,7 +239,7 @@ struct ufsmm_state
     double h;
     double tx, ty, tw, th;
     double region_y_offset;
-    bool focus;
+    bool selected;
     bool resizeable;
     unsigned int branch_concurrency_count;
     enum ufsmm_state_kind kind;
@@ -250,6 +250,7 @@ struct ufsmm_state
     struct ufsmm_regions regions;
     struct ufsmm_region *parent_region;
     TAILQ_ENTRY(ufsmm_state) tailq;
+    TAILQ_ENTRY(ufsmm_state) mselect;
 };
 
 

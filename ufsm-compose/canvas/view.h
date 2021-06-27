@@ -54,6 +54,19 @@ inline bool point_in_box2(double px, double py,
     return false;
 }
 
+/* Detection box from <x, y> to <x2, y2> */
+inline bool point_in_box3(double px, double py,
+                         double x, double y,
+                         double x2, double y2)
+{
+    if ( (px > x) && (px < x2) &&
+         (py > y) && (py < y2)) {
+        return true;
+    }
+
+    return false;
+}
+
 int ufsmm_color_set(cairo_t *cr, enum ufsmm_color color);
 
 int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height);

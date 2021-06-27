@@ -875,7 +875,10 @@ static int ufsm_process_completion_events(struct ufsm_machine *m)
 {
     int err = UFSM_OK;
     const struct ufsm_state *completed_state;
+    bool process_more;
 
+one_more_time:
+    process_more = false;
     for (unsigned int n = 0; n < m->no_of_states; n++) {
         if (m->s_data[n].completed) {
             m->s_data[n].completed = false;
@@ -885,8 +888,13 @@ static int ufsm_process_completion_events(struct ufsm_machine *m)
 
             if (err != UFSM_OK)
                 return err;
+            process_more = true;
         }
     }
+
+    if (process_more)
+        goto one_more_time;
+
     return err;
 }
 
