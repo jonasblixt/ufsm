@@ -1858,7 +1858,6 @@ void canvas_mselect_end(void *context)
     struct ufsmm_coords *selected_text_block;
     enum ufsmm_resize_selector selected_text_block_corner;
     struct ufsmm_action_ref *selected_action_ref = NULL;
-    double x, y, w, h;
     double ox, oy;
 
     op->sx -= priv->current_region->ox;
@@ -1876,8 +1875,6 @@ void canvas_mselect_end(void *context)
     ufsmm_stack_push(stack, priv->current_region);
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
-        ufsmm_get_region_absolute_coords(r, &x, &y, &w, &h);
-
         if (r->off_page && !r->draw_as_root)
             continue;
 
@@ -1957,16 +1954,228 @@ void canvas_copy_selection(void *context)
     L_DEBUG("%s", __func__);
 }
 
+struct mselect_transition {
+    struct ufsmm_transition *transition;
+    TAILQ_ENTRY(mselect_transition) tailq;
+};
+
+TAILQ_HEAD(mselect_transitions, mselect_transition);
+
+struct mselect_state {
+    struct ufsmm_state *state;
+    TAILQ_ENTRY(mselect_state) tailq;
+};
+
+TAILQ_HEAD(mselect_states, mselect_state);
+
+struct mselect_move_op {
+    struct mselect_states states;
+    struct mselect_transitions transitions;
+};
+
+static void mselect_add_transition(struct mselect_transitions *list,
+                                   struct ufsmm_transition *t)
+{
+    struct mselect_transition *mt = malloc(sizeof(struct mselect_transition));
+    struct ufsmm_vertice *v;
+    memset(mt, 0, sizeof(*mt));
+    mt->transition = t;
+    TAILQ_INSERT_TAIL(list, mt, tailq);
+
+    t->text_block_coords.tx = t->text_block_coords.x;
+    t->text_block_coords.ty = t->text_block_coords.y;
+    TAILQ_FOREACH(v,  &t->vertices, tailq) {
+        v->tx = v->x;
+        v->ty = v->y;
+    }
+}
+
+static void mselect_add_state(struct mselect_states *list,
+                              struct mselect_transitions *tlist,
+                              struct ufsmm_state *state)
+{
+    struct mselect_state *ms = malloc(sizeof(struct mselect_state));
+    struct ufsmm_region *r;
+    struct ufsmm_state *s;
+    struct ufsmm_transition *t;
+
+    memset(ms, 0, sizeof(*ms));
+    ms->state = state;
+    state->tx = state->x;
+    state->ty = state->y;
+    TAILQ_INSERT_TAIL(list, ms, tailq);
+
+    /* Add possible children of this state */
+    TAILQ_FOREACH(r, &state->regions, tailq) {
+        if (r->off_page == false) {
+            TAILQ_FOREACH(s, &r->states, tailq) {
+                mselect_add_state(list, tlist, s);
+                TAILQ_FOREACH(t, &s->transitions, tailq) {
+                    if ((ufsmm_state_is_descendant(t->source.state, s)) &&
+                        (ufsmm_state_is_descendant(t->dest.state, s))) {
+                        mselect_add_transition(tlist, t);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void canvas_mselect_move_begin(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *cr = priv->current_region;
+    struct ufsmm_stack *stack;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_state *s, *s2;
+    struct ufsmm_transition *t;
+    struct mselect_move_op *op = malloc(sizeof(struct mselect_move_op));
+
+    memset(op, 0, sizeof(*op));
+    priv->command_data = (void *) op;
+
+    TAILQ_INIT(&op->states);
+    TAILQ_INIT(&op->transitions);
+
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+
+    /* Check states */
+    ufsmm_stack_push(stack, cr);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        if (r->off_page && !r->draw_as_root)
+            continue;
+
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            if (s->selected) {
+                if (s->parent_region == cr) {
+                    L_DEBUG("Move %s", s->name); /* Root state that should be moved */
+                    mselect_add_state(&op->states, &op->transitions, s);
+                } else {
+                    for (r2 = s->parent_region; r2->parent_state; r2 = r2->parent_state->parent_region) {
+                        if (r2->off_page && !r2->draw_as_root)
+                            break;
+                        if (r2 == cr)
+                            break;
+                        if ((r2->parent_state->selected == false)) {
+                            L_DEBUG("Move %s", s->name); /* Root state that should be moved */
+                            mselect_add_state(&op->states, &op->transitions, s);
+                            break;
+                        }
+                    }
+                }
+
+                TAILQ_FOREACH(t, &s->transitions, tailq) {
+                    /* Source state is implicitly selected here.
+                     *
+                     * The transition should be included in the move operation
+                     *  if:
+                     *
+                     * The actual transition is selected and
+                     * if the destination state _or_ one of its possible
+                     * parents up until the current region is selected.
+                     * */
+
+                    if (t->selected) {
+
+                        L_DEBUG("transition %s->%s is selected",
+                            t->source.state->name, t->dest.state->name);
+                        s2 = t->dest.state;
+
+                        for (s2 = t->dest.state; s2; s2 = s2->parent_region->parent_state) {
+                            if (s2->selected) {
+                                L_DEBUG("Move transition %s->%s",
+                                    t->source.state->name, t->dest.state->name);
+                                mselect_add_transition(&op->transitions, t);
+                            }
+                            if (s2->parent_region == priv->current_region)
+                                break;
+                        }
+                    } else if (t->dest.state == s) {
+                        /* Self transition */
+                        mselect_add_transition(&op->transitions, t);
+                    }
+                }
+            }
+
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                ufsmm_stack_push(stack, r2);
+            }
+        }
+    }
+
+    ufsmm_stack_free(stack);
 }
 
 void canvas_mselect_move_end(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct mselect_move_op *op = (struct mselect_move_op *) priv->command_data;
+    struct mselect_state *ms;
+    struct mselect_transition *mt;
+    struct ufsmm_region *r;
+    int rc;
+
+    /* Clean-up */
+
+    while (ms = TAILQ_FIRST(&op->states)) {
+        TAILQ_REMOVE(&op->states, ms, tailq);
+        struct ufsmm_state *s = ms->state;
+        L_DEBUG("Moved state '%s'", s->name);
+        /* Check if state should have a new parent region */
+        rc = ufsmm_region_get_at_xy(priv, priv->current_region,
+                                    s->x + s->w/2 + priv->current_region->ox,
+                                    s->y + s->h/2 + priv->current_region->oy,
+                                    &r, NULL);
+
+        if (rc == UFSMM_OK) {
+            if (r != s->parent_region) {
+                L_DEBUG("State '%s' new pr = '%s'", s->name, r->name);
+                ufsmm_state_move_to_region(priv->model, s, r);
+            }
+        }
+        free(ms);
+    }
+
+    while (mt = TAILQ_FIRST(&op->transitions)) {
+        TAILQ_REMOVE(&op->transitions, mt, tailq);
+        L_DEBUG("Moved transition '%s->%s'", mt->transition->source.state->name,
+                                             mt->transition->dest.state->name);
+        free(mt);
+    }
+
+    free(op);
+    priv->command_data = NULL;
 }
 
 void canvas_mselect_move(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct mselect_move_op *op = (struct mselect_move_op *) priv->command_data;
+    struct mselect_state *ms;
+    struct mselect_transition *mt;
+    struct ufsmm_vertice *v;
+
+    TAILQ_FOREACH(ms, &op->states, tailq) {
+        ms->state->x = ufsmm_canvas_nearest_grid_point(ms->state->tx + priv->dx);
+        ms->state->y = ufsmm_canvas_nearest_grid_point(ms->state->ty + priv->dy);
+    }
+
+    TAILQ_FOREACH(mt, &op->transitions, tailq) {
+        struct ufsmm_transition *t = mt->transition;
+
+        t->text_block_coords.x = \
+              ufsmm_canvas_nearest_grid_point(t->text_block_coords.tx + priv->dx);
+        t->text_block_coords.y = \
+              ufsmm_canvas_nearest_grid_point(t->text_block_coords.ty + priv->dy);
+
+        TAILQ_FOREACH(v,  &t->vertices, tailq) {
+            v->x = ufsmm_canvas_nearest_grid_point(v->tx + priv->dx);
+            v->y = ufsmm_canvas_nearest_grid_point(v->ty + priv->dy);
+        }
+    }
+
+    priv->redraw = true;
 }
 
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)

@@ -260,16 +260,6 @@ int canvas_transition_text_block_selected(void *context)
     return selected;
 }
 
-int canvas_transition_dvertice_selected(void *context)
-{
-    return false;
-}
-
-int canvas_mselect_active(void *context)
-{
-    return 0;
-}
-
 void canvas_reset_selection2(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
