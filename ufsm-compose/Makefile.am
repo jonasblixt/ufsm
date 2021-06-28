@@ -15,7 +15,8 @@ ufsm_compose_SOURCES = main.c \
                canvas/selection.c \
                canvas/logic/canvas.c \
                canvas/controller.c \
-			   canvas/pan_and_scale.c
+			   canvas/pan_and_scale.c \
+			   canvas/copypaste.c
 
 
 ufsm_compose_CFLAGS = -I$(top_srcdir)/include \
