@@ -1827,11 +1827,7 @@ struct mselect_op {
     double sx, sy;
     double ex, ey;
 };
-/*
-int ufsmm_canvas_set_selection(bool active, double sx,
-                                           double sy,
-                                           double ex,
-                                           double ey)*/
+
 void canvas_mselect_begin(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -2277,7 +2273,7 @@ static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
     priv->sy = ufsmm_canvas_nearest_grid_point(event->y / priv->current_region->scale);
 
     if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
-        ufsm_process(&priv->machine.machine, eEnablePan);
+        ufsm_process(&priv->machine.machine, eRMBDown);
     } else if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
         ufsm_process(&priv->machine.machine, eLMBDown);
     }
@@ -2309,7 +2305,7 @@ static gboolean buttonrelease_cb(GtkWidget *widget, GdkEventButton *event)
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
     if (event->type == GDK_BUTTON_RELEASE && event->button == 3) {
-        ufsm_process(&priv->machine.machine, eDisablePan);
+        ufsm_process(&priv->machine.machine, eRMBUp);
     } else if (event->type == GDK_BUTTON_RELEASE && event->button == 1) {
         ufsm_process(&priv->machine.machine, eLMBUp);
     }
