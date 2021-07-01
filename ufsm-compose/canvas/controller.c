@@ -1095,6 +1095,7 @@ void canvas_delete_region(void *context)
         ufsmm_model_delete_region(priv->model, priv->selected_region);
         priv->selected_region = pr;
         priv->redraw = true;
+        priv->selection = UFSMM_SELECTION_NONE;
     }
 }
 
@@ -1104,6 +1105,7 @@ void canvas_delete_guard(void *context)
     ufsmm_transition_delete_guard(priv->selected_transition,
                                   priv->selected_guard->id);
     priv->redraw = true;
+    priv->selection = UFSMM_SELECTION_NONE;
 }
 
 void canvas_delete_action(void *context)
@@ -1112,6 +1114,7 @@ void canvas_delete_action(void *context)
     ufsmm_transition_delete_action(priv->selected_transition,
                                    priv->selected_aref->id);
     priv->redraw = true;
+    priv->selection = UFSMM_SELECTION_NONE;
 }
 
 void canvas_delete_transition(void *context)
@@ -1119,6 +1122,7 @@ void canvas_delete_transition(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
     ufsmm_state_delete_transition(t);
+    priv->selection = UFSMM_SELECTION_NONE;
     priv->redraw = true;
 }
 
@@ -1875,14 +1879,15 @@ void canvas_delete_transition_tvertice(void *context)
                  priv->selected_transition_vertice_data, tailq);
 
     priv->selected_transition_vertice_data = NULL;
-
+    priv->selection = UFSMM_SELECTION_NONE;
+    priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE_NONE;
     priv->redraw = true;
 }
 
 int canvas_transition_tvertice_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    return (priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE);
+    return (priv->selected_transition_vertice == UFSMM_TRANSITION_VERTICE);
 }
 
 void canvas_move_text_block_begin(void *context)
