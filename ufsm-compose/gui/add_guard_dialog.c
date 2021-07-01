@@ -110,6 +110,8 @@ static gboolean view_selection_func(GtkTreeSelection *selection,
 {
     GtkTreeIter iter;
 
+    selected_action = NULL;
+
     if (gtk_tree_model_get_iter(model, &iter, path)) {
         gchar *name;
 
@@ -157,6 +159,7 @@ static void list_row_activated_cb(GtkTreeView        *treeview,
     GtkTreeModel *model;
     GtkTreeIter   iter;
 
+    selected_action = NULL;
     model = gtk_tree_view_get_model(treeview);
 
     if (gtk_tree_model_get_iter(model, &iter, path)) {
@@ -514,7 +517,8 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                                             selected_state->id,
                                             guard_kind,
                                             0);
-    } else if (selected_action && (result == GTK_RESPONSE_ACCEPT)) {
+    } else if (selected_action && ((result == GTK_RESPONSE_ACCEPT) ||
+                                   (result == 1))) {
         uuid_t id;
         uuid_generate_random(id);
 
