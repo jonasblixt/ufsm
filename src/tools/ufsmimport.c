@@ -189,8 +189,8 @@ static uint32_t parse_state(xmlNode *n, struct ufsm_machine *m,
     if (get_attr(n,"submachine")) {
         s->submachine = ufsmimport_get_machine(root_machine,
                             (const char*) get_attr(n,"submachine"));   
-        //if (s->submachine->region)
-        //    s->submachine->region->parent_state = s;
+        if (s->submachine->region)
+            s->submachine->region->parent_state = s;
     }
 
     /* TODO: Should deep history propagate to sub statemachines? */
