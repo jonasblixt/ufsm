@@ -48,6 +48,8 @@ struct ufsmm_canvas {
     /* Preview for 'add' operations */
     struct ufsmm_state *preview_state;
     struct ufsmm_transition *preview_transition;
+    /* Copy/Paste stuff */
+    struct ufsmm_region *copy_bfr;
     /* Common stuff */
     void *command_data;
     bool redraw;

@@ -6,13 +6,8 @@
 void canvas_update_offset(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-
-    double dx = priv->px - priv->sx;
-    double dy = priv->py - priv->sy;
-
-    priv->current_region->ox = priv->current_region->tox + dx;
-    priv->current_region->oy = priv->current_region->toy + dy;
-
+    priv->current_region->ox = priv->current_region->tox + priv->dx;
+    priv->current_region->oy = priv->current_region->toy + priv->dy;
     priv->redraw = true;
 }
 

@@ -51,3 +51,44 @@ int ufsmm_stack_pop(struct ufsmm_stack *stack, void **item)
 
     return UFSMM_OK;
 }
+
+int ufsmm_stack_push_sr_pair(struct ufsmm_stack *stack,
+                             struct ufsmm_state *state,
+                             struct ufsmm_region *region)
+{
+    int rc;
+    void *tmp;
+
+    rc = ufsmm_stack_push(stack, (void *) state);
+
+    if (rc != UFSMM_OK)
+        return rc;
+
+    rc = ufsmm_stack_push(stack, (void *) region);
+
+    if (rc != UFSMM_OK) {
+        ufsmm_stack_pop(stack, &tmp);
+        return rc;
+    }
+
+    return rc;
+}
+
+int ufsmm_stack_pop_sr_pair(struct ufsmm_stack *stack,
+                            struct ufsmm_state **state,
+                            struct ufsmm_region **region)
+{
+    int rc;
+
+    rc = ufsmm_stack_pop(stack, (void **) region);
+
+    if (rc != UFSMM_OK)
+        return rc;
+
+    rc = ufsmm_stack_pop(stack, (void **) state);
+
+    if (rc != UFSMM_OK)
+        return rc;
+
+    return rc;
+}

@@ -669,6 +669,115 @@ void ufsmm_canvas_reset_delta(struct ufsmm_canvas *canvas)
     canvas->sy = canvas->py;
 }
 
+void canvas_reset_delta(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    ufsmm_canvas_reset_delta(priv);
+}
+
+static bool state_has_selected_parent(struct ufsmm_state *state)
+{
+    bool result = false;
+
+    while (state) {
+        if (state->parent_region->parent_state) {
+            if (state->parent_region->selected) {
+                result = true;
+                break;
+            }
+            state = state->parent_region->parent_state;
+        } else {
+            break;
+        }
+
+        if (state->selected) {
+            result = true;
+            break;
+        }
+    }
+    return result;
+}
+
+static bool region_has_selected_parent(struct ufsmm_region *region)
+{
+    bool result = false;
+
+    while (region) {
+        if (region->parent_state) {
+            if (region->parent_state->selected) {
+                result = true;
+                break;
+            }
+            region = region->parent_state->parent_region;
+        } else {
+            break;
+        }
+
+        if (region->selected) {
+            result = true;
+            break;
+        }
+    }
+    return result;
+}
+
+void canvas_mselect_delete(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_stack *stack, *sr, *ss, *st;
+    struct ufsmm_state *s;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_transition *t;
+
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+
+    ufsmm_stack_init(&sr, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&ss, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&st, UFSMM_MAX_R_S);
+
+    ufsmm_stack_push(stack, (void *) priv->current_region);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        if (r->selected && !region_has_selected_parent(r)) {
+            L_DEBUG("Going to delete region %s", r->name);
+            ufsmm_stack_push(sr, (void *) r);
+        }
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            if (s->selected && !state_has_selected_parent(s)) {
+                L_DEBUG("Going to delete state %s", s->name);
+                ufsmm_stack_push(ss, (void *) s);
+            }
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
+                if (t->selected) {
+                    L_DEBUG("Going to delete transition %s->%s",
+                            t->source.state->name, t->dest.state->name);
+
+                    ufsmm_stack_push(st, (void *) t);
+                }
+            }
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                ufsmm_stack_push(stack, r2);
+            }
+        }
+    }
+
+    while (ufsmm_stack_pop(st, (void **) &t) == UFSMM_OK) {
+        ufsmm_transition_free_one(t);
+    }
+
+    while (ufsmm_stack_pop(ss, (void **) &s) == UFSMM_OK) {
+        ufsmm_model_delete_state(priv->model, s);
+    }
+
+    while (ufsmm_stack_pop(sr, (void **) &r) == UFSMM_OK) {
+        ufsmm_model_delete_region(priv->model, r);
+    }
+    ufsmm_stack_free(stack);
+    ufsmm_stack_free(sr);
+    ufsmm_stack_free(ss);
+    ufsmm_stack_free(st);
+}
+
 void canvas_resize_region_end(void *context)
 {
 }

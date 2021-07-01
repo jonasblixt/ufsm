@@ -250,9 +250,7 @@ struct ufsmm_state
     struct ufsmm_regions regions;
     struct ufsmm_region *parent_region;
     TAILQ_ENTRY(ufsmm_state) tailq;
-    TAILQ_ENTRY(ufsmm_state) mselect;
 };
-
 
 struct ufsmm_model
 {
@@ -316,6 +314,8 @@ int ufsmm_model_delete_state(struct ufsmm_model *model,
 
 int delete_action_ref(struct ufsmm_action_refs *list, uuid_t id);
 int delete_guard_ref(struct ufsmm_guard_refs *list, uuid_t id);
+struct ufsmm_action_ref* ufsmm_action_ref_copy(struct ufsmm_action_ref *aref);
+struct ufsmm_guard_ref* ufsmm_guard_ref_copy(struct ufsmm_guard_ref *gref);
 
 /* Region api */
 int ufsmm_add_region(struct ufsmm_state *state, bool off_page,
@@ -337,7 +337,7 @@ int ufsmm_region_get_height(struct ufsmm_region *r, double *h);
 
 struct ufsmm_state *ufsmm_state_new(enum ufsmm_state_kind kind);
 void ufsmm_state_free(struct ufsmm_state *state);
-
+struct ufsmm_state *ufsmm_state_shallow_copy(struct ufsmm_state *state);
 void ufsmm_state_set_name(struct ufsmm_state *state, const char *name);
 
 
@@ -436,6 +436,7 @@ int ufsmm_transition_delete_action(struct ufsmm_transition *transition, uuid_t i
 int ufsmm_transition_new(struct ufsmm_transition **transition);
 int ufsmm_transition_free_one(struct ufsmm_transition *transition);
 
+struct ufsmm_transition* ufsmm_transition_copy(struct ufsmm_transition *t);
 int ufsmm_transition_change_src_state(struct ufsmm_transition *transition,
                                       struct ufsmm_state *new_state);
 int ufsmm_transition_free_list(struct ufsmm_transitions *transitions);
@@ -453,5 +454,12 @@ int ufsmm_stack_init(struct ufsmm_stack **stack, size_t no_of_elements);
 int ufsmm_stack_free(struct ufsmm_stack *stack);
 int ufsmm_stack_push(struct ufsmm_stack *stack, void *item);
 int ufsmm_stack_pop(struct ufsmm_stack *stack, void **item);
+int ufsmm_stack_pop_sr_pair(struct ufsmm_stack *stack,
+                            struct ufsmm_state **state,
+                            struct ufsmm_region **region);
+
+int ufsmm_stack_push_sr_pair(struct ufsmm_stack *stack,
+                             struct ufsmm_state *state,
+                             struct ufsmm_region *region);
 
 #endif  // INCLUDE_UFSMM_MODEL_H_

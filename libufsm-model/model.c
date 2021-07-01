@@ -1608,3 +1608,46 @@ int delete_guard_ref(struct ufsmm_guard_refs *list, uuid_t id)
 
     return -UFSMM_ERROR;
 }
+
+struct ufsmm_action_ref* ufsmm_action_ref_copy(struct ufsmm_action_ref *aref)
+{
+    struct ufsmm_action_ref *new = malloc(sizeof(struct ufsmm_action_ref));
+
+    if (new == NULL)
+        return NULL;
+
+    memset(new, 0, sizeof(*new));
+
+    uuid_generate_random(new->id);
+    new->x = aref->x;
+    new->y = aref->y;
+    new->w = aref->w;
+    new->h = aref->h;
+    new->kind = aref->kind;
+    new->act = aref->act;
+    new->signal = aref->signal;
+
+    return new;
+}
+
+struct ufsmm_guard_ref* ufsmm_guard_ref_copy(struct ufsmm_guard_ref *gref)
+{
+    struct ufsmm_guard_ref *new = malloc(sizeof(struct ufsmm_guard_ref));
+
+    if (new == NULL)
+        return NULL;
+
+    memset(new, 0, sizeof(*new));
+
+    uuid_generate_random(new->id);
+    new->x = gref->x;
+    new->y = gref->y;
+    new->w = gref->w;
+    new->h = gref->h;
+    new->kind = gref->kind;
+    new->act = gref->act;
+    new->value = gref->value;
+    new->state = gref->state;
+
+    return new;
+}

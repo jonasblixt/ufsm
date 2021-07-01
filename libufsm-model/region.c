@@ -16,17 +16,20 @@ int ufsmm_add_region(struct ufsmm_state *state, bool off_page,
     TAILQ_INIT(&region->states);
 
     region->parent_state = state;
+    region->off_page = off_page;
 
     (*out) = region;
 
     uuid_generate_random(region->id);
 
-    TAILQ_INSERT_TAIL(&state->regions, region, tailq);
+    if (state) {
+        TAILQ_INSERT_TAIL(&state->regions, region, tailq);
 
-    if (!TAILQ_FIRST(&state->regions)) {
-        region->h = -1;
-    } else {
-        region->h = 40;
+        if (!TAILQ_FIRST(&state->regions)) {
+            region->h = -1;
+        } else {
+            region->h = 40;
+        }
     }
 
     return UFSMM_OK;
