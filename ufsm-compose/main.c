@@ -7,8 +7,8 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 
-#include "canvas/controller.h"
-#include "canvas/view.h"
+#include "controller.h"
+#include "render.h"
 #include "menu.h"
 
 int ufsmm_debug(enum ufsmm_debug_level debug_level,

@@ -788,6 +788,10 @@
     {
       "name":"canvas_mselect_delete",
       "id":"036dd5e5-f94f-4e23-a4fc-d0581556c966"
+    },
+    {
+      "name":"canvas_toggle_theme",
+      "id":"001e492a-ed1d-4ded-b225-c4ba581b9506"
     }
   ],
   "entries":null,
@@ -1388,7 +1392,7 @@
                     "text-block":{
                       "x":780.0,
                       "y":240.0,
-                      "w":120.0,
+                      "w":230.0,
                       "h":70.0
                     },
                     "vertices":[
@@ -1842,9 +1846,9 @@
                     },
                     "text-block":{
                       "x":650.0,
-                      "y":120.0,
-                      "w":190.0,
-                      "h":60.0
+                      "y":110.0,
+                      "w":230.0,
+                      "h":70.0
                     },
                     "vertices":[
                       {
@@ -2940,6 +2944,45 @@
                             "guards":[
                             ],
                             "actions":[
+                            ]
+                          },
+                          {
+                            "id":"17ad28ea-3fc2-4875-a15b-8a393236fb8b",
+                            "trigger":"2dcc8a3e-f0b8-4e8a-96a0-a339f4dc3bfb",
+                            "source":{
+                              "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
+                              "side":"right",
+                              "offset":470.0
+                            },
+                            "dest":{
+                              "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
+                              "side":"right",
+                              "offset":520.0
+                            },
+                            "text-block":{
+                              "x":260.0,
+                              "y":630.0,
+                              "w":100.0,
+                              "h":30.0
+                            },
+                            "vertices":[
+                              {
+                                "x":240.0,
+                                "y":640.0
+                              },
+                              {
+                                "x":240.0,
+                                "y":690.0
+                              }
+                            ],
+                            "guards":[
+                            ],
+                            "actions":[
+                              {
+                                "action-id":"001e492a-ed1d-4ded-b225-c4ba581b9506",
+                                "kind":0,
+                                "id":"c5a2e7b2-0b10-4b50-9311-08137916faa8"
+                              }
                             ]
                           }
                         ]

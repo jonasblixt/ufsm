@@ -4,7 +4,7 @@
 #include <gtk/gtk.h>
 #include <ufsm/model.h>
 #include <ufsm/ufsm.h>
-#include "canvas/logic/canvas.h"
+#include "logic/canvas.h"
 
 enum ufsmm_selection {
     UFSMM_SELECTION_NONE,
@@ -30,10 +30,16 @@ enum ufsmm_resize_selector {
     UFSMM_LEFT_MIDDLE
 };
 
+enum ufsmm_color_theme {
+    UFSMM_COLOR_THEME_DARK,
+    UFSMM_COLOR_THEME_LIGHT,
+};
+
 struct ufsmm_canvas {
     struct canvas_machine machine;
     struct ufsmm_model *model;
     struct ufsmm_region *current_region;
+    enum ufsmm_color_theme theme;
     /* Active selection */
     enum ufsmm_selection selection;
     struct ufsmm_region *selected_region;

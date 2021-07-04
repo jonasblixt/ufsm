@@ -3679,6 +3679,8 @@ const struct ufsm_action a_bd3cd067_12ad_477e_b047_e36dfbc3c52a;
 const struct ufsm_transition t_d0f1f748_3041_4a61_b544_c50f04d0c1c4;
 const struct ufsm_transition t_60e95b7f_92e2_4a79_8a36_2dcfc82f5e50;
 const struct ufsm_transition t_a1459f99_7543_45cc_ac90_1cd1c5d1140e;
+const struct ufsm_transition t_17ad28ea_3fc2_4875_a15b_8a393236fb8b;
+const struct ufsm_action a_c5a2e7b2_0b10_4b50_9311_08137916faa8;
 
 const struct ufsm_action a_bd3cd067_12ad_477e_b047_e36dfbc3c52a = {
     .name = "canvas_save",
@@ -3725,6 +3727,24 @@ const struct ufsm_transition t_a1459f99_7543_45cc_ac90_1cd1c5d1140e = {
     .guard = NULL,
     .source = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
     .dest = &s_87bfb8b8_e7a4_4d82_9c4d_4891f7780e13,
+    .next = &t_17ad28ea_3fc2_4875_a15b_8a393236fb8b,
+};
+
+const struct ufsm_action a_c5a2e7b2_0b10_4b50_9311_08137916faa8 = {
+    .name = "canvas_toggle_theme",
+    .f = &canvas_toggle_theme,
+    .signal = NULL,
+    .kind = UFSM_ACTION_KIND_NORMAL,
+    .next = NULL,
+};
+
+const struct ufsm_transition t_17ad28ea_3fc2_4875_a15b_8a393236fb8b = {
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .trigger = &trigger_2dcc8a3e_f0b8_4e8a_96a0_a339f4dc3bfb,
+    .action = &a_c5a2e7b2_0b10_4b50_9311_08137916faa8,
+    .guard = NULL,
+    .source = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
+    .dest = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
     .next = NULL,
 };
 

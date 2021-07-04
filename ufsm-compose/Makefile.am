@@ -6,17 +6,13 @@ ufsm_compose_SOURCES = main.c \
 			   gui/add_guard_dialog.c \
                gui/edit_string_dialog.c \
                gui/set_trigger_dialog.c \
-               canvas/view.c \
-               canvas/state.c \
-               canvas/region.c \
-               canvas/transition.c \
-               canvas/grid.c \
-               canvas/color.c \
-               canvas/selection.c \
-               canvas/logic/canvas.c \
-               canvas/controller.c \
-			   canvas/pan_and_scale.c \
-			   canvas/copypaste.c
+			   utils.c \
+               render.c \
+               logic/canvas.c \
+               controller.c \
+			   pan_and_scale.c \
+			   copypaste.c \
+			   undo.c
 
 
 ufsm_compose_CFLAGS = -I$(top_srcdir)/include \

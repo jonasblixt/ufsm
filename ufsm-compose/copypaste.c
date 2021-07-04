@@ -2,8 +2,8 @@
 #include <stdbool.h>
 #include <ufsm/ufsm.h>
 #include <ufsm/model.h>
-#include "canvas/logic/canvas.h"
-#include "canvas/view.h"
+#include "logic/canvas.h"
+#include "render.h"
 
 struct ufsmm_state_pair {
     struct ufsmm_state *s1, *s2;

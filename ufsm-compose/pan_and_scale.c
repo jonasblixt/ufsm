@@ -1,7 +1,7 @@
 
 #include "controller.h"
-#include "view.h"
-#include "canvas/logic/canvas.h"
+#include "render.h"
+#include "logic/canvas.h"
 
 void canvas_update_offset(void *context)
 {

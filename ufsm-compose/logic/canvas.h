@@ -234,6 +234,7 @@ void canvas_cut_end(void *context);
 void canvas_paste_cut_buffer(void *context);
 void canvas_reset_delta(void *context);
 void canvas_mselect_delete(void *context);
+void canvas_toggle_theme(void *context);
 
 struct canvas_machine {
     struct ufsm_machine machine;
