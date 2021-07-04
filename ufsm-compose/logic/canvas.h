@@ -55,6 +55,7 @@ enum {
     eKey_ctrl_up,
     eKey_c_down,
     eKey_p_down,
+    eKey_z_down,
 };
 
 /* Guard function prototypes */
@@ -235,6 +236,8 @@ void canvas_paste_cut_buffer(void *context);
 void canvas_reset_delta(void *context);
 void canvas_mselect_delete(void *context);
 void canvas_toggle_theme(void *context);
+void canvas_undo(void *context);
+void canvas_redo(void *context);
 
 struct canvas_machine {
     struct ufsm_machine machine;

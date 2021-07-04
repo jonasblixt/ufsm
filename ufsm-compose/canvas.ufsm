@@ -170,6 +170,10 @@
     {
       "name":"eKey_p_down",
       "id":"a512404b-2fef-4437-a967-0438c86cf9b8"
+    },
+    {
+      "name":"eKey_z_down",
+      "id":"01c3953d-daef-4604-a917-c93c9ae3ca2e"
     }
   ],
   "actions":[
@@ -792,6 +796,14 @@
     {
       "name":"canvas_toggle_theme",
       "id":"001e492a-ed1d-4ded-b225-c4ba581b9506"
+    },
+    {
+      "name":"canvas_undo",
+      "id":"df7f3f0e-8953-464a-86d6-4207895905e4"
+    },
+    {
+      "name":"canvas_redo",
+      "id":"4a6c4f7a-207b-4fde-aa96-cd31042fd4df"
     }
   ],
   "entries":null,
@@ -2818,7 +2830,7 @@
                         "name":"Tools",
                         "kind":"state",
                         "width":120.0,
-                        "height":630.0,
+                        "height":640.0,
                         "x":70.0,
                         "y":170.0,
                         "orientation":0,
@@ -2834,28 +2846,28 @@
                             "trigger":"8026ece2-dd00-44e8-8613-a68197aaec7c",
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
-                              "side":"bottom",
-                              "offset":100.0
+                              "side":"right",
+                              "offset":460.0
                             },
                             "dest":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
-                              "side":"bottom",
-                              "offset":20.0
+                              "side":"right",
+                              "offset":490.0
                             },
                             "text-block":{
-                              "x":40.0,
-                              "y":830.0,
+                              "x":240.0,
+                              "y":610.0,
                               "w":230.0,
                               "h":30.0
                             },
                             "vertices":[
                               {
-                                "x":170.0,
-                                "y":830.0
+                                "x":220.0,
+                                "y":630.0
                               },
                               {
-                                "x":90.0,
-                                "y":830.0
+                                "x":220.0,
+                                "y":660.0
                               }
                             ],
                             "guards":[
@@ -2952,27 +2964,27 @@
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"right",
-                              "offset":470.0
+                              "offset":410.0
                             },
                             "dest":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"right",
-                              "offset":520.0
+                              "offset":440.0
                             },
                             "text-block":{
-                              "x":260.0,
-                              "y":630.0,
-                              "w":100.0,
+                              "x":240.0,
+                              "y":560.0,
+                              "w":290.0,
                               "h":30.0
                             },
                             "vertices":[
                               {
-                                "x":240.0,
-                                "y":640.0
+                                "x":220.0,
+                                "y":580.0
                               },
                               {
-                                "x":240.0,
-                                "y":690.0
+                                "x":220.0,
+                                "y":610.0
                               }
                             ],
                             "guards":[
@@ -2982,6 +2994,94 @@
                                 "action-id":"001e492a-ed1d-4ded-b225-c4ba581b9506",
                                 "kind":0,
                                 "id":"c5a2e7b2-0b10-4b50-9311-08137916faa8"
+                              }
+                            ]
+                          },
+                          {
+                            "id":"4add5c8f-ed8e-40b0-8d84-8665c1967643",
+                            "trigger":"01c3953d-daef-4604-a917-c93c9ae3ca2e",
+                            "source":{
+                              "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
+                              "side":"right",
+                              "offset":510.0
+                            },
+                            "dest":{
+                              "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
+                              "side":"right",
+                              "offset":540.0
+                            },
+                            "text-block":{
+                              "x":240.0,
+                              "y":660.0,
+                              "w":350.0,
+                              "h":30.0
+                            },
+                            "vertices":[
+                              {
+                                "x":220.0,
+                                "y":680.0
+                              },
+                              {
+                                "x":220.0,
+                                "y":710.0
+                              }
+                            ],
+                            "guards":[
+                              {
+                                "state-id":"407b78da-ed06-4199-ac2b-fd1d4d96fd3f",
+                                "kind":7,
+                                "id":"f97ea54a-c969-4b6d-a20f-1d768dd72193"
+                              }
+                            ],
+                            "actions":[
+                              {
+                                "action-id":"df7f3f0e-8953-464a-86d6-4207895905e4",
+                                "kind":0,
+                                "id":"e00dfac2-6085-429c-8721-e218ead10ad4"
+                              }
+                            ]
+                          },
+                          {
+                            "id":"3e957f3b-4562-434b-b798-7fabc0b86132",
+                            "trigger":"faf24206-d5cc-4593-8f94-2951717e6154",
+                            "source":{
+                              "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
+                              "side":"right",
+                              "offset":560.0
+                            },
+                            "dest":{
+                              "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
+                              "side":"right",
+                              "offset":590.0
+                            },
+                            "text-block":{
+                              "x":240.0,
+                              "y":710.0,
+                              "w":340.0,
+                              "h":30.0
+                            },
+                            "vertices":[
+                              {
+                                "x":220.0,
+                                "y":730.0
+                              },
+                              {
+                                "x":220.0,
+                                "y":760.0
+                              }
+                            ],
+                            "guards":[
+                              {
+                                "state-id":"407b78da-ed06-4199-ac2b-fd1d4d96fd3f",
+                                "kind":7,
+                                "id":"c660386c-8938-4a08-9dcc-10ba507a08ee"
+                              }
+                            ],
+                            "actions":[
+                              {
+                                "action-id":"4a6c4f7a-207b-4fde-aa96-cd31042fd4df",
+                                "kind":0,
+                                "id":"9a177d94-2da5-4b3a-a8cd-b3d82a2d0784"
                               }
                             ]
                           }

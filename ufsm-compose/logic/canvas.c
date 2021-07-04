@@ -423,6 +423,11 @@ const struct ufsm_trigger trigger_a512404b_2fef_4437_a967_0438c86cf9b8 = {
     .trigger = eKey_p_down,
 };
 
+const struct ufsm_trigger trigger_01c3953d_daef_4604_a917_c93c9ae3ca2e = {
+    .name = "eKey_z_down",
+    .trigger = eKey_z_down,
+};
+
 const struct ufsm_region r_00000000_0000_0000_0000_000000000000 = {
     .index = 0,
     .name = "Root",
@@ -3681,6 +3686,12 @@ const struct ufsm_transition t_60e95b7f_92e2_4a79_8a36_2dcfc82f5e50;
 const struct ufsm_transition t_a1459f99_7543_45cc_ac90_1cd1c5d1140e;
 const struct ufsm_transition t_17ad28ea_3fc2_4875_a15b_8a393236fb8b;
 const struct ufsm_action a_c5a2e7b2_0b10_4b50_9311_08137916faa8;
+const struct ufsm_transition t_4add5c8f_ed8e_40b0_8d84_8665c1967643;
+const struct ufsm_action a_e00dfac2_6085_429c_8721_e218ead10ad4;
+const struct ufsm_guard g_f97ea54a_c969_4b6d_a20f_1d768dd72193;
+const struct ufsm_transition t_3e957f3b_4562_434b_b798_7fabc0b86132;
+const struct ufsm_action a_9a177d94_2da5_4b3a_a8cd_b3d82a2d0784;
+const struct ufsm_guard g_c660386c_8938_4a08_9dcc_10ba507a08ee;
 
 const struct ufsm_action a_bd3cd067_12ad_477e_b047_e36dfbc3c52a = {
     .name = "canvas_save",
@@ -3743,6 +3754,58 @@ const struct ufsm_transition t_17ad28ea_3fc2_4875_a15b_8a393236fb8b = {
     .trigger = &trigger_2dcc8a3e_f0b8_4e8a_96a0_a339f4dc3bfb,
     .action = &a_c5a2e7b2_0b10_4b50_9311_08137916faa8,
     .guard = NULL,
+    .source = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
+    .dest = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
+    .next = &t_4add5c8f_ed8e_40b0_8d84_8665c1967643,
+};
+
+const struct ufsm_action a_e00dfac2_6085_429c_8721_e218ead10ad4 = {
+    .name = "canvas_undo",
+    .f = &canvas_undo,
+    .signal = NULL,
+    .kind = UFSM_ACTION_KIND_NORMAL,
+    .next = NULL,
+};
+
+const struct ufsm_guard g_f97ea54a_c969_4b6d_a20f_1d768dd72193 = {
+    .name = "Ctrl active",
+    .state = &s_407b78da_ed06_4199_ac2b_fd1d4d96fd3f,
+    .kind = 7,
+    .value = 0,
+    .next = NULL,
+};
+
+const struct ufsm_transition t_4add5c8f_ed8e_40b0_8d84_8665c1967643 = {
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .trigger = &trigger_01c3953d_daef_4604_a917_c93c9ae3ca2e,
+    .action = &a_e00dfac2_6085_429c_8721_e218ead10ad4,
+    .guard = &g_f97ea54a_c969_4b6d_a20f_1d768dd72193,
+    .source = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
+    .dest = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
+    .next = &t_3e957f3b_4562_434b_b798_7fabc0b86132,
+};
+
+const struct ufsm_action a_9a177d94_2da5_4b3a_a8cd_b3d82a2d0784 = {
+    .name = "canvas_redo",
+    .f = &canvas_redo,
+    .signal = NULL,
+    .kind = UFSM_ACTION_KIND_NORMAL,
+    .next = NULL,
+};
+
+const struct ufsm_guard g_c660386c_8938_4a08_9dcc_10ba507a08ee = {
+    .name = "Ctrl active",
+    .state = &s_407b78da_ed06_4199_ac2b_fd1d4d96fd3f,
+    .kind = 7,
+    .value = 0,
+    .next = NULL,
+};
+
+const struct ufsm_transition t_3e957f3b_4562_434b_b798_7fabc0b86132 = {
+    .kind = UFSM_TRANSITION_EXTERNAL,
+    .trigger = &trigger_faf24206_d5cc_4593_8f94_2951717e6154,
+    .action = &a_9a177d94_2da5_4b3a_a8cd_b3d82a2d0784,
+    .guard = &g_c660386c_8938_4a08_9dcc_10ba507a08ee,
     .source = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
     .dest = &s_960d3c90_38ca_4b40_ba58_3fa52185d2c2,
     .next = NULL,

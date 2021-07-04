@@ -13,6 +13,24 @@
 #include "dialogs/edit_string_dialog.h"
 #include "dialogs/set_trigger_dialog.h"
 
+struct transition_ref {
+    struct ufsmm_transition *transition;
+    TAILQ_ENTRY(transition_ref) tailq;
+};
+
+TAILQ_HEAD(transition_refs, transition_ref);
+
+static void add_transition_ref(struct transition_refs *list,
+                               struct ufsmm_transition *transition)
+{
+    struct transition_ref *new = malloc(sizeof(struct transition_ref));
+    if (new == NULL)
+        return;
+    memset(new, 0, sizeof(*new));
+    new->transition = transition;
+    TAILQ_INSERT_TAIL(list, new, tailq);
+}
+
 int canvas_state_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -32,25 +50,85 @@ int canvas_region_selected(void *context)
     return (priv->selection == UFSMM_SELECTION_REGION);
 }
 
-void canvas_resize_state_end(void *context)
+struct resize_op
 {
-}
+    struct transition_refs transitions;
+};
 
 void canvas_resize_state_begin(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_state *s = priv->selected_state;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_transition *t;
+    struct ufsmm_stack *stack;
+
+    priv->command_data = malloc(sizeof(struct resize_op));
+
+    if (priv->command_data == NULL)
+        return;
+
+    memset(priv->command_data, 0, sizeof(struct resize_op));
+    struct resize_op *op = (struct resize_op *) priv->command_data;
+
+    TAILQ_INIT(&op->transitions);
+
     s->tx = s->x;
     s->ty = s->y;
     s->tw = s->w;
     s->th = s->h;
+
+    TAILQ_FOREACH(t, &s->transitions, tailq) {
+        t->source.toffset = t->source.offset;
+        add_transition_ref(&op->transitions, t);
+    }
+
+    /* Locate transitions that have this state as their destination */
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_push(stack, priv->current_region);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
+                if (t->dest.state == priv->selected_state) {
+                    L_DEBUG("Found state: %s", t->source.state->name);
+                    t->dest.toffset = t->dest.offset;
+                    add_transition_ref(&op->transitions, t);
+                }
+            }
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                if (!r->off_page) {
+                    ufsmm_stack_push(stack, r2);
+                }
+            }
+        }
+    }
+
+    ufsmm_stack_free(stack);
+}
+
+void canvas_resize_state_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct resize_op *op = (struct resize_op *) priv->command_data;
+    struct transition_ref *item;
+    struct transition_refs *list = &op->transitions;
+
+    while (item = TAILQ_FIRST(list)) {
+        TAILQ_REMOVE(list, item, tailq);
+        free(item);
+    }
+
+    free(priv->command_data);
+    priv->command_data = NULL;
 }
 
 void canvas_resize_state(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_region *r = priv->current_region;
-
+    struct resize_op *op = (struct resize_op *) priv->command_data;
+    struct transition_ref *tref;
     double dy = priv->dy;
     double dx = priv->dx;
     struct ufsmm_state *selected_state = priv->selected_state;
@@ -58,6 +136,83 @@ void canvas_resize_state(void *context)
     priv->redraw = true;
 
     if (selected_state->kind == UFSMM_STATE_NORMAL) {
+                struct transition_ref *tref;
+        switch (priv->selected_corner) {
+            case UFSMM_TOP_LEFT:
+            {
+                TAILQ_FOREACH(tref, &op->transitions, tailq) {
+                    struct ufsmm_transition *t = tref->transition;
+                    if (t->source.state == priv->selected_state) {
+
+                        if ((t->source.side == UFSMM_SIDE_LEFT) ||
+                             (t->source.side == UFSMM_SIDE_RIGHT)) {
+                            t->source.offset = \
+                                 ufsmm_canvas_nearest_grid_point(t->source.toffset - dy);
+                        } else if ((t->source.side == UFSMM_SIDE_TOP) ||
+                             (t->source.side == UFSMM_SIDE_BOTTOM)) {
+                            t->source.offset = \
+                                 ufsmm_canvas_nearest_grid_point(t->source.toffset - dx);
+                        }
+                    } else if (t->dest.state == priv->selected_state) {
+                        if ((t->dest.side == UFSMM_SIDE_LEFT) ||
+                               (t->dest.side == UFSMM_SIDE_RIGHT)) {
+                            t->dest.offset = \
+                                 ufsmm_canvas_nearest_grid_point(t->dest.toffset - dy);
+                        } else if ((t->dest.side == UFSMM_SIDE_TOP) ||
+                               (t->dest.side == UFSMM_SIDE_BOTTOM)) {
+                            t->dest.offset = \
+                                 ufsmm_canvas_nearest_grid_point(t->dest.toffset - dx);
+                        }
+                    }
+                }
+            }
+            break;
+            case UFSMM_LEFT_MIDDLE:
+            case UFSMM_BOT_LEFT:
+            {
+                TAILQ_FOREACH(tref, &op->transitions, tailq) {
+                    struct ufsmm_transition *t = tref->transition;
+                    if (t->source.state == priv->selected_state) {
+
+                        if ((t->source.side == UFSMM_SIDE_TOP) ||
+                             (t->source.side == UFSMM_SIDE_BOTTOM)) {
+                            t->source.offset = \
+                                 ufsmm_canvas_nearest_grid_point(t->source.toffset - dx);
+                        }
+                    } else if (t->dest.state == priv->selected_state) {
+                        if ((t->dest.side == UFSMM_SIDE_TOP) ||
+                               (t->dest.side == UFSMM_SIDE_BOTTOM)) {
+                            t->dest.offset = \
+                                 ufsmm_canvas_nearest_grid_point(t->dest.toffset - dx);
+                        }
+                    }
+                }
+            }
+            break;
+            case UFSMM_TOP_MIDDLE:
+            case UFSMM_TOP_RIGHT:
+            {
+                TAILQ_FOREACH(tref, &op->transitions, tailq) {
+                    struct ufsmm_transition *t = tref->transition;
+                    if (t->source.state == priv->selected_state) {
+
+                        if ((t->source.side == UFSMM_SIDE_LEFT) ||
+                             (t->source.side == UFSMM_SIDE_RIGHT)) {
+                            t->source.offset = \
+                                 ufsmm_canvas_nearest_grid_point(t->source.toffset - dy);
+                        }
+                    } else if (t->dest.state == priv->selected_state) {
+                        if ((t->dest.side == UFSMM_SIDE_LEFT) ||
+                               (t->dest.side == UFSMM_SIDE_RIGHT)) {
+                            t->dest.offset = \
+                                 ufsmm_canvas_nearest_grid_point(t->dest.toffset - dy);
+                        }
+                    }
+                }
+            }
+            break;
+        }
+
         switch (priv->selected_corner) {
             case UFSMM_TOP_MIDDLE:
                 selected_state->h = selected_state->th - dy;
@@ -153,8 +308,6 @@ int canvas_transition_selected(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
 
     return (priv->selection == UFSMM_SELECTION_TRANSITION);
-    /*return (priv->selection == UFSMM_SELECTION_TRANSITION) &&
-            (priv->selected_transition_vertice != UFSMM_TRANSITION_VERTICE);*/
 }
 
 int canvas_transition_selected2(void *context)
@@ -227,10 +380,7 @@ int canvas_transition_text_block_selected(void *context)
 
     ox = priv->current_region->ox;
     oy = priv->current_region->oy;
-/*
-    ufsmm_get_region_absolute_coords(t->source.state->parent_region,
-                                       &x, &y, &w, &h);
-*/
+
     double tx = t->text_block_coords.x + ox;
     double ty = t->text_block_coords.y + oy + 20;
     double tw = t->text_block_coords.w;
@@ -783,7 +933,6 @@ void canvas_move_vertice(void *context)
                 if (new_src_state != t->source.state) {
                     L_DEBUG("Switching to new source: %s",
                                     new_src_state->name);
-                    //t->source.state = new_src_state;
                     ufsmm_transition_change_src_state(t, new_src_state);
                 }
             }
@@ -2586,13 +2735,6 @@ void canvas_copy_selection(void *context)
     L_DEBUG("%s", __func__);
 }
 
-struct mselect_transition {
-    struct ufsmm_transition *transition;
-    TAILQ_ENTRY(mselect_transition) tailq;
-};
-
-TAILQ_HEAD(mselect_transitions, mselect_transition);
-
 struct mselect_state {
     struct ufsmm_state *state;
     TAILQ_ENTRY(mselect_state) tailq;
@@ -2602,13 +2744,13 @@ TAILQ_HEAD(mselect_states, mselect_state);
 
 struct mselect_move_op {
     struct mselect_states states;
-    struct mselect_transitions transitions;
+    struct transition_refs transitions;
 };
 
-static void mselect_add_transition(struct mselect_transitions *list,
+static void mselect_add_transition(struct transition_refs *list,
                                    struct ufsmm_transition *t)
 {
-    struct mselect_transition *mt = malloc(sizeof(struct mselect_transition));
+    struct transition_ref *mt = malloc(sizeof(struct transition_ref));
     struct ufsmm_vertice *v;
     memset(mt, 0, sizeof(*mt));
     mt->transition = t;
@@ -2623,7 +2765,7 @@ static void mselect_add_transition(struct mselect_transitions *list,
 }
 
 static void mselect_add_state(struct mselect_states *list,
-                              struct mselect_transitions *tlist,
+                              struct transition_refs *tlist,
                               struct ufsmm_state *state)
 {
     struct mselect_state *ms = malloc(sizeof(struct mselect_state));
@@ -2756,7 +2898,7 @@ void canvas_mselect_move_end(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct mselect_move_op *op = (struct mselect_move_op *) priv->command_data;
     struct mselect_state *ms;
-    struct mselect_transition *mt;
+    struct transition_ref *mt;
     struct ufsmm_region *r;
     int rc;
 
@@ -2797,7 +2939,7 @@ void canvas_mselect_move(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct mselect_move_op *op = (struct mselect_move_op *) priv->command_data;
     struct mselect_state *ms;
-    struct mselect_transition *mt;
+    struct transition_ref *mt;
     struct ufsmm_vertice *v;
 
     TAILQ_FOREACH(ms, &op->states, tailq) {
@@ -2820,6 +2962,16 @@ void canvas_mselect_move(void *context)
     }
 
     priv->redraw = true;
+}
+
+void canvas_undo(void *context)
+{
+    L_DEBUG("%s", __func__);
+}
+
+void canvas_redo(void *context)
+{
+    L_DEBUG("%s", __func__);
 }
 
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
@@ -2886,6 +3038,8 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eKey_backspace_down);
     } else if (event->keyval == GDK_KEY_s) {
         canvas_machine_process(&priv->machine, eKey_s_down);
+    } else if (event->keyval == GDK_KEY_z) {
+        canvas_machine_process(&priv->machine, eKey_z_down);
     }
     if (priv->redraw) {
         gtk_widget_queue_draw(priv->widget);
