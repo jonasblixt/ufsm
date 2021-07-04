@@ -1,11 +1,11 @@
 bin_PROGRAMS = ufsm-compose
 
 ufsm_compose_SOURCES = main.c \
-               gui/edit_state_dialog.c \
-               gui/add_action_dialog.c \
-			   gui/add_guard_dialog.c \
-               gui/edit_string_dialog.c \
-               gui/set_trigger_dialog.c \
+               dialogs/edit_state_dialog.c \
+               dialogs/add_action_dialog.c \
+			   dialogs/add_guard_dialog.c \
+               dialogs/edit_string_dialog.c \
+               dialogs/set_trigger_dialog.c \
 			   utils.c \
                render.c \
                logic/canvas.c \

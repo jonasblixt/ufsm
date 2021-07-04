@@ -7,11 +7,11 @@
 #include "utils.h"
 #include "logic/canvas.h"
 
-#include "gui/edit_state_dialog.h"
-#include "gui/add_action_dialog.h"
-#include "gui/add_guard_dialog.h"
-#include "gui/edit_string_dialog.h"
-#include "gui/set_trigger_dialog.h"
+#include "dialogs/edit_state_dialog.h"
+#include "dialogs/add_action_dialog.h"
+#include "dialogs/add_guard_dialog.h"
+#include "dialogs/edit_string_dialog.h"
+#include "dialogs/set_trigger_dialog.h"
 
 int canvas_state_selected(void *context)
 {
