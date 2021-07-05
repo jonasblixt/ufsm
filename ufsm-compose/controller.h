@@ -5,6 +5,7 @@
 #include <ufsm/model.h>
 #include <ufsm/ufsm.h>
 #include "logic/canvas.h"
+#include "undo.h"
 
 enum ufsmm_selection {
     UFSMM_SELECTION_NONE,
@@ -57,6 +58,7 @@ struct ufsmm_canvas {
     /* Copy/Paste stuff */
     struct ufsmm_region *copy_bfr;
     /* Common stuff */
+    struct ufsmm_undo_context *undo;
     void *command_data;
     bool redraw;
     double dx, dy;

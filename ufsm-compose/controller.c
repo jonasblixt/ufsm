@@ -121,6 +121,10 @@ void canvas_resize_state_end(void *context)
 
     free(priv->command_data);
     priv->command_data = NULL;
+
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    ufsmm_undo_resize_state(undo_ops, priv->selected_state);
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
 }
 
 void canvas_resize_state(void *context)
@@ -570,7 +574,7 @@ void canvas_process_selection(void *context)
         if (r->draw_as_root != true) {
             if (point_in_box2(priv->px - priv->current_region->ox,
                               priv->py - priv->current_region->oy,
-                                                        x - 3, y - 3, w + 3, h + 10)) {
+                                                x + 5, y + 5, w - 5, h)) {
                 L_DEBUG("Region '%s' selected", r->name);
                 priv->selection = UFSMM_SELECTION_REGION;
                 priv->selected_region = r;
@@ -1216,7 +1220,12 @@ void canvas_move_state_begin(void *context)
 
 void canvas_move_state_end(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     L_DEBUG("%s: ", __func__);
+
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    ufsmm_undo_resize_state(undo_ops, priv->selected_state);
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
 }
 
 void canvas_move_state(void *context)
@@ -1725,8 +1734,19 @@ void canvas_add_exit(void *context)
 void canvas_edit_state_name(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    ufsm_edit_string_dialog(GTK_WINDOW(priv->root_window), "Edit state name",
+    const char *old_name = strdup(priv->selected_state->name);
+
+    int rc = ufsm_edit_string_dialog(GTK_WINDOW(priv->root_window),
+                                "Edit state name",
                                 &priv->selected_state->name);
+
+    if (rc == UFSMM_OK) {
+        struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+        ufsmm_undo_rename_state(undo_ops, priv->selected_state, old_name);
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    }
+
+    free((void *) old_name);
 }
 
 void canvas_edit_region_name(void *context)
@@ -2966,12 +2986,18 @@ void canvas_mselect_move(void *context)
 
 void canvas_undo(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     L_DEBUG("%s", __func__);
+    ufsmm_undo(priv->undo);
+    priv->redraw = true;
 }
 
 void canvas_redo(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     L_DEBUG("%s", __func__);
+    ufsmm_redo(priv->undo);
+    priv->redraw = true;
 }
 
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
@@ -3268,6 +3294,13 @@ int ufsmm_canvas_load_model(GtkWidget *widget, struct ufsmm_model *model)
     priv->current_region = model->root;
     priv->current_region->draw_as_root = true;
     priv->current_region->scale = 1.0;
+
+    struct ufsmm_undo_context *undo = ufsmm_undo_init(model);
+
+    if (undo == NULL)
+        return -1;
+
+    priv->undo = undo;
 
     return 0;
 }
