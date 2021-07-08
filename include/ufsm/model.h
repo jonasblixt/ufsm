@@ -178,9 +178,12 @@ TAILQ_HEAD(ufsmm_vertices, ufsmm_vertice);
 struct ufsmm_transition_state_ref
 {
     struct ufsmm_state *state;
+    struct ufsmm_state *tstate;
     double offset;
     double toffset;
+    bool changed; /* Helper variable for undo */
     enum ufsmm_side side;
+    enum ufsmm_side tside;
 };
 
 struct ufsmm_coords
@@ -244,11 +247,13 @@ struct ufsmm_state
     unsigned int branch_concurrency_count;
     enum ufsmm_state_kind kind;
     enum ufsmm_orientation orientation;
+    enum ufsmm_orientation torientation; /* Support variable for undo */
     struct ufsmm_transitions transitions;
     struct ufsmm_action_refs entries;
     struct ufsmm_action_refs exits;
     struct ufsmm_regions regions;
     struct ufsmm_region *parent_region;
+    struct ufsmm_region *tparent_region; /* Support variable for undo */
     TAILQ_ENTRY(ufsmm_state) tailq;
 };
 
