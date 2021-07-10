@@ -66,6 +66,11 @@ struct ufsmm_undo_add_transition {
     struct ufsmm_transition *transition;
 };
 
+struct ufsmm_undo_add_guard {
+    struct ufsmm_transition *transition;
+    struct ufsmm_guard_ref *guard;
+};
+
 static struct ufsmm_undo_op* new_undo_op(void)
 {
     struct ufsmm_undo_op *op = malloc(sizeof(struct ufsmm_undo_op));
@@ -219,6 +224,15 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
 
                 TAILQ_REMOVE(&add_op->transition->source.state->transitions,
                              add_op->transition, tailq);
+            }
+            break;
+            case UFSMM_UNDO_ADD_GUARD:
+            {
+                struct ufsmm_undo_add_guard *add_op =
+                        (struct ufsmm_undo_add_guard *) op->data;
+
+                TAILQ_REMOVE(&add_op->transition->guards,
+                             add_op->guard, tailq);
             }
             break;
             case UFSMM_UNDO_REORDER_GUARD:
@@ -383,6 +397,15 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
 
                 TAILQ_INSERT_TAIL(&add_op->transition->source.state->transitions,
                              add_op->transition, tailq);
+            }
+            break;
+            case UFSMM_UNDO_ADD_GUARD:
+            {
+                struct ufsmm_undo_add_guard *add_op =
+                        (struct ufsmm_undo_add_guard *) op->data;
+
+                TAILQ_INSERT_TAIL(&add_op->transition->guards,
+                             add_op->guard, tailq);
             }
             break;
             case UFSMM_UNDO_REORDER_GUARD:
@@ -815,6 +838,39 @@ int ufsmm_undo_add_transition(struct ufsmm_undo_ops *ops,
     data->transition = transition;
     op->data = data;
     op->kind = UFSMM_UNDO_ADD_TRANSITION;
+
+    TAILQ_INSERT_TAIL(ops, op, tailq);
+
+    return rc;
+err_free_data:
+    free(data);
+    return rc;
+}
+
+int ufsmm_undo_add_guard(struct ufsmm_undo_ops *ops,
+                         struct ufsmm_transition *transition,
+                         struct ufsmm_guard_ref *gref)
+{
+    int rc = 0;
+    struct ufsmm_undo_add_guard *data = \
+                       malloc(sizeof(struct ufsmm_undo_add_guard));
+
+    if (data == NULL)
+        return -1;
+
+    memset(data, 0, sizeof(*data));
+
+    struct ufsmm_undo_op *op = new_undo_op();
+
+    if (op == NULL) {
+        rc = -1;
+        goto err_free_data;
+    }
+
+    data->transition = transition;
+    data->guard = gref;
+    op->data = data;
+    op->kind = UFSMM_UNDO_ADD_GUARD;
 
     TAILQ_INSERT_TAIL(ops, op, tailq);
 

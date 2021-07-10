@@ -422,7 +422,8 @@ int ufsmm_transition_add_guard(struct ufsmm_model *model,
                               uuid_t action_id,
                               uuid_t state_id,
                               enum ufsmm_guard_kind kind,
-                              int guard_value);
+                              int guard_value,
+                              struct ufsmm_guard_ref **new_guard);
 
 int ufsmm_transition_delete_guard(struct ufsmm_transition *transition, uuid_t id);
 

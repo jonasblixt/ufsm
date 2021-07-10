@@ -296,7 +296,8 @@ static int update_sc_tree(struct ufsmm_model *model,
 
 static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                             void *p_input,
-                            enum ufsmm_action_kind kind)
+                            enum ufsmm_action_kind kind,
+                            struct ufsmm_guard_ref **new_guard)
 {
     int rc;
     const char *msg;
@@ -516,7 +517,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                                             NULL,
                                             selected_state->id,
                                             guard_kind,
-                                            0);
+                                            0, new_guard);
     } else if (selected_action && ((result == GTK_RESPONSE_ACCEPT) ||
                                    (result == 1))) {
         uuid_t id;
@@ -526,7 +527,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                                             selected_action->id,
                                             NULL,
                                             guard_kind,
-                                            guard_value);
+                                            guard_value, new_guard);
     } else if (result == 1) { /* Create new guard */
         uuid_t id;
         uuid_generate_random(id);
@@ -547,7 +548,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                                             selected_action->id,
                                             NULL,
                                             guard_kind,
-                                            guard_value);
+                                            guard_value, new_guard);
     } else {
         rc = -1;
     }
@@ -559,7 +560,8 @@ err_out:
 }
 
 int ufsm_add_transition_guard_dialog(GtkWindow *parent, struct ufsmm_model *model,
-                            struct ufsmm_transition *transition)
+                            struct ufsmm_transition *transition,
+                            struct ufsmm_guard_ref **new_guard)
 {
-    return add_action(parent, model, transition, UFSMM_ACTION_GUARD);
+    return add_action(parent, model, transition, UFSMM_ACTION_GUARD, new_guard);
 }

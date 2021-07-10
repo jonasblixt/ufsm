@@ -301,7 +301,7 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
 
                     rc = ufsmm_transition_add_guard(model, transition, id_uu,
                                                     guard_uu, NULL, guard_kind,
-                                                    guard_value);
+                                                    guard_value, NULL);
                     if (rc != UFSMM_OK)
                         goto err_out;
                 } else {
@@ -312,7 +312,7 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
 
                     rc = ufsmm_transition_add_guard(model, transition, id_uu,
                                                     NULL, state_uu, guard_kind,
-                                                    0);
+                                                    0, NULL);
                     if (rc != UFSMM_OK)
                         goto err_out;
                 }
@@ -593,7 +593,8 @@ int ufsmm_transition_add_guard(struct ufsmm_model *model,
                               uuid_t action_id,
                               uuid_t state_id,
                               enum ufsmm_guard_kind kind,
-                              int guard_value)
+                              int guard_value,
+                              struct ufsmm_guard_ref **new_guard)
 {
     struct ufsmm_action *action;
     struct ufsmm_state *state;
@@ -643,6 +644,9 @@ int ufsmm_transition_add_guard(struct ufsmm_model *model,
     }
     TAILQ_INSERT_TAIL(&transition->guards, guard, tailq);
 
+    if (new_guard != NULL) {
+        (*new_guard) = guard;
+    }
     return UFSMM_OK;
 }
 

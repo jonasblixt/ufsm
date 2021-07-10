@@ -2131,9 +2131,19 @@ void canvas_edit_region_name(void *context)
 void canvas_add_guard(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    ufsm_add_transition_guard_dialog(GTK_WINDOW(priv->root_window),
+    struct ufsmm_guard_ref *new_guard;
+    int rc;
+
+    rc = ufsm_add_transition_guard_dialog(GTK_WINDOW(priv->root_window),
                                             priv->model,
-                                            priv->selected_transition);
+                                            priv->selected_transition,
+                                            &new_guard);
+
+    if (rc == UFSMM_OK) {
+        struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+        ufsmm_undo_add_guard(undo_ops, priv->selected_transition, new_guard);
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    }
 }
 
 void canvas_edit_state_entry(void *context)
