@@ -157,6 +157,24 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
                 }
             }
             break;
+            case UFSMM_UNDO_REORDER_AREF:
+            {
+                struct ufsmm_undo_reorder_aref *reorder_op =
+                        (struct ufsmm_undo_reorder_aref *) op->data;
+                if (reorder_op->oprev != NULL) {
+                    TAILQ_REMOVE(reorder_op->list,
+                                 reorder_op->aref, tailq);
+                    TAILQ_INSERT_AFTER(reorder_op->list,
+                                       reorder_op->oprev,
+                                       reorder_op->aref, tailq);
+                } else if (reorder_op->onext != NULL) {
+                    TAILQ_REMOVE(reorder_op->list,
+                                 reorder_op->aref, tailq);
+                    TAILQ_INSERT_BEFORE(reorder_op->onext,
+                                       reorder_op->aref, tailq);
+                }
+            }
+            break;
         }
     }
 }
@@ -282,6 +300,24 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
                                  reorder_op->guard, tailq);
                     TAILQ_INSERT_BEFORE(reorder_op->nnext,
                                        reorder_op->guard, tailq);
+                }
+            }
+            break;
+            case UFSMM_UNDO_REORDER_AREF:
+            {
+                struct ufsmm_undo_reorder_aref *reorder_op =
+                        (struct ufsmm_undo_reorder_aref *) op->data;
+                if (reorder_op->nprev != NULL) {
+                    TAILQ_REMOVE(reorder_op->list,
+                                 reorder_op->aref, tailq);
+                    TAILQ_INSERT_AFTER(reorder_op->list,
+                                       reorder_op->nprev,
+                                       reorder_op->aref, tailq);
+                } else if (reorder_op->nnext != NULL) {
+                    TAILQ_REMOVE(reorder_op->list,
+                                 reorder_op->aref, tailq);
+                    TAILQ_INSERT_BEFORE(reorder_op->nnext,
+                                       reorder_op->aref, tailq);
                 }
             }
             break;
@@ -657,6 +693,46 @@ int ufsmm_undo_reorder_guard(struct ufsmm_undo_ops *ops,
 
     op->data = data;
     op->kind = UFSMM_UNDO_REORDER_GUARD;
+
+    TAILQ_INSERT_TAIL(ops, op, tailq);
+
+    return rc;
+err_free_data:
+    free(data);
+    return rc;
+}
+
+int ufsmm_undo_reorder_aref(struct ufsmm_undo_ops *ops,
+                             struct ufsmm_action_refs *list,
+                             struct ufsmm_action_ref *aref,
+                             struct ufsmm_action_ref *old_prev,
+                             struct ufsmm_action_ref *old_next)
+{
+    int rc = 0;
+    struct ufsmm_undo_reorder_aref *data = \
+                       malloc(sizeof(struct ufsmm_undo_reorder_aref));
+
+    if (data == NULL)
+        return -1;
+
+    memset(data, 0, sizeof(*data));
+
+    struct ufsmm_undo_op *op = new_undo_op();
+
+    if (op == NULL) {
+        rc = -1;
+        goto err_free_data;
+    }
+
+    data->list = list;
+    data->aref = aref;
+    data->oprev = old_prev;
+    data->onext = old_next;
+    data->nprev = TAILQ_PREV(aref, ufsmm_action_refs, tailq);
+    data->nnext = TAILQ_NEXT(aref, tailq);
+
+    op->data = data;
+    op->kind = UFSMM_UNDO_REORDER_AREF;
 
     TAILQ_INSERT_TAIL(ops, op, tailq);
 

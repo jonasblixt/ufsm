@@ -12,6 +12,7 @@ enum ufsmm_undo_op_kind {
     UFSMM_UNDO_MOVE_COORDS,
     UFSMM_UNDO_ADD_STATE,
     UFSMM_UNDO_REORDER_GUARD,
+    UFSMM_UNDO_REORDER_AREF,
 };
 
 struct ufsmm_undo_rename_state {
@@ -38,6 +39,12 @@ struct ufsmm_undo_reorder_guard {
     struct ufsmm_transition *transition;
     struct ufsmm_guard_ref *guard;
     struct ufsmm_guard_ref *oprev, *onext, *nprev, *nnext;
+};
+
+struct ufsmm_undo_reorder_aref {
+    struct ufsmm_action_refs *list;
+    struct ufsmm_action_ref *aref;
+    struct ufsmm_action_ref *oprev, *onext, *nprev, *nnext;
 };
 
 struct ufsmm_undo_move_vertice {
@@ -124,4 +131,10 @@ int ufsmm_undo_reorder_guard(struct ufsmm_undo_ops *ops,
                              struct ufsmm_guard_ref *guard,
                              struct ufsmm_guard_ref *old_prev,
                              struct ufsmm_guard_ref *old_next);
+
+int ufsmm_undo_reorder_aref(struct ufsmm_undo_ops *ops,
+                             struct ufsmm_action_refs *list,
+                             struct ufsmm_action_ref *aref,
+                             struct ufsmm_action_ref *old_prev,
+                             struct ufsmm_action_ref *old_next);
 #endif

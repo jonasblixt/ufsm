@@ -1618,36 +1618,6 @@ void canvas_resize_region_end(void *context)
 {
 }
 
-void canvas_reorder_entry_func(void *context)
-{
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_state *state = priv->selected_state;
-    struct ufsmm_action_ref *aref = priv->selected_aref;
-    struct ufsmm_action_ref *next, *prev;
-
-    if (priv->dy > 10.0) {
-        L_DEBUG("Move down!");
-        ufsmm_canvas_reset_delta(priv);
-        next = TAILQ_NEXT(aref, tailq);
-        if (next) {
-            TAILQ_REMOVE(&state->entries, aref, tailq);
-            TAILQ_INSERT_AFTER(&state->entries, next, aref, tailq);
-            priv->redraw = true;
-        }
-    } else if (priv->dy < -10.0) {
-        L_DEBUG("Move up!");
-        ufsmm_canvas_reset_delta(priv);
-        prev = TAILQ_PREV(aref, ufsmm_action_refs, tailq);
-
-        if (prev) {
-            TAILQ_REMOVE(&state->entries, aref, tailq);
-            TAILQ_INSERT_BEFORE(prev, aref, tailq);
-            priv->redraw = true;
-        }
-    }
-}
-
-
 void canvas_move_text_block(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -1657,33 +1627,6 @@ void canvas_move_text_block(void *context)
     t->text_block_coords.y = ufsmm_canvas_nearest_grid_point(t->text_block_coords.ty + priv->dy);
 
     priv->redraw = true;
-}
-
-void canvas_reorder_exit_func(void *context)
-{
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_state *state = priv->selected_state;
-    struct ufsmm_action_ref *aref = priv->selected_aref;
-    struct ufsmm_action_ref *next, *prev;
-
-    if (priv->dy > 10.0) {
-        ufsmm_canvas_reset_delta(priv);
-        next = TAILQ_NEXT(aref, tailq);
-        if (next) {
-            TAILQ_REMOVE(&state->exits, aref, tailq);
-            TAILQ_INSERT_AFTER(&state->exits, next, aref, tailq);
-            priv->redraw = true;
-        }
-    } else if (priv->dy < -10.0) {
-        ufsmm_canvas_reset_delta(priv);
-        prev = TAILQ_PREV(aref, ufsmm_action_refs, tailq);
-
-        if (prev) {
-            TAILQ_REMOVE(&state->exits, aref, tailq);
-            TAILQ_INSERT_BEFORE(prev, aref, tailq);
-            priv->redraw = true;
-        }
-    }
 }
 
 struct reorder_guard_op {
@@ -1760,11 +1703,30 @@ void canvas_reorder_guard_func(void *context)
     }
 }
 
+struct reorder_aref_op {
+    struct ufsmm_action_refs *list;
+    struct ufsmm_action_ref *aref, *prev, *next;
+};
+
 void canvas_reorder_action_begin(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *transition = priv->selected_transition;
     struct ufsmm_action_ref *aref = priv->selected_aref;
+
+    struct reorder_aref_op *op = malloc(sizeof(struct reorder_aref_op));
+
+    if (op == NULL) {
+        L_ERR("Could not allocate");
+        return;
+    }
+
+    memset(op, 0, sizeof(*op));
+    priv->command_data = (void *) op;
+    op->list = &transition->actions;
+    op->aref = aref;
+    op->prev = TAILQ_PREV(aref, ufsmm_action_refs, tailq);
+    op->next = TAILQ_NEXT(aref, tailq);
 }
 
 void canvas_reorder_action_end(void *context)
@@ -1772,6 +1734,20 @@ void canvas_reorder_action_end(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *transition = priv->selected_transition;
     struct ufsmm_action_ref *aref = priv->selected_aref;
+    struct reorder_aref_op *op = (struct reorder_aref_op *) priv->command_data;
+
+    if ((op->prev != TAILQ_PREV(aref, ufsmm_action_refs, tailq)) ||
+        (op->next != TAILQ_NEXT(aref, tailq))) {
+
+        struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+        ufsmm_undo_reorder_aref(undo_ops, op->list,
+                                           op->aref,
+                                           op->prev,
+                                           op->next);
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    }
+
+    free(op);
 }
 
 void canvas_reorder_action_func(void *context)
@@ -1800,6 +1776,147 @@ void canvas_reorder_action_func(void *context)
         }
     }
 }
+
+void canvas_reorder_entry_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *state = priv->selected_state;
+    struct ufsmm_action_ref *aref = priv->selected_aref;
+
+    struct reorder_aref_op *op = malloc(sizeof(struct reorder_aref_op));
+
+    if (op == NULL) {
+        L_ERR("Could not allocate");
+        return;
+    }
+
+    memset(op, 0, sizeof(*op));
+    priv->command_data = (void *) op;
+    op->list = &state->entries;
+    op->aref = aref;
+    op->prev = TAILQ_PREV(aref, ufsmm_action_refs, tailq);
+    op->next = TAILQ_NEXT(aref, tailq);
+}
+
+void canvas_reorder_entry_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *state = priv->selected_state;
+    struct ufsmm_action_ref *aref = priv->selected_aref;
+    struct reorder_aref_op *op = (struct reorder_aref_op *) priv->command_data;
+
+    if ((op->prev != TAILQ_PREV(aref, ufsmm_action_refs, tailq)) ||
+        (op->next != TAILQ_NEXT(aref, tailq))) {
+
+        struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+        ufsmm_undo_reorder_aref(undo_ops, op->list,
+                                           op->aref,
+                                           op->prev,
+                                           op->next);
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    }
+
+    free(op);
+}
+
+void canvas_reorder_entry_func(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *state = priv->selected_state;
+    struct ufsmm_action_ref *aref = priv->selected_aref;
+    struct ufsmm_action_ref *next, *prev;
+
+    if (priv->dy > 10.0) {
+        L_DEBUG("Move down!");
+        ufsmm_canvas_reset_delta(priv);
+        next = TAILQ_NEXT(aref, tailq);
+        if (next) {
+            TAILQ_REMOVE(&state->entries, aref, tailq);
+            TAILQ_INSERT_AFTER(&state->entries, next, aref, tailq);
+            priv->redraw = true;
+        }
+    } else if (priv->dy < -10.0) {
+        L_DEBUG("Move up!");
+        ufsmm_canvas_reset_delta(priv);
+        prev = TAILQ_PREV(aref, ufsmm_action_refs, tailq);
+
+        if (prev) {
+            TAILQ_REMOVE(&state->entries, aref, tailq);
+            TAILQ_INSERT_BEFORE(prev, aref, tailq);
+            priv->redraw = true;
+        }
+    }
+}
+
+void canvas_reorder_exit_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *state = priv->selected_state;
+    struct ufsmm_action_ref *aref = priv->selected_aref;
+
+    struct reorder_aref_op *op = malloc(sizeof(struct reorder_aref_op));
+
+    if (op == NULL) {
+        L_ERR("Could not allocate");
+        return;
+    }
+
+    memset(op, 0, sizeof(*op));
+    priv->command_data = (void *) op;
+    op->list = &state->exits;
+    op->aref = aref;
+    op->prev = TAILQ_PREV(aref, ufsmm_action_refs, tailq);
+    op->next = TAILQ_NEXT(aref, tailq);
+}
+
+void canvas_reorder_exit_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *state = priv->selected_state;
+    struct ufsmm_action_ref *aref = priv->selected_aref;
+    struct reorder_aref_op *op = (struct reorder_aref_op *) priv->command_data;
+
+    if ((op->prev != TAILQ_PREV(aref, ufsmm_action_refs, tailq)) ||
+        (op->next != TAILQ_NEXT(aref, tailq))) {
+
+        struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+        ufsmm_undo_reorder_aref(undo_ops, op->list,
+                                           op->aref,
+                                           op->prev,
+                                           op->next);
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    }
+
+    free(op);
+}
+
+void canvas_reorder_exit_func(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_state *state = priv->selected_state;
+    struct ufsmm_action_ref *aref = priv->selected_aref;
+    struct ufsmm_action_ref *next, *prev;
+
+    if (priv->dy > 10.0) {
+        ufsmm_canvas_reset_delta(priv);
+        next = TAILQ_NEXT(aref, tailq);
+        if (next) {
+            TAILQ_REMOVE(&state->exits, aref, tailq);
+            TAILQ_INSERT_AFTER(&state->exits, next, aref, tailq);
+            priv->redraw = true;
+        }
+    } else if (priv->dy < -10.0) {
+        ufsmm_canvas_reset_delta(priv);
+        prev = TAILQ_PREV(aref, ufsmm_action_refs, tailq);
+
+        if (prev) {
+            TAILQ_REMOVE(&state->exits, aref, tailq);
+            TAILQ_INSERT_BEFORE(prev, aref, tailq);
+            priv->redraw = true;
+        }
+    }
+}
+
 
 void canvas_resize_textblock(void *context)
 {
