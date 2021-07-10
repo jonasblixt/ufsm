@@ -11,6 +11,7 @@ enum ufsmm_undo_op_kind {
     UFSMM_UNDO_MOVE_VERTICE,
     UFSMM_UNDO_MOVE_COORDS,
     UFSMM_UNDO_ADD_STATE,
+    UFSMM_UNDO_ADD_REGION,
     UFSMM_UNDO_REORDER_GUARD,
     UFSMM_UNDO_REORDER_AREF,
 };
@@ -70,6 +71,10 @@ struct ufsmm_undo_add_state {
     struct ufsmm_state *state;
 };
 
+struct ufsmm_undo_add_region {
+    struct ufsmm_region *region;
+};
+
 struct ufsmm_undo_op {
     enum ufsmm_undo_op_kind kind;
     void *data;
@@ -125,6 +130,9 @@ int ufsmm_undo_move_transition_dest(struct ufsmm_undo_ops *ops,
                                      struct ufsmm_transition_state_ref *old_ref);
 int ufsmm_undo_add_state(struct ufsmm_undo_ops *ops,
                          struct ufsmm_state *state);
+
+int ufsmm_undo_add_region(struct ufsmm_undo_ops *ops,
+                         struct ufsmm_region *region);
 
 int ufsmm_undo_reorder_guard(struct ufsmm_undo_ops *ops,
                              struct ufsmm_transition *transition,

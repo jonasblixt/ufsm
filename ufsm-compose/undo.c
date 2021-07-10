@@ -139,6 +139,15 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
                              add_op->state, tailq);
             }
             break;
+            case UFSMM_UNDO_ADD_REGION:
+            {
+                struct ufsmm_undo_add_region *add_op =
+                        (struct ufsmm_undo_add_region *) op->data;
+
+                TAILQ_REMOVE(&add_op->region->parent_state->regions,
+                             add_op->region, tailq);
+            }
+            break;
             case UFSMM_UNDO_REORDER_GUARD:
             {
                 struct ufsmm_undo_reorder_guard *reorder_op =
@@ -283,6 +292,15 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
 
                 TAILQ_INSERT_TAIL(&add_op->state->parent_region->states,
                              add_op->state, tailq);
+            }
+            break;
+            case UFSMM_UNDO_ADD_REGION:
+            {
+                struct ufsmm_undo_add_region *add_op =
+                        (struct ufsmm_undo_add_region *) op->data;
+
+                TAILQ_INSERT_TAIL(&add_op->region->parent_state->regions,
+                             add_op->region, tailq);
             }
             break;
             case UFSMM_UNDO_REORDER_GUARD:
@@ -653,6 +671,37 @@ int ufsmm_undo_add_state(struct ufsmm_undo_ops *ops,
     data->state = state;
     op->data = data;
     op->kind = UFSMM_UNDO_ADD_STATE;
+
+    TAILQ_INSERT_TAIL(ops, op, tailq);
+
+    return rc;
+err_free_data:
+    free(data);
+    return rc;
+}
+
+int ufsmm_undo_add_region(struct ufsmm_undo_ops *ops,
+                         struct ufsmm_region *region)
+{
+    int rc = 0;
+    struct ufsmm_undo_add_region *data = \
+                       malloc(sizeof(struct ufsmm_undo_add_region));
+
+    if (data == NULL)
+        return -1;
+
+    memset(data, 0, sizeof(*data));
+
+    struct ufsmm_undo_op *op = new_undo_op();
+
+    if (op == NULL) {
+        rc = -1;
+        goto err_free_data;
+    }
+
+    data->region = region;
+    op->data = data;
+    op->kind = UFSMM_UNDO_ADD_REGION;
 
     TAILQ_INSERT_TAIL(ops, op, tailq);
 

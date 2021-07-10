@@ -2022,6 +2022,11 @@ void canvas_add_region(void *context)
     rc = ufsmm_add_region(priv->selected_state, false, &new_region);
     new_region->name = strdup("New region");
     new_region->h = 40;
+
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    ufsmm_undo_add_region(undo_ops, new_region);
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
+
     priv->redraw = true;
     L_DEBUG("Created new region");
 }
