@@ -2450,6 +2450,10 @@ void canvas_create_transition_end(void *context)
         ufsmm_transition_free_one(op->t);
 
         L_DEBUG("Freeing transition done");
+    } else {
+        struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+        ufsmm_undo_add_transition(undo_ops, op->t);
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
     }
 
     free(op);

@@ -2,6 +2,70 @@
 #include <ufsm/model.h>
 #include "undo.h"
 
+struct ufsmm_undo_rename_state {
+
+    struct ufsmm_state *state;
+    const char *new_name;
+    const char *old_name;
+};
+
+struct ufsmm_undo_rename_region {
+    struct ufsmm_region *region;
+    const char *new_name;
+    const char *old_name;
+};
+
+struct ufsmm_undo_resize_state {
+    struct ufsmm_state *state;
+    double nx, ny, nw, nh;
+    double ox, oy, ow, oh;
+    enum ufsmm_orientation norientation, oorientation;
+    struct ufsmm_region *oparent_region, *nparent_region;
+};
+
+struct ufsmm_undo_reorder_guard {
+    struct ufsmm_transition *transition;
+    struct ufsmm_guard_ref *guard;
+    struct ufsmm_guard_ref *oprev, *onext, *nprev, *nnext;
+};
+
+struct ufsmm_undo_reorder_aref {
+    struct ufsmm_action_refs *list;
+    struct ufsmm_action_ref *aref;
+    struct ufsmm_action_ref *oprev, *onext, *nprev, *nnext;
+};
+
+struct ufsmm_undo_move_vertice {
+    struct ufsmm_vertice *vertice;
+    double nx, ny;
+    double ox, oy;
+};
+
+struct ufsmm_undo_move_coords {
+    struct ufsmm_coords *coords;
+    double nx, ny, nw, nh;
+    double ox, oy, ow, oh;
+};
+
+struct ufsmm_undo_move_transition {
+    struct ufsmm_transition *transition;
+    bool is_source;
+    struct ufsmm_transition_state_ref old_ref;
+    struct ufsmm_transition_state_ref new_ref;
+};
+
+struct ufsmm_undo_add_state {
+    struct ufsmm_state *state;
+};
+
+struct ufsmm_undo_add_region {
+    struct ufsmm_region *region;
+};
+
+struct ufsmm_undo_add_transition {
+    struct ufsmm_transition *transition;
+};
+
 static struct ufsmm_undo_op* new_undo_op(void)
 {
     struct ufsmm_undo_op *op = malloc(sizeof(struct ufsmm_undo_op));
@@ -146,6 +210,15 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
 
                 TAILQ_REMOVE(&add_op->region->parent_state->regions,
                              add_op->region, tailq);
+            }
+            break;
+            case UFSMM_UNDO_ADD_TRANSITION:
+            {
+                struct ufsmm_undo_add_transition *add_op =
+                        (struct ufsmm_undo_add_transition *) op->data;
+
+                TAILQ_REMOVE(&add_op->transition->source.state->transitions,
+                             add_op->transition, tailq);
             }
             break;
             case UFSMM_UNDO_REORDER_GUARD:
@@ -301,6 +374,15 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
 
                 TAILQ_INSERT_TAIL(&add_op->region->parent_state->regions,
                              add_op->region, tailq);
+            }
+            break;
+            case UFSMM_UNDO_ADD_TRANSITION:
+            {
+                struct ufsmm_undo_add_transition *add_op =
+                        (struct ufsmm_undo_add_transition *) op->data;
+
+                TAILQ_INSERT_TAIL(&add_op->transition->source.state->transitions,
+                             add_op->transition, tailq);
             }
             break;
             case UFSMM_UNDO_REORDER_GUARD:
@@ -702,6 +784,37 @@ int ufsmm_undo_add_region(struct ufsmm_undo_ops *ops,
     data->region = region;
     op->data = data;
     op->kind = UFSMM_UNDO_ADD_REGION;
+
+    TAILQ_INSERT_TAIL(ops, op, tailq);
+
+    return rc;
+err_free_data:
+    free(data);
+    return rc;
+}
+
+int ufsmm_undo_add_transition(struct ufsmm_undo_ops *ops,
+                                 struct ufsmm_transition *transition)
+{
+    int rc = 0;
+    struct ufsmm_undo_add_transition *data = \
+                       malloc(sizeof(struct ufsmm_undo_add_transition));
+
+    if (data == NULL)
+        return -1;
+
+    memset(data, 0, sizeof(*data));
+
+    struct ufsmm_undo_op *op = new_undo_op();
+
+    if (op == NULL) {
+        rc = -1;
+        goto err_free_data;
+    }
+
+    data->transition = transition;
+    op->data = data;
+    op->kind = UFSMM_UNDO_ADD_TRANSITION;
 
     TAILQ_INSERT_TAIL(ops, op, tailq);
 

@@ -12,67 +12,9 @@ enum ufsmm_undo_op_kind {
     UFSMM_UNDO_MOVE_COORDS,
     UFSMM_UNDO_ADD_STATE,
     UFSMM_UNDO_ADD_REGION,
+    UFSMM_UNDO_ADD_TRANSITION,
     UFSMM_UNDO_REORDER_GUARD,
     UFSMM_UNDO_REORDER_AREF,
-};
-
-struct ufsmm_undo_rename_state {
-    struct ufsmm_state *state;
-    const char *new_name;
-    const char *old_name;
-};
-
-struct ufsmm_undo_rename_region {
-    struct ufsmm_region *region;
-    const char *new_name;
-    const char *old_name;
-};
-
-struct ufsmm_undo_resize_state {
-    struct ufsmm_state *state;
-    double nx, ny, nw, nh;
-    double ox, oy, ow, oh;
-    enum ufsmm_orientation norientation, oorientation;
-    struct ufsmm_region *oparent_region, *nparent_region;
-};
-
-struct ufsmm_undo_reorder_guard {
-    struct ufsmm_transition *transition;
-    struct ufsmm_guard_ref *guard;
-    struct ufsmm_guard_ref *oprev, *onext, *nprev, *nnext;
-};
-
-struct ufsmm_undo_reorder_aref {
-    struct ufsmm_action_refs *list;
-    struct ufsmm_action_ref *aref;
-    struct ufsmm_action_ref *oprev, *onext, *nprev, *nnext;
-};
-
-struct ufsmm_undo_move_vertice {
-    struct ufsmm_vertice *vertice;
-    double nx, ny;
-    double ox, oy;
-};
-
-struct ufsmm_undo_move_coords {
-    struct ufsmm_coords *coords;
-    double nx, ny, nw, nh;
-    double ox, oy, ow, oh;
-};
-
-struct ufsmm_undo_move_transition {
-    struct ufsmm_transition *transition;
-    bool is_source;
-    struct ufsmm_transition_state_ref old_ref;
-    struct ufsmm_transition_state_ref new_ref;
-};
-
-struct ufsmm_undo_add_state {
-    struct ufsmm_state *state;
-};
-
-struct ufsmm_undo_add_region {
-    struct ufsmm_region *region;
 };
 
 struct ufsmm_undo_op {
@@ -106,6 +48,8 @@ int ufsmm_undo_commit_ops(struct ufsmm_undo_context *undo,
 int ufsmm_undo_free_ops(struct ufsmm_undo_context *undo,
                         struct ufsmm_undo_ops *ops);
 
+/* UNDO operations */
+
 int ufsmm_undo_rename_state(struct ufsmm_undo_ops *ops,
                             struct ufsmm_state *state,
                             const char *old_name);
@@ -133,6 +77,9 @@ int ufsmm_undo_add_state(struct ufsmm_undo_ops *ops,
 
 int ufsmm_undo_add_region(struct ufsmm_undo_ops *ops,
                          struct ufsmm_region *region);
+
+int ufsmm_undo_add_transition(struct ufsmm_undo_ops *ops,
+                                 struct ufsmm_transition *transition);
 
 int ufsmm_undo_reorder_guard(struct ufsmm_undo_ops *ops,
                              struct ufsmm_transition *transition,
