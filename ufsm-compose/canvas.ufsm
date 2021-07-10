@@ -804,6 +804,22 @@
     {
       "name":"canvas_redo",
       "id":"4a6c4f7a-207b-4fde-aa96-cd31042fd4df"
+    },
+    {
+      "name":"canvas_reorder_action_begin",
+      "id":"bce67dfd-f75c-489f-af14-5c55f204c09b"
+    },
+    {
+      "name":"canvas_reorder_action_end",
+      "id":"f14426cd-2f45-4f6e-91ac-9281f5b4411f"
+    },
+    {
+      "name":"canvas_reorder_guard_begin",
+      "id":"f91dc23a-abfa-420e-a7a9-1ef346d52823"
+    },
+    {
+      "name":"canvas_reorder_guard_end",
+      "id":"0aa8f3cd-3bf8-4b09-b305-863b4e5e5f40"
     }
   ],
   "entries":null,
@@ -8148,16 +8164,12 @@
                                       "offset":140.0
                                     },
                                     "text-block":{
-                                      "x":820.0,
+                                      "x":940.0,
                                       "y":200.0,
-                                      "w":400.0,
+                                      "w":410.0,
                                       "h":40.0
                                     },
                                     "vertices":[
-                                      {
-                                        "x":810.0,
-                                        "y":240.0
-                                      }
                                     ],
                                     "guards":[
                                       {
@@ -8356,15 +8368,15 @@
                                       "offset":60.0
                                     },
                                     "text-block":{
-                                      "x":520.0,
-                                      "y":910.0,
+                                      "x":540.0,
+                                      "y":1010.0,
                                       "w":100.0,
                                       "h":30.0
                                     },
                                     "vertices":[
                                       {
                                         "x":710.0,
-                                        "y":960.0
+                                        "y":1080.0
                                       }
                                     ],
                                     "guards":[
@@ -8404,34 +8416,29 @@
                                       "offset":20.0
                                     },
                                     "dest":{
-                                      "state":"6af64093-51b3-4564-be9a-fcb682134262",
+                                      "state":"ff59afa4-aaeb-4d1d-9909-3d96064755cb",
                                       "side":"left",
-                                      "offset":40.0
+                                      "offset":50.0
                                     },
                                     "text-block":{
-                                      "x":40.0,
-                                      "y":270.0,
-                                      "w":300.0,
+                                      "x":80.0,
+                                      "y":300.0,
+                                      "w":70.0,
                                       "h":30.0
                                     },
                                     "vertices":[
                                       {
-                                        "x":140.0,
+                                        "x":60.0,
                                         "y":350.0
                                       },
                                       {
-                                        "x":140.0,
-                                        "y":370.0
+                                        "x":60.0,
+                                        "y":190.0
                                       }
                                     ],
                                     "guards":[
                                     ],
                                     "actions":[
-                                      {
-                                        "action-id":"36fd046f-2288-4ae0-bab1-392dce9940bd",
-                                        "kind":0,
-                                        "id":"26349aa8-a025-44e9-b7e6-7ec4b3d83001"
-                                      }
                                     ]
                                   }
                                 ]
@@ -8463,37 +8470,32 @@
                                     "source":{
                                       "state":"7921f170-0693-4d0b-bc73-b4567901a39b",
                                       "side":"left",
-                                      "offset":20.0
+                                      "offset":30.0
                                     },
                                     "dest":{
-                                      "state":"7921f170-0693-4d0b-bc73-b4567901a39b",
+                                      "state":"10a0497c-81c8-436a-adb9-9bdb6d4a8ec1",
                                       "side":"left",
-                                      "offset":40.0
+                                      "offset":50.0
                                     },
                                     "text-block":{
-                                      "x":40.0,
-                                      "y":410.0,
-                                      "w":300.0,
+                                      "x":60.0,
+                                      "y":440.0,
+                                      "w":60.0,
                                       "h":30.0
                                     },
                                     "vertices":[
                                       {
-                                        "x":140.0,
-                                        "y":480.0
+                                        "x":60.0,
+                                        "y":490.0
                                       },
                                       {
-                                        "x":140.0,
-                                        "y":500.0
+                                        "x":60.0,
+                                        "y":750.0
                                       }
                                     ],
                                     "guards":[
                                     ],
                                     "actions":[
-                                      {
-                                        "action-id":"6ab7c0c4-d793-401b-ad1c-b3758ae1145e",
-                                        "kind":0,
-                                        "id":"17b54a22-897a-46d6-af7c-030a5fc83961"
-                                      }
                                     ]
                                   }
                                 ]
@@ -8503,9 +8505,9 @@
                                 "name":"Move text block",
                                 "kind":"state",
                                 "width":340.0,
-                                "height":420.0,
+                                "height":310.0,
                                 "x":110.0,
-                                "y":620.0,
+                                "y":850.0,
                                 "orientation":0,
                                 "entries":[
                                   {
@@ -8526,7 +8528,7 @@
                                     "id":"b6290854-2e7c-4767-8f3c-bc2bbf4768ee",
                                     "name":"New region",
                                     "off_page":false,
-                                    "height":320,
+                                    "height":210,
                                     "states":[
                                       {
                                         "id":"708c0dd3-6a6f-40f4-8b4e-8d6dadfd297e",
@@ -8535,7 +8537,7 @@
                                         "width":260.0,
                                         "height":100.0,
                                         "x":150.0,
-                                        "y":900.0,
+                                        "y":1020.0,
                                         "orientation":0,
                                         "entries":[
                                           {
@@ -8563,19 +8565,19 @@
                                               "offset":200.0
                                             },
                                             "text-block":{
-                                              "x":150.0,
-                                              "y":750.0,
+                                              "x":140.0,
+                                              "y":930.0,
                                               "w":280.0,
                                               "h":30.0
                                             },
                                             "vertices":[
                                               {
                                                 "x":210.0,
-                                                "y":820.0
+                                                "y":990.0
                                               },
                                               {
                                                 "x":350.0,
-                                                "y":820.0
+                                                "y":990.0
                                               }
                                             ],
                                             "guards":[
@@ -8772,6 +8774,192 @@
                                                 "kind":0,
                                                 "id":"1fa06c3f-cac5-4d24-9aec-989b28aa07e0"
                                               }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "transitions":[
+                                ]
+                              },
+                              {
+                                "id":"ce0d5083-2f35-44a8-be1c-e98737653fc1",
+                                "name":"Reorder action",
+                                "kind":"state",
+                                "width":400.0,
+                                "height":250.0,
+                                "x":130.0,
+                                "y":570.0,
+                                "orientation":0,
+                                "entries":[
+                                  {
+                                    "id":"8c153011-24db-4422-bda9-f39c2e5e8921",
+                                    "kind":0,
+                                    "action-id":"bce67dfd-f75c-489f-af14-5c55f204c09b"
+                                  }
+                                ],
+                                "exits":[
+                                  {
+                                    "id":"256bffec-f78d-493b-9c5e-a9cb05ab1376",
+                                    "kind":0,
+                                    "action-id":"f14426cd-2f45-4f6e-91ac-9281f5b4411f"
+                                  }
+                                ],
+                                "region":[
+                                  {
+                                    "id":"b8322eb2-81af-41b1-aa5d-9c13d5734469",
+                                    "name":"New region",
+                                    "off_page":false,
+                                    "height":160,
+                                    "states":[
+                                      {
+                                        "id":"10a0497c-81c8-436a-adb9-9bdb6d4a8ec1",
+                                        "name":"Reorder",
+                                        "kind":"state",
+                                        "width":260.0,
+                                        "height":80.0,
+                                        "x":160.0,
+                                        "y":700.0,
+                                        "orientation":0,
+                                        "entries":[
+                                          {
+                                            "id":"0fd051fc-4c66-4ad8-a2a0-c5ccdb0e9285",
+                                            "kind":0,
+                                            "action-id":"6ab7c0c4-d793-401b-ad1c-b3758ae1145e"
+                                          }
+                                        ],
+                                        "exits":[
+                                        ],
+                                        "region":[
+                                        ],
+                                        "transitions":[
+                                          {
+                                            "id":"d010d02d-9635-4009-895e-cdf9c932add3",
+                                            "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "source":{
+                                              "state":"10a0497c-81c8-436a-adb9-9bdb6d4a8ec1",
+                                              "side":"right",
+                                              "offset":20.0
+                                            },
+                                            "dest":{
+                                              "state":"10a0497c-81c8-436a-adb9-9bdb6d4a8ec1",
+                                              "side":"right",
+                                              "offset":70.0
+                                            },
+                                            "text-block":{
+                                              "x":420.0,
+                                              "y":660.0,
+                                              "w":100.0,
+                                              "h":30.0
+                                            },
+                                            "vertices":[
+                                              {
+                                                "x":450.0,
+                                                "y":720.0
+                                              },
+                                              {
+                                                "x":450.0,
+                                                "y":770.0
+                                              }
+                                            ],
+                                            "guards":[
+                                            ],
+                                            "actions":[
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "transitions":[
+                                ]
+                              },
+                              {
+                                "id":"2483ea42-b217-48de-9f36-9eab981e93b5",
+                                "name":"Reorder guard",
+                                "kind":"state",
+                                "width":400.0,
+                                "height":250.0,
+                                "x":120.0,
+                                "y":10.0,
+                                "orientation":0,
+                                "entries":[
+                                  {
+                                    "id":"01444e5e-870b-4581-b902-3150926698da",
+                                    "kind":0,
+                                    "action-id":"f91dc23a-abfa-420e-a7a9-1ef346d52823"
+                                  }
+                                ],
+                                "exits":[
+                                  {
+                                    "id":"3fddc848-6d29-4c73-a4f7-44539c048419",
+                                    "kind":0,
+                                    "action-id":"0aa8f3cd-3bf8-4b09-b305-863b4e5e5f40"
+                                  }
+                                ],
+                                "region":[
+                                  {
+                                    "id":"c0732754-1fdf-4f07-8566-b1b91cbaf1bc",
+                                    "name":"New region",
+                                    "off_page":false,
+                                    "height":160,
+                                    "states":[
+                                      {
+                                        "id":"ff59afa4-aaeb-4d1d-9909-3d96064755cb",
+                                        "name":"Reorder",
+                                        "kind":"state",
+                                        "width":260.0,
+                                        "height":80.0,
+                                        "x":150.0,
+                                        "y":140.0,
+                                        "orientation":0,
+                                        "entries":[
+                                          {
+                                            "id":"2a953455-0c07-4377-9fa9-bb32f8614adb",
+                                            "kind":0,
+                                            "action-id":"36fd046f-2288-4ae0-bab1-392dce9940bd"
+                                          }
+                                        ],
+                                        "exits":[
+                                        ],
+                                        "region":[
+                                        ],
+                                        "transitions":[
+                                          {
+                                            "id":"782ad007-283e-457a-9d7b-d60095752a5f",
+                                            "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "source":{
+                                              "state":"ff59afa4-aaeb-4d1d-9909-3d96064755cb",
+                                              "side":"right",
+                                              "offset":20.0
+                                            },
+                                            "dest":{
+                                              "state":"ff59afa4-aaeb-4d1d-9909-3d96064755cb",
+                                              "side":"right",
+                                              "offset":70.0
+                                            },
+                                            "text-block":{
+                                              "x":410.0,
+                                              "y":100.0,
+                                              "w":100.0,
+                                              "h":30.0
+                                            },
+                                            "vertices":[
+                                              {
+                                                "x":440.0,
+                                                "y":160.0
+                                              },
+                                              {
+                                                "x":440.0,
+                                                "y":210.0
+                                              }
+                                            ],
+                                            "guards":[
+                                            ],
+                                            "actions":[
                                             ]
                                           }
                                         ]

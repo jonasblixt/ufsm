@@ -10,6 +10,8 @@ enum ufsmm_undo_op_kind {
     UFSMM_UNDO_MOVE_TRANSITION,
     UFSMM_UNDO_MOVE_VERTICE,
     UFSMM_UNDO_MOVE_COORDS,
+    UFSMM_UNDO_ADD_STATE,
+    UFSMM_UNDO_REORDER_GUARD,
 };
 
 struct ufsmm_undo_rename_state {
@@ -32,6 +34,12 @@ struct ufsmm_undo_resize_state {
     struct ufsmm_region *oparent_region, *nparent_region;
 };
 
+struct ufsmm_undo_reorder_guard {
+    struct ufsmm_transition *transition;
+    struct ufsmm_guard_ref *guard;
+    struct ufsmm_guard_ref *oprev, *onext, *nprev, *nnext;
+};
+
 struct ufsmm_undo_move_vertice {
     struct ufsmm_vertice *vertice;
     double nx, ny;
@@ -49,6 +57,10 @@ struct ufsmm_undo_move_transition {
     bool is_source;
     struct ufsmm_transition_state_ref old_ref;
     struct ufsmm_transition_state_ref new_ref;
+};
+
+struct ufsmm_undo_add_state {
+    struct ufsmm_state *state;
 };
 
 struct ufsmm_undo_op {
@@ -104,4 +116,12 @@ int ufsmm_undo_move_transition_source(struct ufsmm_undo_ops *ops,
 int ufsmm_undo_move_transition_dest(struct ufsmm_undo_ops *ops,
                                      struct ufsmm_transition *transition,
                                      struct ufsmm_transition_state_ref *old_ref);
+int ufsmm_undo_add_state(struct ufsmm_undo_ops *ops,
+                         struct ufsmm_state *state);
+
+int ufsmm_undo_reorder_guard(struct ufsmm_undo_ops *ops,
+                             struct ufsmm_transition *transition,
+                             struct ufsmm_guard_ref *guard,
+                             struct ufsmm_guard_ref *old_prev,
+                             struct ufsmm_guard_ref *old_next);
 #endif

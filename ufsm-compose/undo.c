@@ -130,6 +130,33 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
                 }
             }
             break;
+            case UFSMM_UNDO_ADD_STATE:
+            {
+                struct ufsmm_undo_add_state *add_op =
+                        (struct ufsmm_undo_add_state *) op->data;
+
+                TAILQ_REMOVE(&add_op->state->parent_region->states,
+                             add_op->state, tailq);
+            }
+            break;
+            case UFSMM_UNDO_REORDER_GUARD:
+            {
+                struct ufsmm_undo_reorder_guard *reorder_op =
+                        (struct ufsmm_undo_reorder_guard *) op->data;
+                if (reorder_op->oprev != NULL) {
+                    TAILQ_REMOVE(&reorder_op->transition->guards,
+                                 reorder_op->guard, tailq);
+                    TAILQ_INSERT_AFTER(&reorder_op->transition->guards,
+                                       reorder_op->oprev,
+                                       reorder_op->guard, tailq);
+                } else if (reorder_op->onext != NULL) {
+                    TAILQ_REMOVE(&reorder_op->transition->guards,
+                                 reorder_op->guard, tailq);
+                    TAILQ_INSERT_BEFORE(reorder_op->onext,
+                                       reorder_op->guard, tailq);
+                }
+            }
+            break;
         }
     }
 }
@@ -228,6 +255,33 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
                     move_op->transition->dest.state = move_op->new_ref.state;
                     move_op->transition->dest.offset = move_op->new_ref.offset;
                     move_op->transition->dest.side = move_op->new_ref.side;
+                }
+            }
+            break;
+            case UFSMM_UNDO_ADD_STATE:
+            {
+                struct ufsmm_undo_add_state *add_op =
+                        (struct ufsmm_undo_add_state *) op->data;
+
+                TAILQ_INSERT_TAIL(&add_op->state->parent_region->states,
+                             add_op->state, tailq);
+            }
+            break;
+            case UFSMM_UNDO_REORDER_GUARD:
+            {
+                struct ufsmm_undo_reorder_guard *reorder_op =
+                        (struct ufsmm_undo_reorder_guard *) op->data;
+                if (reorder_op->nprev != NULL) {
+                    TAILQ_REMOVE(&reorder_op->transition->guards,
+                                 reorder_op->guard, tailq);
+                    TAILQ_INSERT_AFTER(&reorder_op->transition->guards,
+                                       reorder_op->nprev,
+                                       reorder_op->guard, tailq);
+                } else if (reorder_op->nnext != NULL) {
+                    TAILQ_REMOVE(&reorder_op->transition->guards,
+                                 reorder_op->guard, tailq);
+                    TAILQ_INSERT_BEFORE(reorder_op->nnext,
+                                       reorder_op->guard, tailq);
                 }
             }
             break;
@@ -539,4 +593,75 @@ int ufsmm_undo_move_transition_dest(struct ufsmm_undo_ops *ops,
                                      struct ufsmm_transition_state_ref *old_ref)
 {
     return undo_move_transition(ops, transition, old_ref, false);
+}
+
+int ufsmm_undo_add_state(struct ufsmm_undo_ops *ops,
+                         struct ufsmm_state *state)
+{
+    int rc = 0;
+    struct ufsmm_undo_add_state *data = \
+                       malloc(sizeof(struct ufsmm_undo_add_state));
+
+    if (data == NULL)
+        return -1;
+
+    memset(data, 0, sizeof(*data));
+
+    struct ufsmm_undo_op *op = new_undo_op();
+
+    if (op == NULL) {
+        rc = -1;
+        goto err_free_data;
+    }
+
+    data->state = state;
+    op->data = data;
+    op->kind = UFSMM_UNDO_ADD_STATE;
+
+    TAILQ_INSERT_TAIL(ops, op, tailq);
+
+    return rc;
+err_free_data:
+    free(data);
+    return rc;
+}
+
+int ufsmm_undo_reorder_guard(struct ufsmm_undo_ops *ops,
+                             struct ufsmm_transition *transition,
+                             struct ufsmm_guard_ref *guard,
+                             struct ufsmm_guard_ref *old_prev,
+                             struct ufsmm_guard_ref *old_next)
+{
+    int rc = 0;
+    struct ufsmm_undo_reorder_guard *data = \
+                       malloc(sizeof(struct ufsmm_undo_reorder_guard));
+
+    if (data == NULL)
+        return -1;
+
+    memset(data, 0, sizeof(*data));
+
+    struct ufsmm_undo_op *op = new_undo_op();
+
+    if (op == NULL) {
+        rc = -1;
+        goto err_free_data;
+    }
+
+    data->transition = transition;
+    data->guard = guard;
+    data->oprev = old_prev;
+    data->onext = old_next;
+    data->nprev = TAILQ_PREV(guard, ufsmm_guard_refs, tailq);
+    data->nnext = TAILQ_NEXT(guard, tailq);
+
+    op->data = data;
+    op->kind = UFSMM_UNDO_REORDER_GUARD;
+
+    TAILQ_INSERT_TAIL(ops, op, tailq);
+
+    return rc;
+err_free_data:
+    free(data);
+    return rc;
 }

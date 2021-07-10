@@ -1686,6 +1686,53 @@ void canvas_reorder_exit_func(void *context)
     }
 }
 
+struct reorder_guard_op {
+    struct ufsmm_transition *transition;
+    struct ufsmm_guard_ref *guard, *prev, *next;
+};
+
+void canvas_reorder_guard_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *transition = priv->selected_transition;
+    struct ufsmm_guard_ref *guard = priv->selected_guard;
+
+    struct reorder_guard_op *op = malloc(sizeof(struct reorder_guard_op));
+
+    if (op == NULL) {
+        L_ERR("Could not allocate");
+        return;
+    }
+
+    memset(op, 0, sizeof(*op));
+    priv->command_data = (void *) op;
+    op->transition = transition;
+    op->guard = guard;
+    op->prev = TAILQ_PREV(guard, ufsmm_guard_refs, tailq);
+    op->next = TAILQ_NEXT(guard, tailq);
+}
+
+void canvas_reorder_guard_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *transition = priv->selected_transition;
+    struct ufsmm_guard_ref *guard = priv->selected_guard;
+    struct reorder_guard_op *op = (struct reorder_guard_op *) priv->command_data;
+
+    if ((op->prev != TAILQ_PREV(guard, ufsmm_guard_refs, tailq)) ||
+        (op->next != TAILQ_NEXT(guard, tailq))) {
+
+        struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+        ufsmm_undo_reorder_guard(undo_ops, op->transition,
+                                           op->guard,
+                                           op->prev,
+                                           op->next);
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    }
+
+    free(op);
+}
+
 void canvas_reorder_guard_func(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -1711,6 +1758,20 @@ void canvas_reorder_guard_func(void *context)
             priv->redraw = true;
         }
     }
+}
+
+void canvas_reorder_action_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *transition = priv->selected_transition;
+    struct ufsmm_action_ref *aref = priv->selected_aref;
+}
+
+void canvas_reorder_action_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *transition = priv->selected_transition;
+    struct ufsmm_action_ref *aref = priv->selected_aref;
 }
 
 void canvas_reorder_action_func(void *context)
@@ -2074,8 +2135,14 @@ void canvas_create_state_end(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct state_op *op = (struct state_op *) priv->command_data;
 
-    if (!op->commit)
+    if (!op->commit) {
         ufsmm_state_free(op->state);
+    } else {
+        struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+        ufsmm_undo_add_state(undo_ops, op->state);
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    }
+
     free(op);
     priv->preview_state = NULL;
     priv->redraw = true;
@@ -2379,8 +2446,14 @@ static void create_simple_state_end(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct sstate_op *op = (struct sstate_op *) priv->command_data;
 
-    if (!op->commit)
+    if (!op->commit) {
         ufsmm_state_free(op->state);
+    } else {
+        struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+        ufsmm_undo_add_state(undo_ops, op->state);
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    }
+
     free(op);
     priv->preview_state = NULL;
     priv->redraw = true;
@@ -2564,6 +2637,10 @@ static void create_fork_join_end(void *context)
 
     if (op->commit == false) {
         ufsmm_state_free(op->state);
+    } else {
+        struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+        ufsmm_undo_add_state(undo_ops, op->state);
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
     }
 
     free(priv->command_data);
