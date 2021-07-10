@@ -1618,6 +1618,22 @@ void canvas_resize_region_end(void *context)
 {
 }
 
+void canvas_move_text_block_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *t = priv->selected_transition;
+}
+
+void canvas_move_text_block_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *t = priv->selected_transition;
+
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    ufsmm_undo_move_coords(undo_ops, &t->text_block_coords);
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
+}
+
 void canvas_move_text_block(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -1917,6 +1933,19 @@ void canvas_reorder_exit_func(void *context)
     }
 }
 
+void canvas_resize_text_block_begin(void *context)
+{
+}
+
+void canvas_resize_text_block_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_transition *t = priv->selected_transition;
+
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    ufsmm_undo_move_coords(undo_ops, &t->text_block_coords);
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
+}
 
 void canvas_resize_textblock(void *context)
 {
@@ -2936,14 +2965,6 @@ int canvas_transition_tvertice_selected(void *context)
     return (priv->selected_transition_vertice == UFSMM_TRANSITION_VERTICE);
 }
 
-void canvas_move_text_block_begin(void *context)
-{
-}
-
-void canvas_move_text_block_end(void *context)
-{
-}
-
 void canvas_add_vertice(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -2965,14 +2986,6 @@ void canvas_add_vertice(void *context)
     }
 
     priv->redraw = true;
-}
-
-void canvas_resize_text_block_begin(void *context)
-{
-}
-
-void canvas_resize_text_block_end(void *context)
-{
 }
 
 struct mselect_op {
