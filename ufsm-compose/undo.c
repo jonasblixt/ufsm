@@ -71,6 +71,11 @@ struct ufsmm_undo_add_guard {
     struct ufsmm_guard_ref *guard;
 };
 
+struct ufsmm_undo_add_aref {
+    struct ufsmm_action_refs *list;
+    struct ufsmm_action_ref *aref;
+};
+
 static struct ufsmm_undo_op* new_undo_op(void)
 {
     struct ufsmm_undo_op *op = malloc(sizeof(struct ufsmm_undo_op));
@@ -233,6 +238,15 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
 
                 TAILQ_REMOVE(&add_op->transition->guards,
                              add_op->guard, tailq);
+            }
+            break;
+            case UFSMM_UNDO_ADD_AREF:
+            {
+                struct ufsmm_undo_add_aref *add_op =
+                        (struct ufsmm_undo_add_aref *) op->data;
+
+                TAILQ_REMOVE(add_op->list,
+                             add_op->aref, tailq);
             }
             break;
             case UFSMM_UNDO_REORDER_GUARD:
@@ -406,6 +420,15 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
 
                 TAILQ_INSERT_TAIL(&add_op->transition->guards,
                              add_op->guard, tailq);
+            }
+            break;
+            case UFSMM_UNDO_ADD_AREF:
+            {
+                struct ufsmm_undo_add_aref *add_op =
+                        (struct ufsmm_undo_add_aref *) op->data;
+
+                TAILQ_INSERT_TAIL(add_op->list,
+                                 add_op->aref, tailq);
             }
             break;
             case UFSMM_UNDO_REORDER_GUARD:
@@ -911,6 +934,39 @@ int ufsmm_undo_reorder_guard(struct ufsmm_undo_ops *ops,
 
     op->data = data;
     op->kind = UFSMM_UNDO_REORDER_GUARD;
+
+    TAILQ_INSERT_TAIL(ops, op, tailq);
+
+    return rc;
+err_free_data:
+    free(data);
+    return rc;
+}
+
+int ufsmm_undo_add_aref(struct ufsmm_undo_ops *ops,
+                         struct ufsmm_action_refs *list,
+                         struct ufsmm_action_ref *aref)
+{
+    int rc = 0;
+    struct ufsmm_undo_add_aref *data = \
+                       malloc(sizeof(struct ufsmm_undo_add_aref));
+
+    if (data == NULL)
+        return -1;
+
+    memset(data, 0, sizeof(*data));
+
+    struct ufsmm_undo_op *op = new_undo_op();
+
+    if (op == NULL) {
+        rc = -1;
+        goto err_free_data;
+    }
+
+    data->list = list;
+    data->aref = aref;
+    op->data = data;
+    op->kind = UFSMM_UNDO_ADD_AREF;
 
     TAILQ_INSERT_TAIL(ops, op, tailq);
 

@@ -2040,27 +2040,48 @@ void canvas_add_entry(void *context)
                                         priv->model,
                                         priv->selected_state);
 
-    struct ufsmm_region *r;
-    struct ufsmm_state *s;
-    struct ufsmm_transition *t;
-    struct ufsmm_vertice *v;
-    double y_off = 30;
+    if (rc == UFSMM_OK) {
+        struct ufsmm_region *r;
+        struct ufsmm_state *s;
+        struct ufsmm_transition *t;
+        struct ufsmm_vertice *v;
+        struct ufsmm_action_ref *aref;
+        double y_off = 30;
+        struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
 
-    L_DEBUG("Add entry on state %s %i %f", priv->selected_state->name, rc, y_off);
-    /* Update possible children */
-    TAILQ_FOREACH(r, &priv->selected_state->regions, tailq) {
-        if (r->off_page == false) {
-            TAILQ_FOREACH(s, &r->states, tailq) {
-                s->y += y_off;
-                TAILQ_FOREACH(t, &s->transitions, tailq) {
-                    TAILQ_FOREACH(v,  &t->vertices, tailq) {
-                        v->y += y_off;
+        L_DEBUG("Add entry on state %s %i %f", priv->selected_state->name, rc, y_off);
+        /* Update possible children */
+        TAILQ_FOREACH(r, &priv->selected_state->regions, tailq) {
+            if (r->off_page == false) {
+                TAILQ_FOREACH(s, &r->states, tailq) {
+                    s->tx = s->x;
+                    s->ty = s->y;
+                    s->tw = s->w;
+                    s->th = s->h;
+                    s->tparent_region = s->parent_region;
+                    s->y += y_off;
+                    ufsmm_undo_resize_state(undo_ops, s);
+                    TAILQ_FOREACH(t, &s->transitions, tailq) {
+                        TAILQ_FOREACH(v,  &t->vertices, tailq) {
+                            v->tx = v->x;
+                            v->ty = v->y;
+                            v->y += y_off;
+                            ufsmm_undo_move_vertice(undo_ops, v);
+                        }
                     }
                 }
             }
         }
+
+        aref = TAILQ_LAST(&priv->selected_state->entries,
+                              ufsmm_action_refs);
+
+        ufsmm_undo_add_aref(undo_ops, &priv->selected_state->entries, aref);
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
+
+        priv->redraw = true;
     }
-    priv->redraw = true;
+
 }
 
 void canvas_add_exit(void *context)
@@ -2070,28 +2091,48 @@ void canvas_add_exit(void *context)
     rc = ufsm_add_exit_action_dialog(GTK_WINDOW(priv->root_window),
                                         priv->model,
                                         priv->selected_state);
-    L_DEBUG("Add exit on state %s %i", priv->selected_state->name, rc);
+    if (rc == UFSMM_OK) {
+        L_DEBUG("Add exit on state %s %i", priv->selected_state->name, rc);
 
-    struct ufsmm_region *r;
-    struct ufsmm_state *s;
-    struct ufsmm_transition *t;
-    struct ufsmm_vertice *v;
-    double y_off = 30;
+        struct ufsmm_region *r;
+        struct ufsmm_state *s;
+        struct ufsmm_transition *t;
+        struct ufsmm_vertice *v;
+        struct ufsmm_action_ref *aref;
+        double y_off = 30;
+        struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
 
-    /* Update possible children */
-    TAILQ_FOREACH(r, &priv->selected_state->regions, tailq) {
-        if (r->off_page == false) {
-            TAILQ_FOREACH(s, &r->states, tailq) {
-                s->y += y_off;
-                TAILQ_FOREACH(t, &s->transitions, tailq) {
-                    TAILQ_FOREACH(v,  &t->vertices, tailq) {
-                        v->y += y_off;
+        /* Update possible children */
+        TAILQ_FOREACH(r, &priv->selected_state->regions, tailq) {
+            if (r->off_page == false) {
+                TAILQ_FOREACH(s, &r->states, tailq) {
+                    s->tx = s->x;
+                    s->ty = s->y;
+                    s->tw = s->w;
+                    s->th = s->h;
+                    s->tparent_region = s->parent_region;
+                    s->y += y_off;
+                    ufsmm_undo_resize_state(undo_ops, s);
+                    TAILQ_FOREACH(t, &s->transitions, tailq) {
+                        TAILQ_FOREACH(v,  &t->vertices, tailq) {
+                            v->tx = v->x;
+                            v->ty = v->y;
+                            v->y += y_off;
+                            ufsmm_undo_move_vertice(undo_ops, v);
+                        }
                     }
                 }
             }
         }
+
+        aref = TAILQ_LAST(&priv->selected_state->exits,
+                              ufsmm_action_refs);
+
+        ufsmm_undo_add_aref(undo_ops, &priv->selected_state->exits, aref);
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
+
+        priv->redraw = true;
     }
-    priv->redraw = true;
 }
 
 void canvas_edit_state_name(void *context)
@@ -2423,10 +2464,21 @@ void canvas_set_transition_trigger(void *context)
 void canvas_add_transition_action(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_action_ref *aref;
+    int rc;
 
-    ufsm_add_transition_action_dialog(GTK_WINDOW(priv->root_window),
+    rc = ufsm_add_transition_action_dialog(GTK_WINDOW(priv->root_window),
                                             priv->model,
                                             priv->selected_transition);
+
+    if (rc == UFSMM_OK) {
+        aref = TAILQ_LAST(&priv->selected_transition->actions,
+                              ufsmm_action_refs);
+
+        struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+        ufsmm_undo_add_aref(undo_ops, &priv->selected_transition->actions, aref);
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    }
 }
 
 /* ADD: Transition */
