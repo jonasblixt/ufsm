@@ -21,6 +21,7 @@ enum ufsmm_undo_op_kind {
     UFSMM_UNDO_REORDER_AREF,
     UFSMM_UNDO_DELETE_GUARD,
     UFSMM_UNDO_DELETE_AREF,
+    UFSMM_UNDO_DELETE_TRANSITION,
 };
 
 struct ufsmm_undo_op {
@@ -124,4 +125,7 @@ int ufsmm_undo_delete_guard(struct ufsmm_undo_ops *ops,
 int ufsmm_undo_delete_aref(struct ufsmm_undo_ops *ops,
                              struct ufsmm_action_refs *list,
                              struct ufsmm_action_ref *action);
+
+int ufsmm_undo_delete_transition(struct ufsmm_undo_ops *ops,
+                                 struct ufsmm_transition *transition);
 #endif

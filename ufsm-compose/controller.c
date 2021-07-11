@@ -2248,7 +2248,11 @@ void canvas_delete_transition(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
-    ufsmm_state_delete_transition(t);
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    ufsmm_undo_delete_transition(undo_ops, t);
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    TAILQ_REMOVE(&t->source.state->transitions, t, tailq);
+    //ufsmm_state_delete_transition(t);
     priv->selection = UFSMM_SELECTION_NONE;
     priv->redraw = true;
 }
@@ -2301,6 +2305,7 @@ void canvas_delete_entry(void *context)
     }
 
     ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    priv->selection = UFSMM_SELECTION_NONE;
     priv->redraw = true;
 }
 
@@ -2351,6 +2356,7 @@ void canvas_delete_exit(void *context)
         }
     }
     ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    priv->selection = UFSMM_SELECTION_NONE;
     priv->redraw = true;
 }
 

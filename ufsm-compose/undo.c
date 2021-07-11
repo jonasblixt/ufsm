@@ -96,6 +96,10 @@ struct ufsmm_undo_delete_aref {
     struct ufsmm_action_ref *aref, *next, *prev;
 };
 
+struct ufsmm_undo_delete_transition {
+    struct ufsmm_transition *transition;
+};
+
 static struct ufsmm_undo_op* new_undo_op(void)
 {
     struct ufsmm_undo_op *op = malloc(sizeof(struct ufsmm_undo_op));
@@ -370,6 +374,15 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
                 }
             }
             break;
+            case UFSMM_UNDO_DELETE_TRANSITION:
+            {
+                struct ufsmm_undo_delete_transition *delete_op = \
+                     (struct ufsmm_undo_delete_transition *) op->data;
+                TAILQ_INSERT_TAIL(&delete_op->transition->source.state->transitions,
+                                  delete_op->transition, tailq);
+
+            }
+            break;
         }
     }
 }
@@ -593,6 +606,15 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
                              delete_op->aref, tailq);
             }
             break;
+            case UFSMM_UNDO_DELETE_TRANSITION:
+            {
+                struct ufsmm_undo_delete_transition *delete_op = \
+                     (struct ufsmm_undo_delete_transition *) op->data;
+                TAILQ_REMOVE(&delete_op->transition->source.state->transitions,
+                                  delete_op->transition, tailq);
+
+            }
+            break;
         }
     }
 }
@@ -644,11 +666,22 @@ int ufsmm_undo_free_ops(struct ufsmm_undo_context *undo,
         } else if (item->kind == UFSMM_UNDO_DELETE_GUARD) {
             struct ufsmm_undo_delete_guard *delete_op = \
                    (struct ufsmm_undo_delete_guard *) item->data;
-            free(delete_op->guard);
+            //free(delete_op->guard);
         } else if (item->kind == UFSMM_UNDO_DELETE_AREF) {
             struct ufsmm_undo_delete_aref *delete_op = \
                    (struct ufsmm_undo_delete_aref *) item->data;
-            free(delete_op->aref);
+            //free(delete_op->aref);
+        } else if (item->kind == UFSMM_UNDO_DELETE_TRANSITION) {
+            struct ufsmm_undo_delete_transition *delete_op = \
+                   (struct ufsmm_undo_delete_transition *) item->data;
+            /* If this is in the redo stack and the redo stack is
+             *  flushed because new things are added to the undo
+             *  stack, it will remove/unallocate stuff in the model
+             *  that should not be removed/unallocated.
+             *  It's not a problem with the 'delete' actions because
+             *  those objects will be unallocated when the model
+             *  is free'd */
+            //ufsmm_state_delete_transition(delete_op->transition);
         }
         free(item->data);
         free(item);
@@ -1283,6 +1316,37 @@ int ufsmm_undo_delete_aref(struct ufsmm_undo_ops *ops,
 
     op->data = data;
     op->kind = UFSMM_UNDO_DELETE_AREF;
+
+    TAILQ_INSERT_TAIL(ops, op, tailq);
+
+    return rc;
+err_free_data:
+    free(data);
+    return rc;
+}
+
+int ufsmm_undo_delete_transition(struct ufsmm_undo_ops *ops,
+                                 struct ufsmm_transition *transition)
+{
+    int rc = 0;
+    struct ufsmm_undo_delete_transition *data = \
+                       malloc(sizeof(struct ufsmm_undo_delete_transition));
+
+    if (data == NULL)
+        return -1;
+
+    memset(data, 0, sizeof(*data));
+
+    struct ufsmm_undo_op *op = new_undo_op();
+
+    if (op == NULL) {
+        rc = -1;
+        goto err_free_data;
+    }
+
+    data->transition = transition;
+    op->data = data;
+    op->kind = UFSMM_UNDO_DELETE_TRANSITION;
 
     TAILQ_INSERT_TAIL(ops, op, tailq);
 
