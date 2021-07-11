@@ -91,6 +91,11 @@ struct ufsmm_undo_delete_guard {
     struct ufsmm_guard_ref *guard, *next, *prev;
 };
 
+struct ufsmm_undo_delete_aref {
+    struct ufsmm_action_refs *list;
+    struct ufsmm_action_ref *aref, *next, *prev;
+};
+
 static struct ufsmm_undo_op* new_undo_op(void)
 {
     struct ufsmm_undo_op *op = malloc(sizeof(struct ufsmm_undo_op));
@@ -348,6 +353,23 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
                 }
             }
             break;
+            case UFSMM_UNDO_DELETE_AREF:
+            {
+                struct ufsmm_undo_delete_aref *delete_op =
+                        (struct ufsmm_undo_delete_aref *) op->data;
+                if (delete_op->prev != NULL) {
+                    TAILQ_INSERT_AFTER(delete_op->list,
+                                       delete_op->prev,
+                                       delete_op->aref, tailq);
+                } else if (delete_op->next != NULL) {
+                    TAILQ_INSERT_BEFORE(delete_op->next,
+                                       delete_op->aref, tailq);
+                } else {
+                    TAILQ_INSERT_TAIL(delete_op->list,
+                                      delete_op->aref, tailq);
+                }
+            }
+            break;
         }
     }
 }
@@ -563,6 +585,14 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
                              delete_op->guard, tailq);
             }
             break;
+            case UFSMM_UNDO_DELETE_AREF:
+            {
+                struct ufsmm_undo_delete_aref *delete_op =
+                        (struct ufsmm_undo_delete_aref *) op->data;
+                TAILQ_REMOVE(delete_op->list,
+                             delete_op->aref, tailq);
+            }
+            break;
         }
     }
 }
@@ -615,6 +645,10 @@ int ufsmm_undo_free_ops(struct ufsmm_undo_context *undo,
             struct ufsmm_undo_delete_guard *delete_op = \
                    (struct ufsmm_undo_delete_guard *) item->data;
             free(delete_op->guard);
+        } else if (item->kind == UFSMM_UNDO_DELETE_AREF) {
+            struct ufsmm_undo_delete_aref *delete_op = \
+                   (struct ufsmm_undo_delete_aref *) item->data;
+            free(delete_op->aref);
         }
         free(item->data);
         free(item);
@@ -1213,6 +1247,42 @@ int ufsmm_undo_delete_guard(struct ufsmm_undo_ops *ops,
 
     op->data = data;
     op->kind = UFSMM_UNDO_DELETE_GUARD;
+
+    TAILQ_INSERT_TAIL(ops, op, tailq);
+
+    return rc;
+err_free_data:
+    free(data);
+    return rc;
+}
+
+int ufsmm_undo_delete_aref(struct ufsmm_undo_ops *ops,
+                             struct ufsmm_action_refs *list,
+                             struct ufsmm_action_ref *action)
+{
+    int rc = 0;
+    struct ufsmm_undo_delete_aref *data = \
+                       malloc(sizeof(struct ufsmm_undo_delete_aref));
+
+    if (data == NULL)
+        return -1;
+
+    memset(data, 0, sizeof(*data));
+
+    struct ufsmm_undo_op *op = new_undo_op();
+
+    if (op == NULL) {
+        rc = -1;
+        goto err_free_data;
+    }
+
+    data->list = list;
+    data->aref = action;
+    data->prev = TAILQ_PREV(action, ufsmm_action_refs, tailq);
+    data->next = TAILQ_NEXT(action, tailq);
+
+    op->data = data;
+    op->kind = UFSMM_UNDO_DELETE_AREF;
 
     TAILQ_INSERT_TAIL(ops, op, tailq);
 

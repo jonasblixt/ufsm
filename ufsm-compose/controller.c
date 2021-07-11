@@ -2234,8 +2234,12 @@ void canvas_delete_guard(void *context)
 void canvas_delete_action(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    ufsmm_transition_delete_action(priv->selected_transition,
-                                   priv->selected_aref->id);
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    ufsmm_undo_delete_aref(undo_ops, &priv->selected_transition->actions,
+                                     priv->selected_aref);
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    TAILQ_REMOVE(&priv->selected_transition->actions,
+                 priv->selected_aref, tailq);
     priv->redraw = true;
     priv->selection = UFSMM_SELECTION_NONE;
 }
@@ -2256,7 +2260,11 @@ void canvas_delete_entry(void *context)
     struct ufsmm_action_ref *ar = priv->selected_aref;
     L_DEBUG("Deleting entry");
 
-    ufsmm_state_delete_entry(s, ar->id);
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    ufsmm_undo_delete_aref(undo_ops, &s->entries, ar);
+    TAILQ_REMOVE(&s->entries, ar, tailq);
+
+    //ufsmm_state_delete_entry(s, ar->id);
 
     struct ufsmm_region *r;
     struct ufsmm_transition *t;
@@ -2267,15 +2275,32 @@ void canvas_delete_entry(void *context)
     TAILQ_FOREACH(r, &priv->selected_state->regions, tailq) {
         if (r->off_page == false) {
             TAILQ_FOREACH(s, &r->states, tailq) {
+                s->tx = s->x;
+                s->ty = s->y;
+                s->tw = s->w;
+                s->th = s->h;
+                s->tparent_region = s->parent_region;
                 s->y += y_off;
+                ufsmm_undo_resize_state(undo_ops, s);
                 TAILQ_FOREACH(t, &s->transitions, tailq) {
+                    t->text_block_coords.tx = t->text_block_coords.x;
+                    t->text_block_coords.ty = t->text_block_coords.y;
+                    t->text_block_coords.tw = t->text_block_coords.w;
+                    t->text_block_coords.th = t->text_block_coords.h;
+                    t->text_block_coords.y += y_off;
+                    ufsmm_undo_move_coords(undo_ops, &t->text_block_coords);
                     TAILQ_FOREACH(v,  &t->vertices, tailq) {
+                        v->tx = v->x;
+                        v->ty = v->y;
                         v->y += y_off;
+                        ufsmm_undo_move_vertice(undo_ops, v);
                     }
                 }
             }
         }
     }
+
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
     priv->redraw = true;
 }
 
@@ -2287,7 +2312,10 @@ void canvas_delete_exit(void *context)
 
     L_DEBUG("Deleting exit");
 
-    ufsmm_state_delete_exit(s, ar->id);
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    ufsmm_undo_delete_aref(undo_ops, &s->exits, ar);
+    TAILQ_REMOVE(&s->exits, ar, tailq);
+    //ufsmm_state_delete_exit(s, ar->id);
 
     struct ufsmm_region *r;
     struct ufsmm_transition *t;
@@ -2298,15 +2326,31 @@ void canvas_delete_exit(void *context)
     TAILQ_FOREACH(r, &priv->selected_state->regions, tailq) {
         if (r->off_page == false) {
             TAILQ_FOREACH(s, &r->states, tailq) {
+                s->tx = s->x;
+                s->ty = s->y;
+                s->tw = s->w;
+                s->th = s->h;
+                s->tparent_region = s->parent_region;
                 s->y += y_off;
+                ufsmm_undo_resize_state(undo_ops, s);
                 TAILQ_FOREACH(t, &s->transitions, tailq) {
+                    t->text_block_coords.tx = t->text_block_coords.x;
+                    t->text_block_coords.ty = t->text_block_coords.y;
+                    t->text_block_coords.tw = t->text_block_coords.w;
+                    t->text_block_coords.th = t->text_block_coords.h;
+                    t->text_block_coords.y += y_off;
+                    ufsmm_undo_move_coords(undo_ops, &t->text_block_coords);
                     TAILQ_FOREACH(v,  &t->vertices, tailq) {
+                        v->tx = v->x;
+                        v->ty = v->y;
                         v->y += y_off;
+                        ufsmm_undo_move_vertice(undo_ops, v);
                     }
                 }
             }
         }
     }
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
     priv->redraw = true;
 }
 
