@@ -1616,6 +1616,10 @@ void canvas_mselect_delete(void *context)
 
 void canvas_resize_region_end(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    ufsmm_undo_resize_region(undo_ops, priv->selected_region);
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
 }
 
 void canvas_move_text_block_begin(void *context)

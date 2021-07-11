@@ -23,6 +23,11 @@ struct ufsmm_undo_resize_state {
     struct ufsmm_region *oparent_region, *nparent_region;
 };
 
+struct ufsmm_undo_resize_region {
+    struct ufsmm_region *region;
+    double oh, nh;
+};
+
 struct ufsmm_undo_reorder_guard {
     struct ufsmm_transition *transition;
     struct ufsmm_guard_ref *guard;
@@ -167,6 +172,13 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
                                       tailq);
                     resize_op->state->parent_region = resize_op->oparent_region;
                 }
+            }
+            break;
+            case UFSMM_UNDO_RESIZE_REGION:
+            {
+                struct ufsmm_undo_resize_region *resize_op =
+                        (struct ufsmm_undo_resize_region *) op->data;
+                resize_op->region->h = resize_op->oh;
             }
             break;
             case UFSMM_UNDO_MOVE_VERTICE:
@@ -358,6 +370,13 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
                                       tailq);
                     resize_op->state->parent_region = resize_op->nparent_region;
                 }
+            }
+            break;
+            case UFSMM_UNDO_RESIZE_REGION:
+            {
+                struct ufsmm_undo_resize_region *resize_op =
+                        (struct ufsmm_undo_resize_region *) op->data;
+                resize_op->region->h = resize_op->nh;
             }
             break;
             case UFSMM_UNDO_MOVE_VERTICE:
@@ -661,6 +680,39 @@ int ufsmm_undo_resize_state(struct ufsmm_undo_ops *ops,
     data->oparent_region = state->tparent_region;
     op->data = data;
     op->kind = UFSMM_UNDO_RESIZE_STATE;
+
+    TAILQ_INSERT_TAIL(ops, op, tailq);
+
+    return rc;
+err_free_data:
+    free(data);
+    return rc;
+}
+
+int ufsmm_undo_resize_region(struct ufsmm_undo_ops *ops,
+                            struct ufsmm_region *region)
+{
+    int rc = 0;
+    struct ufsmm_undo_resize_region *data = \
+                       malloc(sizeof(struct ufsmm_undo_resize_region));
+
+    if (data == NULL)
+        return -1;
+
+    memset(data, 0, sizeof(*data));
+
+    struct ufsmm_undo_op *op = new_undo_op();
+
+    if (op == NULL) {
+        rc = -1;
+        goto err_free_data;
+    }
+
+    data->region = region;
+    data->nh = region->h;
+    data->oh = region->th;
+    op->data = data;
+    op->kind = UFSMM_UNDO_RESIZE_REGION;
 
     TAILQ_INSERT_TAIL(ops, op, tailq);
 

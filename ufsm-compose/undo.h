@@ -7,6 +7,7 @@ enum ufsmm_undo_op_kind {
     UFSMM_UNDO_RENAME_STATE,
     UFSMM_UNDO_RENAME_REGION,
     UFSMM_UNDO_RESIZE_STATE,
+    UFSMM_UNDO_RESIZE_REGION,
     UFSMM_UNDO_MOVE_TRANSITION,
     UFSMM_UNDO_MOVE_VERTICE,
     UFSMM_UNDO_MOVE_COORDS,
@@ -63,6 +64,10 @@ int ufsmm_undo_rename_region(struct ufsmm_undo_ops *ops,
 
 int ufsmm_undo_resize_state(struct ufsmm_undo_ops *ops,
                             struct ufsmm_state *state);
+
+int ufsmm_undo_resize_region(struct ufsmm_undo_ops *ops,
+                            struct ufsmm_region *region);
+
 int ufsmm_undo_move_vertice(struct ufsmm_undo_ops *ops,
                             struct ufsmm_vertice *v);
 int ufsmm_undo_move_coords(struct ufsmm_undo_ops *ops,
