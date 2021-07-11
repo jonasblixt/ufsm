@@ -3256,6 +3256,8 @@ static void mselect_add_transition(struct transition_refs *list,
 
     t->text_block_coords.tx = t->text_block_coords.x;
     t->text_block_coords.ty = t->text_block_coords.y;
+    t->text_block_coords.tw = t->text_block_coords.w;
+    t->text_block_coords.th = t->text_block_coords.h;
     TAILQ_FOREACH(v,  &t->vertices, tailq) {
         v->tx = v->x;
         v->ty = v->y;
@@ -3275,6 +3277,9 @@ static void mselect_add_state(struct mselect_states *list,
     ms->state = state;
     state->tx = state->x;
     state->ty = state->y;
+    state->tw = state->w;
+    state->th = state->h;
+    state->tparent_region = state->parent_region;
     TAILQ_INSERT_TAIL(list, ms, tailq);
 
     /* Add possible children of this state */
@@ -3394,8 +3399,10 @@ void canvas_toggle_theme(void *context)
 void canvas_mselect_move_end(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
     struct mselect_move_op *op = (struct mselect_move_op *) priv->command_data;
     struct mselect_state *ms;
+    struct ufsmm_vertice *v;
     struct transition_ref *mt;
     struct ufsmm_region *r;
     int rc;
@@ -3418,6 +3425,7 @@ void canvas_mselect_move_end(void *context)
                 ufsmm_state_move_to_region(priv->model, s, r);
             }
         }
+        ufsmm_undo_resize_state(undo_ops, s);
         free(ms);
     }
 
@@ -3425,11 +3433,16 @@ void canvas_mselect_move_end(void *context)
         TAILQ_REMOVE(&op->transitions, mt, tailq);
         L_DEBUG("Moved transition '%s->%s'", mt->transition->source.state->name,
                                              mt->transition->dest.state->name);
+        ufsmm_undo_move_coords(undo_ops, &mt->transition->text_block_coords);
+        TAILQ_FOREACH(v,  &mt->transition->vertices, tailq) {
+            ufsmm_undo_move_vertice(undo_ops, v);
+        }
         free(mt);
     }
 
     free(op);
     priv->command_data = NULL;
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
 }
 
 void canvas_mselect_move(void *context)
