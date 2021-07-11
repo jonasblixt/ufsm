@@ -15,6 +15,7 @@ enum ufsmm_undo_op_kind {
     UFSMM_UNDO_ADD_TRANSITION,
     UFSMM_UNDO_ADD_GUARD,
     UFSMM_UNDO_ADD_AREF,
+    UFSMM_UNDO_ADD_VERTICE,
     UFSMM_UNDO_REORDER_GUARD,
     UFSMM_UNDO_REORDER_AREF,
 };
@@ -90,6 +91,12 @@ int ufsmm_undo_add_aref(struct ufsmm_undo_ops *ops,
 
 int ufsmm_undo_add_transition(struct ufsmm_undo_ops *ops,
                                  struct ufsmm_transition *transition);
+
+int ufsmm_undo_add_vertice(struct ufsmm_undo_ops *ops,
+                         struct ufsmm_transition *transition,
+                         struct ufsmm_vertice *vertice,
+                         struct ufsmm_vertice *prev,
+                         struct ufsmm_vertice *next);
 
 int ufsmm_undo_reorder_guard(struct ufsmm_undo_ops *ops,
                              struct ufsmm_transition *transition,

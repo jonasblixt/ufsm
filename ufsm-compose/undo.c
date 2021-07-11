@@ -76,6 +76,11 @@ struct ufsmm_undo_add_aref {
     struct ufsmm_action_ref *aref;
 };
 
+struct ufsmm_undo_add_vertice {
+    struct ufsmm_transition *transition;
+    struct ufsmm_vertice *vertice, *prev, *next;
+};
+
 static struct ufsmm_undo_op* new_undo_op(void)
 {
     struct ufsmm_undo_op *op = malloc(sizeof(struct ufsmm_undo_op));
@@ -247,6 +252,15 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
 
                 TAILQ_REMOVE(add_op->list,
                              add_op->aref, tailq);
+            }
+            break;
+            case UFSMM_UNDO_ADD_VERTICE:
+            {
+                struct ufsmm_undo_add_vertice *add_op =
+                        (struct ufsmm_undo_add_vertice *) op->data;
+
+                TAILQ_REMOVE(&add_op->transition->vertices,
+                             add_op->vertice, tailq);
             }
             break;
             case UFSMM_UNDO_REORDER_GUARD:
@@ -429,6 +443,24 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
 
                 TAILQ_INSERT_TAIL(add_op->list,
                                  add_op->aref, tailq);
+            }
+            break;
+            case UFSMM_UNDO_ADD_VERTICE:
+            {
+                struct ufsmm_undo_add_vertice *add_op =
+                        (struct ufsmm_undo_add_vertice *) op->data;
+
+                if (add_op->prev) {
+                    TAILQ_INSERT_AFTER(&add_op->transition->vertices,
+                                       add_op->prev,
+                                       add_op->vertice, tailq);
+                } else if (add_op->next) {
+                    TAILQ_INSERT_BEFORE(add_op->next,
+                                       add_op->vertice, tailq);
+                } else {
+                    TAILQ_INSERT_TAIL(&add_op->transition->vertices,
+                                      add_op->vertice, tailq);
+                }
             }
             break;
             case UFSMM_UNDO_REORDER_GUARD:
@@ -967,6 +999,43 @@ int ufsmm_undo_add_aref(struct ufsmm_undo_ops *ops,
     data->aref = aref;
     op->data = data;
     op->kind = UFSMM_UNDO_ADD_AREF;
+
+    TAILQ_INSERT_TAIL(ops, op, tailq);
+
+    return rc;
+err_free_data:
+    free(data);
+    return rc;
+}
+
+int ufsmm_undo_add_vertice(struct ufsmm_undo_ops *ops,
+                         struct ufsmm_transition *transition,
+                         struct ufsmm_vertice *vertice,
+                         struct ufsmm_vertice *prev,
+                         struct ufsmm_vertice *next)
+{
+    int rc = 0;
+    struct ufsmm_undo_add_vertice *data = \
+                       malloc(sizeof(struct ufsmm_undo_add_vertice));
+
+    if (data == NULL)
+        return -1;
+
+    memset(data, 0, sizeof(*data));
+
+    struct ufsmm_undo_op *op = new_undo_op();
+
+    if (op == NULL) {
+        rc = -1;
+        goto err_free_data;
+    }
+
+    data->transition = transition;
+    data->vertice = vertice;
+    data->prev = prev;
+    data->next = next;
+    op->data = data;
+    op->kind = UFSMM_UNDO_ADD_VERTICE;
 
     TAILQ_INSERT_TAIL(ops, op, tailq);
 

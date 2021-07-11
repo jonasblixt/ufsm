@@ -3040,21 +3040,65 @@ void canvas_add_vertice(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
-    struct ufsmm_vertice *v;
+    struct ufsmm_vertice *v, *v_new, *vn;
     double x, y, w, h;
+    double sx, sy, ex, ey;
+    double min_dist = 10000;
 
-    v = malloc(sizeof(*v));
-    memset(v, 0, sizeof(*v));
+    transition_calc_begin_end_point(t->source.state,
+                                    t->source.side,
+                                    t->source.offset,
+                                    &sx, &sy);
 
-    v->x = ufsmm_canvas_nearest_grid_point(priv->px - priv->current_region->ox);
-    v->y = ufsmm_canvas_nearest_grid_point(priv->py - priv->current_region->oy);
+    transition_calc_begin_end_point(t->dest.state,
+                                    t->dest.side,
+                                    t->dest.offset,
+                                    &ex, &ey);
 
-    if (TAILQ_FIRST(&t->vertices)) {
-        TAILQ_INSERT_TAIL(&t->vertices, v, tailq);
+    v_new = malloc(sizeof(*v_new));
+    memset(v_new, 0, sizeof(*v_new));
+
+    v_new->x = ufsmm_canvas_nearest_grid_point(priv->px - priv->current_region->ox);
+    v_new->y = ufsmm_canvas_nearest_grid_point(priv->py - priv->current_region->oy);
+
+    /* TODO: Locate where the new vertice should be inserted */
+    vn = TAILQ_FIRST(&t->vertices);
+
+    if (vn) {
+        TAILQ_FOREACH(v, &t->vertices, tailq) {
+            double d = distance_point_to_seg(priv->px - priv->current_region->ox,
+                                             priv->py - priv->current_region->oy,
+                                             sx, sy,
+                                             v->x, v->y);
+            if (d < min_dist) {
+                vn = v;
+                min_dist = d;
+            }
+            sx = v->x;
+            sy = v->y;
+        }
+
+        v = TAILQ_LAST(&t->vertices, ufsmm_vertices);
+        /* Check distance between start and first vertice */
+        double d = distance_point_to_seg(priv->px - priv->current_region->ox,
+                                         priv->py - priv->current_region->oy,
+                                         ex, ey,
+                                         v->x, v->y);
+        if (d < min_dist) {
+            TAILQ_INSERT_AFTER(&t->vertices, v, v_new, tailq);
+        } else {
+            TAILQ_INSERT_BEFORE(vn, v_new, tailq);
+        }
     } else {
         /* Had no vertices */
-        TAILQ_INSERT_TAIL(&t->vertices, v, tailq);
+        TAILQ_INSERT_TAIL(&t->vertices, v_new, tailq);
     }
+
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    ufsmm_undo_add_vertice(undo_ops, t, v_new,
+                            TAILQ_PREV(v_new, ufsmm_vertices, tailq),
+                            TAILQ_NEXT(v_new, tailq));
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
 
     priv->redraw = true;
 }
