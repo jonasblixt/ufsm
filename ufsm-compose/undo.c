@@ -86,6 +86,11 @@ struct ufsmm_undo_add_vertice {
     struct ufsmm_vertice *vertice, *prev, *next;
 };
 
+struct ufsmm_undo_delete_guard {
+    struct ufsmm_transition *transition;
+    struct ufsmm_guard_ref *guard, *next, *prev;
+};
+
 static struct ufsmm_undo_op* new_undo_op(void)
 {
     struct ufsmm_undo_op *op = malloc(sizeof(struct ufsmm_undo_op));
@@ -114,6 +119,21 @@ struct ufsmm_undo_context *ufsmm_undo_init(struct ufsmm_model *model)
 
 void ufsmm_undo_free(struct ufsmm_undo_context *undo)
 {
+    L_DEBUG("Freeing undo/redo stacks");
+    /* Clear undo stack */
+    struct ufsmm_undo_ops_ref *item;
+    while (item = TAILQ_FIRST(&undo->undo_stack)) {
+        TAILQ_REMOVE(&undo->undo_stack, item, tailq);
+        ufsmm_undo_free_ops(undo, item->ops);
+        free(item);
+    }
+
+    /* Clear redo stack */
+    while (item = TAILQ_FIRST(&undo->redo_stack)) {
+        TAILQ_REMOVE(&undo->redo_stack, item, tailq);
+        ufsmm_undo_free_ops(undo, item->ops);
+        free(item);
+    }
     free(undo);
 }
 
@@ -308,6 +328,23 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
                                  reorder_op->aref, tailq);
                     TAILQ_INSERT_BEFORE(reorder_op->onext,
                                        reorder_op->aref, tailq);
+                }
+            }
+            break;
+            case UFSMM_UNDO_DELETE_GUARD:
+            {
+                struct ufsmm_undo_delete_guard *delete_op =
+                        (struct ufsmm_undo_delete_guard *) op->data;
+                if (delete_op->prev != NULL) {
+                    TAILQ_INSERT_AFTER(&delete_op->transition->guards,
+                                       delete_op->prev,
+                                       delete_op->guard, tailq);
+                } else if (delete_op->next != NULL) {
+                    TAILQ_INSERT_BEFORE(delete_op->next,
+                                       delete_op->guard, tailq);
+                } else {
+                    TAILQ_INSERT_TAIL(&delete_op->transition->guards,
+                                      delete_op->guard, tailq);
                 }
             }
             break;
@@ -518,6 +555,14 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
                 }
             }
             break;
+            case UFSMM_UNDO_DELETE_GUARD:
+            {
+                struct ufsmm_undo_delete_guard *delete_op =
+                        (struct ufsmm_undo_delete_guard *) op->data;
+                TAILQ_REMOVE(&delete_op->transition->guards,
+                             delete_op->guard, tailq);
+            }
+            break;
         }
     }
 }
@@ -566,6 +611,10 @@ int ufsmm_undo_free_ops(struct ufsmm_undo_context *undo,
                    (struct ufsmm_undo_rename_state *) item->data;
             free((void *) rename_op->new_name);
             free((void *) rename_op->old_name);
+        } else if (item->kind == UFSMM_UNDO_DELETE_GUARD) {
+            struct ufsmm_undo_delete_guard *delete_op = \
+                   (struct ufsmm_undo_delete_guard *) item->data;
+            free(delete_op->guard);
         }
         free(item->data);
         free(item);
@@ -1128,6 +1177,42 @@ int ufsmm_undo_reorder_aref(struct ufsmm_undo_ops *ops,
 
     op->data = data;
     op->kind = UFSMM_UNDO_REORDER_AREF;
+
+    TAILQ_INSERT_TAIL(ops, op, tailq);
+
+    return rc;
+err_free_data:
+    free(data);
+    return rc;
+}
+
+int ufsmm_undo_delete_guard(struct ufsmm_undo_ops *ops,
+                             struct ufsmm_transition *transition,
+                             struct ufsmm_guard_ref *guard)
+{
+    int rc = 0;
+    struct ufsmm_undo_delete_guard *data = \
+                       malloc(sizeof(struct ufsmm_undo_delete_guard));
+
+    if (data == NULL)
+        return -1;
+
+    memset(data, 0, sizeof(*data));
+
+    struct ufsmm_undo_op *op = new_undo_op();
+
+    if (op == NULL) {
+        rc = -1;
+        goto err_free_data;
+    }
+
+    data->transition = transition;
+    data->guard = guard;
+    data->prev = TAILQ_PREV(guard, ufsmm_guard_refs, tailq);
+    data->next = TAILQ_NEXT(guard, tailq);
+
+    op->data = data;
+    op->kind = UFSMM_UNDO_DELETE_GUARD;
 
     TAILQ_INSERT_TAIL(ops, op, tailq);
 

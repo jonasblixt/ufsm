@@ -2221,8 +2221,12 @@ void canvas_delete_region(void *context)
 void canvas_delete_guard(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    ufsmm_transition_delete_guard(priv->selected_transition,
-                                  priv->selected_guard->id);
+    struct ufsmm_transition *t = priv->selected_transition;
+    struct ufsmm_guard_ref *g = priv->selected_guard;
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    ufsmm_undo_delete_guard(undo_ops, t, g);
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    TAILQ_REMOVE(&t->guards, g, tailq);
     priv->redraw = true;
     priv->selection = UFSMM_SELECTION_NONE;
 }
@@ -3773,6 +3777,10 @@ GtkWidget* ufsmm_canvas_new(GtkWidget *parent)
 
 void ufsmm_canvas_free(GtkWidget *widget)
 {
+    struct ufsmm_canvas *priv =
+                    g_object_get_data(G_OBJECT(widget), "canvas private");
+
+    ufsmm_undo_free(priv->undo);
 }
 
 int ufsmm_canvas_load_model(GtkWidget *widget, struct ufsmm_model *model)
