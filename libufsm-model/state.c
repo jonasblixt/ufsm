@@ -33,33 +33,6 @@ void ufsmm_state_free(struct ufsmm_state *state)
     free(state);
 }
 
-struct ufsmm_state *ufsmm_state_shallow_copy(struct ufsmm_state *state)
-{
-    struct ufsmm_state *new = ufsmm_state_new(state->kind);
-    struct ufsmm_action_ref *aref, *new_aref;
-
-    new->x = state->x;
-    new->y = state->y;
-    new->w = state->w;
-    new->h = state->h;
-    new->name = strdup(state->name);
-    new->region_y_offset = state->region_y_offset;
-    new->resizeable = state->resizeable;
-    new->orientation = state->orientation;
-    new->parent_region = state->parent_region;
-
-    TAILQ_FOREACH(aref, &state->entries, tailq) {
-        new_aref = ufsmm_action_ref_copy(aref);
-        TAILQ_INSERT_TAIL(&new->entries, new_aref, tailq);
-    }
-
-    TAILQ_FOREACH(aref, &state->exits, tailq) {
-        new_aref = ufsmm_action_ref_copy(aref);
-        TAILQ_INSERT_TAIL(&new->exits, new_aref, tailq);
-    }
-    return new;
-}
-
 void ufsmm_state_set_name(struct ufsmm_state *state, const char *name)
 {
     if (state->name != NULL)

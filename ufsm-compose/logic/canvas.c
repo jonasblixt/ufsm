@@ -963,10 +963,10 @@ const struct ufsm_action entry_d1fa5621_f98a_4640_8a7a_1083ae0c36ce = {
 };
 
 /* Exit functions for state 'Multi select move' */
-const struct ufsm_action exit_ed0ae9f5_0385_4402_a575_2735d5369fff;
-const struct ufsm_action exit_ed0ae9f5_0385_4402_a575_2735d5369fff = {
-    .name = "canvas_mselect_move_end",
-    .f = &canvas_mselect_move_end,
+const struct ufsm_action exit_15597ca4_d4d0_4d85_ae44_5abb36de24e8;
+const struct ufsm_action exit_15597ca4_d4d0_4d85_ae44_5abb36de24e8 = {
+    .name = "canvas_mselect_move_end2",
+    .f = &canvas_mselect_move_end2,
     .signal = NULL,
     .kind = UFSM_ACTION_KIND_NORMAL,
     .next = NULL,
@@ -991,7 +991,7 @@ const struct ufsm_state s_25b6dc4d_7067_4170_83e6_6717197ba0ed = {
     .kind = UFSM_STATE_SIMPLE,
     .transition = &t_5fe9b09c_60bb_48a3_af78_9f733a7f81b7,
     .entry = &entry_d1fa5621_f98a_4640_8a7a_1083ae0c36ce,
-    .exit = &exit_ed0ae9f5_0385_4402_a575_2735d5369fff,
+    .exit = &exit_15597ca4_d4d0_4d85_ae44_5abb36de24e8,
     .region = &r_d17df7b9_8b9a_4ce6_9d87_6dacd8508979,
     .parent_region = &r_3b43da5b_6c04_43e4_b78a_e48511ac6618,
     .next = NULL,
@@ -1007,8 +1007,8 @@ const struct ufsm_region r_d17df7b9_8b9a_4ce6_9d87_6dacd8508979 = {
 };
 
 /* Entry functions for state 'Move' */
-const struct ufsm_action entry_d118e956_2350_4db1_a33a_eeef1d518747;
-const struct ufsm_action entry_d118e956_2350_4db1_a33a_eeef1d518747 = {
+const struct ufsm_action entry_71b37333_2470_4b44_a414_111cb7913dec;
+const struct ufsm_action entry_71b37333_2470_4b44_a414_111cb7913dec = {
     .name = "canvas_mselect_move",
     .f = &canvas_mselect_move,
     .signal = NULL,
@@ -1034,7 +1034,7 @@ const struct ufsm_state s_46029739_d4d2_4274_9ebc_65b5d8da85b1 = {
     .name = "Move",
     .kind = UFSM_STATE_SIMPLE,
     .transition = &t_b31736ef_c7ff_4fad_a4cd_57f8cd50ed49,
-    .entry = &entry_d118e956_2350_4db1_a33a_eeef1d518747,
+    .entry = &entry_71b37333_2470_4b44_a414_111cb7913dec,
     .exit = NULL,
     .region = NULL,
     .parent_region = &r_d17df7b9_8b9a_4ce6_9d87_6dacd8508979,
@@ -1173,10 +1173,10 @@ const struct ufsm_action entry_b957b80c_071d_4805_9a7e_9040684fda4d = {
 };
 
 /* Exit functions for state 'Multi select move' */
-const struct ufsm_action exit_c2c33633_9b86_4e0b_a67c_8f0322cf6403;
-const struct ufsm_action exit_c2c33633_9b86_4e0b_a67c_8f0322cf6403 = {
-    .name = "canvas_mselect_move_end",
-    .f = &canvas_mselect_move_end,
+const struct ufsm_action exit_5a0b12ac_98a8_4cc0_996c_5b2a2c866808;
+const struct ufsm_action exit_5a0b12ac_98a8_4cc0_996c_5b2a2c866808 = {
+    .name = "canvas_mselect_move_end2",
+    .f = &canvas_mselect_move_end2,
     .signal = NULL,
     .kind = UFSM_ACTION_KIND_NORMAL,
     .next = NULL,
@@ -1201,7 +1201,7 @@ const struct ufsm_state s_54c86e9c_bfe3_4b6f_9893_b55512e9cd74 = {
     .kind = UFSM_STATE_SIMPLE,
     .transition = &t_1e8fb3e0_4d85_4b06_b802_bdee125b9c9f,
     .entry = &entry_b957b80c_071d_4805_9a7e_9040684fda4d,
-    .exit = &exit_c2c33633_9b86_4e0b_a67c_8f0322cf6403,
+    .exit = &exit_5a0b12ac_98a8_4cc0_996c_5b2a2c866808,
     .region = &r_f5f3d8aa_c52a_4d6b_a3ac_e7b345ef8ff0,
     .parent_region = &r_ee8b2cb3_a98a_4cfa_913f_e4af345bf131,
     .next = NULL,
@@ -1217,8 +1217,8 @@ const struct ufsm_region r_f5f3d8aa_c52a_4d6b_a3ac_e7b345ef8ff0 = {
 };
 
 /* Entry functions for state 'Move' */
-const struct ufsm_action entry_de5a3b78_4c8b_4817_a4ba_7d6f59f1a154;
-const struct ufsm_action entry_de5a3b78_4c8b_4817_a4ba_7d6f59f1a154 = {
+const struct ufsm_action entry_f2c52a2c_a624_4be9_8205_7a0b9684a6d0;
+const struct ufsm_action entry_f2c52a2c_a624_4be9_8205_7a0b9684a6d0 = {
     .name = "canvas_mselect_move",
     .f = &canvas_mselect_move,
     .signal = NULL,
@@ -1244,7 +1244,7 @@ const struct ufsm_state s_e436ef7d_f25a_4d52_ba1b_283601376c32 = {
     .name = "Move",
     .kind = UFSM_STATE_SIMPLE,
     .transition = &t_9e7fc12d_9c61_4e0c_bd94_6f51d5877f02,
-    .entry = &entry_de5a3b78_4c8b_4817_a4ba_7d6f59f1a154,
+    .entry = &entry_f2c52a2c_a624_4be9_8205_7a0b9684a6d0,
     .exit = NULL,
     .region = NULL,
     .parent_region = &r_f5f3d8aa_c52a_4d6b_a3ac_e7b345ef8ff0,

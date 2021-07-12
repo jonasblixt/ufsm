@@ -246,6 +246,9 @@ void canvas_reorder_exit_begin(void *context);
 void canvas_reorder_exit_end(void *context);
 void canvas_reorder_entry_begin(void *context);
 void canvas_reorder_entry_end(void *context);
+void canvas_mselect_move2(void *context);
+void canvas_mselect_end2(void *context);
+void canvas_mselect_move_end2(void *context);
 
 struct canvas_machine {
     struct ufsm_machine machine;

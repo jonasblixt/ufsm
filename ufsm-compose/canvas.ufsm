@@ -836,6 +836,18 @@
     {
       "name":"canvas_reorder_entry_end",
       "id":"c49ddde0-1fce-459e-b993-74dc7f278e64"
+    },
+    {
+      "name":"canvas_mselect_move2",
+      "id":"bc8080c8-6b8c-465d-ba99-bab0c7a00b1c"
+    },
+    {
+      "name":"canvas_mselect_end2",
+      "id":"e82f0a24-b2f8-4629-8e0e-8ec71a5872c0"
+    },
+    {
+      "name":"canvas_mselect_move_end2",
+      "id":"4d69b1aa-7ebb-48ee-9e3b-bcc4cfd39eac"
     }
   ],
   "entries":null,
@@ -1311,9 +1323,9 @@
                         ],
                         "exits":[
                           {
-                            "id":"c2c33633-9b86-4e0b-a67c-8f0322cf6403",
+                            "id":"5a0b12ac-98a8-4cc0-996c-5b2a2c866808",
                             "kind":0,
-                            "action-id":"95821ba6-2ed7-4076-97fb-27b09176fdf7"
+                            "action-id":"4d69b1aa-7ebb-48ee-9e3b-bcc4cfd39eac"
                           }
                         ],
                         "region":[
@@ -1334,7 +1346,7 @@
                                 "orientation":0,
                                 "entries":[
                                   {
-                                    "id":"de5a3b78-4c8b-4817-a4ba-7d6f59f1a154",
+                                    "id":"f2c52a2c-a624-4be9-8205-7a0b9684a6d0",
                                     "kind":0,
                                     "action-id":"33d2b94c-bd89-48f1-976d-7674dc0b4e5d"
                                   }
@@ -1359,7 +1371,7 @@
                                     },
                                     "text-block":{
                                       "x":1440.0,
-                                      "y":820.0,
+                                      "y":760.0,
                                       "w":70.0,
                                       "h":30.0
                                     },
@@ -1724,9 +1736,9 @@
                         ],
                         "exits":[
                           {
-                            "id":"ed0ae9f5-0385-4402-a575-2735d5369fff",
+                            "id":"15597ca4-d4d0-4d85-ae44-5abb36de24e8",
                             "kind":0,
-                            "action-id":"95821ba6-2ed7-4076-97fb-27b09176fdf7"
+                            "action-id":"4d69b1aa-7ebb-48ee-9e3b-bcc4cfd39eac"
                           }
                         ],
                         "region":[
@@ -1747,7 +1759,7 @@
                                 "orientation":0,
                                 "entries":[
                                   {
-                                    "id":"d118e956-2350-4db1-a33a-eeef1d518747",
+                                    "id":"71b37333-2470-4b44-a414-111cb7913dec",
                                     "kind":0,
                                     "action-id":"33d2b94c-bd89-48f1-976d-7674dc0b4e5d"
                                   }
@@ -1772,9 +1784,9 @@
                                     },
                                     "text-block":{
                                       "x":460.0,
-                                      "y":820.0,
-                                      "w":70.0,
-                                      "h":30.0
+                                      "y":760.0,
+                                      "w":0.0,
+                                      "h":0.0
                                     },
                                     "vertices":[
                                       {

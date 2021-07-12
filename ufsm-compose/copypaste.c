@@ -12,6 +12,106 @@ struct ufsmm_state_pair {
 
 TAILQ_HEAD(ufsmm_state_pairs, ufsmm_state_pair);
 
+static struct ufsmm_state *ufsmm_state_shallow_copy(struct ufsmm_state *state,
+                                                    struct ufsmm_undo_ops *undo_ops)
+{
+    struct ufsmm_state *new = ufsmm_state_new(state->kind);
+    struct ufsmm_action_ref *aref, *new_aref;
+
+    new->x = state->x;
+    new->y = state->y;
+    new->w = state->w;
+    new->h = state->h;
+    new->name = strdup(state->name);
+    new->region_y_offset = state->region_y_offset;
+    new->resizeable = state->resizeable;
+    new->orientation = state->orientation;
+    new->parent_region = state->parent_region;
+
+    if (undo_ops) {
+        ufsmm_undo_add_state(undo_ops, new);
+    }
+
+    TAILQ_FOREACH(aref, &state->entries, tailq) {
+        new_aref = ufsmm_action_ref_copy(aref);
+        TAILQ_INSERT_TAIL(&new->entries, new_aref, tailq);
+        if (undo_ops) {
+            ufsmm_undo_add_aref(undo_ops, &new->entries, new_aref);
+        }
+    }
+
+    TAILQ_FOREACH(aref, &state->exits, tailq) {
+        new_aref = ufsmm_action_ref_copy(aref);
+        TAILQ_INSERT_TAIL(&new->exits, new_aref, tailq);
+        if (undo_ops) {
+            ufsmm_undo_add_aref(undo_ops, &new->entries, new_aref);
+        }
+    }
+    return new;
+}
+static struct ufsmm_transition* ufsmm_transition_copy(struct ufsmm_transition *t,
+                                                      struct ufsmm_undo_ops *undo_ops)
+{
+    struct ufsmm_transition *new;
+    struct ufsmm_action_ref *aref, *new_aref;
+    struct ufsmm_guard_ref *gref, *new_gref;
+    struct ufsmm_vertice *v, *new_v;
+
+    if (ufsmm_transition_new(&new) != UFSMM_OK)
+        return NULL;
+
+    new->trigger = t->trigger;
+    new->kind = t->kind;
+
+    if (undo_ops) {
+        ufsmm_undo_add_transition(undo_ops, new);
+    }
+
+    TAILQ_FOREACH(gref, &t->guards, tailq) {
+        new_gref = ufsmm_guard_ref_copy(gref);
+        TAILQ_INSERT_TAIL(&new->guards, new_gref, tailq);
+        if (undo_ops) {
+            ufsmm_undo_add_guard(undo_ops, t, new_gref);
+        }
+
+    }
+
+    TAILQ_FOREACH(aref, &t->actions, tailq) {
+        new_aref = ufsmm_action_ref_copy(aref);
+        TAILQ_INSERT_TAIL(&new->actions, new_aref, tailq);
+        if (undo_ops) {
+            ufsmm_undo_add_aref(undo_ops, &new->actions, new_aref);
+        }
+    }
+
+    new->source.state = t->source.state;
+    new->source.offset = t->source.offset;
+    new->source.side = t->source.side;
+
+    new->dest.state = t->dest.state;
+    new->dest.offset = t->dest.offset;
+    new->dest.side = t->dest.side;
+
+    new->text_block_coords.x = t->text_block_coords.x;
+    new->text_block_coords.y = t->text_block_coords.y;
+    new->text_block_coords.w = t->text_block_coords.w;
+    new->text_block_coords.h = t->text_block_coords.h;
+
+    TAILQ_FOREACH(v, &t->vertices, tailq) {
+        new_v = malloc(sizeof(*new_v));
+        new_v->x = v->x;
+        new_v->y = v->y;
+        TAILQ_INSERT_TAIL(&new->vertices, new_v, tailq);
+        if (undo_ops) {
+            ufsmm_undo_add_vertice(undo_ops, t, new_v,
+                                   TAILQ_PREV(new_v, ufsmm_vertices, tailq),
+                                   NULL);
+        }
+    }
+
+    return new;
+}
+
 static int add_state_pair(struct ufsmm_state_pairs *list,
                           struct ufsmm_state *s1,
                           struct ufsmm_state *s2)
@@ -94,7 +194,7 @@ void canvas_copy_begin(void *context)
         TAILQ_FOREACH(s, &r->states, tailq) {
             new_ps = NULL;
             if (s->selected) {
-                new_ps = ufsmm_state_shallow_copy(s);
+                new_ps = ufsmm_state_shallow_copy(s, NULL);
                 /* If the parent region of this state is not selected
                  *  it should be in the copy_bfr root region. This should
                  *  state should also be pasted directly onto the target
@@ -116,7 +216,7 @@ void canvas_copy_begin(void *context)
                         L_DEBUG("Copy transition %s->%s",
                                                     t->source.state->name,
                                                     t->dest.state->name);
-                        new_t = ufsmm_transition_copy(t);
+                        new_t = ufsmm_transition_copy(t, NULL);
                         new_t->source.state = new_ps;
                         /* The destination state is updated in the next step */
                         TAILQ_INSERT_TAIL(&new_ps->transitions, new_t, tailq);
@@ -180,6 +280,7 @@ void canvas_paste_copy_buffer(void *context)
     struct ufsmm_state_pairs state_pairs;
     struct ufsmm_state_pair *state_pair;
     struct ufsmm_guard_ref *gref;
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
 
     TAILQ_INIT(&state_pairs);
     if (priv->selection == UFSMM_SELECTION_REGION)
@@ -191,25 +292,27 @@ void canvas_paste_copy_buffer(void *context)
     while (ufsmm_stack_pop_sr_pair(stack, &ps, &r) == UFSMM_OK) {
         if (r != priv->copy_bfr) {
             ufsmm_add_region(ps, r->off_page, &new_pr);
+            ufsmm_undo_add_region(undo_ops, new_pr);
             new_pr->name = strdup(r->name);
             new_pr->h = r->h;
         }
 
         TAILQ_FOREACH(s, &r->states, tailq) {
-            new_ps = ufsmm_state_shallow_copy(s);
+            new_ps = ufsmm_state_shallow_copy(s, undo_ops);
             new_ps->selected = true;
             if (r != priv->copy_bfr) {
                 ufsmm_region_append_state(new_pr, new_ps);
             } else {
                 ufsmm_region_append_state(target_region, new_ps);
             }
+
             /* Keep track of the old and new states. This is
              * done to update transition destination states in the
              * next step*/
             add_state_pair(&state_pairs, s, new_ps);
 
             TAILQ_FOREACH(t, &s->transitions, tailq) {
-                new_t = ufsmm_transition_copy(t);
+                new_t = ufsmm_transition_copy(t, undo_ops);
                 new_t->selected = true;
                 new_t->source.state = new_ps;
                 /* The destination state is updated in the next step */
@@ -262,6 +365,7 @@ void canvas_paste_copy_buffer(void *context)
         free(state_pair);
     }
 
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
     priv->redraw = true;
 }
 

@@ -342,7 +342,6 @@ int ufsmm_region_get_height(struct ufsmm_region *r, double *h);
 
 struct ufsmm_state *ufsmm_state_new(enum ufsmm_state_kind kind);
 void ufsmm_state_free(struct ufsmm_state *state);
-struct ufsmm_state *ufsmm_state_shallow_copy(struct ufsmm_state *state);
 void ufsmm_state_set_name(struct ufsmm_state *state, const char *name);
 
 
@@ -442,7 +441,6 @@ int ufsmm_transition_delete_action(struct ufsmm_transition *transition, uuid_t i
 int ufsmm_transition_new(struct ufsmm_transition **transition);
 int ufsmm_transition_free_one(struct ufsmm_transition *transition);
 
-struct ufsmm_transition* ufsmm_transition_copy(struct ufsmm_transition *t);
 int ufsmm_transition_change_src_state(struct ufsmm_transition *transition,
                                       struct ufsmm_state *new_state);
 int ufsmm_transition_free_list(struct ufsmm_transitions *transitions);

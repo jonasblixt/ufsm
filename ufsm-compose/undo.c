@@ -274,7 +274,7 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
             {
                 struct ufsmm_undo_add_state *add_op =
                         (struct ufsmm_undo_add_state *) op->data;
-
+                L_DEBUG("Removing state '%s'", add_op->state->name);
                 TAILQ_REMOVE(&add_op->state->parent_region->states,
                              add_op->state, tailq);
             }
@@ -284,6 +284,7 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
                 struct ufsmm_undo_add_region *add_op =
                         (struct ufsmm_undo_add_region *) op->data;
 
+                L_DEBUG("Removing region '%s'", add_op->region->name);
                 TAILQ_REMOVE(&add_op->region->parent_state->regions,
                              add_op->region, tailq);
             }
@@ -293,6 +294,9 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
                 struct ufsmm_undo_add_transition *add_op =
                         (struct ufsmm_undo_add_transition *) op->data;
 
+                L_DEBUG("Removing transition '%s->%s'",
+                            add_op->transition->source.state->name,
+                            add_op->transition->dest.state->name);
                 TAILQ_REMOVE(&add_op->transition->source.state->transitions,
                              add_op->transition, tailq);
             }

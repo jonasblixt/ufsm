@@ -3559,10 +3559,10 @@ void canvas_toggle_theme(void *context)
    priv->redraw = true;
 }
 
-void canvas_mselect_move_end(void *context)
+static void mselect_move_end(void *context, bool undo)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    struct ufsmm_undo_ops *undo_ops;
     struct mselect_move_op *op = (struct mselect_move_op *) priv->command_data;
     struct mselect_state *ms;
     struct ufsmm_vertice *v;
@@ -3570,6 +3570,9 @@ void canvas_mselect_move_end(void *context)
     struct ufsmm_region *r;
     int rc;
 
+    if (undo) {
+        undo_ops = ufsmm_undo_new_ops();
+    }
     /* Clean-up */
 
     while (ms = TAILQ_FIRST(&op->states)) {
@@ -3588,7 +3591,9 @@ void canvas_mselect_move_end(void *context)
                 ufsmm_state_move_to_region(priv->model, s, r);
             }
         }
-        ufsmm_undo_resize_state(undo_ops, s);
+        if (undo) {
+            ufsmm_undo_resize_state(undo_ops, s);
+        }
         free(ms);
     }
 
@@ -3596,16 +3601,31 @@ void canvas_mselect_move_end(void *context)
         TAILQ_REMOVE(&op->transitions, mt, tailq);
         L_DEBUG("Moved transition '%s->%s'", mt->transition->source.state->name,
                                              mt->transition->dest.state->name);
-        ufsmm_undo_move_coords(undo_ops, &mt->transition->text_block_coords);
-        TAILQ_FOREACH(v,  &mt->transition->vertices, tailq) {
-            ufsmm_undo_move_vertice(undo_ops, v);
+        if (undo) {
+            ufsmm_undo_move_coords(undo_ops, &mt->transition->text_block_coords);
+
+            TAILQ_FOREACH(v,  &mt->transition->vertices, tailq) {
+                ufsmm_undo_move_vertice(undo_ops, v);
+            }
         }
         free(mt);
     }
 
     free(op);
     priv->command_data = NULL;
-    ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    if (undo) {
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    }
+}
+
+void canvas_mselect_move_end2(void *context)
+{
+    mselect_move_end(context, false);
+}
+
+void canvas_mselect_move_end(void *context)
+{
+    mselect_move_end(context, true);
 }
 
 void canvas_mselect_move(void *context)
