@@ -114,6 +114,12 @@ struct ufsmm_undo_set_trigger {
     struct ufsmm_trigger *new_trigger;
 };
 
+struct ufsmm_undo_toggle_off_page {
+    struct ufsmm_region *region;
+    bool new_value;
+    bool old_value;
+};
+
 static struct ufsmm_undo_op* new_undo_op(void)
 {
     struct ufsmm_undo_op *op = malloc(sizeof(struct ufsmm_undo_op));
@@ -427,6 +433,14 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
                 set_op->transition->trigger = set_op->old_trigger;
             }
             break;
+            case UFSMM_UNDO_TOGGLE_OFF_PAGE:
+            {
+                struct ufsmm_undo_toggle_off_page *set_op = \
+                    (struct ufsmm_undo_toggle_off_page *) op->data;
+
+                set_op->region->off_page = set_op->old_value;
+            }
+            break;
         }
     }
 }
@@ -687,6 +701,14 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
                     (struct ufsmm_undo_set_trigger *) op->data;
 
                 set_op->transition->trigger = set_op->new_trigger;
+            }
+            break;
+            case UFSMM_UNDO_TOGGLE_OFF_PAGE:
+            {
+                struct ufsmm_undo_toggle_off_page *set_op = \
+                    (struct ufsmm_undo_toggle_off_page *) op->data;
+
+                set_op->region->off_page = set_op->new_value;
             }
             break;
         }
@@ -1540,6 +1562,40 @@ int ufsmm_undo_set_trigger(struct ufsmm_undo_ops *ops,
     data->new_trigger = transition->trigger;
     op->data = data;
     op->kind = UFSMM_UNDO_SET_TRIGGER;
+
+    TAILQ_INSERT_TAIL(ops, op, tailq);
+
+    return rc;
+err_free_data:
+    free(data);
+    return rc;
+}
+
+int ufsmm_undo_toggle_offpage(struct ufsmm_undo_ops *ops,
+                              struct ufsmm_region *region,
+                              bool new_value)
+{
+    int rc = 0;
+    struct ufsmm_undo_toggle_off_page *data = \
+                       malloc(sizeof(struct ufsmm_undo_toggle_off_page));
+
+    if (data == NULL)
+        return -1;
+
+    memset(data, 0, sizeof(*data));
+
+    struct ufsmm_undo_op *op = new_undo_op();
+
+    if (op == NULL) {
+        rc = -1;
+        goto err_free_data;
+    }
+
+    data->region = region;
+    data->new_value = new_value;
+    data->old_value = new_value?false:true;
+    op->data = data;
+    op->kind = UFSMM_UNDO_TOGGLE_OFF_PAGE;
 
     TAILQ_INSERT_TAIL(ops, op, tailq);
 

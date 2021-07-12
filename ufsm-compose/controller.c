@@ -2605,6 +2605,11 @@ void canvas_toggle_region_offpage(void *context)
     }
 
     priv->selected_region->off_page = !priv->selected_region->off_page;
+
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    ufsmm_undo_toggle_offpage(undo_ops, priv->selected_region,
+                            priv->selected_region->off_page);
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
     priv->redraw = true;
 }
 
