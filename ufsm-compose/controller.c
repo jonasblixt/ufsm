@@ -2611,8 +2611,16 @@ void canvas_toggle_region_offpage(void *context)
 void canvas_set_transition_trigger(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_trigger *old_trigger = priv->selected_transition->trigger;
+
     ufsm_set_trigger_dialog(GTK_WINDOW(priv->root_window), priv->model,
                                         priv->selected_transition);
+
+
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    ufsmm_undo_set_trigger(undo_ops, priv->selected_transition,
+                            old_trigger);
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
 }
 
 void canvas_add_transition_action(void *context)

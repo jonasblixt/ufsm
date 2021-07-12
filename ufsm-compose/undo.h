@@ -24,6 +24,7 @@ enum ufsmm_undo_op_kind {
     UFSMM_UNDO_DELETE_TRANSITION,
     UFSMM_UNDO_DELETE_STATE,
     UFSMM_UNDO_DELETE_REGION,
+    UFSMM_UNDO_SET_TRIGGER,
 };
 
 struct ufsmm_undo_op {
@@ -137,4 +138,8 @@ int ufsmm_undo_delete_state(struct ufsmm_undo_ops *ops,
 
 int ufsmm_undo_delete_region(struct ufsmm_undo_ops *ops,
                              struct ufsmm_region *region);
+
+int ufsmm_undo_set_trigger(struct ufsmm_undo_ops *ops,
+                           struct ufsmm_transition *transition,
+                           struct ufsmm_trigger *old_trigger);
 #endif

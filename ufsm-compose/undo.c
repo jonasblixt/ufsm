@@ -108,6 +108,12 @@ struct ufsmm_undo_delete_region {
     struct ufsmm_region *region;
 };
 
+struct ufsmm_undo_set_trigger {
+    struct ufsmm_transition *transition;
+    struct ufsmm_trigger *old_trigger;
+    struct ufsmm_trigger *new_trigger;
+};
+
 static struct ufsmm_undo_op* new_undo_op(void)
 {
     struct ufsmm_undo_op *op = malloc(sizeof(struct ufsmm_undo_op));
@@ -413,6 +419,14 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
 
             }
             break;
+            case UFSMM_UNDO_SET_TRIGGER:
+            {
+                struct ufsmm_undo_set_trigger *set_op = \
+                    (struct ufsmm_undo_set_trigger *) op->data;
+
+                set_op->transition->trigger = set_op->old_trigger;
+            }
+            break;
         }
     }
 }
@@ -665,6 +679,14 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
                                   delete_op->region, tailq);
                 }
 
+            }
+            break;
+            case UFSMM_UNDO_SET_TRIGGER:
+            {
+                struct ufsmm_undo_set_trigger *set_op = \
+                    (struct ufsmm_undo_set_trigger *) op->data;
+
+                set_op->transition->trigger = set_op->new_trigger;
             }
             break;
         }
@@ -1484,6 +1506,40 @@ int ufsmm_undo_delete_region(struct ufsmm_undo_ops *ops,
     data->region = region;
     op->data = data;
     op->kind = UFSMM_UNDO_DELETE_REGION;
+
+    TAILQ_INSERT_TAIL(ops, op, tailq);
+
+    return rc;
+err_free_data:
+    free(data);
+    return rc;
+}
+
+int ufsmm_undo_set_trigger(struct ufsmm_undo_ops *ops,
+                           struct ufsmm_transition *transition,
+                           struct ufsmm_trigger *old_trigger)
+{
+    int rc = 0;
+    struct ufsmm_undo_set_trigger *data = \
+                       malloc(sizeof(struct ufsmm_undo_set_trigger));
+
+    if (data == NULL)
+        return -1;
+
+    memset(data, 0, sizeof(*data));
+
+    struct ufsmm_undo_op *op = new_undo_op();
+
+    if (op == NULL) {
+        rc = -1;
+        goto err_free_data;
+    }
+
+    data->transition = transition;
+    data->old_trigger = old_trigger;
+    data->new_trigger = transition->trigger;
+    op->data = data;
+    op->kind = UFSMM_UNDO_SET_TRIGGER;
 
     TAILQ_INSERT_TAIL(ops, op, tailq);
 
