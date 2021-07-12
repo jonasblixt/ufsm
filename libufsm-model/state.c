@@ -641,6 +641,36 @@ bool ufsmm_state_contains_region(struct ufsmm_model *model,
     return result;
 }
 
+bool ufsmm_region_contains_state(struct ufsmm_model *model,
+                                 struct ufsmm_region *region,
+                                 struct ufsmm_state *state)
+{
+    static struct ufsmm_stack *stack;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_state *s;
+    bool result = false;
+
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_push(stack, region);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            if (s == state) {
+                result = true;
+                goto done;
+            }
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                ufsmm_stack_push(stack, r2);
+            }
+        }
+
+    }
+
+done:
+    ufsmm_stack_free(stack);
+    return result;
+}
+
 bool ufsmm_state_is_descendant(struct ufsmm_state *state,
                               struct ufsmm_state *possible_parent)
 {

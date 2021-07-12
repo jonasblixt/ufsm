@@ -22,6 +22,8 @@ enum ufsmm_undo_op_kind {
     UFSMM_UNDO_DELETE_GUARD,
     UFSMM_UNDO_DELETE_AREF,
     UFSMM_UNDO_DELETE_TRANSITION,
+    UFSMM_UNDO_DELETE_STATE,
+    UFSMM_UNDO_DELETE_REGION,
 };
 
 struct ufsmm_undo_op {
@@ -53,7 +55,8 @@ struct ufsmm_undo_ops *ufsmm_undo_new_ops(void);
 int ufsmm_undo_commit_ops(struct ufsmm_undo_context *undo,
                           struct ufsmm_undo_ops *ops);
 int ufsmm_undo_free_ops(struct ufsmm_undo_context *undo,
-                        struct ufsmm_undo_ops *ops);
+                        struct ufsmm_undo_ops *ops,
+                        bool purge);
 
 /* UNDO operations */
 
@@ -128,4 +131,10 @@ int ufsmm_undo_delete_aref(struct ufsmm_undo_ops *ops,
 
 int ufsmm_undo_delete_transition(struct ufsmm_undo_ops *ops,
                                  struct ufsmm_transition *transition);
+
+int ufsmm_undo_delete_state(struct ufsmm_undo_ops *ops,
+                            struct ufsmm_state *state);
+
+int ufsmm_undo_delete_region(struct ufsmm_undo_ops *ops,
+                             struct ufsmm_region *region);
 #endif

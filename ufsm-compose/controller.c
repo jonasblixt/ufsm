@@ -785,6 +785,7 @@ void canvas_rotate_state(void *context)
             s->th = s->h;
             s->tx = s->x;
             s->ty = s->y;
+            s->tparent_region = s->parent_region;
 
             s->orientation = UFSMM_ORIENTATION_HORIZONTAL;
             s->w = s->h;
@@ -793,9 +794,17 @@ void canvas_rotate_state(void *context)
             ufsmm_undo_resize_state(undo_ops, s);
         } else {
             L_DEBUG("Rotating from horizontal to vertical w=%.2f h=%.2f", s->w, s->h);
+            s->torientation = s->orientation;
+            s->tw = s->w;
+            s->th = s->h;
+            s->tx = s->x;
+            s->ty = s->y;
+            s->tparent_region = s->parent_region;
             s->orientation = UFSMM_ORIENTATION_VERTICAL;
             s->h = s->w;
             s->w = 10;
+
+            ufsmm_undo_resize_state(undo_ops, s);
         }
         ufsmm_undo_commit_ops(priv->undo, undo_ops);
         priv->redraw = true;
@@ -2203,19 +2212,50 @@ void canvas_delete_region(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
 
-    if ((!priv->selected_region->draw_as_root)) {
-        struct ufsmm_region *pr = NULL;
-        if (priv->selected_region->parent_state) {
-            pr = priv->selected_region->parent_state->parent_region;
-        } else {
-            pr = priv->model->root;
-        }
+    if (priv->selected_region->draw_as_root)
+        return;
 
-        ufsmm_model_delete_region(priv->model, priv->selected_region);
-        priv->selected_region = pr;
-        priv->redraw = true;
-        priv->selection = UFSMM_SELECTION_NONE;
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+    struct ufsmm_region *pr = NULL;
+    struct ufsmm_state *s;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_transition *t;
+    struct ufsmm_stack *stack;
+
+    if (priv->selected_region->parent_state) {
+        pr = priv->selected_region->parent_state->parent_region;
+    } else {
+        pr = priv->model->root;
     }
+
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_push(stack, (void *) priv->current_region);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
+                if (ufsmm_region_contains_state(priv->model,
+                                                priv->selected_region,
+                                                t->dest.state)) {
+                    ufsmm_undo_delete_transition(undo_ops, t);
+                    TAILQ_REMOVE(&t->source.state->transitions, t, tailq);
+                }
+            }
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                if (r2->off_page)
+                    continue;
+                ufsmm_stack_push(stack, (void *) r2);
+            }
+        }
+    }
+
+    ufsmm_undo_delete_region(undo_ops, priv->selected_region);
+    TAILQ_REMOVE(&priv->selected_region->parent_state->regions,
+                priv->selected_region, tailq);
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    priv->selected_region = pr;
+    priv->redraw = true;
+    priv->selection = UFSMM_SELECTION_NONE;
 }
 
 void canvas_delete_guard(void *context)
@@ -2363,7 +2403,39 @@ void canvas_delete_exit(void *context)
 void canvas_delete_state(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    ufsmm_model_delete_state(priv->model, priv->selected_state);
+    struct ufsmm_state *state = priv->selected_state;
+    struct ufsmm_stack *stack;
+    struct ufsmm_state *s;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_transition *t;
+    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_push(stack, (void *) priv->current_region);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
+                if ((t->dest.state == state) ||
+                    (ufsmm_state_is_descendant(t->dest.state, state))) {
+                    L_DEBUG("Un-linking transition %s->%s",
+                            t->source.state->name, t->dest.state->name);
+                    ufsmm_undo_delete_transition(undo_ops, t);
+                    TAILQ_REMOVE(&t->source.state->transitions, t, tailq);
+                }
+            }
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                if (r2->off_page == false) {
+                    ufsmm_stack_push(stack, (void *) r2);
+                }
+            }
+        }
+    }
+
+    ufsmm_undo_delete_state(undo_ops, state);
+    TAILQ_REMOVE(&state->parent_region->states, state, tailq);
+    ufsmm_undo_commit_ops(priv->undo, undo_ops);
+    ufsmm_stack_free(stack);
     priv->selected_state = NULL;
     priv->selection = UFSMM_SELECTION_NONE;
     priv->redraw = true;
@@ -3753,6 +3825,16 @@ static void draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data)
     ufsmm_canvas_render(priv, width, height);
 }
 
+static void destroy_event_cb(GtkWidget *widget)
+{
+    struct ufsmm_canvas *priv =
+                    g_object_get_data(G_OBJECT(widget), "canvas private");
+    L_DEBUG("Freeing canvas %p", priv);
+
+    ufsmm_undo_free(priv->undo);
+    free(priv);
+}
+
 static void debug_event(int ev)
 {
     if (ev == eMotion)
@@ -3816,6 +3898,9 @@ GtkWidget* ufsmm_canvas_new(GtkWidget *parent)
     g_signal_connect (G_OBJECT(widget), "scroll_event",
                     G_CALLBACK (scroll_event_cb), NULL);
 
+    g_signal_connect (G_OBJECT(widget), "destroy",
+                    G_CALLBACK (destroy_event_cb), NULL);
+
     g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(draw_cb), NULL);
 
     gtk_widget_set_can_focus(widget, TRUE);
@@ -3823,14 +3908,6 @@ GtkWidget* ufsmm_canvas_new(GtkWidget *parent)
     gtk_widget_grab_focus(widget);
 
     return widget;
-}
-
-void ufsmm_canvas_free(GtkWidget *widget)
-{
-    struct ufsmm_canvas *priv =
-                    g_object_get_data(G_OBJECT(widget), "canvas private");
-
-    ufsmm_undo_free(priv->undo);
 }
 
 int ufsmm_canvas_load_model(GtkWidget *widget, struct ufsmm_model *model)

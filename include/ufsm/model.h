@@ -447,6 +447,10 @@ int ufsmm_transition_change_src_state(struct ufsmm_transition *transition,
                                       struct ufsmm_state *new_state);
 int ufsmm_transition_free_list(struct ufsmm_transitions *transitions);
 
+bool ufsmm_region_contains_state(struct ufsmm_model *model,
+                                 struct ufsmm_region *region,
+                                 struct ufsmm_state *state);
+
 /* Misc model library stuff */
 
 int ufsmm_debug(enum ufsmm_debug_level debug_level, const char *func_name,

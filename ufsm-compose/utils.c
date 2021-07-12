@@ -362,3 +362,23 @@ double ufsmm_canvas_nearest_grid_point(double in)
 {
     return (int)(round(in / 10)) * 10;
 }
+
+bool ufsmm_has_parent_state(struct ufsmm_state *state,
+                            struct ufsmm_state *possible_parent)
+{
+    struct ufsmm_state *s;
+    struct ufsmm_region *pr;
+
+    pr = state->parent_region;
+
+    while (pr) {
+        s = pr->parent_state;
+        if (s) {
+            if (s == state)
+                return true;
+            pr = s->parent_region;
+        }
+    }
+
+    return false;
+}
