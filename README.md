@@ -123,7 +123,7 @@ Functions with highest cyclomatic complexity:
 
 ## Event queue
 The event is implemented as a circular buffer with a 'put' and 'get' function to
-store and retreve data. 
+store and retrieve data. 
 
 The queue has three optional callbacks; 'on_data', 'lock' and 'unlock'. This 
 allowes some flexibility with the target environment.
