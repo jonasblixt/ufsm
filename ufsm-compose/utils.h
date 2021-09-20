@@ -80,4 +80,9 @@ double ufsmm_canvas_nearest_grid_point(double in);
 
 bool ufsmm_has_parent_state(struct ufsmm_state *state,
                             struct ufsmm_state *possible_parent);
+
+int ufsmm_paper_size(enum ufsmm_paper_size paper_size, int *x, int *y);
+
+int ufsmm_paper_size_x(enum ufsmm_paper_size paper_size);
+int ufsmm_paper_size_y(enum ufsmm_paper_size paper_size);
 #endif

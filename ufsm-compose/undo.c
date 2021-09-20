@@ -160,7 +160,7 @@ void ufsmm_undo_free(struct ufsmm_undo_context *undo)
     /* Clear redo stack */
     while (item = TAILQ_FIRST(&undo->redo_stack)) {
         TAILQ_REMOVE(&undo->redo_stack, item, tailq);
-        ufsmm_undo_free_ops(undo, item->ops, true);
+        ufsmm_undo_free_ops(undo, item->ops, false);
         free(item);
     }
     free(undo);

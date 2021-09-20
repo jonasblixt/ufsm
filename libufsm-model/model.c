@@ -356,6 +356,10 @@ static int ufsmm_model_parse(struct ufsmm_model *model)
             model->version = json_object_get_int64(val);
             found_version = true;
         }
+        else if (strcmp(key, "paper-size") == 0)
+        {
+            model->paper_size = json_object_get_int64(val);
+        }
         else if (strcmp(key, "kind") == 0)
         {
             if (strcmp(json_object_get_string(val), "uFSM Model") == 0)
@@ -393,6 +397,9 @@ static int ufsmm_model_parse(struct ufsmm_model *model)
             L_INFO("Found unknown data in root (%s)", key);
         }
     }
+
+    if (model->paper_size == UFSMM_PAPER_SIZE_INVALID)
+        model->paper_size = UFSMM_PAPER_SIZE_A4;
 
     L_DEBUG("%i %i %i %i", found_region, found_kind, found_version, found_name);
     if (found_region && found_kind && found_version && found_name)
@@ -489,7 +496,7 @@ int ufsmm_model_load(const char *filename, struct ufsmm_model **model_pp)
         goto err_free_model;
     }
 
-    model->filename = filename;
+    model->filename = strdup(filename);
 
     return UFSMM_OK;
 
@@ -580,7 +587,7 @@ int ufsmm_model_create(struct ufsmm_model **model_pp, const char *name)
     memset(model, 0, sizeof(*model));
     (*model_pp) = model;
     model->name = name;
-
+    model->paper_size = UFSMM_PAPER_SIZE_A4;
     model->root = malloc(sizeof(struct ufsmm_region));
     memset(model->root, 0, sizeof(*model->root));
     TAILQ_INIT(&model->root->states);
@@ -702,10 +709,12 @@ int ufsmm_model_write(const char *filename, struct ufsmm_model *model)
     json_object *jr_kind = json_object_new_string("uFSM Model");
     json_object *jr_version = json_object_new_int(model->version);
     json_object *jr_name = json_object_new_string(model->name);
+    json_object *jr_paper_size = json_object_new_int(model->paper_size);
 
     json_object_object_add(jr, "kind", jr_kind);
     json_object_object_add(jr, "version", jr_version);
     json_object_object_add(jr, "name", jr_name);
+    json_object_object_add(jr, "paper-size", jr_paper_size);
     json_object_object_add(jr, "triggers", j_triggers);
     json_object_object_add(jr, "actions", j_actions);
     json_object_object_add(jr, "entries", j_entries);
@@ -866,17 +875,20 @@ int ufsmm_model_free(struct ufsmm_model *model)
 
     void *p;
 
-    while (ufsmm_stack_pop(free_stack, &p) == UFSMM_OK)
-    {
+    while (ufsmm_stack_pop(free_stack, &p) == UFSMM_OK) {
         //L_DEBUG("Free <%p>", p);
         free(p);
     }
 
     ufsmm_stack_free(free_stack);
 
-    if (model->jroot)
-    {
+    if (model->jroot) {
         json_object_put(model->jroot);
+    }
+
+    if (model->filename != NULL) {
+        free((void *) model->filename);
+        model->filename = NULL;
     }
 
     free(model);

@@ -33,8 +33,10 @@ int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
         *w = 1684;
         return UFSMM_OK;
     } else {
-        y_acc += r->parent_state->region_y_offset + r->parent_state->y;
-        x_acc += r->parent_state->x;
+        if (r->parent_state) {
+            y_acc += r->parent_state->region_y_offset + r->parent_state->y;
+            x_acc += r->parent_state->x;
+        }
     }
 
     /* Iterate through possible sibling regions */
@@ -54,11 +56,16 @@ int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
     *y = y_acc;
 
     if (r->h == -1) {
-        *h = r->parent_state->h - 30.0 - r->parent_state->region_y_offset;
+        if (r->parent_state) {
+            *h = r->parent_state->h - 30.0 - r->parent_state->region_y_offset;
+        }
     } else {
         *h = r->h;
     }
-    *w = r->parent_state->w;
+
+    if (r->parent_state) {
+        *w = r->parent_state->w;
+    }
 
     return 0;
 }
@@ -381,4 +388,52 @@ bool ufsmm_has_parent_state(struct ufsmm_state *state,
     }
 
     return false;
+}
+
+int ufsmm_paper_size(enum ufsmm_paper_size paper_size, int *x, int *y)
+{
+int rc = 0;
+
+    switch (paper_size) {
+        case UFSMM_PAPER_SIZE_A4:
+            (*x) = 1684;
+            (*y) = 1190;
+        break;
+        case UFSMM_PAPER_SIZE_A3:
+            (*x) = 2380;
+            (*y) = 1684;
+        break;
+        case UFSMM_PAPER_SIZE_A2:
+            (*x) = 3368;
+            (*y) = 2380;
+        break;
+        case UFSMM_PAPER_SIZE_A1:
+            (*x) = 4768;
+            (*y) = 3368;
+        break;
+        default:
+            rc = -1;
+    };
+
+    return rc;
+}
+
+int ufsmm_paper_size_x(enum ufsmm_paper_size paper_size)
+{
+    int x, y;
+
+    if (ufsmm_paper_size(paper_size, &x, &y) != 0)
+        return 0;
+
+    return x;
+}
+
+int ufsmm_paper_size_y(enum ufsmm_paper_size paper_size)
+{
+    int x, y;
+
+    if (ufsmm_paper_size(paper_size, &x, &y) != 0)
+        return 0;
+
+    return y;
 }

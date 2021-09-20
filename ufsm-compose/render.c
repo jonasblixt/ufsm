@@ -11,85 +11,6 @@ static double selection_ex;
 static double selection_ey;
 static bool draw_selection;
 
-int ufsmm_canvas_render_region(struct ufsmm_canvas *canvas,
-                               struct ufsmm_region *region)
-{
-    double x, y, w, h;
-    double dashes[] = {10.0,  /* ink */
-                       10.0};  /* skip */
-    cairo_t *cr = canvas->cr;
-
-    if (region->draw_as_root)
-        return UFSMM_OK;
-
-    ufsmm_get_region_absolute_coords(region, &x, &y, &w, &h);
-
-    if (region->selected || region->off_page) {
-        cairo_save (cr);
-        cairo_set_font_size (cr, 18);
-        ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_FG4);
-        cairo_move_to (cr, x + 10, y + 25);
-        cairo_show_text (cr, region->name);
-        cairo_restore(cr);
-    }
-
-    if (region->selected) {
-        cairo_save(cr);
-        ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_ORANGE1);
-        cairo_set_dash (cr, dashes, 2, 0);
-        cairo_set_line_width (cr, 2);
-        cairo_rectangle (cr, x, y, w, h);
-        cairo_stroke (cr);
-        cairo_restore (cr);
-    } else if (TAILQ_NEXT(region, tailq)) {
-        if (!TAILQ_NEXT(region, tailq)->selected) {
-            cairo_save(cr);
-            ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_FG4);
-            cairo_set_dash(cr, dashes, 2, 0);
-            cairo_set_line_width (cr, 2);
-            cairo_move_to(cr, x, y + h);
-            cairo_line_to(cr, x+w, y+h);
-            cairo_stroke(cr);
-            cairo_restore(cr);
-        }
-    }
-
-    /* Possibly render region 'off-page' symbol */
-    if (region->off_page && !region->draw_as_root) {
-        cairo_save(cr);
-        ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_FG4);
-        /* Render two, filled circles */
-        cairo_new_sub_path(cr);
-        cairo_translate(cr, x + w - 50, y - 20 + h);
-        cairo_arc(cr, 0, 0, 5, 0, 2 * M_PI);
-        cairo_translate(cr, 20, 0);
-        cairo_arc(cr, 0, 0, 5, 0, 2 * M_PI);
-        cairo_fill(cr);
-        cairo_close_path(cr);
-        cairo_restore(cr);
-        /* and the line between them */
-        cairo_save(cr);
-        cairo_move_to (cr,  x + w - 50, y + h - 20);
-        cairo_line_to(cr, x + w - 30, y + h - 20);
-        ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_FG4);
-        cairo_set_line_width (cr, 2.0);
-        cairo_stroke(cr);
-        cairo_restore(cr);
-    }
-
-    /* Render resize boxes */
-    if (region->selected) {
-        cairo_save(cr);
-        ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_ORANGE1);
-        cairo_rectangle (cr, x + w/2 - 5, y - 5, 10, 10);
-        cairo_rectangle (cr, x + w/2 - 5, y + h - 5 , 10, 10);
-        cairo_fill(cr);
-        cairo_restore(cr);
-    }
-
-    return 0;
-}
-
 int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
 {
     int rc;
@@ -98,13 +19,16 @@ int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
     struct ufsmm_state *s;
     static struct ufsmm_stack *stack;
 
+    cairo_save(canvas->cr);
     cairo_scale(canvas->cr, canvas->current_region->scale,
                             canvas->current_region->scale);
 
     cairo_translate(canvas->cr, canvas->current_region->ox,
                                 canvas->current_region->oy);
 
-    ufsmm_canvas_render_grid(canvas, 1684, 1190);
+    ufsmm_canvas_render_grid(canvas,
+                             ufsmm_paper_size_x(canvas->model->paper_size),
+                             ufsmm_paper_size_y(canvas->model->paper_size));
 
     rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
 
@@ -116,7 +40,7 @@ int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
 
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK)
     {
-        ufsmm_canvas_render_region(canvas, r);
+        ufsmm_canvas_render_region(canvas, r, false);
 
         if (r->off_page && (!r->draw_as_root))
             continue;
@@ -162,19 +86,112 @@ int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
     if (draw_selection) {
         cairo_save(canvas->cr);
         //cairo_set_source_rgb (cr, 0.4, 0.4, 0.4);
-        ufsmm_color_set(canvas->cr, canvas->theme, UFSMM_COLOR_ORANGE1);
-        cairo_set_dash (canvas->cr, dashes, 2, 0);
-        cairo_set_line_width (canvas->cr, 1);
-        cairo_rectangle (canvas->cr, selection_sx,
+        //
+        if (((selection_ex - selection_sx) < 0) ||
+            ((selection_ey - selection_sy) < 0)) {
+            ufsmm_color_set(canvas->cr, canvas->theme, UFSMM_COLOR_BLUE1);
+        } else {
+            ufsmm_color_set(canvas->cr, canvas->theme, UFSMM_COLOR_ORANGE1);
+        }
+        cairo_set_dash(canvas->cr, dashes, 2, 0);
+        cairo_set_line_width(canvas->cr, 1);
+        cairo_rectangle(canvas->cr, selection_sx,
                              selection_sy,
                              selection_ex - selection_sx,
                              selection_ey - selection_sy);
-        cairo_stroke (canvas->cr);
-        cairo_restore (canvas->cr);
+        cairo_stroke(canvas->cr);
+        cairo_restore(canvas->cr);
     }
+
+    cairo_restore(canvas->cr);
 
     return rc;
 }
+
+int ufsmm_canvas_render_region(struct ufsmm_canvas *canvas,
+                               struct ufsmm_region *region,
+                               bool nav_mode)
+{
+    double x, y, w, h;
+    double dashes[] = {10.0,  /* ink */
+                       10.0};  /* skip */
+    cairo_t *cr = canvas->cr;
+
+    if (region->draw_as_root)
+        return UFSMM_OK;
+
+    ufsmm_get_region_absolute_coords(region, &x, &y, &w, &h);
+
+    if (nav_mode == false) {
+        if (region->selected || region->off_page) {
+            cairo_save (cr);
+            cairo_set_font_size (cr, 18);
+            ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_FG4);
+            cairo_move_to (cr, x + 10, y + 25);
+            cairo_show_text (cr, region->name);
+            cairo_restore(cr);
+        }
+    }
+
+    if (region->selected && (nav_mode == false)) {
+        cairo_save(cr);
+        ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_ORANGE1);
+        cairo_set_dash (cr, dashes, 2, 0);
+        cairo_set_line_width (cr, 2);
+        cairo_rectangle (cr, x, y, w, h);
+        cairo_stroke (cr);
+        cairo_restore (cr);
+    } else if (TAILQ_NEXT(region, tailq)) {
+        if (!TAILQ_NEXT(region, tailq)->selected) {
+            cairo_save(cr);
+            ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_FG4);
+            cairo_set_dash(cr, dashes, 2, 0);
+            cairo_set_line_width (cr, 2);
+            cairo_move_to(cr, x, y + h);
+            cairo_line_to(cr, x+w, y+h);
+            cairo_stroke(cr);
+            cairo_restore(cr);
+        }
+    }
+
+    if (nav_mode == false) {
+        /* Possibly render region 'off-page' symbol */
+        if (region->off_page && !region->draw_as_root) {
+            cairo_save(cr);
+            ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_FG4);
+            /* Render two, filled circles */
+            cairo_new_sub_path(cr);
+            cairo_translate(cr, x + w - 50, y - 20 + h);
+            cairo_arc(cr, 0, 0, 5, 0, 2 * M_PI);
+            cairo_translate(cr, 20, 0);
+            cairo_arc(cr, 0, 0, 5, 0, 2 * M_PI);
+            cairo_fill(cr);
+            cairo_close_path(cr);
+            cairo_restore(cr);
+            /* and the line between them */
+            cairo_save(cr);
+            cairo_move_to (cr,  x + w - 50, y + h - 20);
+            cairo_line_to(cr, x + w - 30, y + h - 20);
+            ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_FG4);
+            cairo_set_line_width (cr, 2.0);
+            cairo_stroke(cr);
+            cairo_restore(cr);
+        }
+
+        /* Render resize boxes */
+        if (region->selected) {
+            cairo_save(cr);
+            ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_ORANGE1);
+            cairo_rectangle (cr, x + w/2 - 5, y - 5, 10, 10);
+            cairo_rectangle (cr, x + w/2 - 5, y + h - 5 , 10, 10);
+            cairo_fill(cr);
+            cairo_restore(cr);
+        }
+    }
+
+    return 0;
+}
+
 
 int ufsmm_canvas_set_selection(bool active, double sx,
                                            double sy,
@@ -344,13 +361,6 @@ static int render_init_state(struct ufsmm_canvas *canvas,
     ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_BG0);
     cairo_fill(cr);
     cairo_restore(cr);
-/*
-    cairo_save(cr);
-    cairo_rectangle(cr, x, y, w, h);
-    ufsmm_color_set(cr, UFSMM_COLOR_ORANGE1);
-    cairo_stroke(cr);
-    cairo_restore(cr);
-*/
     return 0;
 }
 
@@ -1056,26 +1066,36 @@ int ufsmm_canvas_render_transition(struct ufsmm_canvas *canvas,
 
 int ufsmm_canvas_render_grid(struct ufsmm_canvas *canvas, int width, int height)
 {
+    double scale = canvas->current_region->scale;
     cairo_t *cr = canvas->cr;
 
     ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_BG0);
     cairo_paint(cr);
 
     cairo_save(cr);
+
+    int step_size = 10;
+
+    if (scale <= 1.0) {
+        step_size = 30;
+    } else if (scale <= 3.0) {
+        step_size = 20;
+    }
+
     /* Draw grid */
-    for (int x = 0; x < width/10; x++)
+    for (int x = 0; x < width/step_size; x++)
     {
-        cairo_move_to (cr, x*10, 0);
-        cairo_line_to (cr, x*10, height);
+        cairo_move_to (cr, x*step_size, 0);
+        cairo_line_to (cr, x*step_size, height);
     }
 
-    for (int y = 0; y < height/10; y++)
+    for (int y = 0; y < height/step_size; y++)
     {
-        cairo_move_to (cr, 0, y*10);
-        cairo_line_to (cr, width, y*10);
+        cairo_move_to (cr, 0, y*step_size);
+        cairo_line_to (cr, width, y*step_size);
     }
 
-    ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_BG0_H);
+    ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_BG1);
     cairo_set_line_width(cr, 1);
     cairo_stroke (cr);
 

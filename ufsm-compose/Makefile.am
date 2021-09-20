@@ -6,13 +6,16 @@ ufsm_compose_SOURCES = main.c \
 			   dialogs/add_guard_dialog.c \
                dialogs/edit_string_dialog.c \
                dialogs/set_trigger_dialog.c \
+			   dialogs/save.c \
 			   utils.c \
                render.c \
                logic/canvas.c \
                controller.c \
 			   pan_and_scale.c \
 			   copypaste.c \
-			   undo.c
+			   undo.c \
+			   menu.c \
+			   nav.c
 
 
 ufsm_compose_CFLAGS = -I$(top_srcdir)/include \

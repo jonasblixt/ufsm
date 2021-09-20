@@ -118,6 +118,14 @@ enum ufsmm_guard_kind
     UFSMM_GUARD_NSTATE,
 };
 
+enum ufsmm_paper_size {
+    UFSMM_PAPER_SIZE_INVALID,
+    UFSMM_PAPER_SIZE_A4,
+    UFSMM_PAPER_SIZE_A3,
+    UFSMM_PAPER_SIZE_A2,
+    UFSMM_PAPER_SIZE_A1,
+};
+
 struct ufsmm_action
 {
     uuid_t id;
@@ -269,6 +277,7 @@ struct ufsmm_model
     unsigned int no_of_regions;
     unsigned int no_of_states;
     const char *filename;
+    enum ufsmm_paper_size paper_size;
 };
 
 int ufsmm_model_load(const char *filename, struct ufsmm_model **model);

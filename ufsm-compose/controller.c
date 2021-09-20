@@ -5,6 +5,7 @@
 #include "controller.h"
 #include "render.h"
 #include "utils.h"
+#include "nav.h"
 #include "logic/canvas.h"
 
 #include "dialogs/edit_state_dialog.h"
@@ -12,6 +13,7 @@
 #include "dialogs/add_guard_dialog.h"
 #include "dialogs/edit_string_dialog.h"
 #include "dialogs/set_trigger_dialog.h"
+#include "dialogs/save.h"
 
 struct transition_ref {
     struct ufsmm_transition *transition;
@@ -476,6 +478,7 @@ void canvas_reset_selection(void *context)
     struct ufsmm_state *s;
     struct ufsmm_region *r, *r2;
     struct ufsmm_transition *t;
+    struct ufsmm_action_ref *aref;
     struct ufsmm_stack *stack;
 
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
@@ -485,6 +488,14 @@ void canvas_reset_selection(void *context)
         r->selected = false;
         TAILQ_FOREACH(s, &r->states, tailq) {
             s->selected = false;
+
+            TAILQ_FOREACH(aref, &s->entries, tailq) {
+                aref->selected = false;
+            }
+
+            TAILQ_FOREACH(aref, &s->exits, tailq) {
+                aref->selected = false;
+            }
 
             TAILQ_FOREACH(t, &s->transitions, tailq) {
                 t->selected = false;
@@ -765,8 +776,13 @@ void canvas_focus_selection(void *context)
 void canvas_save(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    L_DEBUG("%s: writing to '%s'", __func__, priv->model->filename);
-    ufsmm_model_write(priv->model->filename, priv->model);
+
+    if (priv->model->filename == NULL) {
+        canvas_save_as(context);
+    } else {
+        L_DEBUG("%s: writing to '%s'", __func__, priv->model->filename);
+        ufsmm_model_write(priv->model->filename, priv->model);
+    }
 }
 
 void canvas_rotate_state(void *context)
@@ -3378,6 +3394,7 @@ void canvas_mselect_end(void *context)
     free(op);
     ufsmm_canvas_set_selection(false, 0, 0, 0, 0);
     priv->redraw = true;
+    priv->selection = UFSMM_SELECTION_MULTI;
 }
 
 void canvas_update_mselect(void *context)
@@ -3674,6 +3691,32 @@ void canvas_redo(void *context)
     priv->redraw = true;
 }
 
+void canvas_save_as(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    char *filename;
+
+    if (ufsmm_dialog_save(GTK_WINDOW(priv->root_window), &filename) == GTK_RESPONSE_ACCEPT) {
+        L_DEBUG("%s: writing to '%s'", __func__, priv->model->filename);
+        if (priv->model->filename != NULL) {
+            free((void *) priv->model->filename);
+        }
+
+        priv->model->filename = strdup(filename);
+
+        ufsmm_model_write(priv->model->filename, priv->model);
+        g_free(filename);
+    }
+}
+
+void canvas_toggle_nav(void *context)
+{
+}
+
+void canvas_select_all(void *context)
+{
+}
+
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     struct ufsmm_canvas *priv =
@@ -3738,6 +3781,8 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eKey_backspace_down);
     } else if (event->keyval == GDK_KEY_s) {
         canvas_machine_process(&priv->machine, eKey_s_down);
+    } else if (event->keyval == GDK_KEY_S) {
+        canvas_machine_process(&priv->machine, eKey_S_down);
     } else if (event->keyval == GDK_KEY_z) {
         canvas_machine_process(&priv->machine, eKey_z_down);
     }
@@ -3777,10 +3822,12 @@ static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
     if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
         ufsm_process(&priv->machine.machine, eRMBDown);
     } else if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
-        ufsm_process(&priv->machine.machine, eLMBDown);
-    }
-
-    if (event->type == GDK_DOUBLE_BUTTON_PRESS) {
+        if (!menu_process(priv->menu, &priv->machine.machine, event->x, event->y)) {
+            ufsm_process(&priv->machine.machine, eLMBDown);
+        } else {
+            priv->redraw = true;
+        }
+    } else if (event->type == GDK_DOUBLE_BUTTON_PRESS) {
         if (priv->selection == UFSMM_SELECTION_REGION) {
             if (priv->selected_region->off_page) {
                 L_DEBUG("Switching view to region '%s'", priv->selected_region->name);
@@ -3879,7 +3926,14 @@ static void draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data)
     height = allocation.height;
 
     priv->cr = cr;
-    ufsmm_canvas_render(priv, width, height);
+    priv->menu->cr = cr;
+
+    if (priv->nav_mode == false) {
+        ufsmm_canvas_render(priv, width, height);
+        menu_render(priv->menu, priv->theme, priv->selection, width, height);
+    } else {
+        ufsmm_nav_render(priv, width, height);
+    }
 }
 
 static void destroy_event_cb(GtkWidget *widget)
@@ -3888,6 +3942,7 @@ static void destroy_event_cb(GtkWidget *widget)
                     g_object_get_data(G_OBJECT(widget), "canvas private");
     L_DEBUG("Freeing canvas %p", priv);
 
+    menu_free(priv->menu);
     ufsmm_undo_free(priv->undo);
     free(priv);
 }
@@ -3912,6 +3967,8 @@ GtkWidget* ufsmm_canvas_new(GtkWidget *parent)
     }
 
     memset(priv, 0, sizeof(*priv));
+    priv->draw_menu = true;
+    priv->menu = menu_init();
 
     ufsm_debug_machine(&priv->machine.machine);
     /* Override the debug_event to filter out 'eMotion' -event, since
