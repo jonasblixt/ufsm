@@ -127,7 +127,9 @@ void ufsmm_nav_render(struct ufsmm_canvas *canvas,
     cairo_paint(cr);
     cairo_save(canvas->cr);
     cairo_translate(cr, 10, 10);
+
     cairo_scale(canvas->cr, scale, scale);
+
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
         render_one_page(canvas, r);
@@ -135,6 +137,7 @@ void ufsmm_nav_render(struct ufsmm_canvas *canvas,
         cairo_set_line_width (cr, 4);
         ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_FG4);
         cairo_rectangle (cr, 0, 0, psx, psy);
+
         cairo_stroke(cr);
         cairo_restore(cr);
         col_count++;
@@ -155,7 +158,6 @@ void ufsmm_nav_render(struct ufsmm_canvas *canvas,
             }
         }
     }
-
 
     cairo_restore(cr);
     ufsmm_stack_free(stack);

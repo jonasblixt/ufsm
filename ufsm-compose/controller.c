@@ -3219,6 +3219,23 @@ int canvas_transition_tvertice_selected(void *context)
     return (priv->selected_transition_vertice == UFSMM_TRANSITION_VERTICE);
 }
 
+void canvas_add_vertice_begin(void *context)
+{
+}
+
+void canvas_add_vertice_end(void *context)
+{
+}
+
+void canvas_add_vertice_cancel(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+
+    ufsmm_undo(priv->undo); /* Undo move op */
+    ufsmm_undo(priv->undo); /* Undo add vertice op */
+    priv->redraw = true;
+}
+
 void canvas_add_vertice(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -3244,7 +3261,7 @@ void canvas_add_vertice(void *context)
     v_new->x = ufsmm_canvas_nearest_grid_point(priv->px - priv->current_region->ox);
     v_new->y = ufsmm_canvas_nearest_grid_point(priv->py - priv->current_region->oy);
 
-    /* TODO: Locate where the new vertice should be inserted */
+    /* Locate where the new vertice should be inserted */
     vn = TAILQ_FIRST(&t->vertices);
 
     if (vn) {
@@ -3282,7 +3299,8 @@ void canvas_add_vertice(void *context)
                             TAILQ_PREV(v_new, ufsmm_vertices, tailq),
                             TAILQ_NEXT(v_new, tailq));
     ufsmm_undo_commit_ops(priv->undo, undo_ops);
-
+    priv->selected_transition_vertice = UFSMM_TRANSITION_VERTICE;
+    priv->selected_transition_vertice_data = v_new;
     priv->redraw = true;
 }
 
