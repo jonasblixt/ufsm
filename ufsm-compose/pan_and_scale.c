@@ -32,6 +32,7 @@ void canvas_inc_scale(void *context)
     printf("Zi %.2f <ox, oy> = %.2f, %.2f\n", r->scale, r->ox, r->oy);
 }
 
+
 void canvas_dec_scale(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -48,3 +49,4 @@ void canvas_dec_scale(void *context)
     priv->redraw = true;
     printf("Zo %.2f <ox, oy> = %.2f, %.2f\n", r->scale, r->ox, r->oy);
 }
+

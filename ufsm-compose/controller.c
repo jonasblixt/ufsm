@@ -3834,8 +3834,8 @@ static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
     struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
-    priv->sx = ufsmm_canvas_nearest_grid_point(event->x / priv->current_region->scale);
-    priv->sy = ufsmm_canvas_nearest_grid_point(event->y / priv->current_region->scale);
+    priv->sx = ufsmm_canvas_nearest_grid_point(event->x / (priv->current_region->scale/2.0));
+    priv->sy = ufsmm_canvas_nearest_grid_point(event->y / (priv->current_region->scale/2.0));
 
     if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
         ufsm_process(&priv->machine.machine, eRMBDown);
@@ -3909,10 +3909,12 @@ static gboolean motion_notify_event_cb(GtkWidget      *widget,
     struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
-    double px = event->x / priv->current_region->scale;
-    double py = event->y / priv->current_region->scale;
+    double px = event->x / (priv->current_region->scale / 2.0);
+    double py = event->y / (priv->current_region->scale / 2.0);
     priv->px = px;
     priv->py = py;
+
+    printf("px %.2f py %.2f\n", px, py);
 
     priv->dx = px - priv->sx;
     priv->dy = py - priv->sy;

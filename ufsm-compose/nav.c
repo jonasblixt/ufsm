@@ -133,13 +133,25 @@ void ufsmm_nav_render(struct ufsmm_canvas *canvas,
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
         render_one_page(canvas, r);
+
+        /* Draw a rectangle around the miniature of the region */
         cairo_save(cr);
         cairo_set_line_width (cr, 4);
         ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_FG4);
         cairo_rectangle (cr, 0, 0, psx, psy);
-
         cairo_stroke(cr);
         cairo_restore(cr);
+
+        /* Render the region name */
+        cairo_save(cr);
+        ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_ORANGE1);
+        cairo_set_font_size (cr, 128);
+        cairo_move_to (cr, 100, 2300);
+        cairo_show_text (cr, r->name);
+        printf("Region name: %s\n", r->name);
+        cairo_stroke(cr);
+        cairo_restore(cr);
+
         col_count++;
 
         if (col_count >= n_per_row) {

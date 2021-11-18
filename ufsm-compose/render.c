@@ -20,8 +20,8 @@ int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
     static struct ufsmm_stack *stack;
 
     cairo_save(canvas->cr);
-    cairo_scale(canvas->cr, canvas->current_region->scale,
-                            canvas->current_region->scale);
+    cairo_scale(canvas->cr, canvas->current_region->scale / 2.0,
+                            canvas->current_region->scale / 2.0);
 
     cairo_translate(canvas->cr, canvas->current_region->ox,
                                 canvas->current_region->oy);
