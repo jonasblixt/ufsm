@@ -13,7 +13,8 @@ bool ufsmm_region_is_root_or_offpage(struct ufsmm_region *r)
     return false;
 }
 
-int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
+int ufsmm_get_region_absolute_coords(struct ufsmm_canvas *canvas,
+                                     struct ufsmm_region *r, double *x,
                                                            double *y,
                                                            double *w,
                                                            double *h)
@@ -29,8 +30,8 @@ int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
     if (r->draw_as_root) {
         *x = 0;
         *y = 0;
-        *h = 1190;
-        *w = 1684;
+        *w = ufsmm_paper_size_x(canvas->model->paper_size);
+        *h = ufsmm_paper_size_y(canvas->model->paper_size);
         return UFSMM_OK;
     } else {
         if (r->parent_state) {
@@ -70,7 +71,8 @@ int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
     return 0;
 }
 
-int ufsmm_region_get_at_xy(struct ufsmm_region *region, double px, double py,
+int ufsmm_region_get_at_xy(struct ufsmm_canvas *canvas,
+                           struct ufsmm_region *region, double px, double py,
                            struct ufsmm_region **out, int *depth)
 {
     int d = 0;
@@ -96,7 +98,7 @@ int ufsmm_region_get_at_xy(struct ufsmm_region *region, double px, double py,
             continue;
         d++;
 
-        ufsmm_get_region_absolute_coords(r, &x, &y, &w, &h);
+        ufsmm_get_region_absolute_coords(canvas, r, &x, &y, &w, &h);
 
         x += ox;
         y += oy;

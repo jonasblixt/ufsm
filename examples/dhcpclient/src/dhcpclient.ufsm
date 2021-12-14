@@ -2,6 +2,7 @@
   "kind":"uFSM Model",
   "version":0,
   "name":"New model",
+  "paper-size":2,
   "triggers":[
     {
       "name":"DHCPNAK",
@@ -114,19 +115,14 @@
     "states":[
       {
         "id":"07046070-fe9a-414b-890a-15b275e6b0b5",
-        "name":"BroadcastMode",
+        "name":"Broadcast Mode",
         "kind":"state",
         "width":1090.0,
         "height":530.0,
-        "x":320.0,
-        "y":90.0,
+        "x":650.0,
+        "y":290.0,
         "orientation":0,
         "entries":[
-          {
-            "id":"abc347b6-9add-4f42-9154-9cfec62f5a7e",
-            "kind":0,
-            "action-id":"a2db5c9a-139d-4851-bfc7-476d5164ae2f"
-          },
           {
             "id":"67cd4e28-0215-4493-914f-5edfd2b1a190",
             "kind":0,
@@ -134,6 +130,11 @@
           }
         ],
         "exits":[
+          {
+            "id":"46516df8-981f-4264-ab92-4751e44eee42",
+            "kind":0,
+            "action-id":"51d62b5c-8e12-4c35-a653-e052d2ece2bc"
+          }
         ],
         "region":[
           {
@@ -148,8 +149,8 @@
                 "kind":"state",
                 "width":700.0,
                 "height":90.0,
-                "x":490.0,
-                "y":250.0,
+                "x":820.0,
+                "y":450.0,
                 "orientation":0,
                 "entries":[
                   {
@@ -177,8 +178,8 @@
                       "offset":60.0
                     },
                     "text-block":{
-                      "x":830.0,
-                      "y":370.0,
+                      "x":1160.0,
+                      "y":540.0,
                       "w":60.0,
                       "h":30.0
                     },
@@ -197,8 +198,8 @@
                 "kind":"state",
                 "width":200.0,
                 "height":110.0,
-                "x":1020.0,
-                "y":450.0,
+                "x":1350.0,
+                "y":650.0,
                 "orientation":0,
                 "entries":[
                   {
@@ -226,8 +227,8 @@
                       "offset":630.0
                     },
                     "text-block":{
-                      "x":1170.0,
-                      "y":360.0,
+                      "x":1480.0,
+                      "y":530.0,
                       "w":180.0,
                       "h":50.0
                     },
@@ -257,8 +258,8 @@
                       "offset":730.0
                     },
                     "text-block":{
-                      "x":1060.0,
-                      "y":620.0,
+                      "x":1390.0,
+                      "y":810.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -277,8 +278,8 @@
                 "kind":"state",
                 "width":190.0,
                 "height":110.0,
-                "x":760.0,
-                "y":450.0,
+                "x":1090.0,
+                "y":650.0,
                 "orientation":0,
                 "entries":[
                   {
@@ -306,23 +307,23 @@
                       "offset":170.0
                     },
                     "text-block":{
-                      "x":930.0,
-                      "y":340.0,
+                      "x":1250.0,
+                      "y":530.0,
                       "w":170.0,
                       "h":50.0
                     },
                     "vertices":[
                       {
-                        "x":980.0,
-                        "y":470.0
+                        "x":1310.0,
+                        "y":670.0
                       },
                       {
-                        "x":980.0,
-                        "y":420.0
+                        "x":1310.0,
+                        "y":620.0
                       },
                       {
-                        "x":930.0,
-                        "y":420.0
+                        "x":1260.0,
+                        "y":620.0
                       }
                     ],
                     "guards":[
@@ -341,17 +342,17 @@
                     "source":{
                       "state":"41dd00c8-2325-4d7d-b05d-d6431a8e582a",
                       "side":"left",
-                      "offset":90.0
+                      "offset":60.0
                     },
                     "dest":{
                       "state":"03fe5670-fbf9-4081-8044-7c770080e55c",
                       "side":"right",
-                      "offset":90.0
+                      "offset":60.0
                     },
                     "text-block":{
-                      "x":680.0,
-                      "y":540.0,
-                      "w":100.0,
+                      "x":1010.0,
+                      "y":650.0,
+                      "w":60.0,
                       "h":30.0
                     },
                     "vertices":[
@@ -369,8 +370,8 @@
                 "kind":"state",
                 "width":180.0,
                 "height":110.0,
-                "x":490.0,
-                "y":450.0,
+                "x":820.0,
+                "y":650.0,
                 "orientation":0,
                 "entries":[
                   {
@@ -385,44 +386,6 @@
                 ],
                 "transitions":[
                   {
-                    "id":"95b3fcf4-805a-43a4-bcae-b1fc61572ec9",
-                    "trigger":"29c0a737-2c8d-4fab-84e7-e27bb79d8ab3",
-                    "source":{
-                      "state":"03fe5670-fbf9-4081-8044-7c770080e55c",
-                      "side":"right",
-                      "offset":20.0
-                    },
-                    "dest":{
-                      "state":"03fe5670-fbf9-4081-8044-7c770080e55c",
-                      "side":"top",
-                      "offset":160.0
-                    },
-                    "text-block":{
-                      "x":640.0,
-                      "y":380.0,
-                      "w":100.0,
-                      "h":30.0
-                    },
-                    "vertices":[
-                      {
-                        "x":700.0,
-                        "y":470.0
-                      },
-                      {
-                        "x":700.0,
-                        "y":430.0
-                      },
-                      {
-                        "x":650.0,
-                        "y":430.0
-                      }
-                    ],
-                    "guards":[
-                    ],
-                    "actions":[
-                    ]
-                  },
-                  {
                     "id":"c6171c11-8a71-452c-a02a-d42b77959d18",
                     "trigger":"7ec0c00a-de2a-49d9-b5fe-455ea4adf471",
                     "source":{
@@ -436,8 +399,8 @@
                       "offset":30.0
                     },
                     "text-block":{
-                      "x":340.0,
-                      "y":340.0,
+                      "x":670.0,
+                      "y":510.0,
                       "w":170.0,
                       "h":50.0
                     },
@@ -467,9 +430,9 @@
                       "offset":110.0
                     },
                     "text-block":{
-                      "x":610.0,
-                      "y":320.0,
-                      "w":190.0,
+                      "x":940.0,
+                      "y":530.0,
+                      "w":200.0,
                       "h":50.0
                     },
                     "vertices":[
@@ -498,8 +461,8 @@
                 "kind":"init",
                 "width":20.0,
                 "height":20.0,
-                "x":820.0,
-                "y":200.0,
+                "x":1150.0,
+                "y":400.0,
                 "orientation":0,
                 "entries":[
                 ],
@@ -521,8 +484,8 @@
                       "offset":340.0
                     },
                     "text-block":{
-                      "x":860.0,
-                      "y":190.0,
+                      "x":1190.0,
+                      "y":360.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -553,8 +516,8 @@
               "offset":90.0
             },
             "text-block":{
-              "x":420.0,
-              "y":610.0,
+              "x":750.0,
+              "y":810.0,
               "w":140.0,
               "h":50.0
             },
@@ -575,38 +538,48 @@
       },
       {
         "id":"efc9fa5c-4dcb-4e34-ad5f-c38864d4e6c0",
-        "name":"NormalMode",
+        "name":"Normal Mode",
         "kind":"state",
         "width":1090.0,
-        "height":480.0,
-        "x":320.0,
-        "y":690.0,
+        "height":630.0,
+        "x":650.0,
+        "y":890.0,
         "orientation":0,
         "entries":[
-          {
-            "id":"ed2668fa-b549-4563-a3fe-c5b69cbe93de",
-            "kind":0,
-            "action-id":"51d62b5c-8e12-4c35-a653-e052d2ece2bc"
-          },
           {
             "id":"9817b669-79ff-4766-a12f-74553794e92c",
             "kind":0,
             "action-id":"9cddcaf9-4ed2-46f8-8b8c-b4929120ad72"
           },
           {
-            "id":"46d1708c-eed5-4a69-81b4-e334732d88f0",
+            "id":"1655cd7c-9a5a-4f6c-8aa8-4db9c0a1f452",
             "kind":0,
-            "action-id":"3771b7d6-c321-4ef5-9fef-d44b35aa37d3"
+            "action-id":"988244f1-ac79-4f16-b12c-058371b378bd"
+          },
+          {
+            "id":"38d4c605-7828-4c25-a3af-743f70fe7dbe",
+            "kind":0,
+            "action-id":"3de777e2-b34b-4073-b461-4a82725dd019"
           }
         ],
         "exits":[
+          {
+            "id":"728eb45e-2b51-4412-8320-a4de0baaacba",
+            "kind":0,
+            "action-id":"a2db5c9a-139d-4851-bfc7-476d5164ae2f"
+          },
+          {
+            "id":"78ad5e05-4a53-4e00-b4de-2901f9a1050d",
+            "kind":0,
+            "action-id":"3771b7d6-c321-4ef5-9fef-d44b35aa37d3"
+          }
         ],
         "region":[
           {
             "id":"ba505924-6c37-46cc-8499-ac2538709971",
             "name":"New region",
             "off_page":false,
-            "height":360,
+            "height":470,
             "states":[
               {
                 "id":"346a3994-a913-4307-90e1-9b2e737d57bc",
@@ -614,8 +587,8 @@
                 "kind":"state",
                 "width":190.0,
                 "height":250.0,
-                "x":1000.0,
-                "y":900.0,
+                "x":1350.0,
+                "y":1150.0,
                 "orientation":0,
                 "entries":[
                   {
@@ -643,8 +616,8 @@
                       "offset":70.0
                     },
                     "text-block":{
-                      "x":850.0,
-                      "y":910.0,
+                      "x":1200.0,
+                      "y":1160.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -661,197 +634,16 @@
                 "id":"b52d936f-44f7-4787-9d0a-f45ed6376066",
                 "name":"Bound",
                 "kind":"state",
-                "width":370.0,
+                "width":250.0,
                 "height":250.0,
-                "x":440.0,
-                "y":900.0,
+                "x":910.0,
+                "y":1150.0,
                 "orientation":0,
                 "entries":[
-                  {
-                    "id":"544b81f7-8a0e-4034-a22d-dc91eb9e7e00",
-                    "kind":0,
-                    "action-id":"988244f1-ac79-4f16-b12c-058371b378bd"
-                  },
-                  {
-                    "id":"b6def7c1-6e70-4df3-bcdd-8874c54978c3",
-                    "kind":0,
-                    "action-id":"3de777e2-b34b-4073-b461-4a82725dd019"
-                  }
                 ],
                 "exits":[
                 ],
                 "region":[
-                  {
-                    "id":"2db1af1b-6fe2-4e42-83e3-362035b341fb",
-                    "name":"New region",
-                    "off_page":false,
-                    "height":160,
-                    "states":[
-                      {
-                        "id":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
-                        "name":"Bound inner",
-                        "kind":"state",
-                        "width":160.0,
-                        "height":120.0,
-                        "x":550.0,
-                        "y":1010.0,
-                        "orientation":0,
-                        "entries":[
-                        ],
-                        "exits":[
-                        ],
-                        "region":[
-                        ],
-                        "transitions":[
-                          {
-                            "id":"2bc4da3e-736d-4cce-ae3e-51132f8e7796",
-                            "trigger":"7ec0c00a-de2a-49d9-b5fe-455ea4adf471",
-                            "source":{
-                              "state":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
-                              "side":"left",
-                              "offset":50.0
-                            },
-                            "dest":{
-                              "state":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
-                              "side":"left",
-                              "offset":30.0
-                            },
-                            "text-block":{
-                              "x":450.0,
-                              "y":980.0,
-                              "w":80.0,
-                              "h":30.0
-                            },
-                            "vertices":[
-                              {
-                                "x":520.0,
-                                "y":1060.0
-                              },
-                              {
-                                "x":520.0,
-                                "y":1040.0
-                              }
-                            ],
-                            "guards":[
-                            ],
-                            "actions":[
-                            ]
-                          },
-                          {
-                            "id":"1bcaccb4-e2e4-403a-965b-ef1653782019",
-                            "trigger":"29c0a737-2c8d-4fab-84e7-e27bb79d8ab3",
-                            "source":{
-                              "state":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
-                              "side":"left",
-                              "offset":100.0
-                            },
-                            "dest":{
-                              "state":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
-                              "side":"left",
-                              "offset":80.0
-                            },
-                            "text-block":{
-                              "x":450.0,
-                              "y":1040.0,
-                              "w":100.0,
-                              "h":30.0
-                            },
-                            "vertices":[
-                              {
-                                "x":520.0,
-                                "y":1110.0
-                              },
-                              {
-                                "x":520.0,
-                                "y":1090.0
-                              }
-                            ],
-                            "guards":[
-                            ],
-                            "actions":[
-                            ]
-                          },
-                          {
-                            "id":"f6620709-97e8-4772-9219-6cb27a8f6aa4",
-                            "trigger":"39a929a0-2ff4-4181-8127-c70b6a94ca0d",
-                            "source":{
-                              "state":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
-                              "side":"right",
-                              "offset":90.0
-                            },
-                            "dest":{
-                              "state":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
-                              "side":"right",
-                              "offset":70.0
-                            },
-                            "text-block":{
-                              "x":720.0,
-                              "y":1020.0,
-                              "w":100.0,
-                              "h":30.0
-                            },
-                            "vertices":[
-                              {
-                                "x":740.0,
-                                "y":1100.0
-                              },
-                              {
-                                "x":740.0,
-                                "y":1080.0
-                              }
-                            ],
-                            "guards":[
-                            ],
-                            "actions":[
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "id":"b468e5f3-833a-455c-a83d-504609f852cd",
-                        "name":"Init",
-                        "kind":"init",
-                        "width":20.0,
-                        "height":20.0,
-                        "x":760.0,
-                        "y":1020.0,
-                        "orientation":0,
-                        "entries":[
-                        ],
-                        "exits":[
-                        ],
-                        "region":[
-                        ],
-                        "transitions":[
-                          {
-                            "id":"f57b0c4b-a956-487a-9b27-2b8dc6f8e316",
-                            "source":{
-                              "state":"b468e5f3-833a-455c-a83d-504609f852cd",
-                              "side":"left",
-                              "offset":10.0
-                            },
-                            "dest":{
-                              "state":"ce0741d0-8513-494d-9fe0-f1fdade813ef",
-                              "side":"right",
-                              "offset":20.0
-                            },
-                            "text-block":{
-                              "x":710.0,
-                              "y":970.0,
-                              "w":100.0,
-                              "h":30.0
-                            },
-                            "vertices":[
-                            ],
-                            "guards":[
-                            ],
-                            "actions":[
-                            ]
-                          }
-                        ]
-                      }
-                    ]
-                  }
                 ],
                 "transitions":[
                   {
@@ -868,12 +660,46 @@
                       "offset":210.0
                     },
                     "text-block":{
-                      "x":850.0,
-                      "y":1050.0,
+                      "x":1210.0,
+                      "y":1310.0,
                       "w":100.0,
                       "h":30.0
                     },
                     "vertices":[
+                    ],
+                    "guards":[
+                    ],
+                    "actions":[
+                    ]
+                  },
+                  {
+                    "id":"2bc4da3e-736d-4cce-ae3e-51132f8e7796",
+                    "trigger":"7ec0c00a-de2a-49d9-b5fe-455ea4adf471",
+                    "source":{
+                      "state":"b52d936f-44f7-4787-9d0a-f45ed6376066",
+                      "side":"left",
+                      "offset":70.0
+                    },
+                    "dest":{
+                      "state":"b52d936f-44f7-4787-9d0a-f45ed6376066",
+                      "side":"left",
+                      "offset":40.0
+                    },
+                    "text-block":{
+                      "x":750.0,
+                      "y":1170.0,
+                      "w":80.0,
+                      "h":30.0
+                    },
+                    "vertices":[
+                      {
+                        "x":870.0,
+                        "y":1220.0
+                      },
+                      {
+                        "x":870.0,
+                        "y":1190.0
+                      }
                     ],
                     "guards":[
                     ],
@@ -888,8 +714,8 @@
                 "kind":"init",
                 "width":20.0,
                 "height":20.0,
-                "x":620.0,
-                "y":830.0,
+                "x":1030.0,
+                "y":1090.0,
                 "orientation":0,
                 "entries":[
                 ],
@@ -908,11 +734,11 @@
                     "dest":{
                       "state":"b52d936f-44f7-4787-9d0a-f45ed6376066",
                       "side":"top",
-                      "offset":190.0
+                      "offset":130.0
                     },
                     "text-block":{
-                      "x":650.0,
-                      "y":840.0,
+                      "x":1070.0,
+                      "y":1060.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -943,8 +769,8 @@
               "offset":1030.0
             },
             "text-block":{
-              "x":1360.0,
-              "y":620.0,
+              "x":1690.0,
+              "y":820.0,
               "w":100.0,
               "h":30.0
             },
@@ -969,8 +795,8 @@
               "offset":150.0
             },
             "text-block":{
-              "x":1180.0,
-              "y":620.0,
+              "x":1510.0,
+              "y":820.0,
               "w":50.0,
               "h":30.0
             },
@@ -989,8 +815,8 @@
         "kind":"init",
         "width":20.0,
         "height":20.0,
-        "x":840.0,
-        "y":20.0,
+        "x":1170.0,
+        "y":220.0,
         "orientation":0,
         "entries":[
         ],
@@ -1012,8 +838,8 @@
               "offset":530.0
             },
             "text-block":{
-              "x":870.0,
-              "y":20.0,
+              "x":1200.0,
+              "y":220.0,
               "w":100.0,
               "h":30.0
             },

@@ -31,7 +31,8 @@ static void uu_to_str(uuid_t uu, char *output)
     }
 }
 
-static void generate_transitions(FILE *fp, struct ufsmm_state *s)
+static void generate_transitions(FILE *fp, struct ufsmm_state *s,
+                                 int strip_level)
 {
     char uu_str[37];
     struct ufsmm_transition *t;
@@ -64,12 +65,18 @@ static void generate_transitions(FILE *fp, struct ufsmm_state *s)
             uu_to_str(ar->id, uu_str);
             fprintf(fp, "const struct ufsm_action a_%s = {\n", uu_str);
             if (ar->kind == UFSMM_ACTION_REF_NORMAL) {
-                fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
+                if (strip_level > 1)
+                    fprintf(fp, "    .name = \"\",\n");
+                else
+                    fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
                 fprintf(fp, "    .f = &%s,\n", ar->act->name);
                 fprintf(fp, "    .signal = NULL,\n");
                 fprintf(fp, "    .kind = UFSM_ACTION_KIND_NORMAL,\n");
             } else if (ar->kind == UFSMM_ACTION_REF_SIGNAL) {
-                fprintf(fp, "    .name = \"%s\",\n", ar->signal->name);
+                if (strip_level > 1)
+                    fprintf(fp, "    .name = \"\",\n");
+                else
+                    fprintf(fp, "    .name = \"%s\",\n", ar->signal->name);
                 fprintf(fp, "    .f = NULL,\n");
                 uu_to_str(ar->signal->id, uu_str);
                 fprintf(fp, "    .signal = &trigger_%s,\n", uu_str);
@@ -89,11 +96,17 @@ static void generate_transitions(FILE *fp, struct ufsmm_state *s)
             fprintf(fp, "const struct ufsm_guard g_%s = {\n", uu_str);
             if ((guard->kind != UFSMM_GUARD_PSTATE) &&
                 (guard->kind != UFSMM_GUARD_NSTATE)) {
-                fprintf(fp, "    .name = \"%s\",\n", guard->act->name);
+                if (strip_level > 1)
+                    fprintf(fp, "    .name = \"\",\n");
+                else
+                    fprintf(fp, "    .name = \"%s\",\n", guard->act->name);
                 fprintf(fp, "    .f = &%s,\n", guard->act->name);
             } else {
                 uu_to_str(guard->state->id, uu_str);
-                fprintf(fp, "    .name = \"%s\",\n", guard->state->name);
+                if (strip_level > 1)
+                    fprintf(fp, "    .name = \"\",\n");
+                else
+                    fprintf(fp, "    .name = \"%s\",\n", guard->state->name);
                 fprintf(fp, "    .state = &s_%s,\n", uu_str);
             }
             fprintf(fp, "    .kind = %i,\n", guard->kind);
@@ -147,7 +160,8 @@ static void generate_transitions(FILE *fp, struct ufsmm_state *s)
     }
 }
 
-static void generate_entry_and_exits(FILE *fp, struct ufsmm_state *s)
+static void generate_entry_and_exits(FILE *fp, struct ufsmm_state *s,
+                                     int strip_level)
 {
     char uu_str[37];
     struct ufsmm_action_ref *ar;
@@ -166,12 +180,18 @@ static void generate_entry_and_exits(FILE *fp, struct ufsmm_state *s)
         fprintf(fp, "const struct ufsm_action entry_%s = {\n", uu_str);
 
         if (ar->kind == UFSMM_ACTION_REF_NORMAL) {
-            fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
+            if (strip_level > 1)
+                fprintf(fp, "    .name = \"\",\n");
+            else
+                fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
             fprintf(fp, "    .f = &%s,\n", ar->act->name);
             fprintf(fp, "    .signal = NULL,\n");
             fprintf(fp, "    .kind = UFSM_ACTION_KIND_NORMAL,\n");
         } else if (ar->kind == UFSMM_ACTION_REF_SIGNAL) {
-            fprintf(fp, "    .name = \"%s\",\n", ar->signal->name);
+            if (strip_level > 1)
+                fprintf(fp, "    .name = \"\",\n");
+            else
+                fprintf(fp, "    .name = \"%s\",\n", ar->signal->name);
             fprintf(fp, "    .f = NULL,\n");
             uu_to_str(ar->signal->id, uu_str);
             fprintf(fp, "    .signal = &trigger_%s,\n", uu_str);
@@ -200,12 +220,18 @@ static void generate_entry_and_exits(FILE *fp, struct ufsmm_state *s)
         uu_to_str(ar->id, uu_str);
         fprintf(fp, "const struct ufsm_action exit_%s = {\n", uu_str);
         if (ar->kind == UFSMM_ACTION_REF_NORMAL) {
-            fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
+            if (strip_level > 1)
+                fprintf(fp, "    .name = \"\",\n");
+            else
+                fprintf(fp, "    .name = \"%s\",\n", ar->act->name);
             fprintf(fp, "    .f = &%s,\n", ar->act->name);
             fprintf(fp, "    .signal = NULL,\n");
             fprintf(fp, "    .kind = UFSM_ACTION_KIND_NORMAL,\n");
         } else if (ar->kind == UFSMM_ACTION_REF_SIGNAL) {
-            fprintf(fp, "    .name = \"%s\",\n", ar->signal->name);
+            if (strip_level > 1)
+                fprintf(fp, "    .name = \"\",\n");
+            else
+                fprintf(fp, "    .name = \"%s\",\n", ar->signal->name);
             fprintf(fp, "    .f = NULL,\n");
             uu_to_str(ar->signal->id, uu_str);
             fprintf(fp, "    .signal = &trigger_%s,\n", uu_str);
@@ -221,17 +247,22 @@ static void generate_entry_and_exits(FILE *fp, struct ufsmm_state *s)
     }
 }
 
-static void generate_state_output(FILE *fp, struct ufsmm_state *s)
+static void generate_state_output(FILE *fp, struct ufsmm_state *s,
+                                  int strip_level)
 {
     char uu_str[37];
 
-    generate_entry_and_exits(fp, s);
-    generate_transitions(fp, s);
+    generate_entry_and_exits(fp, s, strip_level);
+    generate_transitions(fp, s, strip_level);
 
     uu_to_str(s->id, uu_str);
     fprintf(fp, "const struct ufsm_state s_%s = {\n", uu_str);
     fprintf(fp, "    .index = %i,\n", state_counter++);
-    fprintf(fp, "    .name = \"%s\",\n", s->name);
+    if (strip_level > 1)
+        fprintf(fp, "    .name = \"\",\n");
+    else
+        fprintf(fp, "    .name = \"%s\",\n", s->name);
+
     const char *state_kind = "";
 
     switch (s->kind) {
@@ -305,7 +336,8 @@ static void generate_state_output(FILE *fp, struct ufsmm_state *s)
     fprintf(fp, "};\n\n");
 }
 
-static void generate_region_output(FILE *fp, struct ufsmm_region *r)
+static void generate_region_output(FILE *fp, struct ufsmm_region *r,
+                                   int strip_level)
 {
     char uu_str[37];
     bool region_has_history = false;
@@ -342,7 +374,11 @@ static void generate_region_output(FILE *fp, struct ufsmm_region *r)
     uu_to_str(r->id, uu_str);
     fprintf(fp, "const struct ufsm_region r_%s = {\n", uu_str);
     fprintf(fp, "    .index = %i,\n", region_counter++);
-    fprintf(fp, "    .name = \"%s\",\n", r->name);
+    if (strip_level > 1)
+        fprintf(fp, "    .name = \"\",\n");
+    else
+        fprintf(fp, "    .name = \"%s\",\n", r->name);
+
     if (region_has_history)
         fprintf(fp, "    .has_history = true,\n");
     else
@@ -397,7 +433,8 @@ static int generate_c_file(struct ufsmm_model *model,
                                 const char *filename,
                                 unsigned int stack_elements,
                                 unsigned int stack2_elements,
-                                FILE *fp)
+                                FILE *fp,
+                                int strip_level)
 {
     int rc = 0;
     struct ufsmm_region *r, *r2;
@@ -436,7 +473,10 @@ static int generate_c_file(struct ufsmm_model *model,
     TAILQ_FOREACH(t, &model->triggers, tailq) {
         uu_to_str(t->id, uu_str);
         fprintf(fp, "const struct ufsm_trigger trigger_%s = {\n", uu_str);
-        fprintf(fp, "    .name = \"%s\",\n", t->name);
+        if (strip_level > 1)
+            fprintf(fp, "    .name = \"\",\n");
+        else
+            fprintf(fp, "    .name = \"%s\",\n", t->name);
         fprintf(fp, "    .trigger = %s,\n", t->name);
         fprintf(fp, "};\n\n");
     }
@@ -446,9 +486,9 @@ static int generate_c_file(struct ufsmm_model *model,
 
     while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK)
     {
-        generate_region_output(fp, r);
+        generate_region_output(fp, r, strip_level);
         TAILQ_FOREACH(s, &r->states, tailq) {
-            generate_state_output(fp, s);
+            generate_state_output(fp, s, strip_level);
 
             TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, (void *) r2);
@@ -669,7 +709,7 @@ int ufsm_gen_output(struct ufsmm_model *model, const char *output_filename,
     }
 
     rc = generate_c_file(model, output_filename, stack_elements,
-                            stack2_elements, fp_c);
+                            stack2_elements, fp_c, strip_level);
 
     if (rc != 0) {
         fprintf(stderr, "Error: Could not generate header file '%s.h'\n",

@@ -32,7 +32,6 @@ struct ufsmm_canvas {
     /* Copy/Paste stuff */
     struct ufsmm_region *copy_bfr;
     /* Common stuff */
-    bool nav_mode;
     bool draw_menu;
     struct menu *menu;
     struct ufsmm_undo_context *undo;
@@ -41,6 +40,8 @@ struct ufsmm_canvas {
     double dx, dy;
     double px, py; /* Location of mouse pointer */
     double sx, sy; /* Start coordinates */
+    int window_width;
+    int window_height;
     GtkWidget *widget;
     GtkWidget *root_window;
     cairo_t *cr;

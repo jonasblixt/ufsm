@@ -300,7 +300,7 @@ inline static void ufsm_update_history(struct ufsm_machine *m,
     }
 }
 
-static const struct ufsm_transition *ufsm_get_first_state (const struct ufsm_region *region)
+static const struct ufsm_transition *ufsm_get_first_transition (const struct ufsm_region *region)
 {
 
     for (const struct ufsm_state *s = region->state; s; s = s->next) {
@@ -622,7 +622,7 @@ static int ufsm_process_regions(struct ufsm_machine *m,
     const struct ufsm_region *r = dest->region;
 
     for (const struct ufsm_region *s_r = r; s_r; s_r = s_r->next) {
-        const struct ufsm_transition *init_t = ufsm_get_first_state(s_r);
+        const struct ufsm_transition *init_t = ufsm_get_first_transition(s_r);
 
         if (init_t == NULL) {
             err = ufsm_init_region_history(m, s_r);
@@ -916,7 +916,7 @@ int ufsm_init_machine(struct ufsm_machine *m, void *context)
     }
 
     for (const struct ufsm_region *r = m->region; r; r = r->next) {
-        const struct ufsm_transition *rt = ufsm_get_first_state(r);
+        const struct ufsm_transition *rt = ufsm_get_first_transition(r);
 
         err = ufsm_make_transition(m, rt, r);
 
@@ -943,29 +943,28 @@ static void ufsm_transition(struct ufsm_machine *m, const struct ufsm_region *r,
                             int ev)
 {
     int rc;
-    const struct ufsm_state *current_state = m->r_data[r->index].current;
+    const struct ufsm_state *s = m->r_data[r->index].current;
 
-    for (const struct ufsm_state *s = r->state; s; s = s->next) {
-        for (const struct ufsm_transition *t = s->transition; t; t = t->next) {
-            if (ufsm_transition_has_trigger(t, ev) && (t->source == current_state)) {
-                rc = ufsm_make_transition(m, t, r);
+    for (const struct ufsm_transition *t = s->transition; t; t = t->next) {
+        if (ufsm_transition_has_trigger(t, ev)) {
+            rc = ufsm_make_transition(m, t, r);
 
-                struct ufsm_region *r2 = (struct ufsm_region *) r;
+            /* Transition might have failed because of a guard 
+                 continue and test next transition, if any.*/
+            if (rc != UFSM_OK)
+                continue;
 
-                while (r2 && (ev != -1) && rc == UFSM_OK) {
-                    if (r2->parent_state) {
-                        m->s_data[r2->parent_state->index].cant_exit = true;
-                        r2 = (struct ufsm_region *) r2->parent_state->parent_region;
-                    }
-                    else
-                        r2 = NULL;
-                }
+            struct ufsm_region *r2 = (struct ufsm_region *) r;
 
-                if (rc == UFSM_OK) {
-                    if (!r->next)
-                        break;
+            while (r2 && (ev != -1)) {
+                if (r2->parent_state) {
+                    m->s_data[r2->parent_state->index].cant_exit = true;
+                    r2 = (struct ufsm_region *) r2->parent_state->parent_region;
+                } else {
+                    r2 = NULL;
                 }
             }
+            break;
         }
     }
 }

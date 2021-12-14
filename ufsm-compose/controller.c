@@ -540,7 +540,7 @@ int canvas_clicked_on_selected(void *context)
     ufsmm_stack_push(stack, priv->current_region);
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
-        ufsmm_get_region_absolute_coords(r, &x, &y, &w, &h);
+        ufsmm_get_region_absolute_coords(priv, r, &x, &y, &w, &h);
 
         if (result)
             continue;
@@ -605,7 +605,7 @@ void canvas_process_selection(void *context)
     ufsmm_stack_push(stack, priv->current_region);
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
-        ufsmm_get_region_absolute_coords(r, &x, &y, &w, &h);
+        ufsmm_get_region_absolute_coords(priv, r, &x, &y, &w, &h);
 
         if (r->draw_as_root != true) {
             if (point_in_box2(priv->px - priv->current_region->ox,
@@ -907,7 +907,7 @@ void canvas_check_rresize_boxes(void *context)
     double px = priv->px;
     double py = priv->py;
 
-    ufsmm_get_region_absolute_coords(r, &x, &y, &w, &h);
+    ufsmm_get_region_absolute_coords(priv, r, &x, &y, &w, &h);
 
     x += priv->current_region->ox;
     y += priv->current_region->oy;
@@ -1423,7 +1423,7 @@ void canvas_move_state(void *context)
     /* Move all of the children */
 
     /* Check if state is dragged on top of another region, if so, re-parent state */
-    rc = ufsmm_region_get_at_xy(priv->current_region,
+    rc = ufsmm_region_get_at_xy(priv, priv->current_region,
                                     priv->px, priv->py, &new_pr, NULL);
 
     if (rc == UFSMM_OK && (s->parent_region != new_pr)) {
@@ -2175,6 +2175,13 @@ void canvas_add_entry(void *context)
                             v->y += y_off;
                             ufsmm_undo_move_vertice(undo_ops, v);
                         }
+
+                        t->text_block_coords.tx = t->text_block_coords.x;
+                        t->text_block_coords.ty = t->text_block_coords.y;
+                        t->text_block_coords.tw = t->text_block_coords.w;
+                        t->text_block_coords.th = t->text_block_coords.h;
+                        t->text_block_coords.y += y_off;
+                        ufsmm_undo_move_coords(undo_ops, &t->text_block_coords);
                     }
                 }
             }
@@ -2227,6 +2234,13 @@ void canvas_add_exit(void *context)
                             v->y += y_off;
                             ufsmm_undo_move_vertice(undo_ops, v);
                         }
+
+                        t->text_block_coords.tx = t->text_block_coords.x;
+                        t->text_block_coords.ty = t->text_block_coords.y;
+                        t->text_block_coords.tw = t->text_block_coords.w;
+                        t->text_block_coords.th = t->text_block_coords.h;
+                        t->text_block_coords.y += y_off;
+                        ufsmm_undo_move_coords(undo_ops, &t->text_block_coords);
                     }
                 }
             }
@@ -2528,7 +2542,7 @@ void canvas_new_state_set_start(void *context)
     double ox = priv->current_region->ox;
     double oy = priv->current_region->oy;
 
-    ufsmm_region_get_at_xy(priv->current_region, priv->px, priv->py,
+    ufsmm_region_get_at_xy(priv, priv->current_region, priv->px, priv->py,
                             &op->pr, NULL);
 
     op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - ox - 10);
@@ -2544,7 +2558,7 @@ void canvas_new_state_set_end(void *context)
     double ox = priv->current_region->ox;
     double oy = priv->current_region->oy;
 
-    ufsmm_region_get_at_xy(priv->current_region, priv->px, priv->py,
+    ufsmm_region_get_at_xy(priv, priv->current_region, priv->px, priv->py,
                             &op->pr, NULL);
 
     op->state->w = ufsmm_canvas_nearest_grid_point(priv->px - ox - 10) - op->state->x;
@@ -2705,6 +2719,35 @@ void canvas_create_transition_end(void *context)
     priv->redraw = true;
 }
 
+int canvas_check_transition_start(void *context)
+{
+    int rc;
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct transition_op *op = (struct transition_op *) priv->command_data;
+    struct ufsmm_region *cr = priv->current_region;
+    struct ufsmm_state *source_state;
+    int result = false;
+
+    rc = ufsmm_state_get_at_xy(priv->current_region,
+                                    priv->px,
+                                    priv->py,
+                                    &source_state, NULL);
+
+    if (rc == UFSMM_OK) {
+        L_DEBUG("Found source state: %s", source_state->name);
+
+        if ((source_state->kind == UFSMM_STATE_TERMINATE) ||
+            (source_state->kind == UFSMM_STATE_FINAL)) {
+            L_ERR("Transitions from terminate or final states are not allowed");
+            result = false;
+        } else {
+            result = true;
+        }
+    }
+
+    return result;
+}
+
 void canvas_create_transition_start(void *context)
 {
     int rc;
@@ -2775,6 +2818,15 @@ void canvas_create_transition(void *context)
                                      priv->current_region,
                                     &dest_side,
                                     &dest_offset);
+        if ((dest_state->kind == UFSMM_STATE_INIT) ||
+            (dest_state->kind == UFSMM_STATE_SHALLOW_HISTORY) ||
+            (dest_state->kind == UFSMM_STATE_DEEP_HISTORY)) {
+            L_ERR("Illegal transition destination");
+            op->commit = false;
+            goto err_out;
+        }
+
+
         L_DEBUG("Creating transition %s --> %s", op->t->source.state->name,
                                                  dest_state->name);
         op->t->dest.side = dest_side;
@@ -2789,6 +2841,7 @@ void canvas_create_transition(void *context)
         op->commit = true;
     }
 
+err_out:
     priv->redraw = true;
 }
 
@@ -2837,6 +2890,7 @@ static void create_simple_state_begin(void *context, enum ufsmm_state_kind kind,
     op->state->w = 20;
     op->state->h = 20;
     op->state->parent_region = priv->current_region;
+    L_DEBUG("Using region: %s", op->state->parent_region->name);
     priv->preview_state = op->state;
     ufsmm_state_set_name(op->state, name);
 }
@@ -2869,7 +2923,7 @@ static void add_simple_state_to_region(void *context)
     op->commit = true;
     ufsmm_region_append_state(op->pr, op->state);
     priv->redraw = true;
-    L_DEBUG("Added sstate to region '%s'", op->pr->name);
+    L_DEBUG("Added state to region '%s'", op->pr->name);
 }
 
 static void simple_state_update_preview(void *context)
@@ -2880,9 +2934,13 @@ static void simple_state_update_preview(void *context)
     double ox = priv->current_region->ox;
     double oy = priv->current_region->oy;
 
-    ufsmm_region_get_at_xy(priv->current_region, priv->px, priv->py,
+    L_DEBUG("priv->current_region = %s", priv->current_region->name);
+    ufsmm_region_get_at_xy(priv, priv->current_region, priv->px, priv->py,
                             &op->pr, NULL);
 
+    if (op->pr) {
+        L_DEBUG("op->pr = %s", op->pr->name);
+    }
     op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - ox - 10);
     op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - oy - 20);
     priv->redraw = true;
@@ -3118,7 +3176,7 @@ static void update_fork_join_start(void *context)
     double ox = priv->current_region->ox;
     double oy = priv->current_region->oy;
 
-    ufsmm_region_get_at_xy(priv->current_region, priv->px, priv->py,
+    ufsmm_region_get_at_xy(priv, priv->current_region, priv->px, priv->py,
                             &op->pr, NULL);
 
     op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - ox - 10);
@@ -3615,7 +3673,7 @@ static void mselect_move_end(void *context, bool undo)
         struct ufsmm_state *s = ms->state;
         L_DEBUG("Moved state '%s'", s->name);
         /* Check if state should have a new parent region */
-        rc = ufsmm_region_get_at_xy(priv->current_region,
+        rc = ufsmm_region_get_at_xy(priv, priv->current_region,
                                     s->x + s->w/2 + priv->current_region->ox,
                                     s->y + s->h/2 + priv->current_region->oy,
                                     &r, NULL);
@@ -3698,6 +3756,8 @@ void canvas_undo(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     L_DEBUG("%s", __func__);
     ufsmm_undo(priv->undo);
+    priv->selection = UFSMM_SELECTION_NONE;
+    canvas_reset_selection(context);
     priv->redraw = true;
 }
 
@@ -3706,6 +3766,8 @@ void canvas_redo(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     L_DEBUG("%s", __func__);
     ufsmm_redo(priv->undo);
+    priv->selection = UFSMM_SELECTION_NONE;
+    canvas_reset_selection(context);
     priv->redraw = true;
 }
 
@@ -3727,12 +3789,120 @@ void canvas_save_as(void *context)
     }
 }
 
-void canvas_toggle_nav(void *context)
-{
-}
 
 void canvas_select_all(void *context)
 {
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_stack *stack;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_state *s;
+    struct ufsmm_state *selected_state;
+    struct ufsmm_region *selected_region;
+    struct ufsmm_coords *selected_text_block;
+    struct ufsmm_action_ref *selected_action_ref = NULL;
+
+    priv->selection = UFSMM_SELECTION_NONE;
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+
+    /* Check states and regions */
+    ufsmm_stack_push(stack, priv->current_region);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        if (r->off_page && !r->draw_as_root)
+            continue;
+
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            s->selected = true;
+            priv->selection_count++;
+
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                ufsmm_stack_push(stack, r2);
+            }
+        }
+    }
+
+    /* Check transitions */
+    ufsmm_stack_push(stack, priv->current_region);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        if (r->off_page && !r->draw_as_root)
+            continue;
+
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            struct ufsmm_transition *t;
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
+                t->selected = true;
+                priv->selection_count++;
+            }
+
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                ufsmm_stack_push(stack, r2);
+            }
+        }
+    }
+
+    ufsmm_stack_free(stack);
+    ufsmm_canvas_set_selection(false, 0, 0, 0, 0);
+    priv->redraw = true;
+    priv->selection = UFSMM_SELECTION_MULTI;
+}
+
+void canvas_zoom_normal(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *r = priv->current_region;
+
+    int w = ufsmm_paper_size_x(priv->model->paper_size);
+    int h = ufsmm_paper_size_y(priv->model->paper_size);
+
+    r->scale = 1.0;
+    r->ox = priv->window_width - w/2;
+    r->oy = priv->window_height - h/2;
+    priv->redraw = true;
+}
+
+void canvas_zoom_fit(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    struct ufsmm_region *r = priv->current_region;
+
+    double w = ufsmm_paper_size_x(priv->model->paper_size);
+    double h = ufsmm_paper_size_y(priv->model->paper_size);
+
+    double scale_x = (double) priv->window_width / (w/2);
+    double scale_y = (double) priv->window_height / (h/2);
+    r->scale = scale_x;
+    L_DEBUG("Zoom = %f", r->scale);
+    r->ox = ((double) priv->window_width / r->scale) - w/2;
+    r->oy = ((double) priv->window_height / r->scale) - h/2;
+    priv->redraw = true;
+}
+
+void canvas_ascend(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+
+    if (priv->current_region->parent_state) {
+        L_DEBUG("Ascending to region: %s",
+                priv->current_region->parent_state->parent_region->name);
+        priv->current_region->draw_as_root = false;
+        do {
+            if (!priv->current_region->parent_state)
+                break;
+            priv->current_region = priv->current_region->parent_state->parent_region;
+        } while (!priv->current_region->off_page);
+        priv->current_region->draw_as_root = true;
+    }
+    priv->redraw = true;
+}
+
+void canvas_show_root(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+
+    priv->current_region->draw_as_root = false;
+    priv->current_region = priv->model->root;
+    priv->redraw = true;
 }
 
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
@@ -3740,20 +3910,7 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
     struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
-    if (event->keyval == GDK_KEY_A) {
-        if (priv->current_region->parent_state) {
-            L_DEBUG("Ascending to region: %s",
-                    priv->current_region->parent_state->parent_region->name);
-            priv->current_region->draw_as_root = false;
-            do {
-                if (!priv->current_region->parent_state)
-                    break;
-                priv->current_region = priv->current_region->parent_state->parent_region;
-            } while (!priv->current_region->off_page);
-            priv->current_region->draw_as_root = true;
-        }
-        priv->redraw = true;
-    } else if (event->keyval == GDK_KEY_Shift_L) {
+    if (event->keyval == GDK_KEY_Shift_L) {
         canvas_machine_process(&priv->machine, eKey_shift_down);
     } else if (event->keyval == GDK_KEY_Control_L) {
         canvas_machine_process(&priv->machine, eKey_ctrl_down);
@@ -3833,6 +3990,8 @@ static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
 {
     struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
+
+    gtk_widget_grab_focus(widget);
 
     priv->sx = ufsmm_canvas_nearest_grid_point(event->x / (priv->current_region->scale/2.0));
     priv->sy = ufsmm_canvas_nearest_grid_point(event->y / (priv->current_region->scale/2.0));
@@ -3914,8 +4073,6 @@ static gboolean motion_notify_event_cb(GtkWidget      *widget,
     priv->px = px;
     priv->py = py;
 
-    printf("px %.2f py %.2f\n", px, py);
-
     priv->dx = px - priv->sx;
     priv->dy = py - priv->sy;
 
@@ -3947,13 +4104,11 @@ static void draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data)
 
     priv->cr = cr;
     priv->menu->cr = cr;
+    priv->window_width = width;
+    priv->window_height = height;
 
-    if (priv->nav_mode == false) {
-        ufsmm_canvas_render(priv, width, height);
-        menu_render(priv->menu, priv->theme, priv->selection, width, height);
-    } else {
-        ufsmm_nav_render(priv, width, height);
-    }
+    ufsmm_canvas_render(priv, width, height);
+    menu_render(priv->menu, priv->theme, priv->selection, width, height);
 }
 
 static void destroy_event_cb(GtkWidget *widget)
@@ -4004,7 +4159,7 @@ GtkWidget* ufsmm_canvas_new(GtkWidget *parent)
     priv->widget = widget;
     priv->root_window = parent;
 
-    gtk_widget_set_events (widget, gtk_widget_get_events (widget)
+    gtk_widget_set_events(widget, gtk_widget_get_events(widget)
                                      | GDK_BUTTON_PRESS_MASK
                                      | GDK_BUTTON_RELEASE_MASK
                                      | GDK_SCROLL_MASK

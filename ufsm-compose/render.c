@@ -120,7 +120,7 @@ int ufsmm_canvas_render_region(struct ufsmm_canvas *canvas,
     if (region->draw_as_root)
         return UFSMM_OK;
 
-    ufsmm_get_region_absolute_coords(region, &x, &y, &w, &h);
+    ufsmm_get_region_absolute_coords(canvas, region, &x, &y, &w, &h);
 
     if (nav_mode == false) {
         if (region->selected || region->off_page) {
@@ -1082,17 +1082,20 @@ int ufsmm_canvas_render_grid(struct ufsmm_canvas *canvas, int width, int height)
         step_size = 20;
     }
 
+    int w = (width / step_size) * step_size;
+    int h = (height / step_size) * step_size;
+
     /* Draw grid */
-    for (int x = 0; x < width/step_size; x++)
+    for (int x = 0; x <= w/step_size; x++)
     {
         cairo_move_to (cr, x*step_size, 0);
-        cairo_line_to (cr, x*step_size, height);
+        cairo_line_to (cr, x*step_size, h);
     }
 
-    for (int y = 0; y < height/step_size; y++)
+    for (int y = 0; y <= h/step_size; y++)
     {
         cairo_move_to (cr, 0, y*step_size);
-        cairo_line_to (cr, width, y*step_size);
+        cairo_line_to (cr, w, y*step_size);
     }
 
     ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_BG1);

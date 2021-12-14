@@ -2,6 +2,7 @@
 #define UFSMM_UTILS_H
 
 #include <ufsm/model.h>
+#include "controller.h"
 
 /* Detection box centered around <x, y>*/
 inline bool point_in_box(double px, double py,
@@ -42,10 +43,12 @@ inline bool point_in_box3(double px, double py,
     return false;
 }
 
-int ufsmm_region_get_at_xy(struct ufsmm_region *region, double px, double py,
+int ufsmm_region_get_at_xy(struct ufsmm_canvas *canvas,
+                           struct ufsmm_region *region, double px, double py,
                            struct ufsmm_region **out, int *depth);
 
-int ufsmm_get_region_absolute_coords(struct ufsmm_region *r, double *x,
+int ufsmm_get_region_absolute_coords(struct ufsmm_canvas *canvas,
+                                    struct ufsmm_region *r, double *x,
                                                            double *y,
                                                            double *w,
                                                            double *h);

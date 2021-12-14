@@ -93,7 +93,7 @@ int main(int argc, char **argv)
         {"input",     required_argument, 0,  'i' },
         {"output",    required_argument, 0,  'o' },
         {"prefix",    required_argument, 0,  'p' },
-        {"strip",     optional_argument, 0,  's' },
+        {"strip",     required_argument, 0,  's' },
         {0,           0,                 0,   0  }
     };
 
@@ -119,9 +119,7 @@ int main(int argc, char **argv)
                     path_prefix = optarg;
             break;
             case 's':
-                if (optarg) {
-                    strip_level = (int) strtol(optarg, NULL, 10);
-                }
+                strip_level = (int) strtol(optarg, NULL, 10);
             break;
             case 'h':
                 display_usage();

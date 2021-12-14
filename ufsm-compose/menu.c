@@ -777,9 +777,17 @@ void menu_render(struct menu *menu,
     cairo_new_sub_path(menu->cr);
     cairo_set_line_width(menu->cr, 1);
     ufsmm_color_set(menu->cr, theme, UFSMM_COLOR_AQUA1);
-    cairo_rectangle (menu->cr, width - 60, height - 57, 20, 2);
-    cairo_rectangle (menu->cr, width - 60, height - 51, 20, 2);
-    cairo_rectangle (menu->cr, width - 60, height - 45, 20, 2);
+
+    cairo_arc(menu->cr, width - 56,  height - 57, 4, 0, 2 * M_PI);
+    cairo_stroke_preserve(menu->cr);
+    cairo_fill(menu->cr);
+    cairo_arc(menu->cr, width - 56,  height - 45, 4, 0, 2 * M_PI);
+    cairo_stroke_preserve(menu->cr);
+    cairo_fill(menu->cr);
+    cairo_arc(menu->cr, width - 44,  height - 57, 4, 0, 2 * M_PI);
+    cairo_stroke_preserve(menu->cr);
+    cairo_fill(menu->cr);
+    cairo_arc(menu->cr, width - 44,  height - 45, 4, 0, 2 * M_PI);
     cairo_stroke_preserve(menu->cr);
     cairo_fill(menu->cr);
     cairo_restore(menu->cr);
@@ -796,7 +804,7 @@ void menu_render(struct menu *menu,
 
             x -= 50;
         }
-
+/*
         x = width - 50;
         y = height - 100;
 
@@ -806,7 +814,7 @@ void menu_render(struct menu *menu,
             mitem->render(menu, mitem);
 
             y -= 50;
-        }
+        }*/
     }
 }
 
@@ -833,13 +841,13 @@ bool menu_process(struct menu *menu, struct ufsm_machine *m, double px, double p
                 mitem->action(m);
                 return true;
             }
-        }
+        }/*
         for (struct menu_item *mitem = vmenu; mitem->render; mitem++) {
             if (point_in_box(px, py, mitem->x, mitem->y, 40, 40) && mitem->enabled) {
                 mitem->action(m);
                 return true;
             }
-        }
+        }*/
     }
 
     return false;

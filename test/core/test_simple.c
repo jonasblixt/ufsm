@@ -67,7 +67,7 @@ static struct ufsm_state B =
     .index = 1,
     .name = "State B",
     .kind = UFSM_STATE_SIMPLE,
-    .transition = &simple_transition_B,
+    .transition = &simple_transition_A,
     .parent_region = &region1,
     .next = NULL,
 };
@@ -77,7 +77,7 @@ static struct ufsm_state A =
     .index = 2,
     .name = "State A",
     .kind = UFSM_STATE_SIMPLE,
-    .transition = &simple_transition_A,
+    .transition = &simple_transition_B,
     .parent_region = &region1,
     .next = &B,
 };

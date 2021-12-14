@@ -1,8 +1,10 @@
 #ifndef UFSMM_NAV_H
 #define UFSMM_NAV_H
 
+#include <gtk/gtk.h>
 #include "controller.h"
 
-void ufsmm_nav_render(struct ufsmm_canvas *canvas,
-                      int width, int height);
+GtkWidget* ufsmm_nav_init(void);
+int ufsmm_nav_update(struct ufsmm_model *model);
+
 #endif
