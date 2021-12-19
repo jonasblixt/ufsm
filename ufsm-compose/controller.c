@@ -3905,6 +3905,11 @@ void canvas_show_root(void *context)
     priv->redraw = true;
 }
 
+void canvas_nav_toggle(void *context)
+{
+    ufsmm_nav_toggle_visibility((struct ufsmm_canvas *) context);
+}
+
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     struct ufsmm_canvas *priv =
@@ -4000,7 +4005,9 @@ static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
         ufsm_process(&priv->machine.machine, eRMBDown);
     } else if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
         if (!menu_process(priv->menu, &priv->machine.machine, event->x, event->y)) {
-            ufsm_process(&priv->machine.machine, eLMBDown);
+            if (!ufsmm_nav_process(priv, event->x, event->y)) {
+                ufsm_process(&priv->machine.machine, eLMBDown);
+            }
         } else {
             priv->redraw = true;
         }
@@ -4048,10 +4055,14 @@ static gboolean scroll_event_cb(GtkWidget *widget, GdkEventScroll *event)
     struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
-    if (event->direction == GDK_SCROLL_UP)
-        canvas_machine_process(&priv->machine, eScrollUp);
-    else if (event->direction == GDK_SCROLL_DOWN)
-        canvas_machine_process(&priv->machine, eScrollDown);
+    double nav_scroll = (event->direction == GDK_SCROLL_UP)?50:-50;
+
+    if (!ufsmm_nav_scroll(priv, nav_scroll)) {
+        if (event->direction == GDK_SCROLL_UP)
+            canvas_machine_process(&priv->machine, eScrollUp);
+        else if (event->direction == GDK_SCROLL_DOWN)
+            canvas_machine_process(&priv->machine, eScrollDown);
+    }
 
     if (priv->redraw) {
         gtk_widget_queue_draw(priv->widget);
@@ -4108,6 +4119,7 @@ static void draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data)
     priv->window_height = height;
 
     ufsmm_canvas_render(priv, width, height);
+    ufsmm_nav_render(priv, width, height);
     menu_render(priv->menu, priv->theme, priv->selection, width, height);
 }
 

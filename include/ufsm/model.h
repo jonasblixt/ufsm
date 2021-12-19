@@ -222,6 +222,14 @@ TAILQ_HEAD(ufsmm_transitions, ufsmm_transition);
 
 TAILQ_HEAD(ufsmm_states, ufsmm_state);
 
+struct ufsmm_nav_tree_node
+{
+    double x, y;
+    bool expanded;
+    struct ufsmm_coords text_block;
+    struct ufsmm_coords expander;
+};
+
 struct ufsmm_region
 {
     uuid_t id;
@@ -235,6 +243,7 @@ struct ufsmm_region
     double scale;
     struct ufsmm_states states;
     struct ufsmm_state *parent_state;
+    struct ufsmm_nav_tree_node nav_node;
     TAILQ_ENTRY(ufsmm_region) tailq;
 };
 
@@ -262,6 +271,7 @@ struct ufsmm_state
     struct ufsmm_regions regions;
     struct ufsmm_region *parent_region;
     struct ufsmm_region *tparent_region; /* Support variable for undo */
+    struct ufsmm_nav_tree_node nav_node;
     TAILQ_ENTRY(ufsmm_state) tailq;
 };
 
