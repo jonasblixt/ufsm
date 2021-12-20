@@ -272,6 +272,13 @@ struct ufsmm_state
     struct ufsmm_region *parent_region;
     struct ufsmm_region *tparent_region; /* Support variable for undo */
     struct ufsmm_nav_tree_node nav_node;
+    /* Draw guide lines */
+    bool dg_horizontal;
+    bool dg_vertical;
+    bool dg_same_height;
+    bool dg_same_width;
+    bool dg_same_y;
+    bool dg_same_x;
     TAILQ_ENTRY(ufsmm_state) tailq;
 };
 

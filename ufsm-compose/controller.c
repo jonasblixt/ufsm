@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <ufsm/ufsm.h>
 #include <gtk/gtk.h>
+#include <math.h>
 #include "controller.h"
 #include "render.h"
 #include "utils.h"
@@ -23,6 +24,137 @@ struct transition_ref {
 };
 
 TAILQ_HEAD(transition_refs, transition_ref);
+
+static void snap_x(struct ufsmm_canvas *canvas, double threshold)
+{
+    if (canvas->snap_x)
+        return;
+
+    double px = canvas->px * (canvas->current_region->scale / 2.0);
+    canvas->snap_x = true;
+    canvas->snap_x_val = px;
+    canvas->snap_x_threshold = threshold;
+}
+
+static void snap_y(struct ufsmm_canvas *canvas, double threshold)
+{
+    if (canvas->snap_y)
+        return;
+
+    double py = canvas->py * (canvas->current_region->scale / 2.0);
+    canvas->snap_y = true;
+    canvas->snap_y_val = py;
+    canvas->snap_y_threshold = threshold;
+}
+
+static void reset_state_dg(struct ufsmm_canvas *canvas,
+                           struct ufsmm_region *current_region)
+{
+    struct ufsmm_stack *stack;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_state *s;
+
+    L_DEBUG("Reset state DG");
+
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_push(stack, current_region);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            s->dg_vertical = false;
+            s->dg_horizontal = false;
+            s->dg_same_height = false;
+            s->dg_same_width = false;
+            s->dg_same_y = false;
+            s->dg_same_x = false;
+
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                if (!r2->off_page) {
+                    ufsmm_stack_push(stack, r2);
+                }
+            }
+        }
+    }
+
+    ufsmm_stack_free(stack);
+}
+
+static void update_state_dg(struct ufsmm_canvas *canvas,
+                            struct ufsmm_state *selected_state,
+                            struct ufsmm_region *current_region,
+                            bool size_snap)
+{
+    struct ufsmm_stack *stack;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_state *s;
+
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    selected_state->dg_vertical = false;
+    selected_state->dg_horizontal = false;
+    selected_state->dg_same_width = false;
+    selected_state->dg_same_height = false;
+    selected_state->dg_same_y = false;
+    selected_state->dg_same_x = false;
+
+    reset_state_dg(canvas, current_region);
+
+    ufsmm_stack_push(stack, current_region);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            if (s != selected_state) {
+                if ((s->y + s->h/2) == (selected_state->y +
+                                        selected_state->h/2)) {
+                    s->dg_horizontal = true;
+                    selected_state->dg_horizontal = true;
+                    snap_y(canvas, 50);
+                }
+
+                if ((s->x + s->w/2) == (selected_state->x +
+                                        selected_state->w/2)) {
+                    s->dg_vertical = true;
+                    selected_state->dg_vertical = true;
+                    snap_x(canvas, 50);
+                }
+
+                if (size_snap) {
+                    if (selected_state->h == s->h) {
+                        selected_state->dg_same_height = true;
+                        s->dg_same_height = true;
+                        snap_y(canvas, 50);
+                    }
+
+                    if (selected_state->w == s->w) {
+                        selected_state->dg_same_width = true;
+                        s->dg_same_width = true;
+                        snap_x(canvas, 50);
+                    }
+                }
+
+                if (selected_state->y == s->y) {
+                    L_DEBUG("%s and %s have same y", selected_state->name, s->name);
+                    selected_state->dg_same_y = true;
+                    s->dg_same_y = true;
+                    snap_y(canvas, 50);
+                }
+
+                if (selected_state->x == s->x) {
+                    selected_state->dg_same_x = true;
+                    s->dg_same_x = true;
+                    snap_x(canvas, 50);
+                }
+            }
+
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                if (!r2->off_page) {
+                    ufsmm_stack_push(stack, r2);
+                }
+            }
+        }
+    }
+
+    ufsmm_stack_free(stack);
+}
 
 static void add_transition_ref(struct transition_refs *list,
                                struct ufsmm_transition *transition)
@@ -142,8 +274,12 @@ void canvas_resize_state_end(void *context)
         free(item);
     }
 
+    reset_state_dg(priv, priv->current_region);
+    priv->redraw = true;
+
     free(priv->command_data);
     priv->command_data = NULL;
+
 }
 
 void canvas_resize_state(void *context)
@@ -320,6 +456,8 @@ void canvas_resize_state(void *context)
     selected_state->y = ufsmm_canvas_nearest_grid_point(selected_state->y);
     selected_state->w = ufsmm_canvas_nearest_grid_point(selected_state->w);
     selected_state->h = ufsmm_canvas_nearest_grid_point(selected_state->h);
+
+    update_state_dg(priv, priv->selected_state, priv->current_region, true);
 }
 
 int canvas_region_resize_selected(void *context)
@@ -1400,6 +1538,9 @@ void canvas_move_state_end(void *context)
         }
     }
 
+    reset_state_dg(priv, priv->current_region);
+    priv->redraw = true;
+
     ufsmm_stack_free(stack);
     ufsmm_undo_commit_ops(priv->undo, undo_ops);
 }
@@ -1490,6 +1631,9 @@ void canvas_move_state(void *context)
         }
     }
 
+    /* Drawing guide lines for horizontal and vertical leveling */
+
+    update_state_dg(priv, priv->selected_state, priv->current_region, false);
     ufsmm_stack_free(stack);
     priv->redraw = true;
 }
@@ -2531,6 +2675,7 @@ void canvas_create_state_end(void *context)
 
     free(op);
     priv->preview_state = NULL;
+    reset_state_dg(priv, priv->current_region);
     priv->redraw = true;
 }
 
@@ -2547,6 +2692,7 @@ void canvas_new_state_set_start(void *context)
 
     op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - ox - 10);
     op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - oy - 20);
+    update_state_dg(priv, op->state, priv->current_region, true);
     priv->redraw = true;
 }
 
@@ -2570,6 +2716,7 @@ void canvas_new_state_set_end(void *context)
     if (op->state->h < 50)
         op->state->h = 50.0;
 
+    update_state_dg(priv, op->state, priv->current_region, true);
     priv->redraw = true;
 }
 
@@ -3893,6 +4040,11 @@ void canvas_ascend(void *context)
         } while (!priv->current_region->off_page);
         priv->current_region->draw_as_root = true;
     }
+
+    if (priv->current_region->scale < 1)
+        priv->current_region->scale = 1.0;
+
+    ufsmm_nav_reset_selection(priv);
     priv->redraw = true;
 }
 
@@ -3908,6 +4060,26 @@ void canvas_show_root(void *context)
 void canvas_nav_toggle(void *context)
 {
     ufsmm_nav_toggle_visibility((struct ufsmm_canvas *) context);
+}
+
+void canvas_create_annotation_begin(void *context)
+{
+}
+
+void canvas_create_annotation_end(void *context)
+{
+}
+
+void canvas_show_annotation_dialog(void *context)
+{
+}
+
+void canvas_annotation_select_start(void *context)
+{
+}
+
+void canvas_annotation_select_end(void *context)
+{
 }
 
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
@@ -4076,18 +4248,32 @@ static gboolean motion_notify_event_cb(GtkWidget      *widget,
                                        GdkEventMotion *event,
                                        gpointer        data)
 {
+    double px;
+    double py;
     struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
-    double px = event->x / (priv->current_region->scale / 2.0);
-    double py = event->y / (priv->current_region->scale / 2.0);
-    priv->px = px;
-    priv->py = py;
+    if (priv->snap_x) {
+        if (fabs(event->x - priv->snap_x_val) > priv->snap_x_threshold)
+            priv->snap_x = false;
+    }
 
-    priv->dx = px - priv->sx;
-    priv->dy = py - priv->sy;
+    if (priv->snap_y) {
+        if (fabs(event->y - priv->snap_y_val) > priv->snap_y_threshold)
+            priv->snap_y = false;
+    }
 
-    //L_DEBUG("dx %.2f dy %.2f", priv->dx, priv->dy);
+    if (!priv->snap_x) {
+        px = event->x / (priv->current_region->scale / 2.0);
+        priv->px = px;
+        priv->dx = px - priv->sx;
+    }
+
+    if (!priv->snap_y) {
+        py = event->y / (priv->current_region->scale / 2.0);
+        priv->py = py;
+        priv->dy = py - priv->sy;
+    }
 
     ufsm_process(&priv->machine.machine, eMotion);
 

@@ -40,6 +40,9 @@ struct ufsmm_canvas {
     double dx, dy;
     double px, py; /* Location of mouse pointer */
     double sx, sy; /* Start coordinates */
+    bool snap_x, snap_y;
+    double snap_x_val, snap_y_val;
+    double snap_x_threshold, snap_y_threshold;
     int window_width;
     int window_height;
     GtkWidget *widget;

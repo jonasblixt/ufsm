@@ -323,3 +323,9 @@ void ufsmm_nav_render(struct ufsmm_canvas *canvas, int width, int height)
     cairo_stroke (cr);
     cairo_restore(cr);
 }
+
+void ufsmm_nav_reset_selection(struct ufsmm_canvas *canvas)
+{
+    g_selected_region = NULL;
+    g_selected_state = NULL;
+}
