@@ -131,6 +131,7 @@ struct ufsmm_action
     uuid_t id;
     const char *name;
     enum ufsmm_action_kind kind;
+    int usage_count;
     TAILQ_ENTRY(ufsmm_action) tailq;
 };
 
@@ -167,6 +168,7 @@ struct ufsmm_trigger
 {
     uuid_t id;
     const char *name;
+    int usage_count;
     TAILQ_ENTRY(ufsmm_trigger) tailq;
 };
 

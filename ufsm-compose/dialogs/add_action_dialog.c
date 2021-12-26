@@ -196,6 +196,11 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 
     content_area = gtk_dialog_get_content_area(GTK_DIALOG (dialog));
 
+    gtk_widget_set_margin_start(content_area, 10);
+    gtk_widget_set_margin_end(content_area, 10);
+    gtk_widget_set_margin_top(content_area, 10);
+    gtk_widget_set_margin_bottom(content_area, 10);
+
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
     gtk_box_pack_start(GTK_BOX(content_area), vbox, TRUE, TRUE, 0);
     gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
@@ -239,6 +244,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 
     GtkWidget *scrolled_window = gtk_scrolled_window_new (NULL, NULL);
 
+    gtk_widget_set_margin_bottom(scrolled_window, 10);
     treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
     gtk_tree_view_set_enable_search(GTK_TREE_VIEW(treeview), FALSE);

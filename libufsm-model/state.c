@@ -436,6 +436,7 @@ int ufsmm_state_add_exit(struct ufsmm_model *model,
     action_ref = malloc(sizeof(struct ufsmm_action_ref));
     memset(action_ref, 0, sizeof(*action_ref));
     action_ref->act = action;
+    action->usage_count++;
     memcpy(action_ref->id, id, 16);
 
     TAILQ_INSERT_TAIL(&state->exits, action_ref, tailq);
@@ -465,6 +466,7 @@ int ufsmm_state_add_entry(struct ufsmm_model *model,
     action_ref = malloc(sizeof(struct ufsmm_action_ref));
     memset(action_ref, 0, sizeof(*action_ref));
     action_ref->act = action;
+    action->usage_count++;
     memcpy(action_ref->id, id, 16);
     TAILQ_INSERT_TAIL(&state->entries, action_ref, tailq);
     return UFSMM_OK;

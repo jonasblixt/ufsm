@@ -41,6 +41,7 @@ struct ufsmm_canvas {
     double px, py; /* Location of mouse pointer */
     double sx, sy; /* Start coordinates */
     bool snap_x, snap_y;
+    bool snap_global;
     double snap_x_val, snap_y_val;
     double snap_x_threshold, snap_y_threshold;
     int window_width;

@@ -157,6 +157,7 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
             uuid_parse(json_object_get_string(j_trigger), trigger_uu);
             transition->trigger = ufsmm_model_get_trigger_from_uuid(model,
                                                                    trigger_uu);
+            transition->trigger->usage_count++;
         }
 
 /*
@@ -640,6 +641,7 @@ int ufsmm_transition_add_guard(struct ufsmm_model *model,
     } else {
         guard->value = guard_value;
         guard->act = action;
+        action->usage_count++;
         guard->state = NULL;
     }
     TAILQ_INSERT_TAIL(&transition->guards, guard, tailq);
@@ -678,6 +680,7 @@ int ufsmm_transition_add_action(struct ufsmm_model *model,
     aref = malloc(sizeof(struct ufsmm_action_ref));
     memset(aref, 0, sizeof(*aref));
     aref->act = action;
+    action->usage_count++;
     memcpy(aref->id, id, 16);
     TAILQ_INSERT_TAIL(&transition->actions, aref, tailq);
     return UFSMM_OK;

@@ -323,6 +323,10 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 
     content_area = gtk_dialog_get_content_area(GTK_DIALOG (dialog));
 
+    gtk_widget_set_margin_start(content_area, 10);
+    gtk_widget_set_margin_end(content_area, 10);
+    gtk_widget_set_margin_top(content_area, 10);
+    gtk_widget_set_margin_bottom(content_area, 10);
 
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
     gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
@@ -450,6 +454,8 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 
     /* Tabs */
     GtkWidget *notebook = gtk_notebook_new();
+
+    gtk_widget_set_margin_bottom(notebook, 10);
     GtkWidget *lbl_guard = gtk_label_new("Guard");
     GtkWidget *lbl_statecond = gtk_label_new("State condition");
 

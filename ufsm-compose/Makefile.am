@@ -7,6 +7,7 @@ ufsm_compose_SOURCES = main.c \
                dialogs/edit_string_dialog.c \
                dialogs/set_trigger_dialog.c \
 			   dialogs/save.c \
+			   dialogs/project_settings.c \
 			   utils.c \
                render.c \
                logic/canvas.c \

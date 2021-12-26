@@ -348,7 +348,7 @@ static int ufsmm_model_parse(struct ufsmm_model *model)
         L_DEBUG("%s", key);
         if (strcmp(key, "name") == 0)
         {
-            model->name = json_object_get_string(val);
+            model->name = strdup(json_object_get_string(val));
             found_name = true;
         }
         else if (strcmp(key, "version") == 0)
@@ -590,6 +590,7 @@ int ufsmm_model_create(struct ufsmm_model **model_pp, const char *name)
     model->paper_size = UFSMM_PAPER_SIZE_A4;
     model->root = malloc(sizeof(struct ufsmm_region));
     memset(model->root, 0, sizeof(*model->root));
+    model->root->name = strdup("Root");
     TAILQ_INIT(&model->root->states);
     uuid_generate_random(model->root->id);
 
@@ -1595,6 +1596,7 @@ int delete_action_ref(struct ufsmm_action_refs *list, uuid_t id)
         tmp_item = TAILQ_NEXT(item, tailq);
         if (uuid_compare(item->id, id) == 0) {
             TAILQ_REMOVE(list, item, tailq);
+            item->act->usage_count--;
             free(item);
             return UFSMM_OK;
         }
@@ -1611,6 +1613,7 @@ int delete_guard_ref(struct ufsmm_guard_refs *list, uuid_t id)
         tmp_item = TAILQ_NEXT(item, tailq);
         if (uuid_compare(item->id, id) == 0) {
             TAILQ_REMOVE(list, item, tailq);
+            item->act->usage_count--;
             free(item);
             return UFSMM_OK;
         }

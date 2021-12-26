@@ -15,6 +15,7 @@
 #include "dialogs/edit_string_dialog.h"
 #include "dialogs/set_trigger_dialog.h"
 #include "dialogs/save.h"
+#include "dialogs/project_settings.h"
 
 struct transition_ref {
     struct ufsmm_transition *transition;
@@ -25,9 +26,25 @@ struct transition_ref {
 
 TAILQ_HEAD(transition_refs, transition_ref);
 
+void canvas_snap_enable_global(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    priv->snap_global = true;
+}
+
+void canvas_snap_disable_global(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    priv->snap_global = false;
+    priv->snap_x = false;
+    priv->snap_y = false;
+}
+
 static void snap_x(struct ufsmm_canvas *canvas, double threshold)
 {
     if (canvas->snap_x)
+        return;
+    if (!canvas->snap_global)
         return;
 
     double px = canvas->px * (canvas->current_region->scale / 2.0);
@@ -39,6 +56,8 @@ static void snap_x(struct ufsmm_canvas *canvas, double threshold)
 static void snap_y(struct ufsmm_canvas *canvas, double threshold)
 {
     if (canvas->snap_y)
+        return;
+    if (!canvas->snap_global)
         return;
 
     double py = canvas->py * (canvas->current_region->scale / 2.0);
@@ -82,7 +101,9 @@ static void reset_state_dg(struct ufsmm_canvas *canvas,
 static void update_state_dg(struct ufsmm_canvas *canvas,
                             struct ufsmm_state *selected_state,
                             struct ufsmm_region *current_region,
-                            bool size_snap)
+                            bool size_snap,
+                            bool align_snap,
+                            bool center_snap)
 {
     struct ufsmm_stack *stack;
     struct ufsmm_region *r, *r2;
@@ -107,41 +128,45 @@ static void update_state_dg(struct ufsmm_canvas *canvas,
                                         selected_state->h/2)) {
                     s->dg_horizontal = true;
                     selected_state->dg_horizontal = true;
-                    snap_y(canvas, 50);
+                    if (center_snap)
+                        snap_y(canvas, 50);
                 }
 
                 if ((s->x + s->w/2) == (selected_state->x +
                                         selected_state->w/2)) {
                     s->dg_vertical = true;
                     selected_state->dg_vertical = true;
-                    snap_x(canvas, 50);
+                    if (center_snap)
+                        snap_x(canvas, 50);
                 }
 
-                if (size_snap) {
-                    if (selected_state->h == s->h) {
-                        selected_state->dg_same_height = true;
-                        s->dg_same_height = true;
+                if (selected_state->h == s->h) {
+                    selected_state->dg_same_height = true;
+                    s->dg_same_height = true;
+                    if (size_snap)
                         snap_y(canvas, 50);
-                    }
+                }
 
-                    if (selected_state->w == s->w) {
-                        selected_state->dg_same_width = true;
-                        s->dg_same_width = true;
+                if (selected_state->w == s->w) {
+                    selected_state->dg_same_width = true;
+                    s->dg_same_width = true;
+                    if (size_snap)
                         snap_x(canvas, 50);
-                    }
                 }
 
                 if (selected_state->y == s->y) {
                     L_DEBUG("%s and %s have same y", selected_state->name, s->name);
                     selected_state->dg_same_y = true;
                     s->dg_same_y = true;
-                    snap_y(canvas, 50);
+                    if (align_snap)
+                        snap_y(canvas, 50);
                 }
 
                 if (selected_state->x == s->x) {
                     selected_state->dg_same_x = true;
                     s->dg_same_x = true;
-                    snap_x(canvas, 50);
+                    if (align_snap)
+                        snap_x(canvas, 50);
                 }
             }
 
@@ -457,7 +482,8 @@ void canvas_resize_state(void *context)
     selected_state->w = ufsmm_canvas_nearest_grid_point(selected_state->w);
     selected_state->h = ufsmm_canvas_nearest_grid_point(selected_state->h);
 
-    update_state_dg(priv, priv->selected_state, priv->current_region, true);
+    update_state_dg(priv, priv->selected_state, priv->current_region,
+                        true, true, true);
 }
 
 int canvas_region_resize_selected(void *context)
@@ -1633,7 +1659,8 @@ void canvas_move_state(void *context)
 
     /* Drawing guide lines for horizontal and vertical leveling */
 
-    update_state_dg(priv, priv->selected_state, priv->current_region, false);
+    update_state_dg(priv, priv->selected_state, priv->current_region,
+                        false, true, true);
     ufsmm_stack_free(stack);
     priv->redraw = true;
 }
@@ -2493,6 +2520,7 @@ void canvas_delete_guard(void *context)
     ufsmm_undo_delete_guard(undo_ops, t, g);
     ufsmm_undo_commit_ops(priv->undo, undo_ops);
     TAILQ_REMOVE(&t->guards, g, tailq);
+    g->act->usage_count--;
     priv->redraw = true;
     priv->selection = UFSMM_SELECTION_NONE;
 }
@@ -2506,6 +2534,7 @@ void canvas_delete_action(void *context)
     ufsmm_undo_commit_ops(priv->undo, undo_ops);
     TAILQ_REMOVE(&priv->selected_transition->actions,
                  priv->selected_aref, tailq);
+    priv->selected_aref->act->usage_count--;
     priv->redraw = true;
     priv->selection = UFSMM_SELECTION_NONE;
 }
@@ -2533,6 +2562,8 @@ void canvas_delete_entry(void *context)
     struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
     ufsmm_undo_delete_aref(undo_ops, &s->entries, ar);
     TAILQ_REMOVE(&s->entries, ar, tailq);
+    if (ar->act)
+        ar->act->usage_count--;
 
     //ufsmm_state_delete_entry(s, ar->id);
 
@@ -2586,6 +2617,8 @@ void canvas_delete_exit(void *context)
     struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
     ufsmm_undo_delete_aref(undo_ops, &s->exits, ar);
     TAILQ_REMOVE(&s->exits, ar, tailq);
+    if (ar->act)
+        ar->act->usage_count--;
     //ufsmm_state_delete_exit(s, ar->id);
 
     struct ufsmm_region *r;
@@ -2692,7 +2725,7 @@ void canvas_new_state_set_start(void *context)
 
     op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - ox - 10);
     op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - oy - 20);
-    update_state_dg(priv, op->state, priv->current_region, true);
+    update_state_dg(priv, op->state, priv->current_region, false, true, false);
     priv->redraw = true;
 }
 
@@ -2716,7 +2749,7 @@ void canvas_new_state_set_end(void *context)
     if (op->state->h < 50)
         op->state->h = 50.0;
 
-    update_state_dg(priv, op->state, priv->current_region, true);
+    update_state_dg(priv, op->state, priv->current_region, true, false, false);
     priv->redraw = true;
 }
 
@@ -2802,6 +2835,10 @@ void canvas_set_transition_trigger(void *context)
     struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
     ufsmm_undo_set_trigger(undo_ops, priv->selected_transition,
                             old_trigger);
+    if (old_trigger)
+        old_trigger->usage_count--;
+    priv->selected_transition->trigger->usage_count++;
+
     ufsmm_undo_commit_ops(priv->undo, undo_ops);
 }
 
@@ -3620,7 +3657,7 @@ void canvas_mselect_end(void *context)
     priv->selection = UFSMM_SELECTION_MULTI;
 }
 
-void canvas_update_mselect(void *context)
+void canvas_mselect_update(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct mselect_op *op = (struct mselect_op *) priv->command_data;
@@ -4082,6 +4119,14 @@ void canvas_annotation_select_end(void *context)
 {
 }
 
+void canvas_project_settings(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+
+    int rc = ufsm_project_settings_dialog(GTK_WINDOW(priv->root_window),
+                                     priv->model);
+}
+
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     struct ufsmm_canvas *priv =
@@ -4093,6 +4138,8 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eKey_ctrl_down);
     } else if (event->keyval == GDK_KEY_a) {
         canvas_machine_process(&priv->machine, eKey_a_down);
+    } else if (event->keyval == GDK_KEY_p) {
+        canvas_machine_process(&priv->machine, eKey_p_down);
     } else if (event->keyval == GDK_KEY_c) {
         canvas_machine_process(&priv->machine, eKey_c_down);
     } else if (event->keyval == GDK_KEY_n) {

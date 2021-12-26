@@ -319,7 +319,7 @@ void ufsmm_nav_render(struct ufsmm_canvas *canvas, int width, int height)
     cairo_set_font_size (cr, 18);
     cairo_set_line_width (cr, 2.0);
     ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_FG4);
-    nav_render_region(canvas, canvas->model->root, 30, 25 + nav_offset);
+    nav_render_region(canvas, canvas->model->root, 35, 25 + nav_offset);
     cairo_stroke (cr);
     cairo_restore(cr);
 }
