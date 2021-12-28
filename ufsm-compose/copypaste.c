@@ -282,6 +282,12 @@ void canvas_paste_copy_buffer(void *context)
     struct ufsmm_guard_ref *gref;
     struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
 
+    double x_min = 1e9;
+    double x_max = -1e9;
+    double y_min = 1e9;
+    double y_max = -1e9;
+
+
     TAILQ_INIT(&state_pairs);
     if (priv->selection == UFSMM_SELECTION_REGION)
         target_region = priv->selected_region;
@@ -300,6 +306,16 @@ void canvas_paste_copy_buffer(void *context)
         TAILQ_FOREACH(s, &r->states, tailq) {
             new_ps = ufsmm_state_shallow_copy(s, undo_ops);
             new_ps->selected = true;
+            if (x_min > s->x)
+                x_min = s->x;
+            if (x_max < s->x)
+                x_max = s->x;
+
+            if (y_min > (s->y + s->h))
+                y_min = s->y + s->h;
+            if (y_max < (s->y + s->h))
+                y_max = s->y + s->h;
+
             if (r != priv->copy_bfr) {
                 ufsmm_region_append_state(new_pr, new_ps);
             } else {
@@ -366,6 +382,14 @@ void canvas_paste_copy_buffer(void *context)
     }
 
     ufsmm_undo_commit_ops(priv->undo, undo_ops);
+
+    /* TODO: This is not working as intended. The pasted buffer
+     *      should be centered on the cursor */
+    //priv->px = x_max;
+    //priv->py = y_max;
+    priv->sx = priv->px; //+ x_min;//(x_max - x_min) / 2;
+    priv->sy = priv->py; // + y_min;//(y_max - y_min) / 2;
+
     priv->redraw = true;
 }
 

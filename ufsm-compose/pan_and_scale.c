@@ -28,6 +28,8 @@ void canvas_inc_scale(void *context)
     r->scale += 1;
     priv->px = (priv->px * (r->scale - 1.0)) / r->scale;
     priv->py = (priv->py * (r->scale - 1.0)) / r->scale;
+    priv->sx = (priv->sx * (r->scale - 1.0)) / r->scale;
+    priv->sy = (priv->sy * (r->scale - 1.0)) / r->scale;
     priv->redraw = true;
     printf("Zi %.2f <ox, oy> = %.2f, %.2f\n", r->scale, r->ox, r->oy);
 }
@@ -46,6 +48,8 @@ void canvas_dec_scale(void *context)
     r->scale -= 1.0;
     priv->px = (priv->px * (r->scale + 1.0)) / r->scale;
     priv->py = (priv->py * (r->scale + 1.0)) / r->scale;
+    priv->sx = (priv->sx * (r->scale + 1.0)) / r->scale;
+    priv->sy = (priv->sy * (r->scale + 1.0)) / r->scale;
     priv->redraw = true;
     printf("Zo %.2f <ox, oy> = %.2f, %.2f\n", r->scale, r->ox, r->oy);
 }

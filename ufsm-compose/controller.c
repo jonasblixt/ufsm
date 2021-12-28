@@ -3838,22 +3838,26 @@ void canvas_mselect_move(void *context)
     struct transition_ref *mt;
     struct ufsmm_vertice *v;
 
+    double dx = priv->dx;// / (priv->current_region->scale*2);
+    double dy = priv->dy;// / (priv->current_region->scale*2);
+
+    L_DEBUG("dx %.2f dy %.2f", dx, dy);
     TAILQ_FOREACH(ms, &op->states, tailq) {
-        ms->state->x = ufsmm_canvas_nearest_grid_point(ms->state->tx + priv->dx);
-        ms->state->y = ufsmm_canvas_nearest_grid_point(ms->state->ty + priv->dy);
+        ms->state->x = ufsmm_canvas_nearest_grid_point(ms->state->tx + dx);
+        ms->state->y = ufsmm_canvas_nearest_grid_point(ms->state->ty + dy);
     }
 
     TAILQ_FOREACH(mt, &op->transitions, tailq) {
         struct ufsmm_transition *t = mt->transition;
 
         t->text_block_coords.x = \
-              ufsmm_canvas_nearest_grid_point(t->text_block_coords.tx + priv->dx);
+              ufsmm_canvas_nearest_grid_point(t->text_block_coords.tx + dx);
         t->text_block_coords.y = \
-              ufsmm_canvas_nearest_grid_point(t->text_block_coords.ty + priv->dy);
+              ufsmm_canvas_nearest_grid_point(t->text_block_coords.ty + dy);
 
         TAILQ_FOREACH(v,  &t->vertices, tailq) {
-            v->x = ufsmm_canvas_nearest_grid_point(v->tx + priv->dx);
-            v->y = ufsmm_canvas_nearest_grid_point(v->ty + priv->dy);
+            v->x = ufsmm_canvas_nearest_grid_point(v->tx + dx);
+            v->y = ufsmm_canvas_nearest_grid_point(v->ty + dy);
         }
     }
 
