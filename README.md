@@ -231,3 +231,5 @@ In the above example that would result in the transition from B to A when EV2
 is sent and if an additional EV2 is sent, state A and top states would exit and
 transition to state C.
 
+## Running valgrind
+libtool --mode=execute valgrind --tool=memcheck --leak-check=full --leak-resolution=high --num-callers=20 --log-file=vgdump --suppressions=/usr/share/glib-2.0/valgrind/glib.supp --suppressions=/usr/share/gtk-3.0/valgrind/gtk.supp ./ufsm-compose/ufsm-compose ../ufsm-compose/canvas.ufsm

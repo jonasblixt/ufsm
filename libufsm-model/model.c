@@ -586,7 +586,7 @@ int ufsmm_model_create(struct ufsmm_model **model_pp, const char *name)
 
     memset(model, 0, sizeof(*model));
     (*model_pp) = model;
-    model->name = name;
+    model->name = strdup(name);
     model->paper_size = UFSMM_PAPER_SIZE_A4;
     model->root = malloc(sizeof(struct ufsmm_region));
     memset(model->root, 0, sizeof(*model->root));
@@ -891,7 +891,7 @@ int ufsmm_model_free(struct ufsmm_model *model)
         free((void *) model->filename);
         model->filename = NULL;
     }
-
+    free((void *) model->name);
     free(model);
     return UFSMM_OK;
 }

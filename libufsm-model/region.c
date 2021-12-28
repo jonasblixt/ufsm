@@ -37,6 +37,8 @@ int ufsmm_add_region(struct ufsmm_state *state, bool off_page,
 
 int ufsmm_set_region_name(struct ufsmm_region *region, const char *name)
 {
+    if (region->name)
+        free((void *) region->name);
     region->name = strdup(name);
     return UFSMM_OK;
 }

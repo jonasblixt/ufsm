@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 
     if (stat(argv[1], &statbuf) != 0) {
         rc = ufsmm_model_create(&model, strdup("New model"));
-        model->filename = argv[1];
+        model->filename = strdup(argv[1]);
     } else {
         rc = ufsmm_model_load(argv[1], &model);
     }
