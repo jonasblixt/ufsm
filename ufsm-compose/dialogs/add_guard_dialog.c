@@ -5,6 +5,7 @@ enum
 {
     SC_COL_TEXT,
     SC_COL_OBJ,
+    SC_COL_STATE,
     SC_NUM_COLS
 };
 
@@ -135,9 +136,17 @@ static gboolean sc_selection_func(GtkTreeSelection *selection,
                                gpointer          userdata)
 {
     GtkTreeIter iter;
+    bool is_state;
 
     if (gtk_tree_model_get_iter(model, &iter, path)) {
         gchar *name;
+
+        gtk_tree_model_get(model, &iter, SC_COL_STATE, &is_state, -1);
+
+        if (!is_state) {
+            selected_state = NULL;
+            return FALSE;
+        }
 
         gtk_tree_model_get(model, &iter, SC_COL_TEXT, &name, -1);
 
@@ -183,12 +192,18 @@ static void sc_row_activated_cb(GtkTreeView        *treeview,
 {
     GtkTreeModel *model;
     GtkTreeIter   iter;
+    bool is_state;
 
     model = gtk_tree_view_get_model(treeview);
 
     if (gtk_tree_model_get_iter(model, &iter, path)) {
        gchar *name;
+       gtk_tree_model_get(model, &iter, SC_COL_STATE, &is_state, -1);
 
+       if (!is_state) {
+            selected_state = NULL;
+            return;
+       }
        gtk_tree_model_get(model, &iter, SC_COL_TEXT, &name, -1);
        gtk_tree_model_get(model, &iter, SC_COL_OBJ, &selected_state, -1);
 
@@ -249,7 +264,7 @@ static int update_sc_tree(struct ufsmm_model *model,
     struct ufsmm_stack *cleanup_stack;
     int rc;
     GtkTreeIter *s_iter = NULL;
-    GtkTreeIter r_iter;
+    GtkTreeIter *r_iter;
     GtkTreeIter *parent = NULL;
 
     rc = ufsmm_stack_init(&cleanup_stack, UFSMM_MAX_R_S);
@@ -266,14 +281,24 @@ static int update_sc_tree(struct ufsmm_model *model,
 
     while (stack_pop_r_iter_pair(stack, &r, &parent) == UFSMM_OK)
     {
+        r_iter = malloc(sizeof(*r_iter));
+        ufsmm_stack_push(cleanup_stack, (void *) r_iter);
+
+        gtk_tree_store_append(store, r_iter, parent);
+        gtk_tree_store_set (store, r_iter,
+                            SC_COL_TEXT, r->name,
+                            SC_COL_OBJ, r,
+                            SC_COL_STATE, false,
+                            -1);
         TAILQ_FOREACH(s, &r->states, tailq) {
             s_iter = malloc(sizeof(*s_iter));
             ufsmm_stack_push(cleanup_stack, (void *) s_iter);
 
-            gtk_tree_store_append(store, s_iter, parent);
+            gtk_tree_store_append(store, s_iter, r_iter);
             gtk_tree_store_set (store, s_iter,
                                 SC_COL_TEXT, s->name,
                                 SC_COL_OBJ, s,
+                                SC_COL_STATE, true,
                                 -1);
             TAILQ_FOREACH(r2, &s->regions, tailq) {
                 stack_push_r_iter_pair(stack, r2, s_iter);
@@ -421,7 +446,8 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 
     GtkTreeStore *sc_store = gtk_tree_store_new(SC_NUM_COLS,
                                              G_TYPE_STRING,
-                                             G_TYPE_POINTER);
+                                             G_TYPE_POINTER,
+                                             G_TYPE_BOOLEAN);
     GtkWidget *tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(sc_store));
 
     gtk_tree_view_set_show_expanders(GTK_TREE_VIEW(tree), TRUE);
