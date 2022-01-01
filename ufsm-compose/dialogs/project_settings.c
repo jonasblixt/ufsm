@@ -352,7 +352,7 @@ void create_general_tab(GtkNotebook *notebook, struct ufsmm_model *model)
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, lbl);
 }
 
-static void delete_gref(struct ufsmm_model *model,
+static void delete_gref(struct ufsmm_model *model, struct ufsmm_region *copy_bfr,
                         struct ufsmm_actions *list, struct ufsmm_action *act)
 {
     struct ufsmm_stack *stack;
@@ -364,6 +364,9 @@ static void delete_gref(struct ufsmm_model *model,
     /* First delete all references to this action */
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
     ufsmm_stack_push(stack, model->root);
+    if (copy_bfr) {
+        ufsmm_stack_push(stack, copy_bfr);
+    }
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
         TAILQ_FOREACH(s, &r->states, tailq) {
@@ -392,7 +395,7 @@ static void delete_gref(struct ufsmm_model *model,
     free(act);
 }
 
-static void delete_aref(struct ufsmm_model *model,
+static void delete_aref(struct ufsmm_model *model, struct ufsmm_region *copy_bfr,
                         struct ufsmm_actions *list, struct ufsmm_action *act)
 {
     struct ufsmm_stack *stack;
@@ -404,7 +407,9 @@ static void delete_aref(struct ufsmm_model *model,
     /* First delete all references to this action */
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
     ufsmm_stack_push(stack, model->root);
-
+    if (copy_bfr) {
+        ufsmm_stack_push(stack, copy_bfr);
+    }
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
         TAILQ_FOREACH(s, &r->states, tailq) {
             for (aref = TAILQ_FIRST(&s->exits); aref != NULL; aref = aref2) {
@@ -451,7 +456,8 @@ static void delete_aref(struct ufsmm_model *model,
     free(act);
 }
 
-static void delete_trigger(struct ufsmm_model *model, struct ufsmm_trigger *trigger)
+static void delete_trigger(struct ufsmm_model *model, struct ufsmm_region *copy_bfr,
+                                struct ufsmm_trigger *trigger)
 {
     struct ufsmm_stack *stack;
     struct ufsmm_region *r, *r2;
@@ -460,6 +466,9 @@ static void delete_trigger(struct ufsmm_model *model, struct ufsmm_trigger *trig
 
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
     ufsmm_stack_push(stack, model->root);
+    if (copy_bfr) {
+        ufsmm_stack_push(stack, copy_bfr);
+    }
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
         TAILQ_FOREACH(s, &r->states, tailq) {
@@ -479,7 +488,8 @@ static void delete_trigger(struct ufsmm_model *model, struct ufsmm_trigger *trig
     free((void *) trigger->name);
     free(trigger);
 }
-int ufsm_project_settings_dialog(GtkWindow *parent, struct ufsmm_model *model)
+int ufsm_project_settings_dialog(GtkWindow *parent, struct ufsmm_model *model,
+                                        struct ufsmm_region *copy_bfr)
 {
     int rc;
     GtkWidget *dialog, *label, *content_area;
@@ -550,7 +560,7 @@ int ufsm_project_settings_dialog(GtkWindow *parent, struct ufsmm_model *model)
                 }
                 if (delete_iter) {
                     L_DEBUG("Want to delete '%s'", act->name);
-                    delete_aref(model, act_list, act);
+                    delete_aref(model, copy_bfr, act_list, act);
                 }
             } while (gtk_tree_model_iter_next(GTK_TREE_MODEL(action_list), &iter));
         }
@@ -573,7 +583,7 @@ int ufsm_project_settings_dialog(GtkWindow *parent, struct ufsmm_model *model)
                 }
                 if (delete_iter) {
                     L_DEBUG("Want to delete '%s'", act->name);
-                    delete_gref(model, act_list, act);
+                    delete_gref(model, copy_bfr, act_list, act);
                 }
             } while (gtk_tree_model_iter_next(GTK_TREE_MODEL(guard_list), &iter));
         }
@@ -594,7 +604,7 @@ int ufsm_project_settings_dialog(GtkWindow *parent, struct ufsmm_model *model)
                 }
                 if (delete_iter) {
                     L_DEBUG("Want to delete trigger '%s'", trigger->name);
-                    delete_trigger(model, trigger);
+                    delete_trigger(model, copy_bfr, trigger);
                 }
             } while (gtk_tree_model_iter_next(GTK_TREE_MODEL(trigger_list), &iter));
         }

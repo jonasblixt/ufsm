@@ -4053,7 +4053,7 @@ void canvas_project_settings(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
 
     int rc = ufsm_project_settings_dialog(GTK_WINDOW(priv->root_window),
-                                     priv->model);
+                                     priv->model, priv->copy_bfr);
 }
 
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
