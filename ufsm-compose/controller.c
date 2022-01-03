@@ -3530,6 +3530,8 @@ void canvas_mselect_end(void *context)
                 L_DEBUG("State '%s' selected", s->name);
                 s->selected = true;
                 priv->selection_count++;
+                priv->selection = UFSMM_SELECTION_STATE;
+                priv->selected_state = s;
             }
 
             TAILQ_FOREACH(r2, &s->regions, tailq) {
@@ -3564,6 +3566,8 @@ void canvas_mselect_end(void *context)
                     point_in_box3(tex, tey, op->sx, op->sy, op->ex, op->ey)) {
                     t->selected = true;
                     priv->selection_count++;
+                    priv->selection = UFSMM_SELECTION_TRANSITION;
+                    priv->selected_transition = t;
                     continue;
                 }
 
@@ -3579,7 +3583,10 @@ void canvas_mselect_end(void *context)
     free(op);
     ufsmm_canvas_set_selection(false, 0, 0, 0, 0);
     priv->redraw = true;
-    priv->selection = UFSMM_SELECTION_MULTI;
+
+    if (priv->selection_count > 1) {
+        priv->selection = UFSMM_SELECTION_MULTI;
+    }
 }
 
 void canvas_mselect_update(void *context)
