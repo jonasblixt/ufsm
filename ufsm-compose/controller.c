@@ -1753,6 +1753,46 @@ static bool region_has_selected_parent(struct ufsmm_region *region)
     return result;
 }
 
+static void delete_state_conditions(struct ufsmm_canvas *canvas,
+                                    struct ufsmm_undo_ops *undo_ops,
+                                    struct ufsmm_state *state)
+{
+    struct ufsmm_stack *stack;
+    struct ufsmm_state *s;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_transition *t;
+    struct ufsmm_guard_ref *gref, *tmp_gref;
+
+    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_push(stack, (void *) canvas->model->root);
+    ufsmm_stack_push(stack, (void *) canvas->copy_bfr);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
+                for (gref = TAILQ_FIRST(&t->guards); gref != NULL; gref = tmp_gref) {
+                    tmp_gref = TAILQ_NEXT(gref, tailq);
+                    if ((gref->kind == UFSMM_GUARD_PSTATE) ||
+                        (gref->kind == UFSMM_GUARD_NSTATE)) {
+                        if (gref->state == state) {
+                            L_DEBUG("Removing state condition on transition"
+                                    " %s -> %s", t->source.state->name,
+                                                 t->dest.state->name);
+                            TAILQ_REMOVE(&t->guards, gref, tailq);
+                            ufsmm_undo_delete_guard(undo_ops, t, gref);
+                        }
+                    }
+                }
+            }
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                ufsmm_stack_push(stack, (void *) r2);
+            }
+        }
+    }
+
+    ufsmm_stack_free(stack);
+}
+
 static void unlink_state(struct ufsmm_canvas *canvas,
                          struct ufsmm_undo_ops *undo_ops,
                          struct ufsmm_state *state)
@@ -1761,6 +1801,9 @@ static void unlink_state(struct ufsmm_canvas *canvas,
     struct ufsmm_state *s;
     struct ufsmm_region *r, *r2;
     struct ufsmm_transition *t;
+
+
+    delete_state_conditions(canvas, undo_ops, state);
 
     ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
     ufsmm_stack_push(stack, (void *) canvas->current_region);
