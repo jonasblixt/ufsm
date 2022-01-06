@@ -73,8 +73,6 @@ static void reset_state_dg(struct ufsmm_canvas *canvas,
     struct ufsmm_region *r, *r2;
     struct ufsmm_state *s;
 
-    L_DEBUG("Reset state DG");
-
     ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, current_region);
 
@@ -953,6 +951,18 @@ static bool state_has_root_region(struct ufsmm_state *state,
     return (r == root);
 }
 
+static bool is_state_dangling(struct ufsmm_state *state)
+{
+    struct ufsmm_state *s;
+
+    TAILQ_FOREACH(s, &state->parent_region->states, tailq) {
+        if (s == state)
+            return false;
+    }
+
+    return true;
+}
+
 static void remove_dangling_guard_refs(struct ufsmm_canvas *canvas)
 {
     struct ufsmm_stack *stack;
@@ -971,7 +981,7 @@ static void remove_dangling_guard_refs(struct ufsmm_canvas *canvas)
                     tmp_gref = TAILQ_NEXT(gref, tailq);
                     if ((gref->kind == UFSMM_GUARD_PSTATE) ||
                         (gref->kind == UFSMM_GUARD_NSTATE)) {
-                        if (!state_has_root_region(s, canvas->model->root)) {
+                        if (is_state_dangling(gref->state)) {
                             L_DEBUG("Removing state condition on transition"
                                     " %s -> %s", t->source.state->name,
                                                  t->dest.state->name);
@@ -1858,7 +1868,6 @@ static void unlink_state(struct ufsmm_canvas *canvas,
     struct ufsmm_region *r, *r2;
     struct ufsmm_transition *t;
 
-
     delete_state_conditions(canvas, undo_ops, state);
 
     ufsmm_stack_init(&stack);
@@ -1964,20 +1973,18 @@ void canvas_mselect_delete(void *context)
     }
 
     while (ufsmm_stack_pop(st, (void **) &t) == UFSMM_OK) {
-        //ufsmm_transition_free_one(t);
         ufsmm_undo_delete_transition(undo_ops, t);
         TAILQ_REMOVE(&t->source.state->transitions, t, tailq);
     }
 
     while (ufsmm_stack_pop(ss, (void **) &s) == UFSMM_OK) {
-        //ufsmm_model_delete_state(priv->model, s);
         unlink_state(priv, undo_ops, s);
     }
 
     while (ufsmm_stack_pop(sr, (void **) &r) == UFSMM_OK) {
-        //ufsmm_model_delete_region(priv->model, r);
         unlink_region(priv, undo_ops, r);
     }
+
     ufsmm_stack_free(stack);
     ufsmm_stack_free(sr);
     ufsmm_stack_free(ss);
@@ -4424,10 +4431,10 @@ GtkWidget* ufsmm_canvas_new(GtkWidget *parent)
     priv->draw_menu = true;
     priv->menu = menu_init();
 
-    ufsm_debug_machine(&priv->machine.machine);
+    //ufsm_debug_machine(&priv->machine.machine);
     /* Override the debug_event to filter out 'eMotion' -event, since
      * there are so many of them */
-    priv->machine.machine.debug_event = debug_event;
+    //priv->machine.machine.debug_event = debug_event;
 
     canvas_machine_initialize(&priv->machine, priv);
 

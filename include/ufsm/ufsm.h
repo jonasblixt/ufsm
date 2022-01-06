@@ -117,38 +117,38 @@ struct ufsm_trigger;
 
 struct ufsm_action
 {
-    const char *name;
+    const char * const name;
     const enum ufsm_action_kind kind;
     const ufsm_action_func_t f;
-    const struct ufsm_trigger *signal;
-    const struct ufsm_action *next;
+    const struct ufsm_trigger * const signal;
+    const struct ufsm_action * const next;
 };
 
 struct ufsm_guard
 {
-    const char *name;
+    const char * const name;
     const enum ufsm_guard_kind kind;
     const int value;
     const ufsm_guard_func_t f;
-    const struct ufsm_state *state;
-    const struct ufsm_guard *next;
+    const struct ufsm_state * const state;
+    const struct ufsm_guard * const next;
 };
 
 struct ufsm_trigger
 {
-    const char *name;
+    const char * const name;
     const int trigger;
 };
 
 struct ufsm_transition
 {
     const enum ufsm_transition_kind kind;
-    const struct ufsm_trigger *trigger;
-    const struct ufsm_action *action;
-    const struct ufsm_guard *guard;
-    const struct ufsm_state *source;
-    const struct ufsm_state *dest;
-    const struct ufsm_transition *next;
+    const struct ufsm_trigger * const trigger;
+    const struct ufsm_action * const action;
+    const struct ufsm_guard * const guard;
+    const struct ufsm_state * const source;
+    const struct ufsm_state * const dest;
+    const struct ufsm_transition * const next;
 };
 
 struct ufsm_region
@@ -156,22 +156,22 @@ struct ufsm_region
     const unsigned int index;
     const char *name;
     const bool has_history;
-    const struct ufsm_state *state;
-    const struct ufsm_state *parent_state;
-    const struct ufsm_region *next;
+    const struct ufsm_state * const state;
+    const struct ufsm_state * const parent_state;
+    const struct ufsm_region * const next;
 };
 
 struct ufsm_state
 {
     const unsigned int index;
-    const char *name;
+    const char * const name;
     const enum ufsm_state_kind kind;
-    const struct ufsm_transition *transition;
-    const struct ufsm_action *entry;
-    const struct ufsm_action *exit;
-    const struct ufsm_region *region;
-    const struct ufsm_region *parent_region;
-    const struct ufsm_state *next;
+    const struct ufsm_transition * const transition;
+    const struct ufsm_action * const entry;
+    const struct ufsm_action * const exit;
+    const struct ufsm_region * const region;
+    const struct ufsm_region * const parent_region;
+    const struct ufsm_state * const next;
 };
 
 struct ufsm_region_data
@@ -189,7 +189,7 @@ struct ufsm_state_data
 
 struct ufsm_machine
 {
-    const char *name;
+    const char * const name;
     ufsm_debug_event_t debug_event;
     ufsm_debug_transition_t debug_transition;
     ufsm_debug_enter_region_t debug_enter_region;
@@ -204,11 +204,11 @@ struct ufsm_machine
     bool terminated;
     struct ufsm_stack stack;
     struct ufsm_stack stack2;
-    const struct ufsm_region *region;
+    const struct ufsm_region * region;
     unsigned int no_of_regions;
-    struct ufsm_region_data *r_data;
+    struct ufsm_region_data * r_data;
     unsigned int no_of_states;
-    struct ufsm_state_data *s_data;
+    struct ufsm_state_data * s_data;
     void *context;
 };
 

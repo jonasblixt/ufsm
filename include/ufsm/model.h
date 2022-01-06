@@ -8,14 +8,6 @@
 #include <stdbool.h>
 #include <json.h>
 
-/* This sets the upper limit on how many regions a state can hold
- * and how many states a region can hold */
-#define UFSMM_MAX_R_S 1024
-
-/* This sets the total amount of states and regions that can be
- * allocated */
-#define UFSMM_MAX_OBJECTS (1024*1024)
-
 enum ufsmm_errors
 {
     UFSMM_OK,

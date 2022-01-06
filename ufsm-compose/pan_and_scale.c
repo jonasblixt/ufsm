@@ -14,7 +14,6 @@ void canvas_update_offset(void *context)
 void canvas_store_offset(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    printf("%s\n", __func__);
     priv->current_region->tox = priv->current_region->ox;
     priv->current_region->toy = priv->current_region->oy;
 }
@@ -31,7 +30,6 @@ void canvas_inc_scale(void *context)
     priv->sx = (priv->sx * (r->scale - 1.0)) / r->scale;
     priv->sy = (priv->sy * (r->scale - 1.0)) / r->scale;
     priv->redraw = true;
-    printf("Zi %.2f <ox, oy> = %.2f, %.2f\n", r->scale, r->ox, r->oy);
 }
 
 
@@ -51,6 +49,5 @@ void canvas_dec_scale(void *context)
     priv->sx = (priv->sx * (r->scale + 1.0)) / r->scale;
     priv->sy = (priv->sy * (r->scale + 1.0)) / r->scale;
     priv->redraw = true;
-    printf("Zo %.2f <ox, oy> = %.2f, %.2f\n", r->scale, r->ox, r->oy);
 }
 
