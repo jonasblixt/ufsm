@@ -1327,45 +1327,43 @@ int ufsmm_model_calculate_max_transitions(struct ufsmm_model *model)
  * Calculate 'worst case' of states that can be concurrently active in
  *  the model.
  *
- *  FIXME: This routine will for now just count the number of regions
- *              in the model. This is not the same thing as worst case
- *              state concurrency.
  */
+
+static int cc_state(struct ufsmm_state *state);
+
+static int cc_region(struct ufsmm_region *region)
+{
+    int max_count = 1;
+    int count = 1;
+    struct ufsmm_state *s;
+    struct ufsmm_region *r;
+
+    TAILQ_FOREACH(s, &region->states, tailq) {
+        count = cc_state(s);
+        if (count > max_count)
+            max_count = count;
+    }
+
+    return max_count;
+}
+
+static int cc_state(struct ufsmm_state *state)
+{
+    int count = 1;
+    struct ufsmm_region *r;
+
+    TAILQ_FOREACH(r, &state->regions, tailq) {
+        count += cc_region(r);
+    }
+
+    return count;
+}
 
 int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model)
 {
-    int rc;
-    struct ufsmm_region *r, *r2;
-    struct ufsmm_state *s;
-    static struct ufsmm_stack *stack;
-    unsigned int max_concurrent_states = 1;
-
-    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
-
-    if (rc != UFSMM_OK) {
-        L_ERR("Could not init stack");
-        return -UFSMM_ERROR;
-    }
-
-    rc = ufsmm_stack_push(stack, (void *) model->root);
-
-    while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
-        TAILQ_FOREACH(s, &r->states, tailq) {
-            TAILQ_FOREACH(r2, &s->regions, tailq) {
-                ufsmm_stack_push(stack, (void *) r2);
-                max_concurrent_states += 1;
-            }
-        }
-    }
-
-    ufsmm_stack_free(stack);
-
-    if (rc != UFSMM_OK) {
-        return -UFSMM_ERROR;
-    } else {
-        printf("max_concurrent_states = %i\n", max_concurrent_states);
-        return max_concurrent_states;
-    }
+    int max_concurrent_states = cc_region(model->root);
+    printf("max_concurrent_states = %i\n", max_concurrent_states);
+    return max_concurrent_states;
 }
 
 static int internal_delete(struct ufsmm_model *model,
