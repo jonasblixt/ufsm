@@ -167,7 +167,7 @@ static int parse_root_region(struct ufsmm_model *model, json_object *j_region)
     struct ufsmm_state *state = NULL;
 
     /* Allocate temporary stack for parsing */
-    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    rc = ufsmm_stack_init(&stack);
 
     if (rc != UFSMM_OK)
         return rc;
@@ -617,7 +617,7 @@ int ufsmm_model_write(const char *filename, struct ufsmm_model *model)
 
     L_DEBUG("Write model to %s", filename);
 
-    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    rc = ufsmm_stack_init(&stack);
 
     if (rc != UFSMM_OK)
         return rc;
@@ -814,12 +814,12 @@ int ufsmm_model_free(struct ufsmm_model *model)
     struct ufsmm_region *r, *r2;
     int rc;
 
-    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    rc = ufsmm_stack_init(&stack);
 
     if (rc != UFSMM_OK)
         return rc;
 
-    rc = ufsmm_stack_init(&free_stack, UFSMM_MAX_OBJECTS);
+    rc = ufsmm_stack_init(&free_stack);
 
     if (rc != UFSMM_OK)
         return rc;
@@ -1128,7 +1128,7 @@ struct ufsmm_state *ufsmm_model_get_state_from_uuid(struct ufsmm_model *model,
     struct ufsmm_state *s;
     static struct ufsmm_stack *stack;
 
-    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    rc = ufsmm_stack_init(&stack);
 
     if (rc != UFSMM_OK) {
         L_ERR("Could not init stack");
@@ -1212,7 +1212,7 @@ int ufsmm_model_calculate_max_orthogonal_regions(struct ufsmm_model *model)
     static struct ufsmm_stack *stack;
     unsigned int max_orth_count = 1;
 
-    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    rc = ufsmm_stack_init(&stack);
 
     if (rc != UFSMM_OK) {
         L_ERR("Could not init stack");
@@ -1249,7 +1249,7 @@ int ufsmm_model_calculate_nested_region_depth(struct ufsmm_model *model)
     static struct ufsmm_stack *stack;
     unsigned int nested_r_depth = 1;
 
-    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    rc = ufsmm_stack_init(&stack);
 
     if (rc != UFSMM_OK) {
         L_ERR("Could not init stack");
@@ -1289,7 +1289,7 @@ int ufsmm_model_calculate_max_transitions(struct ufsmm_model *model)
     static struct ufsmm_stack *stack;
     unsigned int max_source_transitions = 1;
 
-    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    rc = ufsmm_stack_init(&stack);
 
     if (rc != UFSMM_OK) {
         L_ERR("Could not init stack");
@@ -1375,14 +1375,14 @@ static int internal_delete(struct ufsmm_model *model,
     struct ufsmm_state *s, *s2;
     static struct ufsmm_stack *stack, *stack2, *stack3;
 
-    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    rc = ufsmm_stack_init(&stack);
 
     if (rc != UFSMM_OK) {
         L_ERR("Could not init stack");
         return -UFSMM_ERROR;
     }
 
-    rc = ufsmm_stack_init(&stack2, UFSMM_MAX_R_S);
+    rc = ufsmm_stack_init(&stack2);
 
     if (rc != UFSMM_OK) {
         L_ERR("Could not init stack");
@@ -1390,7 +1390,7 @@ static int internal_delete(struct ufsmm_model *model,
         return -UFSMM_ERROR;
     }
 
-    rc = ufsmm_stack_init(&stack3, UFSMM_MAX_R_S);
+    rc = ufsmm_stack_init(&stack3);
 
     if (rc != UFSMM_OK) {
         L_ERR("Could not init stack");

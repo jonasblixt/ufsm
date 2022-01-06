@@ -89,7 +89,7 @@ int ufsmm_region_get_at_xy(struct ufsmm_canvas *canvas,
     ox = region->ox;
     oy = region->oy;
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, region);
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK)
@@ -190,7 +190,7 @@ int ufsmm_state_get_at_xy(struct ufsmm_region *region,
     double x, y, w, h;
     double ox, oy;
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, region);
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK)

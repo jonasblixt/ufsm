@@ -444,7 +444,7 @@ static int generate_c_file(struct ufsmm_model *model,
 
     fprintf(fp, "#include \"%s.h\"\n\n", filename);
 
-    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    rc = ufsmm_stack_init(&stack);
 
     if (rc != UFSMM_OK)
         return rc;

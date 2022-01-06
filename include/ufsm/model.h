@@ -45,7 +45,7 @@ struct ufsmm_stack
 {
     size_t no_of_elements;
     size_t pos;
-    void *data[];
+    void **data;
 };
 
 enum ufsmm_transition_kind
@@ -486,7 +486,7 @@ const char *ufsmm_library_version(void);
 
 /* uFSM Model stack API */
 
-int ufsmm_stack_init(struct ufsmm_stack **stack, size_t no_of_elements);
+int ufsmm_stack_init(struct ufsmm_stack **stack);
 int ufsmm_stack_free(struct ufsmm_stack *stack);
 int ufsmm_stack_push(struct ufsmm_stack *stack, void *item);
 int ufsmm_stack_pop(struct ufsmm_stack *stack, void **item);

@@ -3,13 +3,14 @@
 #include <stdlib.h>
 #include <ufsm/model.h>
 
-int ufsmm_stack_init(struct ufsmm_stack **stack_pp, size_t no_of_elements)
+#define UFSMM_STACK_DEFAULT_SZ 128
+
+int ufsmm_stack_init(struct ufsmm_stack **stack_pp)
 {
     struct ufsmm_stack *stack = NULL;
-    size_t bytes_to_alloc = sizeof(struct ufsmm_stack) +
-                    (sizeof(void *) * no_of_elements);
+    size_t bytes_to_alloc = sizeof(void *) * UFSMM_STACK_DEFAULT_SZ;
 
-    stack = malloc(bytes_to_alloc);
+    stack = malloc(sizeof(struct ufsmm_stack));
 
     if (!stack)
     {
@@ -17,25 +18,41 @@ int ufsmm_stack_init(struct ufsmm_stack **stack_pp, size_t no_of_elements)
         return -UFSMM_ERR_MEM;
     }
 
-    memset(stack, 0, bytes_to_alloc);
+    memset(stack, 0, sizeof(struct ufsmm_stack));
+
+    stack->data = malloc(bytes_to_alloc);
+
+    if (!stack->data)
+    {
+        L_ERR("Could not allocate memory for stack");
+        goto err_free_stack;
+    }
+
     (*stack_pp) = stack;
 
-    stack->no_of_elements = no_of_elements;
+    stack->no_of_elements = UFSMM_STACK_DEFAULT_SZ;
     stack->pos = 0;
 
     return UFSMM_OK;
+err_free_stack:
+    free(stack);
+    return -UFSMM_ERR_MEM;
 }
 
 int ufsmm_stack_free(struct ufsmm_stack *stack)
 {
+    free(stack->data);
     free(stack);
     return UFSMM_OK;
 }
 
 int ufsmm_stack_push(struct ufsmm_stack *stack, void *item)
 {
-    if (stack->pos >= stack->no_of_elements)
-        return -UFSMM_ERROR;
+    if (stack->pos >= stack->no_of_elements) {
+        size_t bytes_to_alloc = sizeof(void *) * stack->no_of_elements*2;
+        stack->data = realloc(stack->data, bytes_to_alloc);
+        stack->no_of_elements *= 2;
+    }
 
     stack->data[stack->pos++] = item;
 

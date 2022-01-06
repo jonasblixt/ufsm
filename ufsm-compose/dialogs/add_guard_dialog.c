@@ -267,12 +267,12 @@ static int update_sc_tree(struct ufsmm_model *model,
     GtkTreeIter *r_iter;
     GtkTreeIter *parent = NULL;
 
-    rc = ufsmm_stack_init(&cleanup_stack, UFSMM_MAX_R_S);
+    rc = ufsmm_stack_init(&cleanup_stack);
 
     if (rc != UFSMM_OK)
         return rc;
 
-    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    rc = ufsmm_stack_init(&stack);
 
     if (rc != UFSMM_OK)
         return rc;

@@ -75,7 +75,7 @@ static void reset_state_dg(struct ufsmm_canvas *canvas,
 
     L_DEBUG("Reset state DG");
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, current_region);
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
@@ -109,7 +109,7 @@ static void update_state_dg(struct ufsmm_canvas *canvas,
     struct ufsmm_region *r, *r2;
     struct ufsmm_state *s;
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     selected_state->dg_vertical = false;
     selected_state->dg_horizontal = false;
     selected_state->dg_same_width = false;
@@ -249,7 +249,7 @@ void canvas_resize_state_begin(void *context)
     }
 
     /* Locate transitions that have this state as their destination */
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, priv->current_region);
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
@@ -645,7 +645,7 @@ void canvas_reset_selection(void *context)
     struct ufsmm_action_ref *aref;
     struct ufsmm_stack *stack;
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, priv->current_region);
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
@@ -698,7 +698,7 @@ int canvas_clicked_on_selected(void *context)
     ox = priv->current_region->ox;
     oy = priv->current_region->oy;
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
 
     /* Check states and regions */
     ufsmm_stack_push(stack, priv->current_region);
@@ -763,7 +763,7 @@ void canvas_process_selection(void *context)
     oy = priv->current_region->oy;
 
     priv->selection = UFSMM_SELECTION_NONE;
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
 
     /* Check states and regions */
     ufsmm_stack_push(stack, priv->current_region);
@@ -937,6 +937,58 @@ void canvas_focus_selection(void *context)
     }
 }
 
+static bool state_has_root_region(struct ufsmm_state *state,
+                                  struct ufsmm_region *root)
+{
+    struct ufsmm_region *r = state->parent_region;
+
+    while (r) {
+        if (r->parent_state == NULL)
+            break;
+        if (r->parent_state->parent_region == NULL)
+            break;
+        r = r->parent_state->parent_region;
+    }
+
+    return (r == root);
+}
+
+static void remove_dangling_guard_refs(struct ufsmm_canvas *canvas)
+{
+    struct ufsmm_stack *stack;
+    struct ufsmm_state *s;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_transition *t;
+    struct ufsmm_guard_ref *gref, *tmp_gref;
+
+    ufsmm_stack_init(&stack);
+    ufsmm_stack_push(stack, (void *) canvas->model->root);
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
+                for (gref = TAILQ_FIRST(&t->guards); gref != NULL; gref = tmp_gref) {
+                    tmp_gref = TAILQ_NEXT(gref, tailq);
+                    if ((gref->kind == UFSMM_GUARD_PSTATE) ||
+                        (gref->kind == UFSMM_GUARD_NSTATE)) {
+                        if (!state_has_root_region(s, canvas->model->root)) {
+                            L_DEBUG("Removing state condition on transition"
+                                    " %s -> %s", t->source.state->name,
+                                                 t->dest.state->name);
+                            TAILQ_REMOVE(&t->guards, gref, tailq);
+                        }
+                    }
+                }
+            }
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                ufsmm_stack_push(stack, (void *) r2);
+            }
+        }
+    }
+
+    ufsmm_stack_free(stack);
+}
+
 void canvas_save(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
@@ -945,6 +997,7 @@ void canvas_save(void *context)
         canvas_save_as(context);
     } else {
         L_DEBUG("%s: writing to '%s'", __func__, priv->model->filename);
+        remove_dangling_guard_refs(priv);
         ufsmm_model_write(priv->model->filename, priv->model);
     }
 }
@@ -1460,7 +1513,7 @@ void canvas_move_state_begin(void *context)
     struct ufsmm_region *r2;
     /* Update possible children */
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
 
     TAILQ_FOREACH(r, &priv->selected_state->regions, tailq) {
         if (r->off_page == false) {
@@ -1517,7 +1570,7 @@ void canvas_move_state_end(void *context)
     struct ufsmm_transition *t;
     struct ufsmm_vertice *v;
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
 
     s = priv->selected_state;
     ufsmm_undo_resize_state(undo_ops, s);
@@ -1619,7 +1672,7 @@ void canvas_move_state(void *context)
     struct ufsmm_region *r2;
     /* Update possible children */
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
 
     TAILQ_FOREACH(r, &priv->selected_state->regions, tailq) {
         if (r->off_page == false) {
@@ -1763,9 +1816,12 @@ static void delete_state_conditions(struct ufsmm_canvas *canvas,
     struct ufsmm_transition *t;
     struct ufsmm_guard_ref *gref, *tmp_gref;
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, (void *) canvas->model->root);
-    ufsmm_stack_push(stack, (void *) canvas->copy_bfr);
+
+    if (canvas->copy_bfr != NULL) {
+        ufsmm_stack_push(stack, (void *) canvas->copy_bfr);
+    }
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
         TAILQ_FOREACH(s, &r->states, tailq) {
@@ -1805,7 +1861,7 @@ static void unlink_state(struct ufsmm_canvas *canvas,
 
     delete_state_conditions(canvas, undo_ops, state);
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, (void *) canvas->current_region);
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
@@ -1841,7 +1897,7 @@ static void unlink_region(struct ufsmm_canvas *canvas,
     struct ufsmm_transition *t;
     struct ufsmm_stack *stack;
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, (void *) canvas->current_region);
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
@@ -1876,11 +1932,10 @@ void canvas_mselect_delete(void *context)
     struct ufsmm_transition *t;
 
     struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
-
-    ufsmm_stack_init(&sr, UFSMM_MAX_R_S);
-    ufsmm_stack_init(&ss, UFSMM_MAX_R_S);
-    ufsmm_stack_init(&st, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
+    ufsmm_stack_init(&sr);
+    ufsmm_stack_init(&ss);
+    ufsmm_stack_init(&st);
 
     ufsmm_stack_push(stack, (void *) priv->current_region);
 
@@ -2362,7 +2417,7 @@ void adjust_region_offsets(struct ufsmm_regions *regions,
     struct ufsmm_transition *t;
     struct ufsmm_vertice *v;
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
 
     TAILQ_FOREACH(r, regions, tailq) {
         if (r->off_page == false) {
@@ -2758,7 +2813,7 @@ void canvas_toggle_region_offpage(void *context)
     struct ufsmm_region *r2;
     /* Update possible children */
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, priv->selected_region);
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
@@ -3556,7 +3611,7 @@ void canvas_mselect_end(void *context)
     oy = priv->current_region->oy;
 
     priv->selection = UFSMM_SELECTION_NONE;
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
 
     /* Check states and regions */
     ufsmm_stack_push(stack, priv->current_region);
@@ -3729,7 +3784,7 @@ void canvas_mselect_move_begin(void *context)
     TAILQ_INIT(&op->states);
     TAILQ_INIT(&op->transitions);
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
 
     /* Check states */
     ufsmm_stack_push(stack, cr);
@@ -3946,7 +4001,7 @@ void canvas_save_as(void *context)
         }
 
         priv->model->filename = strdup(filename);
-
+        remove_dangling_guard_refs(priv);
         ufsmm_model_write(priv->model->filename, priv->model);
         g_free(filename);
     }
@@ -3965,7 +4020,7 @@ void canvas_select_all(void *context)
     struct ufsmm_action_ref *selected_action_ref = NULL;
 
     priv->selection = UFSMM_SELECTION_NONE;
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
 
     /* Check states and regions */
     ufsmm_stack_push(stack, priv->current_region);

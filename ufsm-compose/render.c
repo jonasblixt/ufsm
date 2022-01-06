@@ -142,7 +142,7 @@ int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
                              ufsmm_paper_size_x(canvas->model->paper_size),
                              ufsmm_paper_size_y(canvas->model->paper_size));
 
-    rc = ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    rc = ufsmm_stack_init(&stack);
 
     if (rc != UFSMM_OK)
         return rc;

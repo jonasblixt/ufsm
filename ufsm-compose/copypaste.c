@@ -145,7 +145,7 @@ void canvas_copy_begin(void *context)
     // Create a temporary region to hold copies of states
     ufsmm_add_region(NULL, false, &priv->copy_bfr);
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
 
     /*  Mark possible descendants of selected objects as selected
      *  as well.
@@ -292,7 +292,7 @@ void canvas_paste_copy_buffer(void *context)
     if (priv->selection == UFSMM_SELECTION_REGION)
         target_region = priv->selected_region;
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     ufsmm_stack_push_sr_pair(stack, NULL, priv->copy_bfr);
 
     while (ufsmm_stack_pop_sr_pair(stack, &ps, &r) == UFSMM_OK) {
@@ -405,8 +405,8 @@ void canvas_copy_end(void *context)
 
     /* Clean-up */
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
-    ufsmm_stack_init(&stack2, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
+    ufsmm_stack_init(&stack2);
 
     ufsmm_stack_push(stack, priv->copy_bfr);
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {

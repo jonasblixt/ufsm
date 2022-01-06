@@ -362,7 +362,7 @@ static void delete_gref(struct ufsmm_model *model, struct ufsmm_region *copy_bfr
     struct ufsmm_guard_ref *gref, *gref2;
 
     /* First delete all references to this action */
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, model->root);
     if (copy_bfr) {
         ufsmm_stack_push(stack, copy_bfr);
@@ -405,7 +405,7 @@ static void delete_aref(struct ufsmm_model *model, struct ufsmm_region *copy_bfr
     struct ufsmm_action_ref *aref, *aref2;
 
     /* First delete all references to this action */
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, model->root);
     if (copy_bfr) {
         ufsmm_stack_push(stack, copy_bfr);
@@ -464,7 +464,7 @@ static void delete_trigger(struct ufsmm_model *model, struct ufsmm_region *copy_
     struct ufsmm_state *s;
     struct ufsmm_transition *t;
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, model->root);
     if (copy_bfr) {
         ufsmm_stack_push(stack, copy_bfr);

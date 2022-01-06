@@ -8,7 +8,7 @@ TEST(stack_create)
     int rc;
     struct ufsmm_stack *s = NULL;
 
-    rc = ufsmm_stack_init(&s, 1024);
+    rc = ufsmm_stack_init(&s);
     ASSERT_EQ(rc, UFSMM_OK);
 
     rc = ufsmm_stack_free(s);
@@ -21,16 +21,13 @@ TEST(stack_test1)
     int rc;
     struct ufsmm_stack *s = NULL;
 
-    rc = ufsmm_stack_init(&s, 1);
+    rc = ufsmm_stack_init(&s);
     ASSERT_EQ(rc, UFSMM_OK);
 
     int a = 1;
 
     rc = ufsmm_stack_push(s, &a);
     ASSERT_EQ(rc, UFSMM_OK);
-
-    rc = ufsmm_stack_push(s, &a);
-    ASSERT_EQ(rc, -UFSMM_ERROR);
 
     int *a_ptr = NULL;
 

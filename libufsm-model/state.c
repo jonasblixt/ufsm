@@ -592,7 +592,7 @@ bool ufsmm_state_contains_region(struct ufsmm_model *model,
     struct ufsmm_state *s;
     bool result = false;
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
 
     TAILQ_FOREACH(r, &state->regions, tailq) {
         ufsmm_stack_push(stack, r);
@@ -625,7 +625,7 @@ bool ufsmm_region_contains_state(struct ufsmm_model *model,
     struct ufsmm_state *s;
     bool result = false;
 
-    ufsmm_stack_init(&stack, UFSMM_MAX_R_S);
+    ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, region);
 
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
