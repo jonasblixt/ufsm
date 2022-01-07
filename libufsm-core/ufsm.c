@@ -1050,5 +1050,5 @@ int ufsm_reset_machine(struct ufsm_machine *m)
     for (const struct ufsm_region *r = m->region; r; r = r->next)
         ufsm_reset_region(m, r);
 
-    return UFSM_OK;
+    return ufsm_init_machine(m, m->context);
 }
