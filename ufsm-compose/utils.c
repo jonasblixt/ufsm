@@ -200,19 +200,13 @@ int ufsmm_state_get_at_xy(struct ufsmm_region *region,
         d++;
 
         TAILQ_FOREACH(s, &r->states, tailq) {
-            //ufsmm_get_state_absolute_coords(s, &x, &y, &w, &h);
-
             x = s->x + region->ox;
             y = s->y + region->oy;
             w = s->w;
             h = s->h;
-            //x += ox;
-            //y += oy;
 
             if ( (px > (x-5)) && (px < (x + w + 5)) &&
                  (py > (y-5)) && (py < (y + h + 5))) {
-
-                 L_DEBUG("State '%s' selected", s->name);
                  (*out) = s;
                  found_state = true;
             }

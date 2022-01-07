@@ -3152,9 +3152,6 @@ static void simple_state_update_preview(void *context)
     ufsmm_region_get_at_xy(priv, priv->current_region, priv->px, priv->py,
                             &op->pr, NULL);
 
-    if (op->pr) {
-        L_DEBUG("op->pr = %s", op->pr->name);
-    }
     op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - ox - 10);
     op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - oy - 20);
     priv->redraw = true;
