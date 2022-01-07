@@ -95,13 +95,19 @@ int main(int argc, char **argv)
 
     struct stat statbuf;
 
-    if (stat(argv[optind], &statbuf) != 0) {
-        rc = ufsmm_model_create(&model, strdup("New model"));
-        model->filename = strdup(argv[optind]);
-    } else {
-        rc = ufsmm_model_load(argv[optind], &model);
-    }
+    char *fn = argv[optind];
 
+    if (fn) {
+        if (stat(fn, &statbuf) != 0) {
+            rc = ufsmm_model_create(&model, strdup("New model"));
+            model->filename = strdup(fn);
+        } else {
+            rc = ufsmm_model_load(fn, &model);
+        }
+    } else {
+        rc = ufsmm_model_create(&model, strdup("New model"));
+        model->filename = strdup("new_model.ufsm");
+    }
     if (rc != UFSMM_OK)
     {
         printf("Could not create or load model\n");
