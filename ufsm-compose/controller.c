@@ -4413,7 +4413,7 @@ static void debug_event(int ev)
     printf (" %-3i|            |\n",ev);
 }
 
-GtkWidget* ufsmm_canvas_new(GtkWidget *parent)
+GtkWidget* ufsmm_canvas_new(GtkWidget *parent, int verbosity)
 {
     GtkWidget *widget = NULL;
     struct ufsmm_canvas *priv = NULL;
@@ -4428,10 +4428,12 @@ GtkWidget* ufsmm_canvas_new(GtkWidget *parent)
     priv->draw_menu = true;
     priv->menu = menu_init();
 
-    //ufsm_debug_machine(&priv->machine.machine);
-    /* Override the debug_event to filter out 'eMotion' -event, since
-     * there are so many of them */
-    //priv->machine.machine.debug_event = debug_event;
+    if (verbosity > 2) {
+        ufsm_debug_machine(&priv->machine.machine);
+        /* Override the debug_event to filter out 'eMotion' -event, since
+         * there are so many of them */
+        priv->machine.machine.debug_event = debug_event;
+    }
 
     canvas_machine_initialize(&priv->machine, priv);
 

@@ -51,7 +51,7 @@ struct ufsmm_canvas {
     cairo_t *cr;
 };
 
-GtkWidget* ufsmm_canvas_new(GtkWidget *parent);
+GtkWidget* ufsmm_canvas_new(GtkWidget *parent, int verbosity);
 int ufsmm_canvas_load_model(GtkWidget *widget, struct ufsmm_model *model);
 void ufsmm_canvas_reset_delta(struct ufsmm_canvas *canvas);
 

@@ -673,8 +673,6 @@ int ufsmm_model_write(const char *filename, struct ufsmm_model *model)
 
     /* Serialize actions */
     json_object *j_actions;
-    json_object *j_entries;
-    json_object *j_exits;
     json_object *j_guards;
 
     rc = serialize_action_list(&model->actions, &j_actions);
@@ -718,8 +716,6 @@ int ufsmm_model_write(const char *filename, struct ufsmm_model *model)
     json_object_object_add(jr, "paper-size", jr_paper_size);
     json_object_object_add(jr, "triggers", j_triggers);
     json_object_object_add(jr, "actions", j_actions);
-    json_object_object_add(jr, "entries", j_entries);
-    json_object_object_add(jr, "exits", j_exits);
     json_object_object_add(jr, "guards", j_guards);
     json_object_object_add(jr, "region", root_j_region);
 

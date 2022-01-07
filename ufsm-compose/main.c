@@ -3,7 +3,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <ufsm/model.h>
-
+#include <getopt.h>
 #include <gtk/gtk.h>
 #include <cairo.h>
 
@@ -12,12 +12,17 @@
 #include "menu.h"
 #include "nav.h"
 
+static int verbosity = 0;
+
 int ufsmm_debug(enum ufsmm_debug_level debug_level,
               const char *func_name,
               const char *fmt, ...)
 {
     va_list args;
     int rc;
+
+    if (verbosity < debug_level)
+        return 0;
 
     va_start(args, fmt);
     switch (debug_level)
@@ -43,8 +48,38 @@ int main(int argc, char **argv)
 {
     GtkWidget *window;
     GtkWidget *state_canvas;
+    int opt;
+    int long_index = 0;
     int rc = UFSMM_OK;
     struct ufsmm_model *model;
+
+
+    struct option long_options[] =
+    {
+        {"verbose",   no_argument,       0,  'v' },
+        {0,           0,                 0,   0  }
+    };
+
+    while ((opt = getopt_long(argc, argv, "v",
+                   long_options, &long_index )) != -1)
+    {
+        switch (opt)
+        {
+            case 'v':
+                verbosity++;
+            break;
+            case '?':
+                printf("Unknown option: %c\n", optopt);
+                return -1;
+            break;
+            case ':':
+                printf("Missing arg for %c\n", optopt);
+                return -1;
+            break;
+             default:
+                exit(EXIT_FAILURE);
+        }
+    }
 
     gtk_init(&argc, &argv);
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -52,7 +87,7 @@ int main(int argc, char **argv)
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
     gtk_window_set_default_size(GTK_WINDOW(window), 1280, 1024);
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-    state_canvas = ufsmm_canvas_new(window);
+    state_canvas = ufsmm_canvas_new(window, verbosity);
 
     GtkWidget *main_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_box_pack_start(GTK_BOX(main_vbox), state_canvas, TRUE, TRUE, 0);
@@ -60,11 +95,11 @@ int main(int argc, char **argv)
 
     struct stat statbuf;
 
-    if (stat(argv[1], &statbuf) != 0) {
+    if (stat(argv[optind], &statbuf) != 0) {
         rc = ufsmm_model_create(&model, strdup("New model"));
-        model->filename = strdup(argv[1]);
+        model->filename = strdup(argv[optind]);
     } else {
-        rc = ufsmm_model_load(argv[1], &model);
+        rc = ufsmm_model_load(argv[optind], &model);
     }
 
     if (rc != UFSMM_OK)

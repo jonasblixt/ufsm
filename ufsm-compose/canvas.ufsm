@@ -763,8 +763,6 @@
       "id":"c8b95868-d09c-4a24-95b7-d0704656d251"
     }
   ],
-  "entries":null,
-  "exits":null,
   "guards":[
     {
       "name":"canvas_region_selected",
