@@ -2868,6 +2868,7 @@ void canvas_set_transition_trigger(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_trigger *old_trigger = priv->selected_transition->trigger;
     struct ufsmm_transition *t = priv->selected_transition;
+    int rc;
 
     if (t->source.state->kind == UFSMM_STATE_INIT) {
         L_ERR("Transitions originating from an initial state can't have triggers");
@@ -2878,18 +2879,20 @@ void canvas_set_transition_trigger(void *context)
         return;
     }
 
-    ufsm_set_trigger_dialog(GTK_WINDOW(priv->root_window), priv->model, t);
+    rc = ufsm_set_trigger_dialog(GTK_WINDOW(priv->root_window), priv->model, t);
 
-    struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
-    ufsmm_undo_set_trigger(undo_ops, t, old_trigger);
+    if (rc == UFSMM_OK) {
+        struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
+        ufsmm_undo_set_trigger(undo_ops, t, old_trigger);
 
-    if (old_trigger) {
-        old_trigger->usage_count--;
+        if (old_trigger) {
+            old_trigger->usage_count--;
+        }
+
+        t->trigger->usage_count++;
+
+        ufsmm_undo_commit_ops(priv->undo, undo_ops);
     }
-
-    t->trigger->usage_count++;
-
-    ufsmm_undo_commit_ops(priv->undo, undo_ops);
 }
 
 void canvas_add_transition_action(void *context)
