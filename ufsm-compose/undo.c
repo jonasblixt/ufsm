@@ -1,6 +1,7 @@
 #include <string.h>
 #include <ufsm/model.h>
 #include "undo.h"
+#include "status.h"
 
 struct ufsmm_undo_rename_state {
 
@@ -177,6 +178,7 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
         return -1;
     }
 
+    uc_rstatus_set(true);
     /* Move to redo stack */
     TAILQ_REMOVE(&undo->undo_stack, ops_ref, tailq);
     TAILQ_INSERT_TAIL(&undo->redo_stack, ops_ref, tailq);
@@ -460,6 +462,8 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
         return -1;
     }
 
+    uc_rstatus_set(true);
+
     /* Move back to undo stack */
     TAILQ_REMOVE(&undo->redo_stack, ops_ref, tailq);
     TAILQ_INSERT_TAIL(&undo->undo_stack, ops_ref, tailq);
@@ -738,6 +742,7 @@ int ufsmm_undo_commit_ops(struct ufsmm_undo_context *undo,
         return -1;
     memset(new, 0, sizeof(*new));
     new->ops = ops;
+    uc_rstatus_set(true);
 
     TAILQ_INSERT_TAIL(&undo->undo_stack, new, tailq);
 

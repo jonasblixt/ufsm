@@ -1,8 +1,8 @@
 {
   "kind":"uFSM Model",
   "version":0,
-  "name":"New model",
-  "paper-size":2,
+  "name":"dhcpc",
+  "paper-size":3,
   "triggers":[
     {
       "name":"DHCPNAK",
@@ -87,10 +87,6 @@
       "id":"988244f1-ac79-4f16-b12c-058371b378bd"
     },
     {
-      "name":"dhcp_display_resul",
-      "id":"5f703f6b-4aed-4a7f-8c51-06afa0d8d8f9"
-    },
-    {
       "name":"dhcp_display_result",
       "id":"3de777e2-b34b-4073-b461-4a82725dd019"
     },
@@ -99,8 +95,6 @@
       "id":"c1581dd2-f99a-41c6-a0cc-5a6b31e43c93"
     }
   ],
-  "entries":null,
-  "exits":null,
   "guards":[
     {
       "name":"dhcp_check",
@@ -147,7 +141,7 @@
                 "id":"2c789dd8-8579-4696-814a-d46bea1428d8",
                 "name":"Init",
                 "kind":"state",
-                "width":700.0,
+                "width":730.0,
                 "height":90.0,
                 "x":820.0,
                 "y":450.0,
@@ -461,7 +455,7 @@
                 "kind":"init",
                 "width":20.0,
                 "height":20.0,
-                "x":1150.0,
+                "x":1170.0,
                 "y":400.0,
                 "orientation":0,
                 "entries":[
@@ -481,11 +475,11 @@
                     "dest":{
                       "state":"2c789dd8-8579-4696-814a-d46bea1428d8",
                       "side":"top",
-                      "offset":340.0
+                      "offset":360.0
                     },
                     "text-block":{
-                      "x":1190.0,
-                      "y":360.0,
+                      "x":1210.0,
+                      "y":390.0,
                       "w":100.0,
                       "h":30.0
                     },
@@ -585,7 +579,7 @@
                 "id":"346a3994-a913-4307-90e1-9b2e737d57bc",
                 "name":"Renewing",
                 "kind":"state",
-                "width":190.0,
+                "width":250.0,
                 "height":250.0,
                 "x":1350.0,
                 "y":1150.0,
@@ -838,8 +832,8 @@
               "offset":530.0
             },
             "text-block":{
-              "x":1200.0,
-              "y":220.0,
+              "x":1230.0,
+              "y":210.0,
               "w":100.0,
               "h":30.0
             },

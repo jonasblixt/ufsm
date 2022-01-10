@@ -57,16 +57,21 @@ int main(int argc, char **argv)
     struct option long_options[] =
     {
         {"verbose",   no_argument,       0,  'v' },
+        {"version",   no_argument,       0,  'V' },
         {0,           0,                 0,   0  }
     };
 
-    while ((opt = getopt_long(argc, argv, "v",
+    while ((opt = getopt_long(argc, argv, "vV",
                    long_options, &long_index )) != -1)
     {
         switch (opt)
         {
             case 'v':
                 verbosity++;
+            break;
+            case 'V':
+                printf("ufsm-compose %s\n", PACKAGE_VERSION);
+                return 0;
             break;
             case '?':
                 printf("Unknown option: %c\n", optopt);

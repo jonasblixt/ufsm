@@ -6,6 +6,7 @@
 #include "controller.h"
 #include "render.h"
 #include "utils.h"
+#include "status.h"
 #include "logic/canvas.h"
 
 static bool show_nav_tree = false;
@@ -273,6 +274,10 @@ static bool nav_process_region(struct ufsmm_canvas *canvas,
                 break;
             }
         }
+    }
+
+    if (result) {
+        uc_status_show_path(canvas->current_region);
     }
 
     return result;

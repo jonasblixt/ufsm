@@ -16,7 +16,8 @@ ufsm_compose_SOURCES = main.c \
 			   copypaste.c \
 			   undo.c \
 			   menu.c \
-			   nav.c
+			   nav.c \
+			   status.c
 
 
 ufsm_compose_CFLAGS = -I$(top_srcdir)/include \

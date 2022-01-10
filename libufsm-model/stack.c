@@ -50,6 +50,7 @@ int ufsmm_stack_push(struct ufsmm_stack *stack, void *item)
 {
     if (stack->pos >= stack->no_of_elements) {
         size_t bytes_to_alloc = sizeof(void *) * stack->no_of_elements*2;
+        L_DEBUG("Increasing stack allocation to %i bytes", bytes_to_alloc);
         stack->data = realloc(stack->data, bytes_to_alloc);
         stack->no_of_elements *= 2;
     }
