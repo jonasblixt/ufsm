@@ -7,6 +7,7 @@
 #include "render.h"
 #include "utils.h"
 #include "nav.h"
+#include "status.h"
 #include "logic/canvas.h"
 
 #include "dialogs/edit_state_dialog.h"
@@ -337,7 +338,8 @@ void canvas_resize_state(void *context)
                                  ufsmm_canvas_nearest_grid_point(t->source.toffset - dx);
                             t->source.changed = true;
                         }
-                    } else if (t->dest.state == priv->selected_state) {
+                    }
+                    if (t->dest.state == priv->selected_state) {
                         if ((t->dest.side == UFSMM_SIDE_LEFT) ||
                                (t->dest.side == UFSMM_SIDE_RIGHT)) {
                             t->dest.offset = \
@@ -366,7 +368,8 @@ void canvas_resize_state(void *context)
                                  ufsmm_canvas_nearest_grid_point(t->source.toffset - dx);
                             t->source.changed = true;
                         }
-                    } else if (t->dest.state == priv->selected_state) {
+                    }
+                    if (t->dest.state == priv->selected_state) {
                         if ((t->dest.side == UFSMM_SIDE_TOP) ||
                                (t->dest.side == UFSMM_SIDE_BOTTOM)) {
                             t->dest.offset = \
@@ -390,7 +393,8 @@ void canvas_resize_state(void *context)
                                  ufsmm_canvas_nearest_grid_point(t->source.toffset - dy);
                             t->source.changed = true;
                         }
-                    } else if (t->dest.state == priv->selected_state) {
+                    }
+                    if (t->dest.state == priv->selected_state) {
                         if ((t->dest.side == UFSMM_SIDE_LEFT) ||
                                (t->dest.side == UFSMM_SIDE_RIGHT)) {
                             t->dest.offset = \
@@ -1009,6 +1013,7 @@ void canvas_save(void *context)
         L_DEBUG("%s: writing to '%s'", __func__, priv->model->filename);
         remove_dangling_guard_refs(priv);
         ufsmm_model_write(priv->model->filename, priv->model);
+        uc_rstatus_set(false);
     }
 }
 
@@ -1216,6 +1221,7 @@ void canvas_move_vertice_begin(void *context)
     if (op == NULL)
         return;
 
+    uc_status_push2("MOVE VERTICE", UFSMM_COLOR_YELLOW1);
     memset(op, 0, sizeof(*op));
     priv->command_data = (void *) op;
 
@@ -2471,6 +2477,20 @@ void canvas_add_entry(void *context)
     int rc;
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
 
+    if (priv->selected_state == NULL) {
+        const char *msg = "No state selected";
+        L_ERR(msg);
+        uc_rstatus_set_error(msg);
+        return;
+    }
+
+    if (priv->selected_state->kind != UFSMM_STATE_NORMAL) {
+        const char *msg = "Entries are only applicable to normal states";
+        L_ERR(msg);
+        uc_rstatus_set_error(msg);
+        return;
+    }
+
     rc = ufsm_add_entry_action_dialog(GTK_WINDOW(priv->root_window),
                                         priv->model,
                                         priv->selected_state);
@@ -2496,6 +2516,21 @@ void canvas_add_exit(void *context)
 {
     int rc;
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+
+    if (priv->selected_state == NULL) {
+        const char *msg = "No state selected";
+        L_ERR(msg);
+        uc_rstatus_set_error(msg);
+        return;
+    }
+
+    if (priv->selected_state->kind != UFSMM_STATE_NORMAL) {
+        const char *msg = "Exits are only applicable to normal states";
+        L_ERR(msg);
+        uc_rstatus_set_error(msg);
+        return;
+    }
+
     rc = ufsm_add_exit_action_dialog(GTK_WINDOW(priv->root_window),
                                         priv->model,
                                         priv->selected_state);
@@ -2558,11 +2593,15 @@ void canvas_add_guard(void *context)
     int rc;
 
     if (t->source.state->kind == UFSMM_STATE_INIT) {
-        L_ERR("Transitions originating from an initial state can't have guards");
+        const char *msg = "Transitions originating from an initial state can't have guards";
+        L_ERR(msg);
+        uc_rstatus_set_error(msg);
         return;
     } else if ((t->source.state->kind == UFSMM_STATE_SHALLOW_HISTORY) ||
                (t->source.state->kind == UFSMM_STATE_DEEP_HISTORY)) {
-        L_ERR("Transitions originating from a history state can't have guards");
+        const char *msg = "Transitions originating from a history state can't have guards";
+        L_ERR(msg);
+        uc_rstatus_set_error(msg);
         return;
     }
 
@@ -2731,6 +2770,8 @@ void canvas_create_state_begin(void *context)
     op->state->parent_region = priv->current_region;
     priv->preview_state = op->state;
     ufsmm_state_set_name(op->state, "New state");
+    uc_status_push2("STATE", UFSMM_COLOR_YELLOW1);
+    priv->redraw = true;
 }
 
 void canvas_create_state_end(void *context)
@@ -2766,6 +2807,7 @@ void canvas_new_state_set_start(void *context)
     op->state->x = ufsmm_canvas_nearest_grid_point(priv->px - ox - 10);
     op->state->y = ufsmm_canvas_nearest_grid_point(priv->py - oy - 20);
     update_state_dg(priv, op->state, priv->current_region, false, true, false);
+
     priv->redraw = true;
 }
 
@@ -2871,11 +2913,16 @@ void canvas_set_transition_trigger(void *context)
     int rc;
 
     if (t->source.state->kind == UFSMM_STATE_INIT) {
-        L_ERR("Transitions originating from an initial state can't have triggers");
+        const char *msg = "Transitions originating from an initial state can't have triggers";
+        L_ERR(msg);
+        uc_rstatus_set_error(msg);
+
         return;
     } else if ((t->source.state->kind == UFSMM_STATE_SHALLOW_HISTORY) ||
                (t->source.state->kind == UFSMM_STATE_DEEP_HISTORY)) {
-        L_ERR("Transitions originating from a history state can't have triggers");
+        const char *msg = "Transitions originating from a history state can't have triggers";
+        L_ERR(msg);
+        uc_rstatus_set_error(msg);
         return;
     }
 
@@ -2932,6 +2979,8 @@ void canvas_create_transition_begin(void *context)
     struct transition_op *op = (struct transition_op *) priv->command_data;
     ufsmm_transition_new(&op->t);
     priv->preview_transition = NULL;
+    uc_status_push2("TRANSITION", UFSMM_COLOR_YELLOW1);
+    priv->redraw = true;
 }
 
 void canvas_create_transition_end(void *context)
@@ -2975,7 +3024,9 @@ int canvas_check_transition_start(void *context)
 
         if ((source_state->kind == UFSMM_STATE_TERMINATE) ||
             (source_state->kind == UFSMM_STATE_FINAL)) {
-            L_ERR("Transitions from terminate or final states are not allowed");
+            const char *msg = "Transitions from terminate or final states are not allowed";
+            L_ERR(msg);
+            uc_rstatus_set_error(msg);
             result = false;
         } else {
             result = true;
@@ -3058,7 +3109,9 @@ void canvas_create_transition(void *context)
         if ((dest_state->kind == UFSMM_STATE_INIT) ||
             (dest_state->kind == UFSMM_STATE_SHALLOW_HISTORY) ||
             (dest_state->kind == UFSMM_STATE_DEEP_HISTORY)) {
-            L_ERR("Illegal transition destination");
+            const char *msg = "Illegal transition destination";
+            L_ERR(msg);
+            uc_rstatus_set_error(msg);
             op->commit = false;
             goto err_out;
         }
@@ -3076,6 +3129,8 @@ void canvas_create_transition(void *context)
                                    dest_state,
                                    op->t);
         op->commit = true;
+    } else {
+        uc_rstatus_set_error("No state selected");
     }
 
 err_out:
@@ -3184,6 +3239,8 @@ static void simple_state_update_preview(void *context)
 
 void canvas_create_terminate_begin(void *context)
 {
+    uc_status_push2("TERMINATE", UFSMM_COLOR_YELLOW1);
+    uc_status_push2("PLACE", UFSMM_COLOR_YELLOW1);
     create_simple_state_begin(context, UFSMM_STATE_TERMINATE, "Terminate");
 }
 
@@ -3206,6 +3263,8 @@ void canvas_terminate_update_preview(void *context)
 
 void canvas_create_history_begin(void *context)
 {
+    uc_status_push2("SHALLOW HISTORY", UFSMM_COLOR_YELLOW1);
+    uc_status_push2("PLACE", UFSMM_COLOR_YELLOW1);
     create_simple_state_begin(context, UFSMM_STATE_SHALLOW_HISTORY, "Shallow history");
 }
 
@@ -3228,6 +3287,8 @@ void canvas_add_history_to_region(void *context)
 
 void canvas_create_dhistory_begin(void *context)
 {
+    uc_status_push2("DEEP HISTORY", UFSMM_COLOR_YELLOW1);
+    uc_status_push2("PLACE", UFSMM_COLOR_YELLOW1);
     create_simple_state_begin(context, UFSMM_STATE_DEEP_HISTORY, "Deep history");
 }
 
@@ -3250,6 +3311,8 @@ void canvas_add_dhistory_to_region(void *context)
 
 void canvas_create_init_begin(void *context)
 {
+    uc_status_push2("INIT", UFSMM_COLOR_YELLOW1);
+    uc_status_push2("PLACE", UFSMM_COLOR_YELLOW1);
     create_simple_state_begin(context, UFSMM_STATE_INIT, "Init");
 }
 
@@ -3272,6 +3335,8 @@ void canvas_add_init_to_region(void *context)
 
 void canvas_create_final_begin(void *context)
 {
+    uc_status_push2("FINAL", UFSMM_COLOR_YELLOW1);
+    uc_status_push2("PLACE", UFSMM_COLOR_YELLOW1);
     create_simple_state_begin(context, UFSMM_STATE_FINAL, "Final");
 }
 
@@ -3422,6 +3487,8 @@ static void update_fork_join_start(void *context)
 
 void canvas_create_fork_begin(void *context)
 {
+    uc_status_push2("FORK", UFSMM_COLOR_YELLOW1);
+    uc_status_push2("PLACE", UFSMM_COLOR_YELLOW1);
     create_fork_join_begin(context, true);
 }
 
@@ -3432,6 +3499,8 @@ void canvas_create_fork_end(void *context)
 
 void canvas_create_fork_start(void *context)
 {
+    uc_status_pop();
+    uc_status_push2("RESIZE", UFSMM_COLOR_YELLOW1);
     create_fork_join_start(context);
 }
 
@@ -3459,6 +3528,8 @@ void canvas_update_fork_start(void *context)
 
 void canvas_create_join_begin(void *context)
 {
+    uc_status_push2("JOIN", UFSMM_COLOR_YELLOW1);
+    uc_status_push2("PLACE", UFSMM_COLOR_YELLOW1);
     create_fork_join_begin(context, false);
 }
 
@@ -3469,6 +3540,8 @@ void canvas_create_join_end(void *context)
 
 void canvas_create_join_start(void *context)
 {
+    uc_status_pop();
+    uc_status_push2("RESIZE", UFSMM_COLOR_YELLOW1);
     create_fork_join_start(context);
 }
 
@@ -3513,6 +3586,7 @@ int canvas_transition_tvertice_selected(void *context)
 
 void canvas_add_vertice_begin(void *context)
 {
+    uc_status_push2("VERTICE", UFSMM_COLOR_YELLOW1);
 }
 
 void canvas_add_vertice_end(void *context)
@@ -4030,6 +4104,7 @@ void canvas_save_as(void *context)
         priv->model->filename = strdup(filename);
         remove_dangling_guard_refs(priv);
         ufsmm_model_write(priv->model->filename, priv->model);
+        uc_rstatus_set(false);
         g_free(filename);
     }
 }
@@ -4180,12 +4255,188 @@ void canvas_annotation_select_end(void *context)
 {
 }
 
+void canvas_state_select_end_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_push2("SELECT END", UFSMM_COLOR_YELLOW1);
+    priv->redraw = true;
+}
+
+void canvas_state_select_end_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_pop();
+    priv->redraw = true;
+}
+
+void canvas_state_select_start_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_push2("SELECT START", UFSMM_COLOR_YELLOW1);
+    priv->redraw = true;
+}
+
+void canvas_state_select_start_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_pop();
+    priv->redraw = true;
+}
+
 void canvas_project_settings(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
 
     int rc = ufsm_project_settings_dialog(GTK_WINDOW(priv->root_window),
                                      priv->model, priv->copy_bfr);
+}
+
+void canvas_add_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_push2("ADD", UFSMM_COLOR_YELLOW1);
+    priv->redraw = true;
+}
+
+void canvas_add_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_clear();
+    priv->redraw = true;
+}
+
+void canvas_tools_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_show_path(priv->current_region);
+    priv->redraw = true;
+}
+
+void canvas_tools_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_clear();
+    uc_rstatus_set_error(NULL);
+    priv->redraw = true;
+}
+
+void canvas_select_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_clear();
+    uc_status_push2("SELECT", UFSMM_COLOR_GRAY1);
+    priv->redraw = true;
+}
+
+void canvas_select_end(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_clear();
+    priv->redraw = true;
+}
+
+void canvas_jump_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_clear();
+    uc_status_push2("JUMP", UFSMM_COLOR_PURPLE1);
+    priv->redraw = true;
+}
+
+void canvas_zoom_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_clear();
+    uc_status_push2("ZOOM", UFSMM_COLOR_PURPLE1);
+    priv->redraw = true;
+}
+
+void canvas_edit_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_clear();
+    uc_status_push2("EDIT", UFSMM_COLOR_YELLOW1);
+    priv->redraw = true;
+}
+
+void canvas_delete_begin(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_clear();
+    uc_status_push2("DELETE", UFSMM_COLOR_YELLOW1);
+    priv->redraw = true;
+}
+
+void canvas_add_transition_vertice_mode(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_pop();
+    uc_status_push2("ADD VERTICE", UFSMM_COLOR_YELLOW1);
+    priv->redraw = true;
+}
+
+void canvas_transition_select_source(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_push2("SELECT SOURCE", UFSMM_COLOR_YELLOW1);
+    priv->redraw = true;
+}
+
+void canvas_transition_select_dest(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    uc_status_pop();
+    uc_status_push2("SELECT DEST", UFSMM_COLOR_YELLOW1);
+    priv->redraw = true;
+}
+
+void canvas_open(void *context)
+{
+    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+
+    GtkWidget *dialog;
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+    gint res;
+
+    dialog = gtk_file_chooser_dialog_new ("Open File",
+                                          (GtkWindow *) priv->root_window,
+                                          action,
+                                          "Cancel",
+                                          GTK_RESPONSE_CANCEL,
+                                          "Open",
+                                          GTK_RESPONSE_ACCEPT,
+                                          NULL);
+
+    res = gtk_dialog_run (GTK_DIALOG (dialog));
+
+    if (res == GTK_RESPONSE_ACCEPT) {
+        char *filename;
+        GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
+        filename = gtk_file_chooser_get_filename (chooser);
+
+        ufsmm_undo_free(priv->undo);
+        uc_rstatus_set(false);
+        L_DEBUG("Freeing model");
+
+        ufsmm_model_free(priv->model);
+
+        L_DEBUG("Loading model");
+        int rc = ufsmm_model_load(filename, &priv->model);
+
+        if (rc != UFSMM_OK) {
+            L_ERR("Could not load model");
+            return;
+        }
+
+        priv->selected_region = priv->model->root;
+        priv->current_region = priv->model->root;
+        priv->current_region->draw_as_root = true;
+        priv->current_region->scale = 1.0;
+        priv->undo = ufsmm_undo_init(priv->model);
+        g_free (filename);
+    }
+
+    gtk_widget_destroy (dialog);
 }
 
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
@@ -4231,6 +4482,8 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
         canvas_machine_process(&priv->machine, eKey_g_down);
     } else if (event->keyval == GDK_KEY_e) {
         canvas_machine_process(&priv->machine, eKey_e_down);
+    } else if (event->keyval == GDK_KEY_o) {
+        canvas_machine_process(&priv->machine, eKey_o_down);
     } else if (event->keyval == GDK_KEY_Escape) {
         canvas_machine_process(&priv->machine, eKey_esc_down);
     } else if (event->keyval == GDK_KEY_x) {
@@ -4284,13 +4537,13 @@ static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
     if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
         ufsm_process(&priv->machine.machine, eRMBDown);
     } else if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
-        if (!menu_process(priv->menu, &priv->machine.machine, event->x, event->y)) {
+        //if (!menu_process(priv->menu, &priv->machine.machine, event->x, event->y)) {
             if (!ufsmm_nav_process(priv, event->x, event->y)) {
                 ufsm_process(&priv->machine.machine, eLMBDown);
             }
-        } else {
-            priv->redraw = true;
-        }
+        //} else {
+        //    priv->redraw = true;
+        //}
     } else if (event->type == GDK_DOUBLE_BUTTON_PRESS) {
         if (priv->selection == UFSMM_SELECTION_REGION) {
             if (priv->selected_region->off_page) {
@@ -4408,13 +4661,14 @@ static void draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data)
     height = allocation.height;
 
     priv->cr = cr;
-    priv->menu->cr = cr;
+    //priv->menu->cr = cr;
     priv->window_width = width;
     priv->window_height = height;
 
     ufsmm_canvas_render(priv, width, height);
     ufsmm_nav_render(priv, width, height);
-    menu_render(priv->menu, priv->theme, priv->selection, width, height);
+    //menu_render(priv->menu, priv->theme, priv->selection, width, height);
+    uc_status_render(priv, width, height);
 }
 
 static void destroy_event_cb(GtkWidget *widget)
@@ -4423,7 +4677,7 @@ static void destroy_event_cb(GtkWidget *widget)
                     g_object_get_data(G_OBJECT(widget), "canvas private");
     L_DEBUG("Freeing canvas %p", priv);
 
-    menu_free(priv->menu);
+    //menu_free(priv->menu);
     ufsmm_undo_free(priv->undo);
     free(priv);
 }
@@ -4449,7 +4703,7 @@ GtkWidget* ufsmm_canvas_new(GtkWidget *parent, int verbosity)
 
     memset(priv, 0, sizeof(*priv));
     priv->draw_menu = true;
-    priv->menu = menu_init();
+    //priv->menu = menu_init();
 
     if (verbosity > 2) {
         ufsm_debug_machine(&priv->machine.machine);
@@ -4458,6 +4712,7 @@ GtkWidget* ufsmm_canvas_new(GtkWidget *parent, int verbosity)
         priv->machine.machine.debug_event = debug_event;
     }
 
+    uc_status_init();
     canvas_machine_initialize(&priv->machine, priv);
 
     widget = gtk_drawing_area_new();
