@@ -6,3 +6,5 @@ build-aux/
 build/
 configure
 m4/
+doc/_build
+doc/latex

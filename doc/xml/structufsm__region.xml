@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="structufsm__region" kind="struct" language="C++" prot="public">
+    <compoundname>ufsm_region</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structufsm__region_1a038d3356a8cdb1e245899f78905123ea" prot="public" static="no" mutable="no">
+        <type>const unsigned int</type>
+        <definition>const unsigned int ufsm_region::index</definition>
+        <argsstring></argsstring>
+        <name>index</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="156" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="156" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__region_1ae83caaa2e3b88e96ff85228f0d0e15fc" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* ufsm_region::name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="157" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="157" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__region_1a03fa453022cd545cda01a878d4c40c48" prot="public" static="no" mutable="no">
+        <type>const bool</type>
+        <definition>const bool ufsm_region::has_history</definition>
+        <argsstring></argsstring>
+        <name>has_history</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="158" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="158" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__region_1ae460aa41d26a7c329235c5d12a3ede1a" prot="public" static="no" mutable="no">
+        <type>const struct <ref refid="structufsm__state" kindref="compound">ufsm_state</ref> *const</type>
+        <definition>const struct ufsm_state* const ufsm_region::state</definition>
+        <argsstring></argsstring>
+        <name>state</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="159" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="159" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__region_1ad140c4a77042fbb8b66043cbc73aecd5" prot="public" static="no" mutable="no">
+        <type>const struct <ref refid="structufsm__state" kindref="compound">ufsm_state</ref> *const</type>
+        <definition>const struct ufsm_state* const ufsm_region::parent_state</definition>
+        <argsstring></argsstring>
+        <name>parent_state</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="160" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="160" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__region_1a15446aa6c0f57ca07be06e340feffceb" prot="public" static="no" mutable="no">
+        <type>const struct <ref refid="structufsm__region" kindref="compound">ufsm_region</ref> *const</type>
+        <definition>const struct ufsm_region* const ufsm_region::next</definition>
+        <argsstring></argsstring>
+        <name>next</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="161" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="161" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="22">
+        <label>ufsm_region</label>
+        <link refid="structufsm__region"/>
+        <childnode refid="23" relation="usage">
+          <edgelabel>parent_state</edgelabel>
+          <edgelabel>state</edgelabel>
+        </childnode>
+        <childnode refid="22" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+      </node>
+      <node id="25">
+        <label>ufsm_trigger</label>
+        <link refid="structufsm__trigger"/>
+      </node>
+      <node id="24">
+        <label>ufsm_transition</label>
+        <link refid="structufsm__transition"/>
+        <childnode refid="24" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+        <childnode refid="23" relation="usage">
+          <edgelabel>dest</edgelabel>
+          <edgelabel>source</edgelabel>
+        </childnode>
+        <childnode refid="25" relation="usage">
+          <edgelabel>trigger</edgelabel>
+        </childnode>
+        <childnode refid="26" relation="usage">
+          <edgelabel>action</edgelabel>
+        </childnode>
+        <childnode refid="27" relation="usage">
+          <edgelabel>guard</edgelabel>
+        </childnode>
+      </node>
+      <node id="27">
+        <label>ufsm_guard</label>
+        <link refid="structufsm__guard"/>
+        <childnode refid="23" relation="usage">
+          <edgelabel>state</edgelabel>
+        </childnode>
+        <childnode refid="27" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+      </node>
+      <node id="23">
+        <label>ufsm_state</label>
+        <link refid="structufsm__state"/>
+        <childnode refid="24" relation="usage">
+          <edgelabel>transition</edgelabel>
+        </childnode>
+        <childnode refid="23" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+        <childnode refid="22" relation="usage">
+          <edgelabel>parent_region</edgelabel>
+          <edgelabel>region</edgelabel>
+        </childnode>
+        <childnode refid="26" relation="usage">
+          <edgelabel>entry</edgelabel>
+          <edgelabel>exit</edgelabel>
+        </childnode>
+      </node>
+      <node id="26">
+        <label>ufsm_action</label>
+        <link refid="structufsm__action"/>
+        <childnode refid="25" relation="usage">
+          <edgelabel>signal</edgelabel>
+        </childnode>
+        <childnode refid="26" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/docs/include/ufsm/ufsm.h" line="155" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="154" bodyend="162"/>
+    <listofallmembers>
+      <member refid="structufsm__region_1a03fa453022cd545cda01a878d4c40c48" prot="public" virt="non-virtual"><scope>ufsm_region</scope><name>has_history</name></member>
+      <member refid="structufsm__region_1a038d3356a8cdb1e245899f78905123ea" prot="public" virt="non-virtual"><scope>ufsm_region</scope><name>index</name></member>
+      <member refid="structufsm__region_1ae83caaa2e3b88e96ff85228f0d0e15fc" prot="public" virt="non-virtual"><scope>ufsm_region</scope><name>name</name></member>
+      <member refid="structufsm__region_1a15446aa6c0f57ca07be06e340feffceb" prot="public" virt="non-virtual"><scope>ufsm_region</scope><name>next</name></member>
+      <member refid="structufsm__region_1ad140c4a77042fbb8b66043cbc73aecd5" prot="public" virt="non-virtual"><scope>ufsm_region</scope><name>parent_state</name></member>
+      <member refid="structufsm__region_1ae460aa41d26a7c329235c5d12a3ede1a" prot="public" virt="non-virtual"><scope>ufsm_region</scope><name>state</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

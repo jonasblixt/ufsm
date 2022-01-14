@@ -1,0 +1,156 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="structufsmm__transition__state__ref" kind="struct" language="C++" prot="public">
+    <compoundname>ufsmm_transition_state_ref</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structufsmm__transition__state__ref_1a0427cc32d63334917bf3fdc31e713ce6" prot="public" static="no" mutable="no">
+        <type>struct <ref refid="structufsmm__state" kindref="compound">ufsmm_state</ref> *</type>
+        <definition>struct ufsmm_state* ufsmm_transition_state_ref::state</definition>
+        <argsstring></argsstring>
+        <name>state</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="182" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="182" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__transition__state__ref_1a06be5fcfa814f1588b6924f6b8da1226" prot="public" static="no" mutable="no">
+        <type>struct <ref refid="structufsmm__state" kindref="compound">ufsmm_state</ref> *</type>
+        <definition>struct ufsmm_state* ufsmm_transition_state_ref::tstate</definition>
+        <argsstring></argsstring>
+        <name>tstate</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="183" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="183" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__transition__state__ref_1acdb36a88cfe89ce079d66f6734acfc08" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double ufsmm_transition_state_ref::offset</definition>
+        <argsstring></argsstring>
+        <name>offset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="184" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="184" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__transition__state__ref_1a59b01de540d2cdc5ac9e1838c3027084" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double ufsmm_transition_state_ref::toffset</definition>
+        <argsstring></argsstring>
+        <name>toffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="185" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="185" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__transition__state__ref_1a208fdf9b9c86d195507d2fb88f588fa6" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool ufsmm_transition_state_ref::changed</definition>
+        <argsstring></argsstring>
+        <name>changed</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="186" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="186" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__transition__state__ref_1a0c2c291a35a9e996eeb987b671ba5f9e" prot="public" static="no" mutable="no">
+        <type>enum ufsmm_side</type>
+        <definition>enum ufsmm_side ufsmm_transition_state_ref::side</definition>
+        <argsstring></argsstring>
+        <name>side</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="186" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="187" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__transition__state__ref_1aa534064cf83fe4082f1c74be643f308a" prot="public" static="no" mutable="no">
+        <type>enum ufsmm_side</type>
+        <definition>enum ufsmm_side ufsmm_transition_state_ref::tside</definition>
+        <argsstring></argsstring>
+        <name>tside</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="186" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="188" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="108">
+        <label>ufsmm_state</label>
+        <link refid="structufsmm__state"/>
+        <childnode refid="109" relation="usage">
+          <edgelabel>parent_region</edgelabel>
+          <edgelabel>tparent_region</edgelabel>
+        </childnode>
+        <childnode refid="110" relation="usage">
+          <edgelabel>nav_node</edgelabel>
+        </childnode>
+      </node>
+      <node id="107">
+        <label>ufsmm_transition_state_ref</label>
+        <link refid="structufsmm__transition__state__ref"/>
+        <childnode refid="108" relation="usage">
+          <edgelabel>state</edgelabel>
+          <edgelabel>tstate</edgelabel>
+        </childnode>
+      </node>
+      <node id="110">
+        <label>ufsmm_nav_tree_node</label>
+        <link refid="structufsmm__nav__tree__node"/>
+        <childnode refid="111" relation="usage">
+          <edgelabel>text_block</edgelabel>
+          <edgelabel>expander</edgelabel>
+        </childnode>
+      </node>
+      <node id="111">
+        <label>ufsmm_coords</label>
+        <link refid="structufsmm__coords"/>
+      </node>
+      <node id="109">
+        <label>ufsmm_region</label>
+        <link refid="structufsmm__region"/>
+        <childnode refid="110" relation="usage">
+          <edgelabel>nav_node</edgelabel>
+        </childnode>
+        <childnode refid="108" relation="usage">
+          <edgelabel>parent_state</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/docs/include/ufsm/model.h" line="181" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="180" bodyend="189"/>
+    <listofallmembers>
+      <member refid="structufsmm__transition__state__ref_1a208fdf9b9c86d195507d2fb88f588fa6" prot="public" virt="non-virtual"><scope>ufsmm_transition_state_ref</scope><name>changed</name></member>
+      <member refid="structufsmm__transition__state__ref_1acdb36a88cfe89ce079d66f6734acfc08" prot="public" virt="non-virtual"><scope>ufsmm_transition_state_ref</scope><name>offset</name></member>
+      <member refid="structufsmm__transition__state__ref_1a0c2c291a35a9e996eeb987b671ba5f9e" prot="public" virt="non-virtual"><scope>ufsmm_transition_state_ref</scope><name>side</name></member>
+      <member refid="structufsmm__transition__state__ref_1a0427cc32d63334917bf3fdc31e713ce6" prot="public" virt="non-virtual"><scope>ufsmm_transition_state_ref</scope><name>state</name></member>
+      <member refid="structufsmm__transition__state__ref_1a59b01de540d2cdc5ac9e1838c3027084" prot="public" virt="non-virtual"><scope>ufsmm_transition_state_ref</scope><name>toffset</name></member>
+      <member refid="structufsmm__transition__state__ref_1aa534064cf83fe4082f1c74be643f308a" prot="public" virt="non-virtual"><scope>ufsmm_transition_state_ref</scope><name>tside</name></member>
+      <member refid="structufsmm__transition__state__ref_1a06be5fcfa814f1588b6924f6b8da1226" prot="public" virt="non-virtual"><scope>ufsmm_transition_state_ref</scope><name>tstate</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,211 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="structufsmm__model" kind="struct" language="C++" prot="public">
+    <compoundname>ufsmm_model</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structufsmm__model_1ad86f63e788989d1ca2b7d4f3e892e564" prot="public" static="no" mutable="no">
+        <type>json_object *</type>
+        <definition>json_object* ufsmm_model::jroot</definition>
+        <argsstring></argsstring>
+        <name>jroot</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="281" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="281" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__model_1a5368ceaed22d4440cad138fcf256aee3" prot="public" static="no" mutable="no">
+        <type>struct <ref refid="structufsmm__region" kindref="compound">ufsmm_region</ref> *</type>
+        <definition>struct ufsmm_region* ufsmm_model::root</definition>
+        <argsstring></argsstring>
+        <name>root</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="282" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="282" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__model_1ab94dca06c8d3594d5af073953341d29e" prot="public" static="no" mutable="no">
+        <type>struct ufsmm_actions</type>
+        <definition>struct ufsmm_actions ufsmm_model::guards</definition>
+        <argsstring></argsstring>
+        <name>guards</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="282" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="283" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__model_1a50430515988cc04547f936b0dc5622b2" prot="public" static="no" mutable="no">
+        <type>struct ufsmm_actions</type>
+        <definition>struct ufsmm_actions ufsmm_model::actions</definition>
+        <argsstring></argsstring>
+        <name>actions</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="282" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="284" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__model_1a123391e78051a85fd39a518a68d7a709" prot="public" static="no" mutable="no">
+        <type>struct ufsmm_triggers</type>
+        <definition>struct ufsmm_triggers ufsmm_model::triggers</definition>
+        <argsstring></argsstring>
+        <name>triggers</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="282" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="285" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__model_1a8bec19243e627fa23ecb5844eb7b41a8" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* ufsmm_model::name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="286" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="286" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__model_1a1492b098fdc248dab79b39545d81c91c" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int ufsmm_model::version</definition>
+        <argsstring></argsstring>
+        <name>version</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="287" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="287" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__model_1a15d4630275931b10141ee64d096943e3" prot="public" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int ufsmm_model::no_of_regions</definition>
+        <argsstring></argsstring>
+        <name>no_of_regions</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="288" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="288" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__model_1a4eafba17091d474ea0912a1e1c20c499" prot="public" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int ufsmm_model::no_of_states</definition>
+        <argsstring></argsstring>
+        <name>no_of_states</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="289" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="289" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__model_1aca4277e29fbc1e05997129c2c3e6030b" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* ufsmm_model::filename</definition>
+        <argsstring></argsstring>
+        <name>filename</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="290" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="290" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__model_1a602601a3f14155ebea55cfdaacf494c1" prot="public" static="no" mutable="no">
+        <type>enum ufsmm_paper_size</type>
+        <definition>enum ufsmm_paper_size ufsmm_model::paper_size</definition>
+        <argsstring></argsstring>
+        <name>paper_size</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="290" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="291" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="82">
+        <label>ufsmm_state</label>
+        <link refid="structufsmm__state"/>
+        <childnode refid="79" relation="usage">
+          <edgelabel>parent_region</edgelabel>
+          <edgelabel>tparent_region</edgelabel>
+        </childnode>
+        <childnode refid="80" relation="usage">
+          <edgelabel>nav_node</edgelabel>
+        </childnode>
+      </node>
+      <node id="80">
+        <label>ufsmm_nav_tree_node</label>
+        <link refid="structufsmm__nav__tree__node"/>
+        <childnode refid="81" relation="usage">
+          <edgelabel>text_block</edgelabel>
+          <edgelabel>expander</edgelabel>
+        </childnode>
+      </node>
+      <node id="81">
+        <label>ufsmm_coords</label>
+        <link refid="structufsmm__coords"/>
+      </node>
+      <node id="79">
+        <label>ufsmm_region</label>
+        <link refid="structufsmm__region"/>
+        <childnode refid="80" relation="usage">
+          <edgelabel>nav_node</edgelabel>
+        </childnode>
+        <childnode refid="82" relation="usage">
+          <edgelabel>parent_state</edgelabel>
+        </childnode>
+      </node>
+      <node id="78">
+        <label>ufsmm_model</label>
+        <link refid="structufsmm__model"/>
+        <childnode refid="79" relation="usage">
+          <edgelabel>root</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/docs/include/ufsm/model.h" line="280" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="279" bodyend="292"/>
+    <listofallmembers>
+      <member refid="structufsmm__model_1a50430515988cc04547f936b0dc5622b2" prot="public" virt="non-virtual"><scope>ufsmm_model</scope><name>actions</name></member>
+      <member refid="structufsmm__model_1aca4277e29fbc1e05997129c2c3e6030b" prot="public" virt="non-virtual"><scope>ufsmm_model</scope><name>filename</name></member>
+      <member refid="structufsmm__model_1ab94dca06c8d3594d5af073953341d29e" prot="public" virt="non-virtual"><scope>ufsmm_model</scope><name>guards</name></member>
+      <member refid="structufsmm__model_1ad86f63e788989d1ca2b7d4f3e892e564" prot="public" virt="non-virtual"><scope>ufsmm_model</scope><name>jroot</name></member>
+      <member refid="structufsmm__model_1a8bec19243e627fa23ecb5844eb7b41a8" prot="public" virt="non-virtual"><scope>ufsmm_model</scope><name>name</name></member>
+      <member refid="structufsmm__model_1a15d4630275931b10141ee64d096943e3" prot="public" virt="non-virtual"><scope>ufsmm_model</scope><name>no_of_regions</name></member>
+      <member refid="structufsmm__model_1a4eafba17091d474ea0912a1e1c20c499" prot="public" virt="non-virtual"><scope>ufsmm_model</scope><name>no_of_states</name></member>
+      <member refid="structufsmm__model_1a602601a3f14155ebea55cfdaacf494c1" prot="public" virt="non-virtual"><scope>ufsmm_model</scope><name>paper_size</name></member>
+      <member refid="structufsmm__model_1a5368ceaed22d4440cad138fcf256aee3" prot="public" virt="non-virtual"><scope>ufsmm_model</scope><name>root</name></member>
+      <member refid="structufsmm__model_1a123391e78051a85fd39a518a68d7a709" prot="public" virt="non-virtual"><scope>ufsmm_model</scope><name>triggers</name></member>
+      <member refid="structufsmm__model_1a1492b098fdc248dab79b39545d81c91c" prot="public" virt="non-virtual"><scope>ufsmm_model</scope><name>version</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="structufsmm__coords" kind="struct" language="C++" prot="public">
+    <compoundname>ufsmm_coords</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structufsmm__coords_1a638fcd10238d8d10c0b5f01caad472d2" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double ufsmm_coords::x</definition>
+        <argsstring></argsstring>
+        <name>x</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="193" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="193" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__coords_1a2c2112d1ebebdf985924f771df0d8f78" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double ufsmm_coords::y</definition>
+        <argsstring></argsstring>
+        <name>y</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="194" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="194" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__coords_1a71ad68cbf96c569a9a94d240677d99f8" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double ufsmm_coords::w</definition>
+        <argsstring></argsstring>
+        <name>w</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="195" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="195" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__coords_1aaff0e110675c5b44668a3d2d73db04d4" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double ufsmm_coords::h</definition>
+        <argsstring></argsstring>
+        <name>h</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="196" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="196" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__coords_1a5fbfbbe0147d3dea0356314369afd252" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double ufsmm_coords::tx</definition>
+        <argsstring></argsstring>
+        <name>tx</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="197" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="197" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__coords_1a368d25c6a33357d06cf40a988d1f0de3" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double ufsmm_coords::ty</definition>
+        <argsstring></argsstring>
+        <name>ty</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="197" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="197" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__coords_1a3bfc2cafa113109de4d8cb170971255a" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double ufsmm_coords::tw</definition>
+        <argsstring></argsstring>
+        <name>tw</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="197" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="197" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__coords_1a4065933426d107e30efe3c6268b821b3" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double ufsmm_coords::th</definition>
+        <argsstring></argsstring>
+        <name>th</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="197" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="197" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/docs/include/ufsm/model.h" line="192" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="191" bodyend="198"/>
+    <listofallmembers>
+      <member refid="structufsmm__coords_1aaff0e110675c5b44668a3d2d73db04d4" prot="public" virt="non-virtual"><scope>ufsmm_coords</scope><name>h</name></member>
+      <member refid="structufsmm__coords_1a4065933426d107e30efe3c6268b821b3" prot="public" virt="non-virtual"><scope>ufsmm_coords</scope><name>th</name></member>
+      <member refid="structufsmm__coords_1a3bfc2cafa113109de4d8cb170971255a" prot="public" virt="non-virtual"><scope>ufsmm_coords</scope><name>tw</name></member>
+      <member refid="structufsmm__coords_1a5fbfbbe0147d3dea0356314369afd252" prot="public" virt="non-virtual"><scope>ufsmm_coords</scope><name>tx</name></member>
+      <member refid="structufsmm__coords_1a368d25c6a33357d06cf40a988d1f0de3" prot="public" virt="non-virtual"><scope>ufsmm_coords</scope><name>ty</name></member>
+      <member refid="structufsmm__coords_1a71ad68cbf96c569a9a94d240677d99f8" prot="public" virt="non-virtual"><scope>ufsmm_coords</scope><name>w</name></member>
+      <member refid="structufsmm__coords_1a638fcd10238d8d10c0b5f01caad472d2" prot="public" virt="non-virtual"><scope>ufsmm_coords</scope><name>x</name></member>
+      <member refid="structufsmm__coords_1a2c2112d1ebebdf985924f771df0d8f78" prot="public" virt="non-virtual"><scope>ufsmm_coords</scope><name>y</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

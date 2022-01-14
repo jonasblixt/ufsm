@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="structufsmm__action" kind="struct" language="C++" prot="public">
+    <compoundname>ufsmm_action</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structufsmm__action_1a778d3e0918e0472808908be526fb81b7" prot="public" static="no" mutable="no">
+        <type>uuid_t</type>
+        <definition>uuid_t ufsmm_action::id</definition>
+        <argsstring></argsstring>
+        <name>id</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="123" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="123" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__action_1a074c76d1cf11d45eb2634ad9f52dbfa1" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* ufsmm_action::name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="124" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="124" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__action_1a701ebe4e822cb154eb36c004a84a50c2" prot="public" static="no" mutable="no">
+        <type>enum ufsmm_action_kind</type>
+        <definition>enum ufsmm_action_kind ufsmm_action::kind</definition>
+        <argsstring></argsstring>
+        <name>kind</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="124" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="125" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__action_1a8fc02d06d079c9d3901c60bd608a6696" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int ufsmm_action::usage_count</definition>
+        <argsstring></argsstring>
+        <name>usage_count</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="126" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="126" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structufsmm__action_1ae44cac12f2283968ae8fe2925d10ffa1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>ufsmm_action::TAILQ_ENTRY</definition>
+        <argsstring>(ufsmm_action) tailq</argsstring>
+        <name>TAILQ_ENTRY</name>
+        <param>
+          <type><ref refid="structufsmm__action" kindref="compound">ufsmm_action</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="127" column="1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/docs/include/ufsm/model.h" line="122" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="121" bodyend="128"/>
+    <listofallmembers>
+      <member refid="structufsmm__action_1a778d3e0918e0472808908be526fb81b7" prot="public" virt="non-virtual"><scope>ufsmm_action</scope><name>id</name></member>
+      <member refid="structufsmm__action_1a701ebe4e822cb154eb36c004a84a50c2" prot="public" virt="non-virtual"><scope>ufsmm_action</scope><name>kind</name></member>
+      <member refid="structufsmm__action_1a074c76d1cf11d45eb2634ad9f52dbfa1" prot="public" virt="non-virtual"><scope>ufsmm_action</scope><name>name</name></member>
+      <member refid="structufsmm__action_1ae44cac12f2283968ae8fe2925d10ffa1" prot="public" virt="non-virtual"><scope>ufsmm_action</scope><name>TAILQ_ENTRY</name></member>
+      <member refid="structufsmm__action_1a8fc02d06d079c9d3901c60bd608a6696" prot="public" virt="non-virtual"><scope>ufsmm_action</scope><name>usage_count</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

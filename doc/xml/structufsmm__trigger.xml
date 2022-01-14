@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="structufsmm__trigger" kind="struct" language="C++" prot="public">
+    <compoundname>ufsmm_trigger</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structufsmm__trigger_1a18647174bf776e93e41831c4ab34c076" prot="public" static="no" mutable="no">
+        <type>uuid_t</type>
+        <definition>uuid_t ufsmm_trigger::id</definition>
+        <argsstring></argsstring>
+        <name>id</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="161" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="161" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__trigger_1ab6a7bbaeb68dd39ed43f176ad765b71b" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* ufsmm_trigger::name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="162" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="162" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsmm__trigger_1a77287ac71dd72caed4680ac5860a762c" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int ufsmm_trigger::usage_count</definition>
+        <argsstring></argsstring>
+        <name>usage_count</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="163" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="163" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structufsmm__trigger_1a0b1d8d78133fbf62228755ca15d2c347" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>ufsmm_trigger::TAILQ_ENTRY</definition>
+        <argsstring>(ufsmm_trigger) tailq</argsstring>
+        <name>TAILQ_ENTRY</name>
+        <param>
+          <type><ref refid="structufsmm__trigger" kindref="compound">ufsmm_trigger</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/model.h" line="164" column="1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/docs/include/ufsm/model.h" line="160" column="1" bodyfile="/docs/include/ufsm/model.h" bodystart="159" bodyend="165"/>
+    <listofallmembers>
+      <member refid="structufsmm__trigger_1a18647174bf776e93e41831c4ab34c076" prot="public" virt="non-virtual"><scope>ufsmm_trigger</scope><name>id</name></member>
+      <member refid="structufsmm__trigger_1ab6a7bbaeb68dd39ed43f176ad765b71b" prot="public" virt="non-virtual"><scope>ufsmm_trigger</scope><name>name</name></member>
+      <member refid="structufsmm__trigger_1a0b1d8d78133fbf62228755ca15d2c347" prot="public" virt="non-virtual"><scope>ufsmm_trigger</scope><name>TAILQ_ENTRY</name></member>
+      <member refid="structufsmm__trigger_1a77287ac71dd72caed4680ac5860a762c" prot="public" virt="non-virtual"><scope>ufsmm_trigger</scope><name>usage_count</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
