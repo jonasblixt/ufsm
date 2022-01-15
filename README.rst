@@ -12,6 +12,39 @@
 
 uFSM is a library and tool for running and creating hierarchical state machines.
 
+.. image:: doc/ufsm_design_guides.gif
+
+-----------------------
+Building and installing
+-----------------------
+
+Building using the docker environment::
+
+    $ ./build_docker.sh
+    $ ./run_docker.sh
+    $ mkdir build && cd build/
+    $ ../configure
+    $ make
+    $ ./ufsm-compose/ufsm-compose
+
+
+Dependencies:
+
+==========  ===================
+Package     Ubuntu package name
+==========  ===================
+automake    automake, autoconf-archive, autoconf, pkgconf
+libtool     libtool
+uuid        uuid-runtime, uuid-dev
+GTK 3       libgtk-3-0, libgtk-3-dev
+==========  ===================
+
+Running tests::
+
+    $ ./configure --enable-code-coverage
+    $ make && make check
+
+
 Documentation is available here: `uFSM documentation`_
 
 .. _uFSM documentation: http://ufsm.readthedocs.io/en/latest
