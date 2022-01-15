@@ -1,3 +1,5 @@
+.. _editor-commands:
+
 Editor commands
 ===============
 
@@ -53,11 +55,31 @@ a-t         Add terminate
 a-h         Add shallow history state
 a-H         Add deep history state
 a-t         Add transition
-a-e         Add entry action (On selected state)
-a-x         Add exit action (On selected state)
-a-a         Add action (On selected transition)
-a-g         Add guard (On selected transition)
-a-v         Add vertice (On selected transition)
+==========  =================
+
+State specific commands
+-----------------------
+
+The following commands are only applicable when a state is selected.
+
+==========  =================
+Key         Description
+==========  =================
+a-e         Add entry action
+a-x         Add exit action
+==========  =================
+
+Transition specific commands
+----------------------------
+
+The following commands are only applicable when a transition is selected.
+
+==========  =================
+Key         Description
+==========  =================
+a-a         Add action
+a-g         Add guard
+a-v         Add vertice
 ==========  =================
 
 Edit commands
