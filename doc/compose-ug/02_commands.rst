@@ -1,6 +1,9 @@
 Editor commands
 ===============
 
+The ufsm-compose editor is controlled by keyboard commands, there are no menus
+beyond the navigation tree.
+
 Basic commands
 --------------
 
@@ -14,6 +17,9 @@ p           Open project settings
 Ctrl+c      Copy
 Ctrl+v      Paste
 Ctrl+x      Cut
+Ctrl+z      Undo
+Ctrl+r      Redo
+Ctrl        Pressing and holding ctrl during drawing inhibits snapping to guides
 ==========  =================
 
 Navigation commands
@@ -47,11 +53,11 @@ a-t         Add terminate
 a-h         Add shallow history state
 a-H         Add deep history state
 a-t         Add transition
-a-v         Add vertice (On selected transition)
 a-e         Add entry action (On selected state)
 a-x         Add exit action (On selected state)
 a-a         Add action (On selected transition)
 a-g         Add guard (On selected transition)
+a-v         Add vertice (On selected transition)
 ==========  =================
 
 Edit commands
