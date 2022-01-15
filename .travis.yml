@@ -1,31 +1,27 @@
 language: c
 compiler: gcc
-
-env:
-  global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   #   via the "travis encrypt" command using the project repo's public key
-   - secure: "Z2AMGk46/bQ5E0GCJ3O43GyG5YgabFYvWgC72t66jtzT95+0ySmxtLZ4s+goTO7jxF55PGEPwfKKgPQGAZixejxTDvBWrlqeady19mReHJOYZ5JYsvmGol9B9Ld1qFcUu93A9h6blYsFFmfmDGoNQCmVE+GV50Opyl6STkJJQCDW55NR532xBdL8IkULlhWajfhCDbeI4v5d3alNSHu2VIFymC/nAdLyZ32xYNwmH5eWXlV6WAkybBaFTuPQLbINvreWzqAeD+0agRNAaW0EX58TAJpvGZE9fSAN68h29xCirX+5mQSuENd3iYVxXTe3I5jHwYKyjYZVIcrawLcOdmoavIGybIffcMpIilC8ur8xurQW3pL/s15muwNJtiIEgDMJ+AvGA0L0CNC0hEFT2MEFBfN88NeU5lmjbA58MFJ4kS12jueV6NgmYlEVHG0nt1THD0R1foRDdBJhNWrMYy5kXdGkFs+TG1lGwy3YVs8li8IBuMMQ4+pXDcxhy3rCVipVxaw1626rvlSZ3+paOqAWAsdDOhK91764jyVw3d80vA4Y9VQjHlUQjwLe7oS2Ov3/G4RqvjPHQRP+Tp0LZbOiit6ri0q6Rf0xNoGDnGD8BgviLEJ/uYh4o0+n32Jvfw3aG65AIETx8KMVgWY3F1HsnbXZ58CnVi+yn+VW9Ys="
-
-before_install:
-  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-certificates.crt
-  - pip install --user cpp-coveralls
-  - sudo apt install libcunit1-dev
+dist: focal
+python:
+  - "3.6"
 
 addons:
   apt:
     update: true
-  coverity_scan:
-    project:
-      name: "jonpe960/ufsm"
-      description: "Build submitted via Travis CI"
-    notification_email: jonpe960@gmail.com
-    build_command_prepend: ""
-    build_command:   "make"
-    branch_pattern: "coverity_test"
+    packages:
+      - autoconf-archive
+      - uuid-dev
+      - libjson-c-dev
+      - lcov
+      - libgtk-3-0
+      - libgtk-3-dev
+      - libcairo2
+      - libcairo2-dev
+      - uuid-dev
 
 script:
-    - make
+    - autoreconf -fi
+    - mkdir build && cd build && ../configure --enable-code-coverage
+    - make check -j $(nproc)
 
 jobs:
     include:

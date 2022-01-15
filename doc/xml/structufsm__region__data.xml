@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="structufsm__region__data" kind="struct" language="C++" prot="public">
+    <compoundname>ufsm_region_data</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structufsm__region__data_1a21ee5e940a38b95bad8e571fcbddc842" prot="public" static="no" mutable="no">
+        <type>const struct <ref refid="structufsm__state" kindref="compound">ufsm_state</ref> *</type>
+        <definition>const struct ufsm_state* ufsm_region_data::current</definition>
+        <argsstring></argsstring>
+        <name>current</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="179" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="179" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__region__data_1a8679843c43744ab4cc6ff0b893e72585" prot="public" static="no" mutable="no">
+        <type>const struct <ref refid="structufsm__state" kindref="compound">ufsm_state</ref> *</type>
+        <definition>const struct ufsm_state* ufsm_region_data::history</definition>
+        <argsstring></argsstring>
+        <name>history</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="180" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="180" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="35">
+        <label>ufsm_region</label>
+        <link refid="structufsm__region"/>
+        <childnode refid="30" relation="usage">
+          <edgelabel>parent_state</edgelabel>
+          <edgelabel>state</edgelabel>
+        </childnode>
+        <childnode refid="35" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+      </node>
+      <node id="32">
+        <label>ufsm_trigger</label>
+        <link refid="structufsm__trigger"/>
+      </node>
+      <node id="31">
+        <label>ufsm_transition</label>
+        <link refid="structufsm__transition"/>
+        <childnode refid="31" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+        <childnode refid="30" relation="usage">
+          <edgelabel>dest</edgelabel>
+          <edgelabel>source</edgelabel>
+        </childnode>
+        <childnode refid="32" relation="usage">
+          <edgelabel>trigger</edgelabel>
+        </childnode>
+        <childnode refid="33" relation="usage">
+          <edgelabel>action</edgelabel>
+        </childnode>
+        <childnode refid="34" relation="usage">
+          <edgelabel>guard</edgelabel>
+        </childnode>
+      </node>
+      <node id="29">
+        <label>ufsm_region_data</label>
+        <link refid="structufsm__region__data"/>
+        <childnode refid="30" relation="usage">
+          <edgelabel>current</edgelabel>
+          <edgelabel>history</edgelabel>
+        </childnode>
+      </node>
+      <node id="34">
+        <label>ufsm_guard</label>
+        <link refid="structufsm__guard"/>
+        <childnode refid="30" relation="usage">
+          <edgelabel>state</edgelabel>
+        </childnode>
+        <childnode refid="34" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+      </node>
+      <node id="30">
+        <label>ufsm_state</label>
+        <link refid="structufsm__state"/>
+        <childnode refid="31" relation="usage">
+          <edgelabel>transition</edgelabel>
+        </childnode>
+        <childnode refid="30" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+        <childnode refid="35" relation="usage">
+          <edgelabel>parent_region</edgelabel>
+          <edgelabel>region</edgelabel>
+        </childnode>
+        <childnode refid="33" relation="usage">
+          <edgelabel>entry</edgelabel>
+          <edgelabel>exit</edgelabel>
+        </childnode>
+      </node>
+      <node id="33">
+        <label>ufsm_action</label>
+        <link refid="structufsm__action"/>
+        <childnode refid="32" relation="usage">
+          <edgelabel>signal</edgelabel>
+        </childnode>
+        <childnode refid="33" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/docs/include/ufsm/ufsm.h" line="178" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="177" bodyend="181"/>
+    <listofallmembers>
+      <member refid="structufsm__region__data_1a21ee5e940a38b95bad8e571fcbddc842" prot="public" virt="non-virtual"><scope>ufsm_region_data</scope><name>current</name></member>
+      <member refid="structufsm__region__data_1a8679843c43744ab4cc6ff0b893e72585" prot="public" virt="non-virtual"><scope>ufsm_region_data</scope><name>history</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,8 +1,11 @@
+License
+=======
+
 uFSM
- 
+
   SPDX-License-Identifier: BSD-3-Clause
- 
-Copyright 2020, Jonas Blixt <jonpe960@gmail.com>
+
+Copyright 2022, Jonas Blixt <jonpe960@gmail.com>
 
 Redistribution and use in source and binary forms, with or without modification, 
     are permitted provided that the following conditions are met:
@@ -29,3 +32,4 @@ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+

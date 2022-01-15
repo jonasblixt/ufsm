@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="structufsm__trigger" kind="struct" language="C++" prot="public">
+    <compoundname>ufsm_trigger</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structufsm__trigger_1a3c44895d9b89befebd804be51b6adb23" prot="public" static="no" mutable="no">
+        <type>const char *const</type>
+        <definition>const char* const ufsm_trigger::name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="139" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="139" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__trigger_1a11c8ce68f4c1e0f707a9eda0962e2d8b" prot="public" static="no" mutable="no">
+        <type>const int</type>
+        <definition>const int ufsm_trigger::trigger</definition>
+        <argsstring></argsstring>
+        <name>trigger</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="140" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="140" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/docs/include/ufsm/ufsm.h" line="138" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="137" bodyend="141"/>
+    <listofallmembers>
+      <member refid="structufsm__trigger_1a3c44895d9b89befebd804be51b6adb23" prot="public" virt="non-virtual"><scope>ufsm_trigger</scope><name>name</name></member>
+      <member refid="structufsm__trigger_1a11c8ce68f4c1e0f707a9eda0962e2d8b" prot="public" virt="non-virtual"><scope>ufsm_trigger</scope><name>trigger</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

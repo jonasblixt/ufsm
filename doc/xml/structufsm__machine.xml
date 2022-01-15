@@ -1,0 +1,439 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="structufsm__machine" kind="struct" language="C++" prot="public">
+    <compoundname>ufsm_machine</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structufsm__machine_1a77ce862e749b49a9121b846b8f581c4f" prot="public" static="no" mutable="no">
+        <type>const char *const</type>
+        <definition>const char* const ufsm_machine::name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="192" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="192" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1a413403a47348a742fc3e2a4ec075c196" prot="public" static="no" mutable="no">
+        <type>ufsm_debug_event_t</type>
+        <definition>ufsm_debug_event_t ufsm_machine::debug_event</definition>
+        <argsstring></argsstring>
+        <name>debug_event</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="193" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="193" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1af6f3de0eb8a064dda9ab204e4b4a50ea" prot="public" static="no" mutable="no">
+        <type>ufsm_debug_transition_t</type>
+        <definition>ufsm_debug_transition_t ufsm_machine::debug_transition</definition>
+        <argsstring></argsstring>
+        <name>debug_transition</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="194" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="194" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1a4695829f59839df974cdc806945cf6d7" prot="public" static="no" mutable="no">
+        <type>ufsm_debug_enter_region_t</type>
+        <definition>ufsm_debug_enter_region_t ufsm_machine::debug_enter_region</definition>
+        <argsstring></argsstring>
+        <name>debug_enter_region</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="195" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="195" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1a705bea3c67e5087f623acdfd099d37ab" prot="public" static="no" mutable="no">
+        <type>ufsm_debug_leave_region_t</type>
+        <definition>ufsm_debug_leave_region_t ufsm_machine::debug_leave_region</definition>
+        <argsstring></argsstring>
+        <name>debug_leave_region</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="196" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="196" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1ac8d01c1c852c4e06893fd70dca8ae72c" prot="public" static="no" mutable="no">
+        <type>ufsm_debug_guard_t</type>
+        <definition>ufsm_debug_guard_t ufsm_machine::debug_guard</definition>
+        <argsstring></argsstring>
+        <name>debug_guard</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="197" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="197" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1ac1960c0647b9e10b3a73b3d499308c77" prot="public" static="no" mutable="no">
+        <type>ufsm_debug_action_t</type>
+        <definition>ufsm_debug_action_t ufsm_machine::debug_action</definition>
+        <argsstring></argsstring>
+        <name>debug_action</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="198" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="198" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1ad470c20ced1f34d71a1eb03d5f1cd21a" prot="public" static="no" mutable="no">
+        <type>ufsm_debug_enter_state_t</type>
+        <definition>ufsm_debug_enter_state_t ufsm_machine::debug_enter_state</definition>
+        <argsstring></argsstring>
+        <name>debug_enter_state</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="199" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="199" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1abbfd656da98729f431118081dbadbf02" prot="public" static="no" mutable="no">
+        <type>ufsm_debug_exit_state_t</type>
+        <definition>ufsm_debug_exit_state_t ufsm_machine::debug_exit_state</definition>
+        <argsstring></argsstring>
+        <name>debug_exit_state</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="200" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="200" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1a1934bad42ffb3d90c3d54957b045b8dd" prot="public" static="no" mutable="no">
+        <type>ufsm_debug_reset_t</type>
+        <definition>ufsm_debug_reset_t ufsm_machine::debug_reset</definition>
+        <argsstring></argsstring>
+        <name>debug_reset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="201" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="201" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1a64289447f6f6f587e1452aab75a8f22e" prot="public" static="no" mutable="no">
+        <type>ufsm_debug_entry_exit_t</type>
+        <definition>ufsm_debug_entry_exit_t ufsm_machine::debug_entry_exit</definition>
+        <argsstring></argsstring>
+        <name>debug_entry_exit</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="202" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="202" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1a7fa90e555c2e12906b9fdccdf281ccc3" prot="public" static="no" mutable="no">
+        <type>ufsm_emit_signal_t</type>
+        <definition>ufsm_emit_signal_t ufsm_machine::emit_signal</definition>
+        <argsstring></argsstring>
+        <name>emit_signal</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="203" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="203" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1a34b9b0bf005feb273ce9aa049f020d07" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool ufsm_machine::terminated</definition>
+        <argsstring></argsstring>
+        <name>terminated</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="204" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="204" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1a1530f91981a2bf8e4d40e81a7d5fc753" prot="public" static="no" mutable="no">
+        <type>struct <ref refid="structufsm__stack" kindref="compound">ufsm_stack</ref></type>
+        <definition>struct ufsm_stack ufsm_machine::stack</definition>
+        <argsstring></argsstring>
+        <name>stack</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="204" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="205" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1a7befd099798977e0ceba1ce073cb7248" prot="public" static="no" mutable="no">
+        <type>struct <ref refid="structufsm__stack" kindref="compound">ufsm_stack</ref></type>
+        <definition>struct ufsm_stack ufsm_machine::stack2</definition>
+        <argsstring></argsstring>
+        <name>stack2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="204" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="206" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1a9a96e5635d00bf880f1f1629b22ce0bb" prot="public" static="no" mutable="no">
+        <type>const struct <ref refid="structufsm__region" kindref="compound">ufsm_region</ref> *</type>
+        <definition>const struct ufsm_region* ufsm_machine::region</definition>
+        <argsstring></argsstring>
+        <name>region</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="207" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="207" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1ad368a1a8cc71cdae5073bfe3361bb914" prot="public" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int ufsm_machine::no_of_regions</definition>
+        <argsstring></argsstring>
+        <name>no_of_regions</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="208" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="208" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1ae3fc5af4eb157c5c3efc786b53f8364d" prot="public" static="no" mutable="no">
+        <type>struct <ref refid="structufsm__region__data" kindref="compound">ufsm_region_data</ref> *</type>
+        <definition>struct ufsm_region_data* ufsm_machine::r_data</definition>
+        <argsstring></argsstring>
+        <name>r_data</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="209" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="209" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1a90ecc492e3a8bef072cfe43b17b33f78" prot="public" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int ufsm_machine::no_of_states</definition>
+        <argsstring></argsstring>
+        <name>no_of_states</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="210" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="210" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1a6f46821e02ab0661df04a748d9f018c9" prot="public" static="no" mutable="no">
+        <type>struct <ref refid="structufsm__state__data" kindref="compound">ufsm_state_data</ref> *</type>
+        <definition>struct ufsm_state_data* ufsm_machine::s_data</definition>
+        <argsstring></argsstring>
+        <name>s_data</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="211" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="211" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structufsm__machine_1a1fe21caf2b20839d9418e057af1613ac" prot="public" static="no" mutable="no">
+        <type>void *</type>
+        <definition>void* ufsm_machine::context</definition>
+        <argsstring></argsstring>
+        <name>context</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/docs/include/ufsm/ufsm.h" line="212" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="212" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="19">
+        <label>ufsm_state_data</label>
+        <link refid="structufsm__state__data"/>
+        <childnode refid="13" relation="usage">
+          <edgelabel>state</edgelabel>
+        </childnode>
+      </node>
+      <node id="18">
+        <label>ufsm_stack</label>
+        <link refid="structufsm__stack"/>
+      </node>
+      <node id="11">
+        <label>ufsm_machine</label>
+        <link refid="structufsm__machine"/>
+        <childnode refid="12" relation="usage">
+          <edgelabel>debug_transition</edgelabel>
+        </childnode>
+        <childnode refid="13" relation="usage">
+          <edgelabel>debug_exit_state</edgelabel>
+          <edgelabel>debug_enter_state</edgelabel>
+        </childnode>
+        <childnode refid="14" relation="usage">
+          <edgelabel>region</edgelabel>
+          <edgelabel>debug_leave_region</edgelabel>
+          <edgelabel>debug_enter_region</edgelabel>
+        </childnode>
+        <childnode refid="11" relation="usage">
+          <edgelabel>debug_reset</edgelabel>
+        </childnode>
+        <childnode refid="18" relation="usage">
+          <edgelabel>stack</edgelabel>
+          <edgelabel>stack2</edgelabel>
+        </childnode>
+        <childnode refid="15" relation="usage">
+          <edgelabel>debug_entry_exit</edgelabel>
+          <edgelabel>debug_action</edgelabel>
+        </childnode>
+        <childnode refid="17" relation="usage">
+          <edgelabel>debug_guard</edgelabel>
+        </childnode>
+        <childnode refid="19" relation="usage">
+          <edgelabel>s_data</edgelabel>
+        </childnode>
+        <childnode refid="20" relation="usage">
+          <edgelabel>r_data</edgelabel>
+        </childnode>
+      </node>
+      <node id="14">
+        <label>ufsm_region</label>
+        <link refid="structufsm__region"/>
+        <childnode refid="13" relation="usage">
+          <edgelabel>parent_state</edgelabel>
+          <edgelabel>state</edgelabel>
+        </childnode>
+        <childnode refid="14" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+      </node>
+      <node id="16">
+        <label>ufsm_trigger</label>
+        <link refid="structufsm__trigger"/>
+      </node>
+      <node id="12">
+        <label>ufsm_transition</label>
+        <link refid="structufsm__transition"/>
+        <childnode refid="12" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+        <childnode refid="13" relation="usage">
+          <edgelabel>dest</edgelabel>
+          <edgelabel>source</edgelabel>
+        </childnode>
+        <childnode refid="16" relation="usage">
+          <edgelabel>trigger</edgelabel>
+        </childnode>
+        <childnode refid="15" relation="usage">
+          <edgelabel>action</edgelabel>
+        </childnode>
+        <childnode refid="17" relation="usage">
+          <edgelabel>guard</edgelabel>
+        </childnode>
+      </node>
+      <node id="20">
+        <label>ufsm_region_data</label>
+        <link refid="structufsm__region__data"/>
+        <childnode refid="13" relation="usage">
+          <edgelabel>current</edgelabel>
+          <edgelabel>history</edgelabel>
+        </childnode>
+      </node>
+      <node id="17">
+        <label>ufsm_guard</label>
+        <link refid="structufsm__guard"/>
+        <childnode refid="13" relation="usage">
+          <edgelabel>state</edgelabel>
+        </childnode>
+        <childnode refid="17" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+      </node>
+      <node id="13">
+        <label>ufsm_state</label>
+        <link refid="structufsm__state"/>
+        <childnode refid="12" relation="usage">
+          <edgelabel>transition</edgelabel>
+        </childnode>
+        <childnode refid="13" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+        <childnode refid="14" relation="usage">
+          <edgelabel>parent_region</edgelabel>
+          <edgelabel>region</edgelabel>
+        </childnode>
+        <childnode refid="15" relation="usage">
+          <edgelabel>entry</edgelabel>
+          <edgelabel>exit</edgelabel>
+        </childnode>
+      </node>
+      <node id="15">
+        <label>ufsm_action</label>
+        <link refid="structufsm__action"/>
+        <childnode refid="16" relation="usage">
+          <edgelabel>signal</edgelabel>
+        </childnode>
+        <childnode refid="15" relation="usage">
+          <edgelabel>next</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/docs/include/ufsm/ufsm.h" line="191" column="1" bodyfile="/docs/include/ufsm/ufsm.h" bodystart="190" bodyend="213"/>
+    <listofallmembers>
+      <member refid="structufsm__machine_1a1fe21caf2b20839d9418e057af1613ac" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>context</name></member>
+      <member refid="structufsm__machine_1ac1960c0647b9e10b3a73b3d499308c77" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>debug_action</name></member>
+      <member refid="structufsm__machine_1a4695829f59839df974cdc806945cf6d7" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>debug_enter_region</name></member>
+      <member refid="structufsm__machine_1ad470c20ced1f34d71a1eb03d5f1cd21a" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>debug_enter_state</name></member>
+      <member refid="structufsm__machine_1a64289447f6f6f587e1452aab75a8f22e" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>debug_entry_exit</name></member>
+      <member refid="structufsm__machine_1a413403a47348a742fc3e2a4ec075c196" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>debug_event</name></member>
+      <member refid="structufsm__machine_1abbfd656da98729f431118081dbadbf02" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>debug_exit_state</name></member>
+      <member refid="structufsm__machine_1ac8d01c1c852c4e06893fd70dca8ae72c" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>debug_guard</name></member>
+      <member refid="structufsm__machine_1a705bea3c67e5087f623acdfd099d37ab" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>debug_leave_region</name></member>
+      <member refid="structufsm__machine_1a1934bad42ffb3d90c3d54957b045b8dd" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>debug_reset</name></member>
+      <member refid="structufsm__machine_1af6f3de0eb8a064dda9ab204e4b4a50ea" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>debug_transition</name></member>
+      <member refid="structufsm__machine_1a7fa90e555c2e12906b9fdccdf281ccc3" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>emit_signal</name></member>
+      <member refid="structufsm__machine_1a77ce862e749b49a9121b846b8f581c4f" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>name</name></member>
+      <member refid="structufsm__machine_1ad368a1a8cc71cdae5073bfe3361bb914" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>no_of_regions</name></member>
+      <member refid="structufsm__machine_1a90ecc492e3a8bef072cfe43b17b33f78" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>no_of_states</name></member>
+      <member refid="structufsm__machine_1ae3fc5af4eb157c5c3efc786b53f8364d" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>r_data</name></member>
+      <member refid="structufsm__machine_1a9a96e5635d00bf880f1f1629b22ce0bb" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>region</name></member>
+      <member refid="structufsm__machine_1a6f46821e02ab0661df04a748d9f018c9" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>s_data</name></member>
+      <member refid="structufsm__machine_1a1530f91981a2bf8e4d40e81a7d5fc753" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>stack</name></member>
+      <member refid="structufsm__machine_1a7befd099798977e0ceba1ce073cb7248" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>stack2</name></member>
+      <member refid="structufsm__machine_1a34b9b0bf005feb273ce9aa049f020d07" prot="public" virt="non-virtual"><scope>ufsm_machine</scope><name>terminated</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

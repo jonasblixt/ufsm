@@ -1,0 +1,8 @@
+{
+    "kind": "uFSM Model",
+    "version": 1,
+    "name": "test_empty_root",
+    "region": {
+        "id":"f77a3d7f-512d-406f-9697-1d1ddcbb06b2",
+    },
+}
