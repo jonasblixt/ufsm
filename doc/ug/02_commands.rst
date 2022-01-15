@@ -1,4 +1,4 @@
-.. _editor-commands:
+.. _ug-editor-commands:
 
 Editor commands
 ===============

@@ -1,4 +1,4 @@
-.. _Create simple project:
+.. _ug-simple-project:
 
 -----------------------
 Create simple a project
@@ -16,6 +16,14 @@ maybe adjust the canvas size. The project settings menu is opened by pressing 'p
 Create a model by adding normal states 'a-s' (Add state).
 Set the state names by pressing 'e-n' (Edit - name). 
 
-See :ref:`editor-commands` for a more comprehensive list of commands.
+See :ref:`ug-editor-commands` for a more comprehensive list of commands.
 
 .. image:: ../compose_demo_project.png
+
+Translate model to code::
+
+    $ ufsm-generate --input led.ufsm --output led
+
+This command generated led.c and led.h which contains the state machine.
+These two files should be linked together width ufsm.c (or libufsm-core) to
+produce a working state machine.

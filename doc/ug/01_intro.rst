@@ -1,3 +1,5 @@
+.. _ug-intro:
+
 Introduction
 ============
 

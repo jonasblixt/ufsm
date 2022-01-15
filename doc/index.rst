@@ -9,7 +9,7 @@ Welcome to the ufsm documentation
    intro
    build
    architecture
-   compose-user-guide
+   user-guide
    development-guide
    examples
    core-library-reference
