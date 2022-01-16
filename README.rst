@@ -22,6 +22,7 @@ Building using the docker environment::
 
     $ ./build_docker.sh
     $ ./run_docker.sh
+    $ autoreconf -fi
     $ mkdir build && cd build/
     $ ../configure
     $ make

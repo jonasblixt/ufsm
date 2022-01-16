@@ -21,6 +21,7 @@ uFSM supports normal guards which are user defined functions called by the
 state machine. Guards are added by pressing 'a-g' on a selected transition.
 
 .. image:: ../add_guard.png
+   :scale: 50 %
 
 A guard expression can also be defined instead of a boolean return value.
 guard functions must be defined with 'int' as return type to support these

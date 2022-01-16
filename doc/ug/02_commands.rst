@@ -67,6 +67,7 @@ Key         Description
 ==========  =================
 a-e         Add entry action
 a-x         Add exit action
+a-r         Add region
 ==========  =================
 
 Transition specific commands
