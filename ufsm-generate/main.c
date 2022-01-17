@@ -60,7 +60,7 @@ static void display_usage(void)
 {
     display_version();
     printf("\nUsage:\n");
-    printf("    ufsmimport [options]\n\n");
+    printf("    ufsm-generate [options]\n\n");
     printf("Options:\n");
     printf("        -i, --input <input filename>            - Input filename\n");
     printf("        -o, --output <output filename>          - Output filename\n");
