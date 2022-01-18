@@ -103,3 +103,5 @@ Expected output::
         | S enter    | On {Simple State}
         | Call       | led_on
     LED ON
+
+Source code: :github-blob:`examples/simple`

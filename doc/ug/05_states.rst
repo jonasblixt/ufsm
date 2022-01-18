@@ -72,11 +72,21 @@ See :ref:`example-dimmer` for an example.
 Fork and join states
 --------------------
 
+Fork and join states are used to synchronzise concurrent execution of states.
+
 Final state
 -----------
 
+The final state is used to indicate that a region has reached it's final state.
+When a final state has been reached it will trigger a completion event of the
+parent state.
+
 Terminate state
 ---------------
+
+The terminate state is used to stop the state machine. When a terminate state
+has been reached the machine will stop executing and will not respond to any
+additional events.
 
 .. |img_state_init| image:: init.png
   :scale: 50 %

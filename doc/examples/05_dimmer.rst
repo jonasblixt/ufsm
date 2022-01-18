@@ -4,7 +4,7 @@
 Dimmer
 ------
 
-.. image:: ../example_dimmer.png
+.. image:: example_dimmer.png
    :scale: 50 %
 
 The dimmer example is an example of a simple dimmer logic, a device with two
