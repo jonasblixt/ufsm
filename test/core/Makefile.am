@@ -23,7 +23,8 @@ dist_noinst_DATA = test_transition_conflict.ufsm \
 				   test_fork.ufsm \
 				   test_terminate.ufsm \
 				   test_guards2.ufsm \
-				   test_state_conditions.ufsm
+				   test_state_conditions.ufsm \
+				   test_join3.ufsm
 
 MOSTLYCLEANFILES = test_transition_conflict.gen.c test_transition_conflict.gen.h \
 				   test_xmi_machine.gen.c test_xmi_machine.gen.h \
@@ -36,7 +37,8 @@ MOSTLYCLEANFILES = test_transition_conflict.gen.c test_transition_conflict.gen.h
 				   test_fork.gen.c test_fork.gen.h \
 				   test_terminate.gen.c test_terminate.gen.h \
 				   test_guards2.gen.c test_guards2.gen.h \
-				   test_state_conditions.gen.c test_state_conditions.gen.h
+				   test_state_conditions.gen.c test_state_conditions.gen.h \
+				   test_join3.gen.c test_join3.gen.h
 
 BUILTSOURCES: test_transition_conflict.gen.c test_transition_conflict.gen.h \
 		      test_xmi_machine.gen.c test_xmi_machine.gen.h \
@@ -49,7 +51,8 @@ BUILTSOURCES: test_transition_conflict.gen.c test_transition_conflict.gen.h \
 			  test_fork.gen.c test_fork.gen.h \
 			  test_terminate.gen.c test_terminate.gen.h \
 			  test_guards2.gen.c test_guards2.gen.h \
-			  test_state_conditions.gen.c test_state_conditions.gen.h
+			  test_state_conditions.gen.c test_state_conditions.gen.h \
+			  test_join3.gen.c test_join3.gen.h
 
 ################################################################################
 
@@ -68,7 +71,8 @@ check_PROGRAMS = test_simple \
 				 test_fork \
 				 test_terminate \
 				 test_guards2 \
-				 test_state_conditions
+				 test_state_conditions \
+				 test_join3
 
 test_simple_SOURCES = test_simple.c
 test_simple_LDADD = $(COMMON_TEST_LDADD)
@@ -121,6 +125,11 @@ test_join2_SOURCES = test_join2.c $(builddir)/test_join2.gen.c
 test_join2_LDADD = $(COMMON_TEST_LDADD)
 test_join2_CFLAGS = $(COMMON_TEST_CFLAGS)
 
+test_join3.c: test_join3.gen.c
+test_join3_SOURCES = test_join3.c $(builddir)/test_join3.gen.c
+test_join3_LDADD = $(COMMON_TEST_LDADD)
+test_join3_CFLAGS = $(COMMON_TEST_CFLAGS)
+
 test_fork.c: test_fork.gen.c
 test_fork_SOURCES = test_fork.c $(builddir)/test_fork.gen.c
 test_fork_LDADD = $(COMMON_TEST_LDADD)
@@ -166,4 +175,5 @@ TESTS = test_simple \
 		test_fork \
 		test_terminate \
 		test_guards2 \
-		test_state_conditions
+		test_state_conditions \
+		test_join3
