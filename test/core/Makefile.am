@@ -3,7 +3,9 @@ COMMON_TEST_CFLAGS = -I $(top_srcdir)/include \
                      -fsanitize=address \
                      -DUFSMM_TEST_SRC=\"$(abs_top_srcdir)/test/core/\" \
                      -no-pie -g -O0 \
-                     -fno-omit-frame-pointer
+                     -fno-omit-frame-pointer \
+                     $(CODE_COVERAGE_CFLAGS)
+
 
 COMMON_TEST_LDADD = ../libnala.la \
                     $(top_builddir)/libufsm-core/libufsm-core.la

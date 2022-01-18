@@ -6,7 +6,8 @@ COMMON_TEST_CFLAGS = -I $(top_srcdir)/include \
                      $(UUID_CFLAGS) \
                      -DUFSMM_TEST_SRC=\"$(abs_top_srcdir)/test/model/\" \
                      -no-pie -g -O0 \
-                     -fno-omit-frame-pointer
+                     -fno-omit-frame-pointer \
+                     $(CODE_COVERAGE_CFLAGS)
 
 COMMON_TEST_LDADD = ../libnala.la \
                     $(top_builddir)/libufsm-model/libufsm-model.la \
