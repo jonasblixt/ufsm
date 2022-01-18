@@ -18,4 +18,4 @@ jobs:
     - name: test
       run: cd build && make check
     - name: codecov
-      run: cd build && bash <(curl -s https://codecov.io/bash)
+      run: cd build/libufsm-core && bash <(curl -s https://codecov.io/bash)
