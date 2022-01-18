@@ -433,3 +433,42 @@ int ufsmm_paper_size_y(enum ufsmm_paper_size paper_size)
 
     return y;
 }
+
+/* Detection box centered around <x, y>*/
+bool point_in_box(double px, double py,
+                         double x, double y,
+                         double w, double h)
+{
+    if ( (px > (x - w/2)) && (px < (x + w/2)) &&
+         (py > (y - h/2)) && (py < (y + h/2))) {
+        return true;
+    }
+
+    return false;
+}
+
+/* Detection box from <x, y> to <x + w, y + h> */
+bool point_in_box2(double px, double py,
+                         double x, double y,
+                         double w, double h)
+{
+    if ( (px > x) && (px < (x + w)) &&
+         (py > y) && (py < (y + h))) {
+        return true;
+    }
+
+    return false;
+}
+
+/* Detection box from <x, y> to <x2, y2> */
+bool point_in_box3(double px, double py,
+                         double x, double y,
+                         double x2, double y2)
+{
+    if ( (px > x) && (px < x2) &&
+         (py > y) && (py < y2)) {
+        return true;
+    }
+
+    return false;
+}

@@ -2,8 +2,8 @@
     :width: 10 %
 .. image:: https://codecov.io/gh/jonasblixt/ufsm/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/jonasblixt/ufsm
-.. image:: https://travis-ci.com/jonasblixt/ufsm.svg?branch=master
-    :target: https://travis-ci.com/jonasblixt/ufsm
+.. image:: https://github.com/jonasblixt/ufsm/actions/workflows/build.yml/badge.svg
+    :target: https://github.com/jonasblixt/ufsm/actions/workflows/build.yml
 .. image:: https://scan.coverity.com/projects/15860/badge.svg
     :target: https://scan.coverity.com/projects/jonasblixt-ufsm
 .. image:: https://readthedocs.org/projects/ufsm/badge/?version=latest

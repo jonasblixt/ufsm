@@ -4,44 +4,18 @@
 #include <ufsm/model.h>
 #include "controller.h"
 
-/* Detection box centered around <x, y>*/
-inline bool point_in_box(double px, double py,
+
+bool point_in_box(double px, double py,
                          double x, double y,
-                         double w, double h)
-{
-    if ( (px > (x - w/2)) && (px < (x + w/2)) &&
-         (py > (y - h/2)) && (py < (y + h/2))) {
-        return true;
-    }
+                         double w, double h);
 
-    return false;
-}
-
-/* Detection box from <x, y> to <x + w, y + h> */
-inline bool point_in_box2(double px, double py,
+bool point_in_box2(double px, double py,
                          double x, double y,
-                         double w, double h)
-{
-    if ( (px > x) && (px < (x + w)) &&
-         (py > y) && (py < (y + h))) {
-        return true;
-    }
+                         double w, double h);
 
-    return false;
-}
-
-/* Detection box from <x, y> to <x2, y2> */
-inline bool point_in_box3(double px, double py,
+bool point_in_box3(double px, double py,
                          double x, double y,
-                         double x2, double y2)
-{
-    if ( (px > x) && (px < x2) &&
-         (py > y) && (py < y2)) {
-        return true;
-    }
-
-    return false;
-}
+                         double x2, double y2);
 
 int ufsmm_region_get_at_xy(struct ufsmm_canvas *canvas,
                            struct ufsmm_region *region, double px, double py,
