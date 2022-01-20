@@ -10,7 +10,7 @@ Welcome to the ufsm documentation
    build
    architecture
    user-guide
-   development-guide
+   developer-guide
    examples
    core-library-reference
    model-library-reference
