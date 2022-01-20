@@ -104,4 +104,4 @@ Expected output::
         | Call       | led_on
     LED ON
 
-Source code: :github-blob:`examples/simple`
+Source code: :github-tree:`examples/simple`

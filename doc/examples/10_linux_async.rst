@@ -80,4 +80,4 @@ the program.
 The queue uses a signalfd 'object' to wake up the epoll when there are new
 events in the queue.
 
-Source code: :github-blob:`examples/linux`
+Source code: :github-tree:`examples/linux`

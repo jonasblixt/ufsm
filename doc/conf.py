@@ -305,11 +305,11 @@ texinfo_documents = [
 # extlins
 extlinks = {
     'github-blob':
-    ('https://github.com/jonasblixt/ufsm/blob/' + version + '/%s', ''),
+    ('https://github.com/jonasblixt/ufsm/blob/v' + version + '/%s', ''),
     'github-tree':
-    ('https://github.com/jonasblixt/ufsm/tree/' + version + '/%s', ''),
+    ('https://github.com/jonasblixt/ufsm/tree/v' + version + '/%s', ''),
     'codecov':
-    ('https://codecov.io/gh/jonasblixt/ufsm/src/' + version + '/%s', ''),
+    ('https://codecov.io/gh/jonasblixt/ufsm/src/v' + version + '/%s', ''),
     'codecov-tree':
-    ('https://codecov.io/gh/jonasblixt/ufsm/tree/' + version + '/%s', '')
+    ('https://codecov.io/gh/jonasblixt/ufsm/tree/v' + version + '/%s', '')
 }

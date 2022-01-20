@@ -17,4 +17,4 @@ the various intensity settings.
 This example uses the history pseudo state to store the last used intensity 
 setting.
 
-Source code: :github-blob:`examples/dimmer`
+Source code: :github-tree:`examples/dimmer`
