@@ -216,6 +216,8 @@ int ufsm_init_machine(struct ufsm_machine *m, void *context);
 int ufsm_reset_machine(struct ufsm_machine *m);
 int ufsm_process (struct ufsm_machine *m, int ev);
 void ufsm_debug_machine(struct ufsm_machine *m);
+void ufsm_configure_emit_handler(struct ufsm_machine *m,
+                                    ufsm_emit_signal_t handler);
 int ufsm_stack_init(struct ufsm_stack *stack, int no_of_elements,
                                               void **stack_data);
 #endif

@@ -1052,3 +1052,9 @@ int ufsm_reset_machine(struct ufsm_machine *m)
 
     return ufsm_init_machine(m, m->context);
 }
+
+void ufsm_configure_emit_handler(struct ufsm_machine *m,
+                                    ufsm_emit_signal_t handler)
+{
+    m->emit_signal = handler;
+}
