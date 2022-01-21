@@ -1,0 +1,39 @@
+name: uFSM coverity scan
+
+on: [push]
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install deps
+      run: |
+          sudo apt-get update
+          sudo apt-get install autoconf-archive libjson-c-dev lcov libgtk-3-0 libgtk-3-dev libcairo2 libcairo2-dev uuid-dev
+    - name: configure
+      run: autoreconf -fi && ./configure --enable-code-coverage CFLAGS="-O0"
+    - name: Download Coverity Build Tool
+      run: |
+        wget -q https://scan.coverity.com/download/cxx/linux64 --post-data "token=$TOKEN&project=jonpe960%2Fufsm" -O cov-analysis-linux64.tar.gz
+        mkdir cov-analysis-linux64
+        tar xzf cov-analysis-linux64.tar.gz --strip 1 -C cov-analysis-linux64
+      env:
+        TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+    - name: Build with cov-build
+      run: |
+        export PATH=`pwd`/cov-analysis-linux64/bin:$PATH
+        cov-build --dir cov-int make
+    - name: Submit the result to Coverity Scan
+      run: |
+        tar czvf ufsm.tgz cov-int
+        curl \
+          --form project=jonpe960%2Fufsm \
+          --form token=$TOKEN \
+          --form email=jonpe960@gmail.com \
+          --form file=@ufsm.tgz \
+          --form version=master \
+          --form description="ufsm" \
+          https://scan.coverity.com/builds?project=jonpe960%2Fufsm
+      env:
+        TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
