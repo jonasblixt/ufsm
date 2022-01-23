@@ -4,8 +4,6 @@
   :target: https://codecov.io/gh/jonasblixt/ufsm
 .. image:: https://github.com/jonasblixt/ufsm/actions/workflows/build.yml/badge.svg
     :target: https://github.com/jonasblixt/ufsm/actions/workflows/build.yml
-.. image:: https://scan.coverity.com/projects/15860/badge.svg
-    :target: https://scan.coverity.com/projects/jonasblixt-ufsm
 .. image:: https://readthedocs.org/projects/ufsm/badge/?version=latest
     :target: https://ufsm.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
