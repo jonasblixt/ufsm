@@ -5,6 +5,20 @@ ufsm_generate_SOURCES = main.c \
 
 
 ufsm_generate_CFLAGS = -I$(top_srcdir)/include \
+                        -pedantic \
+                        -Wall \
+                        -Wextra \
+                        -Wunused-result \
+                        -Wunused \
+                        -Wdisabled-optimization \
+                        -Wvla \
+                        -Wshadow \
+                        -Wno-unused-parameter \
+                        -Wextra \
+                        -Wmissing-format-attribute \
+                        -Wmissing-prototypes \
+                        -Wpointer-arith \
+                        -Waggregate-return \
                        $(JSONC_CFLAGS) \
                        $(UUID_CFLASG)
 

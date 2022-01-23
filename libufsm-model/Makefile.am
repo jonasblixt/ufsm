@@ -8,6 +8,20 @@ libufsm_model_la_SOURCES = ufsm.c \
                     region.c
 
 libufsm_model_la_CFLAGS = -I$(top_srcdir)/include \
+                        -Wall \
+                        -pedantic \
+                        -Wextra \
+                        -Wunused-result \
+                        -Wunused \
+                        -Wdisabled-optimization \
+                        -Wvla \
+                        -Wshadow \
+                        -Wno-unused-parameter \
+                        -Wextra \
+                        -Wmissing-format-attribute \
+                        -Wmissing-prototypes \
+                        -Wpointer-arith \
+                        -Waggregate-return \
                      $(CODE_COVERAGE_CFLAGS) \
                      $(JSONC_CFLAGS) \
                      $(UUID_CFLAGS)
