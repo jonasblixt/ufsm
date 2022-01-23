@@ -41,7 +41,6 @@ static void cell_edited(GtkCellRendererText *cell, const gchar *path_string,
 
     gtk_tree_model_get_iter(model, &iter, path);
 
-    gint i;
     gchar *old_text;
 
     gtk_tree_model_get(model, &iter, ACT_COLUMN_NAME, &old_text, -1);
@@ -53,7 +52,7 @@ static void cell_edited(GtkCellRendererText *cell, const gchar *path_string,
     gtk_tree_path_free(path);
 }
 
-GtkListStore *create_trigger_tab(GtkNotebook *notebook, struct ufsmm_model *model)
+static GtkListStore *create_trigger_tab(GtkNotebook *notebook, struct ufsmm_model *model)
 {
     GtkWidget *lbl = gtk_label_new("Triggers");
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
@@ -133,7 +132,7 @@ GtkListStore *create_trigger_tab(GtkNotebook *notebook, struct ufsmm_model *mode
 }
 
 
-GtkListStore *create_guard_tab(GtkNotebook *notebook, struct ufsmm_model *model)
+static GtkListStore *create_guard_tab(GtkNotebook *notebook, struct ufsmm_model *model)
 {
     GtkWidget *lbl = gtk_label_new("Guard functions");
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
@@ -212,7 +211,7 @@ GtkListStore *create_guard_tab(GtkNotebook *notebook, struct ufsmm_model *model)
     return store;
 }
 
-GtkListStore *create_action_tab(GtkNotebook *notebook, struct ufsmm_model *model)
+static GtkListStore *create_action_tab(GtkNotebook *notebook, struct ufsmm_model *model)
 {
     GtkWidget *lbl = gtk_label_new("Action functions");
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
@@ -307,7 +306,7 @@ static void paper_sz_changed(GtkComboBox *cbx, gpointer user_data)
     model->paper_size = active;
 }
 
-void create_general_tab(GtkNotebook *notebook, struct ufsmm_model *model)
+static void create_general_tab(GtkNotebook *notebook, struct ufsmm_model *model)
 {
     GtkWidget *lbl = gtk_label_new("General");
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -492,7 +491,7 @@ int ufsm_project_settings_dialog(GtkWindow *parent, struct ufsmm_model *model,
                                         struct ufsmm_region *copy_bfr)
 {
     int rc;
-    GtkWidget *dialog, *label, *content_area;
+    GtkWidget *dialog, *content_area;
     GtkDialogFlags flags;
     struct ufsmm_model model_copy;
 

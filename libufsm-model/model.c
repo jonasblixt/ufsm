@@ -76,7 +76,7 @@ static int parse_action_list(json_object *j_list, struct ufsmm_actions *actions,
         return UFSMM_OK;
     }
 
-    for (int n = 0; n < no_of_actions; n++) {
+    for (unsigned int n = 0; n < no_of_actions; n++) {
         j_action = json_object_array_get_idx(j_list, n);
 
         if (!json_object_object_get_ex(j_action, "name", &j_name)) {
@@ -123,7 +123,7 @@ static int parse_triggers(json_object *j_list, struct ufsmm_model *model)
         return UFSMM_OK;
     }
 
-    for (int n = 0; n < no_of_triggers; n++) {
+    for (unsigned int n = 0; n < no_of_triggers; n++) {
         j_trigger = json_object_array_get_idx(j_list, n);
 
         if (!json_object_object_get_ex(j_trigger, "name", &j_name)) {
@@ -160,10 +160,8 @@ static int parse_root_region(struct ufsmm_model *model, json_object *j_region)
     int rc = UFSMM_OK;
     json_object *jobj;
     struct ufsmm_region *r = NULL;
-    struct ufsmm_region *prev_region = NULL;
     struct json_object *j_r = NULL;
     struct ufsmm_stack *stack;
-    struct ufsmm_state *parent_state = NULL;
     struct ufsmm_state *state = NULL;
 
     /* Allocate temporary stack for parsing */
@@ -210,7 +208,7 @@ static int parse_root_region(struct ufsmm_model *model, json_object *j_region)
         L_DEBUG("Array elements = %zu", n_elements);
 
         /* Iterate over all states in region 'j_r' */
-        for (int i = 0; i < n_elements; i++)
+        for (unsigned int i = 0; i < n_elements; i++)
         {
             json_object *j_state = json_object_array_get_idx(jobj, i);
             json_object *j_state_regions = NULL;
@@ -240,7 +238,7 @@ static int parse_root_region(struct ufsmm_model *model, json_object *j_region)
             size_t n_regions = json_object_array_length(j_state_regions);
 
             /* Iterate over all regions in state*/
-            for (int n = 0; n < n_regions; n++)
+            for (unsigned int n = 0; n < n_regions; n++)
             {
                 L_DEBUG("Push jr_s_pair");
                 rc = push_jr_s_pair(stack,
@@ -275,28 +273,28 @@ static int parse_root_region(struct ufsmm_model *model, json_object *j_region)
         L_DEBUG("Array elements = %zu", n_elements);
 
         /* Iterate over all states in region 'j_r' */
-        for (int i = 0; i < n_elements; i++)
+        for (unsigned int i = 0; i < n_elements; i++)
         {
             json_object *j_state = json_object_array_get_idx(jobj, i);
             json_object *j_state_regions = NULL;
             json_object *j_transitions;
             json_object *j_state_id;
             uuid_t state_uu;
-            struct ufsmm_state *state;
+            struct ufsmm_state *s;
 
             json_object_object_get_ex(j_state, "id", &j_state_id);
             L_DEBUG("Pass 2: %s", json_object_get_string(j_state_id));
             uuid_parse(json_object_get_string(j_state_id), state_uu);
 
             if (json_object_object_get_ex(j_state, "transitions", &j_transitions)) {
-                state = ufsmm_model_get_state_from_uuid(model, state_uu);
-                if (state == NULL) {
+                s = ufsmm_model_get_state_from_uuid(model, state_uu);
+                if (s == NULL) {
                     L_ERR("Could not get state");
                     rc = -UFSMM_ERROR;
                     goto err_parse_error;
                 }
 
-                rc = ufsmm_transition_deserialize(model, state, j_transitions);
+                rc = ufsmm_transition_deserialize(model, s, j_transitions);
 
                 if (rc != UFSMM_OK) {
                     L_ERR("Could not de-serialize transition");
@@ -313,7 +311,7 @@ static int parse_root_region(struct ufsmm_model *model, json_object *j_region)
             size_t n_regions = json_object_array_length(j_state_regions);
 
             /* Iterate over all regions in state*/
-            for (int n = 0; n < n_regions; n++)
+            for (size_t n = 0; n < n_regions; n++)
             {
                 rc = ufsmm_stack_push(stack,
                     (void *) json_object_array_get_idx(j_state_regions, n));
@@ -343,8 +341,7 @@ static int ufsmm_model_parse(struct ufsmm_model *model)
     bool found_name = false;
     int rc = 0;
 
-    json_object_object_foreach(model->jroot, key, val)
-    {
+    json_object_object_foreach(model->jroot, key, val) {
         L_DEBUG("%s", key);
         if (strcmp(key, "name") == 0)
         {
@@ -460,7 +457,6 @@ int ufsmm_model_load(const char *filename, struct ufsmm_model **model_pp)
     L_DEBUG("Model data loaded (%zu bytes), parsing JSON...",
                     file_size_bytes);
 
-    enum json_tokener_error jerr;
     struct json_tokener *tok = json_tokener_new();
 
     if (!tok)
@@ -757,7 +753,7 @@ static int free_action_list(struct ufsmm_actions *list)
     if (list == NULL)
         return UFSMM_OK;
 
-    while (item = TAILQ_FIRST(list)) {
+    while ((item = TAILQ_FIRST(list))) {
         TAILQ_REMOVE(list, item, tailq);
         free((void *) item->name);
         free(item);
@@ -770,7 +766,7 @@ int free_action_ref_list(struct ufsmm_action_refs *list)
 {
     struct ufsmm_action_ref *item;
 
-    while (item = TAILQ_FIRST(list)) {
+    while ((item = TAILQ_FIRST(list))) {
         TAILQ_REMOVE(list, item, tailq);
         free(item);
     }
@@ -782,7 +778,7 @@ int free_guard_ref_list(struct ufsmm_guard_refs *list)
 {
     struct ufsmm_guard_ref *item;
 
-    while (item = TAILQ_FIRST(list)) {
+    while ((item = TAILQ_FIRST(list))) {
         TAILQ_REMOVE(list, item, tailq);
         free(item);
     }
@@ -794,7 +790,7 @@ static int free_triggers(struct ufsmm_model *model)
 {
     struct ufsmm_trigger *item;
 
-    while (item = TAILQ_FIRST(&model->triggers)) {
+    while ((item = TAILQ_FIRST(&model->triggers))) {
         TAILQ_REMOVE(&model->triggers, item, tailq);
         free((void *) item->name);
         free(item);
@@ -1073,10 +1069,6 @@ int ufsmm_model_add_trigger(struct ufsmm_model *model, const char *name,
     }
 
     return rc;
-err_free_out:
-    free((void *) trigger->name);
-    free(trigger);
-    return rc;
 }
 
 int ufsmm_model_delete_trigger(struct ufsmm_model *model, uuid_t id)
@@ -1332,7 +1324,6 @@ static int cc_region(struct ufsmm_region *region)
     int max_count = 1;
     int count = 1;
     struct ufsmm_state *s;
-    struct ufsmm_region *r;
 
     TAILQ_FOREACH(s, &region->states, tailq) {
         count = cc_state(s);
@@ -1358,7 +1349,6 @@ static int cc_state(struct ufsmm_state *state)
 int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model)
 {
     int max_concurrent_states = cc_region(model->root);
-    printf("max_concurrent_states = %i\n", max_concurrent_states);
     return max_concurrent_states;
 }
 

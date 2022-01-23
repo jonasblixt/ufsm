@@ -133,7 +133,7 @@ void canvas_copy_begin(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_region *cr = priv->current_region;
     struct ufsmm_stack *stack;
-    struct ufsmm_region *r, *r2, *pr, *new_pr;
+    struct ufsmm_region *r, *r2, *new_pr;
     struct ufsmm_state *s, *ps, *new_ps;
     struct ufsmm_transition *t, *new_t;
     struct ufsmm_state_pairs state_pairs;
@@ -263,7 +263,7 @@ void canvas_copy_begin(void *context)
 
     ufsmm_stack_free(stack);
 
-    while (state_pair = TAILQ_FIRST(&state_pairs)) {
+    while ((state_pair = TAILQ_FIRST(&state_pairs))) {
         TAILQ_REMOVE(&state_pairs, state_pair, tailq);
         free(state_pair);
     }
@@ -376,7 +376,7 @@ void canvas_paste_copy_buffer(void *context)
 
     ufsmm_stack_free(stack);
 
-    while (state_pair = TAILQ_FIRST(&state_pairs)) {
+    while ((state_pair = TAILQ_FIRST(&state_pairs))) {
         TAILQ_REMOVE(&state_pairs, state_pair, tailq);
         free(state_pair);
     }
@@ -400,7 +400,6 @@ void canvas_copy_end(void *context)
     struct ufsmm_region *r, *r2;
     struct ufsmm_stack *stack, *stack2;
     struct ufsmm_transition *t;
-    struct ufsmm_action_ref *aref;
     void *ptr;
 
     /* Clean-up */
@@ -416,7 +415,7 @@ void canvas_copy_end(void *context)
         TAILQ_FOREACH(s, &r->states, tailq) {
             ufsmm_stack_push(stack2, s);
 
-            while (t = TAILQ_FIRST(&s->transitions)) {
+            while ((t = TAILQ_FIRST(&s->transitions))) {
                 TAILQ_REMOVE(&s->transitions, t, tailq);
                 ufsmm_transition_free_one(t);
             }

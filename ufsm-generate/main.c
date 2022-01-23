@@ -19,8 +19,11 @@
 
 #include "output.h"
 
-static int v = 0;
+static unsigned int v = 0;
 
+int ufsmm_debug(enum ufsmm_debug_level debug_level,
+              const char *func_name,
+              const char *fmt, ...) __attribute__ ((format (printf, 3, 4)));
 int ufsmm_debug(enum ufsmm_debug_level debug_level,
               const char *func_name,
               const char *fmt, ...)

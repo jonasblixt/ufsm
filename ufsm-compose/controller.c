@@ -293,7 +293,7 @@ void canvas_resize_state_end(void *context)
 
     ufsmm_undo_commit_ops(priv->undo, undo_ops);
 
-    while (item = TAILQ_FIRST(list)) {
+    while ((item = TAILQ_FIRST(list))) {
         TAILQ_REMOVE(list, item, tailq);
         free(item);
     }
@@ -309,9 +309,7 @@ void canvas_resize_state_end(void *context)
 void canvas_resize_state(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_region *r = priv->current_region;
     struct resize_op *op = (struct resize_op *) priv->command_data;
-    struct transition_ref *tref;
     double dy = priv->dy;
     double dx = priv->dx;
     struct ufsmm_state *selected_state = priv->selected_state;
@@ -405,6 +403,11 @@ void canvas_resize_state(void *context)
                 }
             }
             break;
+            case UFSMM_NO_SELECTION:
+            case UFSMM_BOT_MIDDLE:
+            case UFSMM_BOT_RIGHT:
+            case UFSMM_RIGHT_MIDDLE:
+            break;
         }
 
         switch (priv->selected_corner) {
@@ -442,6 +445,8 @@ void canvas_resize_state(void *context)
                 selected_state->h = selected_state->th - dy;
                 selected_state->y = selected_state->ty + dy;
             break;
+            case UFSMM_NO_SELECTION:
+            break;
         }
 
         if (selected_state->w < 50)
@@ -475,6 +480,13 @@ void canvas_resize_state(void *context)
                     if (selected_state->th + dy > 50)
                         selected_state->h = selected_state->th + dy;
                 }
+            case UFSMM_TOP_MIDDLE:
+            case UFSMM_RIGHT_MIDDLE:
+            case UFSMM_BOT_RIGHT:
+            case UFSMM_BOT_MIDDLE:
+            case UFSMM_BOT_LEFT:
+            case UFSMM_LEFT_MIDDLE:
+            case UFSMM_NO_SELECTION:
             break;
        }
     }
@@ -690,15 +702,8 @@ int canvas_clicked_on_selected(void *context)
     struct ufsmm_stack *stack;
     struct ufsmm_region *r, *r2;
     struct ufsmm_state *s;
-    struct ufsmm_state *selected_state;
-    struct ufsmm_region *selected_region;
-    struct ufsmm_coords *selected_text_block;
     double x, y, w, h;
-    double ox, oy;
     int result = 0;
-
-    ox = priv->current_region->ox;
-    oy = priv->current_region->oy;
 
     ufsmm_stack_init(&stack);
 
@@ -753,11 +758,6 @@ void canvas_process_selection(void *context)
     struct ufsmm_stack *stack;
     struct ufsmm_region *r, *r2;
     struct ufsmm_state *s;
-    struct ufsmm_state *selected_state;
-    struct ufsmm_region *selected_region;
-    struct ufsmm_coords *selected_text_block;
-    enum ufsmm_resize_selector selected_text_block_corner;
-    struct ufsmm_action_ref *selected_action_ref = NULL;
     double x, y, w, h;
     double ox, oy;
 
@@ -873,19 +873,6 @@ void canvas_process_selection(void *context)
                     priv->selection = UFSMM_SELECTION_TRANSITION;
 
                     priv->selected_transition = t;
-                    selected_text_block = &t->text_block_coords;
-
-                    if (point_in_box(priv->px, priv->py, tx, ty, 10, 10)) {
-                        selected_text_block_corner = UFSMM_TOP_LEFT;
-                    } else if (point_in_box(priv->px, priv->py, tx + tw, ty, 10, 10)) {
-                        selected_text_block_corner = UFSMM_TOP_RIGHT;
-                    } else if (point_in_box(priv->px, priv->py, tx + tw, ty + th, 10, 10)) {
-                        selected_text_block_corner = UFSMM_BOT_RIGHT;
-                    } else if (point_in_box(priv->px, priv->py, tx, ty + th, 10, 10)) {
-                        selected_text_block_corner = UFSMM_BOT_LEFT;
-                    } else {
-                        selected_text_block_corner = UFSMM_NO_SELECTION;
-                    }
                 }
             }
 
@@ -937,22 +924,6 @@ void canvas_focus_selection(void *context)
         default:
         break;
     }
-}
-
-static bool state_has_root_region(struct ufsmm_state *state,
-                                  struct ufsmm_region *root)
-{
-    struct ufsmm_region *r = state->parent_region;
-
-    while (r) {
-        if (r->parent_state == NULL)
-            break;
-        if (r->parent_state->parent_region == NULL)
-            break;
-        r = r->parent_state->parent_region;
-    }
-
-    return (r == root);
 }
 
 static bool is_state_dangling(struct ufsmm_state *state)
@@ -1194,17 +1165,6 @@ void canvas_check_action_func(void *context)
     }
 }
 
-void canvas_focus_transition(void *context)
-{
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_transition *t = priv->selected_transition;
-
-    L_DEBUG("Transition %s --> %s selected",
-                t->source.state->name, t->dest.state->name);
-    t->selected = true;
-    priv->redraw = true;
-}
-
 struct move_vertice_op {
     struct ufsmm_transition *transition;
     struct ufsmm_transition_state_ref old_source;
@@ -1269,7 +1229,6 @@ void canvas_move_vertice(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
-    struct ufsmm_region *cr = priv->current_region;
 
     double dx = priv->dx;
     double dy = priv->dy;
@@ -1478,12 +1437,6 @@ int canvas_textblock_resize_selected(void *context)
     return (priv->selected_corner != UFSMM_NO_SELECTION);
 }
 
-int canvas_only_state_selected(void *context)
-{
-    return false;
-}
-
-
 /* Action function prototypes */
 void canvas_select_root_region(void *context)
 {
@@ -1648,9 +1601,6 @@ void canvas_move_state(void *context)
     struct ufsmm_region *r = priv->current_region;
     struct ufsmm_transition *t;
     struct ufsmm_vertice *v;
-    double x, y, w, h;
-    double tx_tmp, ty_tmp;
-    double ox, oy;
     int rc;
 
     s->x = ufsmm_canvas_nearest_grid_point(s->tx + priv->dx);
@@ -1748,7 +1698,6 @@ void canvas_resize_region(void *context)
     priv->redraw = true;
 
     double dy = priv->dy;
-    double dx = priv->dx;
 
     switch (priv->selected_corner) {
         case UFSMM_TOP_MIDDLE:
@@ -2009,8 +1958,6 @@ void canvas_resize_region_end(void *context)
 
 void canvas_move_text_block_begin(void *context)
 {
-    struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_transition *t = priv->selected_transition;
 }
 
 void canvas_move_text_block_end(void *context)
@@ -2063,7 +2010,6 @@ void canvas_reorder_guard_begin(void *context)
 void canvas_reorder_guard_end(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_transition *transition = priv->selected_transition;
     struct ufsmm_guard_ref *guard = priv->selected_guard;
     struct reorder_guard_op *op = (struct reorder_guard_op *) priv->command_data;
 
@@ -2137,7 +2083,6 @@ void canvas_reorder_action_begin(void *context)
 void canvas_reorder_action_end(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_transition *transition = priv->selected_transition;
     struct ufsmm_action_ref *aref = priv->selected_aref;
     struct reorder_aref_op *op = (struct reorder_aref_op *) priv->command_data;
 
@@ -2206,7 +2151,6 @@ void canvas_reorder_entry_begin(void *context)
 void canvas_reorder_entry_end(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_state *state = priv->selected_state;
     struct ufsmm_action_ref *aref = priv->selected_aref;
     struct reorder_aref_op *op = (struct reorder_aref_op *) priv->command_data;
 
@@ -2277,7 +2221,6 @@ void canvas_reorder_exit_begin(void *context)
 void canvas_reorder_exit_end(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct ufsmm_state *state = priv->selected_state;
     struct ufsmm_action_ref *aref = priv->selected_aref;
     struct reorder_aref_op *op = (struct reorder_aref_op *) priv->command_data;
 
@@ -2407,8 +2350,7 @@ void canvas_add_region(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_region *new_region = NULL;
-    int rc;
-    rc = ufsmm_add_region(priv->selected_state, false, &new_region);
+    ufsmm_add_region(priv->selected_state, false, &new_region);
     new_region->name = strdup("New region");
     new_region->h = 40;
 
@@ -2420,7 +2362,7 @@ void canvas_add_region(void *context)
     L_DEBUG("Created new region");
 }
 
-void adjust_region_offsets(struct ufsmm_regions *regions,
+static void adjust_region_offsets(struct ufsmm_regions *regions,
                            struct ufsmm_undo_ops *undo_ops,
                            int offset)
 {
@@ -2840,7 +2782,6 @@ void canvas_create_new_state(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct state_op *op = (struct state_op *) priv->command_data;
     struct ufsmm_region *cr = priv->current_region;
-    double x, y, w, h;
     op->commit = true;
     ufsmm_region_append_state(op->pr, op->state);
     priv->redraw = true;
@@ -3009,8 +2950,6 @@ int canvas_check_transition_start(void *context)
 {
     int rc;
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct transition_op *op = (struct transition_op *) priv->command_data;
-    struct ufsmm_region *cr = priv->current_region;
     struct ufsmm_state *source_state;
     int result = false;
 
@@ -3041,7 +2980,6 @@ void canvas_create_transition_start(void *context)
     int rc;
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct transition_op *op = (struct transition_op *) priv->command_data;
-    struct ufsmm_region *cr = priv->current_region;
     struct ufsmm_state *source_state;
 
     L_DEBUG("Looking for source state at <%f, %f>", priv->px,
@@ -3076,8 +3014,6 @@ void canvas_create_transition_start(void *context)
 void canvas_transition_update_preview(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    struct transition_op *op = (struct transition_op *) priv->command_data;
-
     priv->redraw = true;
 }
 
@@ -3086,10 +3022,9 @@ void canvas_create_transition(void *context)
     int rc;
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct transition_op *op = (struct transition_op *) priv->command_data;
-    struct ufsmm_region *cr = priv->current_region;
     struct ufsmm_state *dest_state;
     double dest_offset;
-    enum ufsmm_side source_side, dest_side;
+    enum ufsmm_side dest_side;
 
     L_DEBUG("Looking for dest state at <%f, %f>", priv->px,
                                                   priv->py);
@@ -3209,8 +3144,6 @@ static void add_simple_state_to_region(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct sstate_op *op = (struct sstate_op *) priv->command_data;
-    struct ufsmm_region *cr = priv->current_region;
-    double x, y, w, h;
 
     op->commit = true;
     ufsmm_region_append_state(op->pr, op->state);
@@ -3408,8 +3341,6 @@ static void create_fork_join_start(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct fork_join_op *op = (struct fork_join_op *) priv->command_data;
-    struct ufsmm_region *cr = priv->current_region;
-    double x, y, w, h;
 
     op->state->parent_region = op->pr;
     priv->redraw = true;
@@ -3607,7 +3538,6 @@ void canvas_add_vertice(void *context)
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
     struct ufsmm_vertice *v, *v_new, *vn;
-    double x, y, w, h;
     double sx, sy, ex, ey;
     double min_dist = 10000;
 
@@ -3696,20 +3626,11 @@ void canvas_mselect_end(void *context)
     struct ufsmm_stack *stack;
     struct ufsmm_region *r, *r2;
     struct ufsmm_state *s;
-    struct ufsmm_state *selected_state;
-    struct ufsmm_region *selected_region;
-    struct ufsmm_coords *selected_text_block;
-    enum ufsmm_resize_selector selected_text_block_corner;
-    struct ufsmm_action_ref *selected_action_ref = NULL;
-    double ox, oy;
 
     op->sx -= priv->current_region->ox;
     op->sy -= priv->current_region->oy;
     op->ex = priv->px - priv->current_region->ox;
     op->ey = priv->py - priv->current_region->oy;
-
-    ox = priv->current_region->ox;
-    oy = priv->current_region->oy;
 
     priv->selection = UFSMM_SELECTION_NONE;
     ufsmm_stack_init(&stack);
@@ -3749,7 +3670,6 @@ void canvas_mselect_end(void *context)
         TAILQ_FOREACH(s, &r->states, tailq) {
             struct ufsmm_transition *t;
             TAILQ_FOREACH(t, &s->transitions, tailq) {
-                struct ufsmm_vertice *v;
                 double tsx, tsy, tex, tey;
 
                 transition_calc_begin_end_point(s,
@@ -3797,11 +3717,6 @@ void canvas_mselect_update(void *context)
     ufsmm_canvas_set_selection(true, op->sx - ox, op->sy - oy,
                                      priv->px - ox, priv->py - oy);
     priv->redraw = true;
-}
-
-void canvas_copy_selection(void *context)
-{
-    L_DEBUG("%s", __func__);
 }
 
 struct mselect_state {
@@ -3983,7 +3898,7 @@ static void mselect_move_end(void *context, bool undo)
     }
     /* Clean-up */
 
-    while (ms = TAILQ_FIRST(&op->states)) {
+    while ((ms = TAILQ_FIRST(&op->states))) {
         TAILQ_REMOVE(&op->states, ms, tailq);
         struct ufsmm_state *s = ms->state;
         L_DEBUG("Moved state '%s'", s->name);
@@ -4005,7 +3920,7 @@ static void mselect_move_end(void *context, bool undo)
         free(ms);
     }
 
-    while (mt = TAILQ_FIRST(&op->transitions)) {
+    while ((mt = TAILQ_FIRST(&op->transitions))) {
         TAILQ_REMOVE(&op->transitions, mt, tailq);
         L_DEBUG("Moved transition '%s->%s'", mt->transition->source.state->name,
                                              mt->transition->dest.state->name);
@@ -4116,10 +4031,6 @@ void canvas_select_all(void *context)
     struct ufsmm_stack *stack;
     struct ufsmm_region *r, *r2;
     struct ufsmm_state *s;
-    struct ufsmm_state *selected_state;
-    struct ufsmm_region *selected_region;
-    struct ufsmm_coords *selected_text_block;
-    struct ufsmm_action_ref *selected_action_ref = NULL;
 
     priv->selection = UFSMM_SELECTION_NONE;
     ufsmm_stack_init(&stack);
@@ -4190,7 +4101,7 @@ void canvas_zoom_fit(void *context)
     double h = ufsmm_paper_size_y(priv->model->paper_size);
 
     double scale_x = (double) priv->window_width / (w/2);
-    double scale_y = (double) priv->window_height / (h/2);
+    // double scale_y = (double) priv->window_height / (h/2);
     r->scale = scale_x;
     L_DEBUG("Zoom = %f", r->scale);
     r->ox = ((double) priv->window_width / r->scale) - w/2;
@@ -4287,7 +4198,7 @@ void canvas_project_settings(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
 
-    int rc = ufsm_project_settings_dialog(GTK_WINDOW(priv->root_window),
+    ufsm_project_settings_dialog(GTK_WINDOW(priv->root_window),
                                      priv->model, priv->copy_bfr);
 }
 
@@ -4439,7 +4350,7 @@ void canvas_open(void *context)
     gtk_widget_destroy (dialog);
 }
 
-gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
+static gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
@@ -4506,7 +4417,7 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
     return TRUE;
 }
 
-gboolean keyrelease_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
+static gboolean keyrelease_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
@@ -4652,7 +4563,6 @@ static void draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data)
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
     gint width, height;
-    gint i;
     GtkAllocation allocation;
 
     gtk_widget_get_allocation(widget, &allocation);

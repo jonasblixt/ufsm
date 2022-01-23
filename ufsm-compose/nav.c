@@ -307,6 +307,8 @@ bool ufsmm_nav_scroll(struct ufsmm_canvas *canvas, double change)
         nav_offset = 0;
 
     canvas->redraw = true;
+
+    return true;
 }
 
 void ufsmm_nav_render(struct ufsmm_canvas *canvas, int width, int height)

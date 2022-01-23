@@ -1,6 +1,7 @@
 #include <gtk/gtk.h>
 #include <string.h>
 #include <ufsm/model.h>
+#include "set_trigger_dialog.h"
 
 enum
 {
@@ -165,11 +166,9 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
                             struct ufsmm_transition *transition)
 {
     int rc;
-    const char *msg;
     GtkWidget *dialog, *vbox, *content_area;
     GtkWidget *treeview;
     GtkDialogFlags flags;
-    struct ufsmm_trigger *trigger;
 
     selected_trigger = NULL;
 

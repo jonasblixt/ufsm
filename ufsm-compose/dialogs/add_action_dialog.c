@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
 #include <ufsm/model.h>
+#include "add_action_dialog.h"
 
 enum
 {
@@ -29,7 +30,7 @@ static void input_changed(GtkEntry *entry, gpointer user_data)
                                             GTK_SORT_DESCENDING);
 
     if (gtk_tree_model_get_iter_first(model, &iter)) {
-        while (&iter) {
+        do {
             const char *iter_text;
             int match_rating = 0;
             gtk_tree_selection_unselect_iter(selection, &iter);
@@ -44,9 +45,7 @@ static void input_changed(GtkEntry *entry, gpointer user_data)
             gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                                             COLUMN_MATCH_RATING,
                                             match_rating, -1);
-            if (!gtk_tree_model_iter_next(model, &iter))
-                break;
-        }
+        } while (gtk_tree_model_iter_next(model, &iter));
     }
 
     gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),

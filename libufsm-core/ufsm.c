@@ -242,7 +242,7 @@ inline static bool ufsm_test_guards(struct ufsm_machine *m,
                 result = (guard_result <= g->value);
             break;
             case UFSM_GUARD_PSTATE:
-                for (int i = 0; i < m->no_of_regions; i++) {
+                for (unsigned int i = 0; i < m->no_of_regions; i++) {
                     if (m->r_data[i].current == g->state) {
                         result = true;
                         break;
@@ -253,7 +253,7 @@ inline static bool ufsm_test_guards(struct ufsm_machine *m,
             break;
             case UFSM_GUARD_NSTATE:
                 result = true;
-                for (int i = 0; i < m->no_of_regions; i++) {
+                for (unsigned int i = 0; i < m->no_of_regions; i++) {
                     if (m->r_data[i].current == g->state) {
                         result = false;
                         break;
@@ -478,16 +478,6 @@ inline static int ufsm_pop_sr_pair(struct ufsm_machine *m,
         err = ufsm_stack_pop (&m->stack, (void **) r);
 
     return err;
-}
-
-static bool ufsm_is_state_active(struct ufsm_machine *m,
-                                 struct ufsm_state *s)
-{
-    for (int i = 0; i < m->no_of_regions; i++) {
-        if (m->r_data[i].current == s)
-            return true;
-    }
-    return false;
 }
 
 static int ufsm_find_active_regions(struct ufsm_machine *m,

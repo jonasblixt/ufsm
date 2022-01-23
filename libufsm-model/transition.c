@@ -6,7 +6,7 @@
 static int deserialize_vertices(json_object *j_vertices,
                                 struct ufsmm_transition *t)
 {
-    struct ufsmm_vertice *vertice, *prev;
+    struct ufsmm_vertice *vertice;
     json_object *j_vertice;
     json_object *j_obj;
     double x,y;
@@ -17,7 +17,7 @@ static int deserialize_vertices(json_object *j_vertices,
 
     L_DEBUG("Found %i vertices", n_entries);
 
-    for (int n = 0; n < n_entries; n++) {
+    for (unsigned int n = 0; n < n_entries; n++) {
         j_vertice = json_object_array_get_idx(j_vertices, n);
 
         if (!json_object_object_get_ex(j_vertice, "x", &j_obj)) {
@@ -57,13 +57,10 @@ static int deserialize_state_ref(struct ufsmm_model *model,
                                  json_object *j_ref,
                                  struct ufsmm_transition_state_ref *result)
 {
-    int rc;
     json_object *j_state;
     json_object *j_side;
     json_object *j_offset;
     struct ufsmm_state *state = NULL;
-    double offset;
-    enum ufsmm_side side;
     uuid_t state_uu;
 
     if (!json_object_object_get_ex(j_ref, "state", &j_state)) {
@@ -123,9 +120,7 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
     json_object *j_vertices;
     json_object *j_guards;
     json_object *j_actions;
-    json_object *j_state_conds;
     struct ufsmm_transition *transition;
-    struct ufsmm_transition *prev;
     uuid_t trigger_uu;
 
     size_t n_entries = json_object_array_length(j_transitions_list);
@@ -135,7 +130,7 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
 
     L_DEBUG("Parsing transitions in state '%s'", state->name);
 
-    for (int n = 0; n < n_entries; n++) {
+    for (unsigned int n = 0; n < n_entries; n++) {
         j_t = json_object_array_get_idx(j_transitions_list, n);
 
         rc = ufsmm_transition_new(&transition);
@@ -222,28 +217,27 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
 
         /* Parse actions */
         if (json_object_object_get_ex(j_t, "actions", &j_actions)) {
-            size_t n_entries = json_object_array_length(j_actions);
-            L_DEBUG("Transition has %d actions", n_entries);
+            size_t n_aentries = json_object_array_length(j_actions);
+            L_DEBUG("Transition has %d actions", n_aentries);
 
-            for (int n = 0; n < n_entries; n++)
-            {
+            for (unsigned int a = 0; a < n_aentries; a++) {
                 json_object *j_action;
                 json_object *j_action_id;
-                json_object *j_id;
+                json_object *j_aid;
                 json_object *j_kind;
                 uuid_t action_uu;
                 uuid_t id_uu;
                 enum ufsmm_action_ref_kind kind = UFSMM_ACTION_REF_NORMAL;
 
-                j_action = json_object_array_get_idx(j_actions, n);
+                j_action = json_object_array_get_idx(j_actions, a);
 
                 if (json_object_object_get_ex(j_action, "kind", &j_kind))
                     kind = json_object_get_int(j_kind);
 
                 if (kind == UFSMM_ACTION_REF_NORMAL) {
                     if (json_object_object_get_ex(j_action, "action-id", &j_action_id)) {
-                        json_object_object_get_ex(j_action, "id", &j_id);
-                        uuid_parse(json_object_get_string(j_id), id_uu);
+                        json_object_object_get_ex(j_action, "id", &j_aid);
+                        uuid_parse(json_object_get_string(j_aid), id_uu);
                         uuid_parse(json_object_get_string(j_action_id), action_uu);
                         rc = ufsmm_transition_add_action(model, transition, id_uu,
                                                         action_uu);
@@ -252,8 +246,8 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
                     }
                 } else if (kind == UFSMM_ACTION_REF_SIGNAL) {
                     if (json_object_object_get_ex(j_action, "signal-id", &j_action_id)) {
-                        json_object_object_get_ex(j_action, "id", &j_id);
-                        uuid_parse(json_object_get_string(j_id), id_uu);
+                        json_object_object_get_ex(j_action, "id", &j_aid);
+                        uuid_parse(json_object_get_string(j_aid), id_uu);
                         uuid_parse(json_object_get_string(j_action_id), action_uu);
                         rc = ufsmm_transition_add_signal_action(model, transition, id_uu,
                                                         action_uu);
@@ -266,15 +260,14 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
 
         /* Parse guards */
         if (json_object_object_get_ex(j_t, "guards", &j_guards)) {
-            size_t n_entries = json_object_array_length(j_guards);
-            L_DEBUG("Transition has %d guards", n_entries);
+            size_t n_gentries = json_object_array_length(j_guards);
+            L_DEBUG("Transition has %d guards", n_gentries);
 
-            for (int n = 0; n < n_entries; n++)
-            {
+            for (unsigned int a = 0; a < n_gentries; a++) {
                 json_object *j_guard;
                 json_object *j_guard_id;
                 json_object *j_state_id;
-                json_object *j_id;
+                json_object *j_gid;
                 json_object *j_kind;
                 json_object *j_value;
                 uuid_t guard_uu;
@@ -282,7 +275,7 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
                 uuid_t id_uu;
                 enum ufsmm_guard_kind guard_kind = UFSMM_GUARD_TRUE;
                 int guard_value = 0;
-                j_guard = json_object_array_get_idx(j_guards, n);
+                j_guard = json_object_array_get_idx(j_guards, a);
 
                 if (json_object_object_get_ex(j_guard, "kind", &j_kind)) {
                     guard_kind = json_object_get_int(j_kind);
@@ -291,8 +284,8 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
                 if ((guard_kind != UFSMM_GUARD_PSTATE) &&
                     (guard_kind != UFSMM_GUARD_NSTATE)) {
                     json_object_object_get_ex(j_guard, "action-id", &j_guard_id);
-                    json_object_object_get_ex(j_guard, "id", &j_id);
-                    uuid_parse(json_object_get_string(j_id), id_uu);
+                    json_object_object_get_ex(j_guard, "id", &j_gid);
+                    uuid_parse(json_object_get_string(j_gid), id_uu);
                     uuid_parse(json_object_get_string(j_guard_id), guard_uu);
 
 
@@ -307,8 +300,8 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
                         goto err_out;
                 } else {
                     json_object_object_get_ex(j_guard, "state-id", &j_state_id);
-                    json_object_object_get_ex(j_guard, "id", &j_id);
-                    uuid_parse(json_object_get_string(j_id), id_uu);
+                    json_object_object_get_ex(j_guard, "id", &j_gid);
+                    uuid_parse(json_object_get_string(j_gid), id_uu);
                     uuid_parse(json_object_get_string(j_state_id), state_uu);
 
                     rc = ufsmm_transition_add_guard(model, transition, id_uu,
@@ -532,12 +525,11 @@ err_out:
 int ufsmm_transition_free_list(struct ufsmm_transitions *transitions)
 {
     struct ufsmm_transition *t;
-    struct ufsmm_vertice *v;
 
     if (transitions == NULL)
         return UFSMM_OK;
 
-    while (t = TAILQ_FIRST(transitions)) {
+    while ((t = TAILQ_FIRST(transitions))) {
         TAILQ_REMOVE(transitions, t, tailq);
         if (ufsmm_transition_free_one(t) != UFSMM_OK) {
             L_ERR("Failed to free transition");
@@ -550,8 +542,7 @@ int ufsmm_transition_free_list(struct ufsmm_transitions *transitions)
 
 int ufsmm_transition_free_one(struct ufsmm_transition *transition)
 {
-    struct ufsmm_vertice *v, *v_tmp;
-    struct ufsmm_state *source;
+    struct ufsmm_vertice *v;
 
     if (transition == NULL)
         return UFSMM_OK;
@@ -564,14 +555,13 @@ int ufsmm_transition_free_one(struct ufsmm_transition *transition)
     if (transition->dest.state) {
         TAILQ_REMOVE(&transition->source.state->transitions, transition, tailq);
     }
-    source = transition->source.state;
 
     L_DEBUG("Freeing actions");
     free_action_ref_list(&transition->actions);
     L_DEBUG("Freeing guards");
     free_guard_ref_list(&transition->guards);
 
-    while (v = TAILQ_FIRST(&transition->vertices)) {
+    while ((v = TAILQ_FIRST(&transition->vertices))) {
         TAILQ_REMOVE(&transition->vertices, v, tailq);
         free(v);
     }

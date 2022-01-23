@@ -1,6 +1,8 @@
 #include <gtk/gtk.h>
 #include <ufsm/model.h>
 
+#include "add_guard_dialog.h"
+
 enum
 {
     SC_COL_TEXT,
@@ -35,7 +37,7 @@ static void input_changed(GtkEntry *entry, gpointer user_data)
                                             COLUMN_NAME,
                                             GTK_SORT_DESCENDING);
     if (gtk_tree_model_get_iter_first(model, &iter)) {
-        while (&iter) {
+        do {
             const char *iter_text;
             int match_rating = 0;
             gtk_tree_selection_unselect_iter(selection, &iter);
@@ -50,9 +52,7 @@ static void input_changed(GtkEntry *entry, gpointer user_data)
             gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                                             COLUMN_MATCH_RATING,
                                             match_rating, -1);
-            if (!gtk_tree_model_iter_next(model, &iter))
-                break;
-        }
+        } while (gtk_tree_model_iter_next(model, &iter));
     }
 
     gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
@@ -325,13 +325,12 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                             struct ufsmm_guard_ref **new_guard)
 {
     int rc;
-    const char *msg;
+    const char *msg = "Add action";
     GtkWidget *dialog, *vbox, *content_area, *guard_op, *guard_op_value;
     GtkWidget *treeview;
     GtkDialogFlags flags;
     struct ufsmm_actions *list = &model->guards;
     struct ufsmm_action *a;
-    struct ufsmm_state *state = (struct ufsmm_state *) p_input;
     struct ufsmm_transition *transition = (struct ufsmm_transition *) p_input;
 
     selected_action = NULL;

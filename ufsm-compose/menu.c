@@ -34,7 +34,7 @@ static void r_background(cairo_t *cr, enum ufsmm_color_theme theme,
     cairo_restore(cr);
 }
 
-void r_add_state(struct menu *menu, struct menu_item *item)
+static void r_add_state(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -52,14 +52,14 @@ void r_add_state(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_add_state(struct ufsm_machine *m)
+static void a_add_state(struct ufsm_machine *m)
 {
     L_DEBUG("Action add state");
     ufsm_process(m, eKey_a_down);
     ufsm_process(m, eKey_s_down);
 }
 
-void r_add_region(struct menu *menu, struct menu_item *item)
+static void r_add_region(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -87,14 +87,14 @@ void r_add_region(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_add_region(struct ufsm_machine *m)
+static void a_add_region(struct ufsm_machine *m)
 {
     L_DEBUG("Action add region");
     ufsm_process(m, eKey_a_down);
     ufsm_process(m, eKey_r_down);
 }
 
-void r_add_transition(struct menu *menu, struct menu_item *item)
+static void r_add_transition(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -142,7 +142,7 @@ void r_add_transition(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_add_transition(struct ufsm_machine *m)
+static void a_add_transition(struct ufsm_machine *m)
 {
     L_DEBUG("Action add transition");
     ufsm_process(m, eKey_a_down);
@@ -174,55 +174,55 @@ static void r_func_name(struct menu *menu, struct menu_item *item,
     cairo_restore(menu->cr);
 }
 
-void r_add_action(struct menu *menu, struct menu_item *item)
+static void r_add_action(struct menu *menu, struct menu_item *item)
 {
     bool enabled = (menu->selection == UFSMM_SELECTION_TRANSITION);
     r_func_name(menu, item, "a()", enabled);
 }
 
-void a_add_action(struct ufsm_machine *m)
+static void a_add_action(struct ufsm_machine *m)
 {
     ufsm_process(m, eKey_a_down);
     ufsm_process(m, eKey_a_down);
 }
 
-void r_add_guard(struct menu *menu, struct menu_item *item)
+static void r_add_guard(struct menu *menu, struct menu_item *item)
 {
     bool enabled = (menu->selection == UFSMM_SELECTION_TRANSITION);
     r_func_name(menu, item, "g()", enabled);
 }
 
-void a_add_guard(struct ufsm_machine *m)
+static void a_add_guard(struct ufsm_machine *m)
 {
     ufsm_process(m, eKey_a_down);
     ufsm_process(m, eKey_g_down);
 }
 
-void r_add_entry(struct menu *menu, struct menu_item *item)
+static void r_add_entry(struct menu *menu, struct menu_item *item)
 {
     bool enabled = (menu->selection == UFSMM_SELECTION_STATE);
     r_func_name(menu, item, "e()", enabled);
 }
 
-void a_add_entry(struct ufsm_machine *m)
+static void a_add_entry(struct ufsm_machine *m)
 {
     ufsm_process(m, eKey_a_down);
     ufsm_process(m, eKey_e_down);
 }
 
-void r_add_exit(struct menu *menu, struct menu_item *item)
+static void r_add_exit(struct menu *menu, struct menu_item *item)
 {
     bool enabled = (menu->selection == UFSMM_SELECTION_STATE);
     r_func_name(menu, item, "x()", enabled);
 }
 
-void a_add_exit(struct ufsm_machine *m)
+static void a_add_exit(struct ufsm_machine *m)
 {
     ufsm_process(m, eKey_a_down);
     ufsm_process(m, eKey_x_down);
 }
 
-void r_add_vertice(struct menu *menu, struct menu_item *item)
+static void r_add_vertice(struct menu *menu, struct menu_item *item)
 {
     bool enabled = (menu->selection == UFSMM_SELECTION_TRANSITION);
     double x = item->x;
@@ -248,13 +248,13 @@ void r_add_vertice(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_add_vertice(struct ufsm_machine *m)
+static void a_add_vertice(struct ufsm_machine *m)
 {
     ufsm_process(m, eKey_a_down);
     ufsm_process(m, eKey_v_down);
 }
 
-void r_add_fork(struct menu *menu, struct menu_item *item)
+static void r_add_fork(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -276,13 +276,13 @@ void r_add_fork(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_add_fork(struct ufsm_machine *m)
+static void a_add_fork(struct ufsm_machine *m)
 {
     ufsm_process(m, eKey_a_down);
     ufsm_process(m, eKey_F_down);
 }
 
-void r_add_join(struct menu *menu, struct menu_item *item)
+static void r_add_join(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -304,13 +304,13 @@ void r_add_join(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_add_join(struct ufsm_machine *m)
+static void a_add_join(struct ufsm_machine *m)
 {
     ufsm_process(m, eKey_a_down);
     ufsm_process(m, eKey_j_down);
 }
 
-void r_add_init(struct menu *menu, struct menu_item *item)
+static void r_add_init(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -326,13 +326,13 @@ void r_add_init(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_add_init(struct ufsm_machine *m)
+static void a_add_init(struct ufsm_machine *m)
 {
     ufsm_process(m, eKey_a_down);
     ufsm_process(m, eKey_i_down);
 }
 
-void r_add_final(struct menu *menu, struct menu_item *item)
+static void r_add_final(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -350,13 +350,13 @@ void r_add_final(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_add_final(struct ufsm_machine *m)
+static void a_add_final(struct ufsm_machine *m)
 {
     ufsm_process(m, eKey_a_down);
     ufsm_process(m, eKey_f_down);
 }
 
-void r_add_terminate(struct menu *menu, struct menu_item *item)
+static void r_add_terminate(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -376,13 +376,13 @@ void r_add_terminate(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_add_terminate(struct ufsm_machine *m)
+static void a_add_terminate(struct ufsm_machine *m)
 {
     ufsm_process(m, eKey_a_down);
     ufsm_process(m, eKey_T_down);
 }
 
-void r_add_history(struct menu *menu, struct menu_item *item)
+static void r_add_history(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -402,13 +402,13 @@ void r_add_history(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_add_history(struct ufsm_machine *m)
+static void a_add_history(struct ufsm_machine *m)
 {
     ufsm_process(m, eKey_a_down);
     ufsm_process(m, eKey_h_down);
 }
 
-void r_add_deep_history(struct menu *menu, struct menu_item *item)
+static void r_add_deep_history(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -428,13 +428,13 @@ void r_add_deep_history(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_add_deep_history(struct ufsm_machine *m)
+static void a_add_deep_history(struct ufsm_machine *m)
 {
     ufsm_process(m, eKey_a_down);
     ufsm_process(m, eKey_H_down);
 }
 
-void r_delete(struct menu *menu, struct menu_item *item)
+static void r_delete(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -460,13 +460,13 @@ void r_delete(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_delete(struct ufsm_machine *m)
+static void a_delete(struct ufsm_machine *m)
 {
     L_DEBUG("Action delete");
     ufsm_process(m, eKey_delete_down);
 }
 
-void r_paste(struct menu *menu, struct menu_item *item)
+static void r_paste(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -488,7 +488,7 @@ void r_paste(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_paste(struct ufsm_machine *m)
+static void a_paste(struct ufsm_machine *m)
 {
     L_DEBUG("Action paste");
     ufsm_process(m, eKey_ctrl_down);
@@ -496,7 +496,7 @@ void a_paste(struct ufsm_machine *m)
     ufsm_process(m, eKey_ctrl_up);
 }
 
-void r_copy(struct menu *menu, struct menu_item *item)
+static void r_copy(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -514,7 +514,7 @@ void r_copy(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_copy(struct ufsm_machine *m)
+static void a_copy(struct ufsm_machine *m)
 {
     L_DEBUG("Action copy");
     ufsm_process(m, eKey_ctrl_down);
@@ -522,7 +522,7 @@ void a_copy(struct ufsm_machine *m)
     ufsm_process(m, eKey_ctrl_up);
 }
 
-void r_cut(struct menu *menu, struct menu_item *item)
+static void r_cut(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -546,7 +546,7 @@ void r_cut(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_cut(struct ufsm_machine *m)
+static void a_cut(struct ufsm_machine *m)
 {
     L_DEBUG("Action cut");
     ufsm_process(m, eKey_ctrl_down);
@@ -554,7 +554,7 @@ void a_cut(struct ufsm_machine *m)
     ufsm_process(m, eKey_ctrl_up);
 }
 
-void r_save(struct menu *menu, struct menu_item *item)
+static void r_save(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -573,12 +573,12 @@ void r_save(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_save(struct ufsm_machine *m)
+static void a_save(struct ufsm_machine *m)
 {
     ufsm_process(m, eKey_s_down);
 }
 
-void r_saveas(struct menu *menu, struct menu_item *item)
+static void r_saveas(struct menu *menu, struct menu_item *item)
 {
     double x = item->x;
     double y = item->y;
@@ -605,7 +605,7 @@ void r_saveas(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-void a_saveas(struct ufsm_machine *m)
+static void a_saveas(struct ufsm_machine *m)
 {
     ufsm_process(m, eKey_S_down);
 }

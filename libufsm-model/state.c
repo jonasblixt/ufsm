@@ -223,11 +223,8 @@ int ufsmm_state_deserialize(struct ufsmm_model *model,
 {
     int rc = UFSMM_OK;
     struct ufsmm_state *state;
-    struct ufsmm_entry_exit *s_exit;
-    struct ufsmm_entry_exit *s_entry;
     json_object *j_state_name;
     json_object *j_entries = NULL;
-    json_object *k_entry_name = NULL;
     json_object *j_exits = NULL;
     json_object *j_entry = NULL;
     json_object *j_exit = NULL;
@@ -326,11 +323,11 @@ int ufsmm_state_deserialize(struct ufsmm_model *model,
         size_t n_entries = json_object_array_length(j_entries);
         L_DEBUG("State '%s' has %d entry actions", state->name, n_entries);
 
-        for (int n = 0; n < n_entries; n++)
+        for (unsigned int n = 0; n < n_entries; n++)
         {
             j_entry = json_object_array_get_idx(j_entries, n);
             json_object *j_entry_id;
-            json_object *j_id;
+            json_object *j_aid;
             json_object *j_kind;
             uuid_t entry_id;
             uuid_t id_uu;
@@ -342,16 +339,16 @@ int ufsmm_state_deserialize(struct ufsmm_model *model,
 
             if (kind == UFSMM_ACTION_REF_NORMAL) {
                 json_object_object_get_ex(j_entry, "action-id", &j_entry_id);
-                json_object_object_get_ex(j_entry, "id", &j_id);
-                uuid_parse(json_object_get_string(j_id), id_uu);
+                json_object_object_get_ex(j_entry, "id", &j_aid);
+                uuid_parse(json_object_get_string(j_aid), id_uu);
                 uuid_parse(json_object_get_string(j_entry_id), entry_id);
                 rc = ufsmm_state_add_entry(model, state, id_uu, entry_id);
                 if (rc != UFSMM_OK)
                     goto err_free_name_out;
             } else if (kind == UFSMM_ACTION_REF_SIGNAL) {
                 json_object_object_get_ex(j_entry, "signal-id", &j_entry_id);
-                json_object_object_get_ex(j_entry, "id", &j_id);
-                uuid_parse(json_object_get_string(j_id), id_uu);
+                json_object_object_get_ex(j_entry, "id", &j_aid);
+                uuid_parse(json_object_get_string(j_aid), id_uu);
                 uuid_parse(json_object_get_string(j_entry_id), entry_id);
                 rc = ufsmm_state_add_entry_signal(model, state, id_uu, entry_id);
                 if (rc != UFSMM_OK)
@@ -364,11 +361,10 @@ int ufsmm_state_deserialize(struct ufsmm_model *model,
         size_t n_entries = json_object_array_length(j_exits);
 
         L_DEBUG("State '%s' has %d exit actions", state->name, n_entries);
-        for (int n = 0; n < n_entries; n++)
-        {
+        for (unsigned int n = 0; n < n_entries; n++) {
             j_exit = json_object_array_get_idx(j_exits, n);
             json_object *j_exit_id;
-            json_object *j_id;
+            json_object *j_xid;
             json_object *j_kind;
             uuid_t exit_id;
             uuid_t id_uu;
@@ -380,16 +376,16 @@ int ufsmm_state_deserialize(struct ufsmm_model *model,
 
             if (kind == UFSMM_ACTION_REF_NORMAL) {
                 json_object_object_get_ex(j_exit, "action-id", &j_exit_id);
-                json_object_object_get_ex(j_exit, "id", &j_id);
-                uuid_parse(json_object_get_string(j_id), id_uu);
+                json_object_object_get_ex(j_exit, "id", &j_xid);
+                uuid_parse(json_object_get_string(j_xid), id_uu);
                 uuid_parse(json_object_get_string(j_exit_id), exit_id);
                 rc = ufsmm_state_add_exit(model, state, id_uu, exit_id);
                 if (rc != UFSMM_OK)
                     goto err_free_name_out;
             } else if (kind == UFSMM_ACTION_REF_SIGNAL) {
                 json_object_object_get_ex(j_exit, "signal-id", &j_exit_id);
-                json_object_object_get_ex(j_exit, "id", &j_id);
-                uuid_parse(json_object_get_string(j_id), id_uu);
+                json_object_object_get_ex(j_exit, "id", &j_xid);
+                uuid_parse(json_object_get_string(j_xid), id_uu);
                 uuid_parse(json_object_get_string(j_exit_id), exit_id);
                 rc = ufsmm_state_add_exit_signal(model, state, id_uu, exit_id);
                 if (rc != UFSMM_OK)
@@ -547,8 +543,6 @@ int ufsmm_state_add_transition(struct ufsmm_state *source,
                               struct ufsmm_state *dest,
                               struct ufsmm_transition *t)
 {
-    struct ufsmm_transition *t_tmp;
-
     t->source.state = source;
     t->dest.state = dest;
 

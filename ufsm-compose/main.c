@@ -12,8 +12,11 @@
 #include "menu.h"
 #include "nav.h"
 
-static int verbosity = 0;
+static unsigned int verbosity = 0;
 
+int ufsmm_debug(enum ufsmm_debug_level debug_level,
+              const char *func_name,
+              const char *fmt, ...) __attribute__ ((format (printf, 3, 4)));
 int ufsmm_debug(enum ufsmm_debug_level debug_level,
               const char *func_name,
               const char *fmt, ...)

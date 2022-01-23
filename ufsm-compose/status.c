@@ -10,6 +10,7 @@ int uc_status_init(void)
 {
     TAILQ_INIT(&left_status);
     TAILQ_INIT(&right_status);
+    return 0;
 }
 
 void uc_status_free(void)
@@ -130,7 +131,7 @@ void uc_status_clear(void)
 
 bool uc_status_pop(void)
 {
-    status_pop(&left_status);
+    return status_pop(&left_status);
 }
 
 static void status_push(struct uc_status *list, const char *text,
@@ -200,7 +201,6 @@ void uc_rstatus_set_error(const char *error_msg)
 void uc_status_show_path(struct ufsmm_region *region)
 {
     struct ufsmm_region *r = region;
-    struct ufsmm_state *s;
 
 
     uc_status_clear();

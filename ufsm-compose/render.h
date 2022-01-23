@@ -6,6 +6,10 @@
 #include <cairo/cairo.h>
 #include "controller.h"
 
+#ifndef M_PI
+#define M_PI		3.14159265358979323846
+#endif
+
 enum ufsmm_transition_vertice_selector {
     UFSMM_TRANS_NO_SELECTION,
     UFSMM_TRANS_BEGIN,

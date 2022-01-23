@@ -126,7 +126,6 @@ static void ufsmm_canvas_render_state_guides(struct ufsmm_canvas *canvas,
 int ufsmm_canvas_render(struct ufsmm_canvas *canvas, int width, int height)
 {
     int rc;
-    double x, y, w, h;
     struct ufsmm_region *r, *r2;
     struct ufsmm_state *s;
     static struct ufsmm_stack *stack;
@@ -331,6 +330,7 @@ int ufsmm_canvas_set_selection(bool active, double sx,
     selection_sy = sy;
     selection_ex = ex;
     selection_ey = ey;
+    return 0;
 }
 
 static int render_history_state(struct ufsmm_canvas *canvas,
@@ -338,11 +338,6 @@ static int render_history_state(struct ufsmm_canvas *canvas,
                                 bool deep)
 {
     double x, y, w, h;
-    double lbl_x, lbl_y;
-    double radius = 10.0;
-    double degrees = M_PI / 180.0;
-    bool clip_text = false;
-    cairo_text_extents_t extents;
     cairo_t *cr = canvas->cr;
 
     //ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
@@ -409,11 +404,6 @@ static int render_terminate_state(struct ufsmm_canvas *canvas,
                                 struct ufsmm_state *state)
 {
     double x, y, w, h;
-    double lbl_x, lbl_y;
-    double radius = 10.0;
-    double degrees = M_PI / 180.0;
-    bool clip_text = false;
-    cairo_text_extents_t extents;
     cairo_t *cr = canvas->cr;
 
     //ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
@@ -459,11 +449,6 @@ static int render_init_state(struct ufsmm_canvas *canvas,
                              struct ufsmm_state *state)
 {
     double x, y, w, h;
-    double lbl_x, lbl_y;
-    double radius = 10.0;
-    double degrees = M_PI / 180.0;
-    bool clip_text = false;
-    cairo_text_extents_t extents;
     cairo_t *cr = canvas->cr;
 
     //ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
@@ -497,11 +482,6 @@ static int render_join_state(struct ufsmm_canvas *canvas,
                              struct ufsmm_state *state)
 {
     double x, y, w, h;
-    double lbl_x, lbl_y;
-    double radius = 10.0;
-    double degrees = M_PI / 180.0;
-    bool clip_text = false;
-    cairo_text_extents_t extents;
     cairo_t *cr = canvas->cr;
 
     //ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
@@ -553,11 +533,6 @@ static int render_final_state(struct ufsmm_canvas *canvas,
                               struct ufsmm_state *state)
 {
     double x, y, w, h;
-    double lbl_x, lbl_y;
-    double radius = 10.0;
-    double degrees = M_PI / 180.0;
-    bool clip_text = false;
-    cairo_text_extents_t extents;
     cairo_t *cr = canvas->cr;
 
    // ufsmm_get_state_absolute_coords(state, &x, &y, &w, &h);
@@ -606,7 +581,6 @@ static int render_normal_state(struct ufsmm_canvas *canvas,
                                struct ufsmm_state *state)
 {
     double x, y, w, h;
-    double rx, ry, rw, rh;
     double lbl_x, lbl_y;
     double radius = 10.0;
     double degrees = M_PI / 180.0;
@@ -764,6 +738,8 @@ static int render_normal_state(struct ufsmm_canvas *canvas,
     }
 
     state->region_y_offset = y_offset - 30.0;
+
+    return 0;
 }
 
 int ufsmm_canvas_render_state(struct ufsmm_canvas *canvas,
@@ -795,7 +771,8 @@ int ufsmm_canvas_render_state(struct ufsmm_canvas *canvas,
             rc = render_terminate_state(canvas, state);
         break;
     }
-    return 0;
+
+    return rc;
 }
 
 static void render_selection_boxes(cairo_t *cr,
@@ -804,10 +781,9 @@ static void render_selection_boxes(cairo_t *cr,
 {
     double fbx, fby;
     struct ufsmm_vertice *v;
-    double begin_x, begin_y, end_x, end_y;
+    double end_x, end_y;
     const double dashes[] = {10.0,  /* ink */
                              10.0};  /* skip */
-    struct ufsmm_region *pr = t->source.state->parent_region;
 
     transition_calc_begin_end_point(t->source.state,
                                     t->source.side,
@@ -868,10 +844,9 @@ static void render_transition_text(cairo_t *cr,
                                     struct ufsmm_canvas *canvas,
                                     struct ufsmm_transition *t)
 {
-    size_t text_pos = 0;
     char text_buf[1024];
     cairo_text_extents_t extents;
-    double tx, ty, tw, th;
+    double tx, ty, tw;
     unsigned int line_no = 0;
     const char *text_ptr = NULL;
     struct ufsmm_action_ref *ar;
@@ -884,13 +859,10 @@ static void render_transition_text(cairo_t *cr,
     tx = t->text_block_coords.x;
     ty = t->text_block_coords.y + 20;
     tw = t->text_block_coords.w;
-    th = t->text_block_coords.h;
 
     double x = tx;
     double y = ty + 20;
     double x_space = tw;
-
-    enum ufsmm_state_kind source_kind = t->source.state->kind;
 
     if (t->trigger) {
         text_ptr = t->trigger->name;
@@ -1093,7 +1065,6 @@ int ufsmm_canvas_render_one_transition(struct ufsmm_canvas *canvas,
                                        struct ufsmm_transition *t)
 {
     double begin_x, begin_y, end_x, end_y;
-    cairo_text_extents_t extents;
     struct ufsmm_vertice *v;
     cairo_t *cr = canvas->cr;
 
@@ -1118,7 +1089,6 @@ int ufsmm_canvas_render_one_transition(struct ufsmm_canvas *canvas,
     cairo_set_line_width (cr, 2.0);
 
     double y_off = 0.0;
-    struct ufsmm_state *ps = NULL;
 
     TAILQ_FOREACH(v, &t->vertices, tailq) {
         cairo_line_to(cr, v->x, v->y + - y_off);
@@ -1162,6 +1132,8 @@ int ufsmm_canvas_render_one_transition(struct ufsmm_canvas *canvas,
         if (t->selected)
             render_selection_boxes(cr, canvas, t);
     }
+
+    return 0;
 }
 
 int ufsmm_canvas_render_transition(struct ufsmm_canvas *canvas,
@@ -1444,4 +1416,6 @@ int ufsmm_color_set(cairo_t *cr, enum ufsmm_color_theme theme,
     }
 
     cairo_set_source_rgb (cr, r, g, b);
+
+    return 0;
 }

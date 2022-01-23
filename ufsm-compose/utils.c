@@ -134,7 +134,6 @@ int ufsmm_state_get_closest_side(struct ufsmm_state *s,
                                  enum ufsmm_side *side, double *offset)
 {
     double x, y, w, h;
-    double ox, oy;
     double d, d2;
     double lx, ly;
 
@@ -188,7 +187,6 @@ int ufsmm_state_get_at_xy(struct ufsmm_region *region,
     struct ufsmm_state *s;
     bool found_state = false;
     double x, y, w, h;
-    double ox, oy;
 
     ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, region);
@@ -285,7 +283,7 @@ int transition_calc_begin_end_point(struct ufsmm_state *s,
                                     double *y)
 {
     double sx, sy, sw, sh;
-
+    int rc = 0;
     sx = s->x;
     sy = s->y;
     sw = s->w;
@@ -310,6 +308,7 @@ int transition_calc_begin_end_point(struct ufsmm_state *s,
                 (*y) = sy + sh;
             break;
             default:
+                rc = -1;
             break;
         }
     } else if ((s->kind == UFSMM_STATE_INIT) || (s->kind == UFSMM_STATE_FINAL) ||
@@ -335,6 +334,7 @@ int transition_calc_begin_end_point(struct ufsmm_state *s,
                 (*y) = sy + sh;
             break;
             default:
+                rc = -1;
             break;
         }
     } else if ((s->kind == UFSMM_STATE_JOIN) || (s->kind == UFSMM_STATE_FORK)) {
@@ -356,9 +356,12 @@ int transition_calc_begin_end_point(struct ufsmm_state *s,
                 (*y) = sy + sh;
             break;
             default:
+                rc = -1;
             break;
         }
     }
+
+    return rc;
 }
 
 double ufsmm_canvas_nearest_grid_point(double in)

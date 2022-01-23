@@ -152,14 +152,14 @@ void ufsmm_undo_free(struct ufsmm_undo_context *undo)
     L_DEBUG("Freeing undo/redo stacks");
     /* Clear undo stack */
     struct ufsmm_undo_ops_ref *item;
-    while (item = TAILQ_FIRST(&undo->undo_stack)) {
+    while ((item = TAILQ_FIRST(&undo->undo_stack))) {
         TAILQ_REMOVE(&undo->undo_stack, item, tailq);
         ufsmm_undo_free_ops(undo, item->ops, true);
         free(item);
     }
 
     /* Clear redo stack */
-    while (item = TAILQ_FIRST(&undo->redo_stack)) {
+    while ((item = TAILQ_FIRST(&undo->redo_stack))) {
         TAILQ_REMOVE(&undo->redo_stack, item, tailq);
         ufsmm_undo_free_ops(undo, item->ops, false);
         free(item);
@@ -449,6 +449,7 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
             break;
         }
     }
+    return 0;
 }
 
 int ufsmm_redo(struct ufsmm_undo_context *undo)
@@ -721,6 +722,8 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
             break;
         }
     }
+
+    return 0;
 }
 
 struct ufsmm_undo_ops *ufsmm_undo_new_ops(void)
@@ -748,7 +751,7 @@ int ufsmm_undo_commit_ops(struct ufsmm_undo_context *undo,
 
     /* Clear redo stack */
     struct ufsmm_undo_ops_ref *item;
-    while (item = TAILQ_FIRST(&undo->redo_stack)) {
+    while ((item = TAILQ_FIRST(&undo->redo_stack))) {
         TAILQ_REMOVE(&undo->redo_stack, item, tailq);
         ufsmm_undo_free_ops(undo, item->ops, false);
         free(item);
@@ -762,7 +765,7 @@ int ufsmm_undo_free_ops(struct ufsmm_undo_context *undo,
 {
     struct ufsmm_undo_op *item;
 
-    while (item = TAILQ_FIRST(ops)) {
+    while ((item = TAILQ_FIRST(ops))) {
         TAILQ_REMOVE(ops, item, tailq);
         if (item->kind == UFSMM_UNDO_RENAME_STATE) {
             struct ufsmm_undo_rename_state *rename_op = \
@@ -816,6 +819,7 @@ int ufsmm_undo_free_ops(struct ufsmm_undo_context *undo,
     }
 
     free(ops);
+    return 0;
 }
 
 int ufsmm_undo_rename_state(struct ufsmm_undo_ops *ops,
