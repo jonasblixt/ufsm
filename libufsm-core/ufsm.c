@@ -9,13 +9,6 @@
 
 #include <ufsm/ufsm.h>
 
-const char *ufsm_transition_kinds[] =
-{
-    "External",
-    "Internal",
-    "Local",
-};
-
 const char *ufsm_state_kinds[] =
 {
     "Simple",
@@ -792,32 +785,28 @@ static int ufsm_make_transition(struct ufsm_machine *m,
         if (m->debug_transition)
             m->debug_transition(act_t);
 
-        if (t->kind == UFSM_TRANSITION_EXTERNAL) {
-            /* If we are in a composite state make sure to
-             *  exit all nested states
-             **/
+        /* If we are in a composite state make sure to
+         *  exit all nested states
+         **/
 
-            ufsm_leave_nested_states(m, src);
-            ufsm_leave_state(m, act_t->source);
+        ufsm_leave_nested_states(m, src);
+        ufsm_leave_state(m, act_t->source);
 
-            /* For compound transitions parents must be exited and entered
-             * in the correct order.
-             * */
-            err = ufsm_leave_parent_states(m, src, dest, &lca_region,
-                                                             &act_region);
-            if (err != UFSM_OK)
-                break;
-        }
+        /* For compound transitions parents must be exited and entered
+         * in the correct order.
+         * */
+        err = ufsm_leave_parent_states(m, src, dest, &lca_region,
+                                                         &act_region);
+        if (err != UFSM_OK)
+            break;
 
         ufsm_execute_actions(m, act_t);
 
-        if ((t->kind == UFSM_TRANSITION_EXTERNAL) &&
-            (src->parent_region != dest->parent_region)) {
+        if (src->parent_region != dest->parent_region) {
             err = ufsm_enter_parent_states(m, lca_region, dest->parent_region);
 
             if (err != UFSM_OK)
                 break;
-
         }
 
         /* Decode destination state kind */
@@ -827,10 +816,8 @@ static int ufsm_make_transition(struct ufsm_machine *m,
             case UFSM_STATE_SIMPLE:
                 ufsm_update_history(m, dest);
                 m->r_data[act_region->index].current = (struct ufsm_state*) dest;
-                if (t->kind == UFSM_TRANSITION_EXTERNAL) {
-                    ufsm_enter_state(m, dest);
-                    err = ufsm_process_regions(m, dest, &transition_count);
-                }
+                ufsm_enter_state(m, dest);
+                err = ufsm_process_regions(m, dest, &transition_count);
             break;
             case UFSM_STATE_FINAL:
                 /* If all regions in this state have reached 'Final'

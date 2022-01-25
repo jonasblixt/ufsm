@@ -65,13 +65,6 @@ typedef void (*ufsm_debug_exit_state_t) (const struct ufsm_state *s);
 typedef void (*ufsm_debug_entry_exit_t) (const struct ufsm_action *action);
 typedef void (*ufsm_debug_reset_t) (struct ufsm_machine *m);
 
-enum ufsm_transition_kind
-{
-    UFSM_TRANSITION_EXTERNAL,
-    UFSM_TRANSITION_INTERNAL,
-    UFSM_TRANSITION_LOCAL,
-};
-
 enum ufsm_state_kind
 {
     UFSM_STATE_SIMPLE,
@@ -141,7 +134,6 @@ struct ufsm_trigger
 
 struct ufsm_transition
 {
-    const enum ufsm_transition_kind kind;
     const struct ufsm_trigger * const trigger;
     const struct ufsm_action * const action;
     const struct ufsm_guard * const guard;

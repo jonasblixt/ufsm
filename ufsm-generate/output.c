@@ -122,7 +122,6 @@ static void generate_transitions(FILE *fp, struct ufsmm_state *s,
 
         uu_to_str(t->id, uu_str);
         fprintf(fp, "const struct ufsm_transition t_%s = {\n", uu_str);
-        fprintf(fp, "    .kind = UFSM_TRANSITION_EXTERNAL,\n");
 
         if (t->trigger) {
             uu_to_str(t->trigger->id, uu_str);

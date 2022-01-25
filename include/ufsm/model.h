@@ -40,13 +40,6 @@ struct ufsmm_stack
     void **data;
 };
 
-enum ufsmm_transition_kind
-{
-    UFSMM_TRANSITION_EXTERNAL,
-    UFSMM_TRANSITION_INTERNAL,
-    UFSMM_TRANSITION_LOCAL,
-};
-
 enum ufsmm_state_kind
 {
     UFSMM_STATE_NORMAL,
@@ -201,7 +194,6 @@ struct ufsmm_transition
 {
     uuid_t id;
     struct ufsmm_trigger *trigger;
-    enum ufsmm_transition_kind kind;
     struct ufsmm_action_refs actions;
     struct ufsmm_guard_refs guards;
     struct ufsmm_transition_state_ref source;

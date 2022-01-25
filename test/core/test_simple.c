@@ -27,7 +27,6 @@ static struct ufsm_trigger a_trigger =
 static struct ufsm_transition simple_transition_B = 
 {
     .trigger = &b_trigger,
-    .kind = UFSM_TRANSITION_EXTERNAL,
     .source = &A,
     .dest = &B,
     .next = NULL
@@ -37,7 +36,6 @@ static struct ufsm_transition simple_transition_B =
 static struct ufsm_transition simple_transition_A = 
 {
     .trigger = &a_trigger,
-    .kind = UFSM_TRANSITION_EXTERNAL,
     .source = &B,
     .dest = &A,
     .next = NULL
@@ -45,7 +43,6 @@ static struct ufsm_transition simple_transition_A =
 
 static struct ufsm_transition simple_transition_INIT = 
 {
-    .kind = UFSM_TRANSITION_EXTERNAL,
     .source = &simple_INIT,
     .trigger = NULL,
     .dest = &A,

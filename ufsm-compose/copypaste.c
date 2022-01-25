@@ -61,7 +61,6 @@ static struct ufsmm_transition* ufsmm_transition_copy(struct ufsmm_transition *t
         return NULL;
 
     new->trigger = t->trigger;
-    new->kind = t->kind;
 
     if (undo_ops) {
         ufsmm_undo_add_transition(undo_ops, new);
