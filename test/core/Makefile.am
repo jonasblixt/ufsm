@@ -27,7 +27,8 @@ dist_noinst_DATA = test_transition_conflict.ufsm \
 				   test_guards2.ufsm \
 				   test_state_conditions.ufsm \
 				   test_join3.ufsm \
-				   test_nested_states.ufsm
+				   test_nested_states.ufsm \
+				   test_nested_states2.ufsm
 
 MOSTLYCLEANFILES = test_transition_conflict.gen.c test_transition_conflict.gen.h \
 				   test_xmi_machine.gen.c test_xmi_machine.gen.h \
@@ -42,7 +43,8 @@ MOSTLYCLEANFILES = test_transition_conflict.gen.c test_transition_conflict.gen.h
 				   test_guards2.gen.c test_guards2.gen.h \
 				   test_state_conditions.gen.c test_state_conditions.gen.h \
 				   test_join3.gen.c test_join3.gen.h \
-				   test_nested_states.gen.c test_nested_states.gen.h
+				   test_nested_states.gen.c test_nested_states.gen.h \
+				   test_nested_states2.gen.c test_nested_states2.gen.h
 
 BUILTSOURCES: test_transition_conflict.gen.c test_transition_conflict.gen.h \
 		      test_xmi_machine.gen.c test_xmi_machine.gen.h \
@@ -57,7 +59,8 @@ BUILTSOURCES: test_transition_conflict.gen.c test_transition_conflict.gen.h \
 			  test_guards2.gen.c test_guards2.gen.h \
 			  test_state_conditions.gen.c test_state_conditions.gen.h \
 			  test_join3.gen.c test_join3.gen.h \
-			  test_nested_states.gen.c test_nested_states.gen.h
+			  test_nested_states.gen.c test_nested_states.gen.h \
+			  test_nested_states2.gen.c test_nested_states2.gen.h
 
 ################################################################################
 
@@ -78,7 +81,8 @@ check_PROGRAMS = test_simple \
 				 test_guards2 \
 				 test_state_conditions \
 				 test_join3 \
-				 test_nested_states
+				 test_nested_states \
+				 test_nested_states2
 
 test_simple_SOURCES = test_simple.c
 test_simple_LDADD = $(COMMON_TEST_LDADD)
@@ -170,6 +174,11 @@ test_nested_states.c: test_nested_states.gen.c
 test_nested_states_SOURCES = test_nested_states.c $(builddir)/test_nested_states.gen.c
 test_nested_states_LDADD = $(COMMON_TEST_LDADD)
 test_nested_states_CFLAGS = $(COMMON_TEST_CFLAGS)
+
+test_nested_states2.c: test_nested_states2.gen.c
+test_nested_states2_SOURCES = test_nested_states2.c $(builddir)/test_nested_states2.gen.c
+test_nested_states2_LDADD = $(COMMON_TEST_LDADD)
+test_nested_states2_CFLAGS = $(COMMON_TEST_CFLAGS)
 
 TESTS = test_simple \
         test_simple_substate \
