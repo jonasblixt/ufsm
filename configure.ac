@@ -1,7 +1,7 @@
 dnl uFSM
 
 AC_PREREQ(2.59)
-AC_INIT([ufsm], [0.4.0], [Jonas Blixt, <jonpe960@gmail.com>])
+AC_INIT([ufsm], [0.4.1], [Jonas Blixt, <jonpe960@gmail.com>])
 
 m4_pattern_forbid([^AX_(CHECK_ENABLE_DEBUG|CODE_COVERAGE|COMPILER_FLAGS|COMPILER_FLAGS_(CFLAGS|CXXFLAGS|LDFLAGS))\b],
   [Unexpanded AX_ macro found. Please install GNU autoconf-archive])
