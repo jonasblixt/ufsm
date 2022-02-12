@@ -75,6 +75,14 @@ int ufsmm_region_get_at_xy(struct ufsmm_canvas *canvas,
                            struct ufsmm_region *region, double px, double py,
                            struct ufsmm_region **out, int *depth)
 {
+    return ufsmm_region_get_at_xy2(canvas, region, px, py, out, depth, NULL);
+}
+
+int ufsmm_region_get_at_xy2(struct ufsmm_canvas *canvas,
+                           struct ufsmm_region *region, double px, double py,
+                           struct ufsmm_region **out, int *depth,
+                           struct ufsmm_state *skip_state)
+{
     int d = 0;
     static struct ufsmm_stack *stack;
     struct ufsmm_region *r, *r2;
@@ -111,6 +119,8 @@ int ufsmm_region_get_at_xy(struct ufsmm_canvas *canvas,
         }
 
         TAILQ_FOREACH(s, &r->states, tailq) {
+            if (s == skip_state)
+                continue;
             TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, r2);
             }

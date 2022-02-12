@@ -21,6 +21,11 @@ int ufsmm_region_get_at_xy(struct ufsmm_canvas *canvas,
                            struct ufsmm_region *region, double px, double py,
                            struct ufsmm_region **out, int *depth);
 
+int ufsmm_region_get_at_xy2(struct ufsmm_canvas *canvas,
+                           struct ufsmm_region *region, double px, double py,
+                           struct ufsmm_region **out, int *depth,
+                           struct ufsmm_state *skip_state);
+
 int ufsmm_get_region_absolute_coords(struct ufsmm_canvas *canvas,
                                     struct ufsmm_region *r, double *x,
                                                            double *y,

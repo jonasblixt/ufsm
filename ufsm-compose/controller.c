@@ -250,7 +250,6 @@ void canvas_resize_state_begin(void *context)
     /* Locate transitions that have this state as their destination */
     ufsmm_stack_init(&stack);
     ufsmm_stack_push(stack, priv->current_region);
-
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
         TAILQ_FOREACH(s, &r->states, tailq) {
             TAILQ_FOREACH(t, &s->transitions, tailq) {
@@ -263,7 +262,7 @@ void canvas_resize_state_begin(void *context)
                 }
             }
             TAILQ_FOREACH(r2, &s->regions, tailq) {
-                if (!r->off_page) {
+                if (!r2->off_page) {
                     ufsmm_stack_push(stack, r2);
                 }
             }
@@ -758,12 +757,30 @@ void canvas_process_selection(void *context)
     struct ufsmm_stack *stack;
     struct ufsmm_region *r, *r2;
     struct ufsmm_state *s;
+    enum ufsmm_selection prev_selection;
+    struct ufsmm_state *prev_state;
+    struct ufsmm_region *prev_region;
     double x, y, w, h;
     double ox, oy;
 
     ox = priv->current_region->ox;
     oy = priv->current_region->oy;
 
+    prev_selection = priv->selection;
+    if (priv->selection == UFSMM_SELECTION_STATE) {
+        prev_state = priv->selected_state;
+    } else {
+        prev_state = NULL;
+    }
+
+    if (priv->selection == UFSMM_SELECTION_REGION) {
+        prev_region = priv->selected_region;
+    } else {
+        prev_region = NULL;
+    }
+
+    priv->selected_region = NULL;
+    priv->selected_state = NULL;
     priv->selection = UFSMM_SELECTION_NONE;
     ufsmm_stack_init(&stack);
 
@@ -778,6 +795,7 @@ void canvas_process_selection(void *context)
                               priv->py - priv->current_region->oy,
                                                 x + 5, y + 5, w - 5, h)) {
                 L_DEBUG("Region '%s' selected", r->name);
+
                 priv->selection = UFSMM_SELECTION_REGION;
                 priv->selected_region = r;
             }
@@ -798,6 +816,61 @@ void canvas_process_selection(void *context)
 
             TAILQ_FOREACH(r2, &s->regions, tailq) {
                 ufsmm_stack_push(stack, r2);
+            }
+        }
+    }
+
+    /* Sometimes the resize boxes overlap, prefer resizes boxes
+     * from already selected objects */
+    if ((prev_selection == UFSMM_SELECTION_STATE) &&
+        ((priv->selection == UFSMM_SELECTION_STATE) ||
+         (priv->selection == UFSMM_SELECTION_REGION))) {
+        if ((priv->selected_state == prev_state) &&
+            (priv->selected_state->kind == UFSMM_STATE_NORMAL)) {
+            /* TODO : Check if any resize boxes in this state was hit */
+            x = priv->selected_state->x + priv->current_region->ox;
+            y = priv->selected_state->y + priv->current_region->oy;
+            w = priv->selected_state->w;
+            h = priv->selected_state->h;
+            double px = priv->px;
+            double py = priv->py;
+
+            /* Check re-size boxes */
+            if (point_in_box(px, py, x, y, 10, 10) ||
+                point_in_box(px, py, x + w, y, 10, 10) ||
+                point_in_box(px, py, x + w/2, y, 10, 10) ||
+                point_in_box(px, py, x, y + h/2, 10, 10) ||
+                point_in_box(px, py, x, y + h, 10, 10) ||
+                point_in_box(px, py, x + w/2, y + h, 10, 10) ||
+                point_in_box(px, py, x + w, y + h, 10, 10) ||
+                point_in_box(px, py, x + w, y + h/2, 10, 10)) {
+                priv->selection = UFSMM_SELECTION_STATE;
+                L_DEBUG("Early out, state");
+                goto early_out;
+            }
+        }
+    }
+
+    if ((prev_selection == UFSMM_SELECTION_REGION) &&
+        ((priv->selection == UFSMM_SELECTION_STATE) ||
+         (priv->selection == UFSMM_SELECTION_REGION))) {
+        if ((priv->selected_region == prev_region) &&
+            (priv->selected_state != prev_state)) {
+
+            ufsmm_get_region_absolute_coords(priv, priv->selected_region, &x, &y, &w, &h);
+
+            x += priv->current_region->ox;
+            y += priv->current_region->oy;
+
+            double px = priv->px;
+            double py = priv->py;
+
+            /* Check re-size boxes */
+            if (point_in_box(px, py, x + w/2, y, 10, 10) ||
+                point_in_box(px, py, x + w/2, y + h, 10, 10)) {
+                priv->selection = UFSMM_SELECTION_REGION;
+                L_DEBUG("Early out, region");
+                goto early_out;
             }
         }
     }
@@ -881,6 +954,8 @@ void canvas_process_selection(void *context)
             }
         }
     }
+
+early_out:
     priv->redraw = true;
     ufsmm_stack_free(stack);
 }
@@ -1115,7 +1190,6 @@ void canvas_check_rresize_boxes(void *context)
     x += priv->current_region->ox;
     y += priv->current_region->oy;
 
-    L_DEBUG("x=%.2f, y=%.2f, px=%.2f, py=%.2f",x+w/2, y, px, py);
     /* Check re-size boxes */
     if (point_in_box(px, py, x + w/2, y, 10, 10)) {
         L_DEBUG("Top middle");
@@ -3612,6 +3686,9 @@ void canvas_mselect_begin(void *context)
     priv->command_data = malloc(sizeof(struct mselect_op));
     memset(priv->command_data, 0, sizeof(struct mselect_op));
 
+    if (priv->selected_region == NULL)
+        priv->selected_region = priv->current_region;
+
     priv->selected_region->selected = false;
 
     struct mselect_op *op = (struct mselect_op *) priv->command_data;
@@ -3903,10 +3980,10 @@ static void mselect_move_end(void *context, bool undo)
         struct ufsmm_state *s = ms->state;
         L_DEBUG("Moved state '%s'", s->name);
         /* Check if state should have a new parent region */
-        rc = ufsmm_region_get_at_xy(priv, priv->current_region,
+        rc = ufsmm_region_get_at_xy2(priv, priv->current_region,
                                     s->x + s->w/2 + priv->current_region->ox,
                                     s->y + s->h/2 + priv->current_region->oy,
-                                    &r, NULL);
+                                    &r, NULL, s);
 
         if (rc == UFSMM_OK) {
             if (r != s->parent_region) {
