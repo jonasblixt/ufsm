@@ -128,12 +128,10 @@ void xC(void *ctx)
 
 void eC2(void *ctx)
 {
-    flag_eC2 = true;
 }
 
 void xC2(void *ctx)
 {
-    flag_xC2 = true;
 }
 
 void eD(void *ctx)
