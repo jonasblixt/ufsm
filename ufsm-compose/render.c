@@ -250,14 +250,12 @@ int ufsmm_canvas_render_region(struct ufsmm_canvas *canvas,
     ufsmm_get_region_absolute_coords(canvas, region, &x, &y, &w, &h);
 
     if (nav_mode == false) {
-        if (region->selected || region->off_page) {
-            cairo_save (cr);
-            cairo_set_font_size (cr, 18);
-            ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_FG4);
-            cairo_move_to (cr, x + 10, y + 25);
-            cairo_show_text (cr, region->name);
-            cairo_restore(cr);
-        }
+        cairo_save (cr);
+        cairo_set_font_size (cr, 18);
+        ufsmm_color_set(cr, canvas->theme, UFSMM_COLOR_FG4);
+        cairo_move_to (cr, x + 10, y + 25);
+        cairo_show_text (cr, region->name);
+        cairo_restore(cr);
     }
 
     if (region->selected && (nav_mode == false)) {
