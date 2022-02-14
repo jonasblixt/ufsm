@@ -378,19 +378,24 @@ static const struct ufsm_region * ufsm_least_common_ancestor(const struct ufsm_r
     while (lca) {
         lca2 = r2;
         do {
+            /* Is this the common ancestor of r1 and r2? */
             if (lca == lca2)
                 return lca;
 
+            /* If there are no more parents in r2 there is no common
+               ancestor */
             if (lca2->parent_state == NULL)
                 break;
 
+            /* Search next level region in r2 */
             lca2 = lca2->parent_state->parent_region;
-
         } while(lca2);
 
+        /* If there are no more parents in r1 there is no common ancestor */
         if (lca->parent_state == NULL)
             break;
 
+        /* Search next level region in r1 */
         lca = lca->parent_state->parent_region;
     }
 
