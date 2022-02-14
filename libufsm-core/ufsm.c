@@ -28,7 +28,6 @@ const char *ufsm_errors[] =
     "No init region found",
     "Unknown state kind",
     "Event not processed",
-    "No least common ancestor found",
     "Stack overflow",
     "Stack underflow",
     "Machine has terminated",
@@ -405,29 +404,25 @@ static const struct ufsm_region * ufsm_least_common_ancestor(const struct ufsm_r
 static int ufsm_leave_parent_states(struct ufsm_machine *m,
                                     const struct ufsm_state *src,
                                     const struct ufsm_state *dest,
-                                    const struct ufsm_region **lca,
-                                    const struct ufsm_region **act)
+                                    const struct ufsm_region *lca)
 {
     const struct ufsm_region *rl = NULL;
-    const struct ufsm_region *ancestor = NULL;
     bool states_to_leave = true;
 
+    /* If source and destination states have the same parent region, there
+     * are no parent states that should exit.
+     *
+     * If the destination is a join state, the parent's can't exit until
+     * all transitions to the same join have completed.
+     **/
     if ( !((src->parent_region != dest->parent_region) &&
             dest->kind != UFSM_STATE_JOIN))
         return UFSM_OK;
 
-    *act = dest->parent_region;
     rl = src->parent_region;
 
-    ancestor = ufsm_least_common_ancestor(src->parent_region,
-                                        dest->parent_region);
-    *lca = ancestor;
-
-    if (!ancestor)
-        return UFSM_ERROR_LCA_NOT_FOUND;
-
     while (states_to_leave) {
-        if (ancestor == rl)
+        if (lca == rl)
             break;
 
         if (m->debug_leave_region)
@@ -797,13 +792,18 @@ static int ufsm_make_transition(struct ufsm_machine *m,
         ufsm_leave_nested_states(m, src);
         ufsm_leave_state(m, act_t->source);
 
+        lca_region = ufsm_least_common_ancestor(src->parent_region,
+                                                dest->parent_region);
+
         /* For compound transitions parents must be exited and entered
          * in the correct order.
          * */
-        err = ufsm_leave_parent_states(m, src, dest, &lca_region,
-                                                         &act_region);
+        err = ufsm_leave_parent_states(m, src, dest, lca_region);
+
         if (err != UFSM_OK)
             break;
+
+        act_region = dest->parent_region;
 
         ufsm_execute_actions(m, act_t);
 
