@@ -326,7 +326,7 @@ static int ufsm_enter_parent_states(struct ufsm_machine *m,
 
     c++;
 
-    while (ps && (r != ancestor) && (err == UFSM_OK)) {
+    while (ps) {
         pr = ps->parent_region;
 
         if ((pr == ancestor) || (pr == NULL))
