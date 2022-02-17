@@ -29,7 +29,7 @@ int main(void)
     rc = ufsm_process(m, EV);
     assert(rc == 0);
     assert(flag_eA && !flag_xA);
-    assert (ufsm_process(m, EV) == UFSM_ERROR_MACHINE_TERMINATED);
+    assert (ufsm_process(m, EV) == -UFSM_ERROR_MACHINE_TERMINATED);
     assert (m->terminated);
     return 0;
 }

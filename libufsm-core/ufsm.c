@@ -48,7 +48,7 @@ int ufsm_stack_init(struct ufsm_stack *stack,
 static int ufsm_stack_push(struct ufsm_stack *stack, const void *item)
 {
     if (stack->pos >= stack->no_of_elements) {
-        return UFSM_ERROR_STACK_OVERFLOW;
+        return -UFSM_ERROR_STACK_OVERFLOW;
     }
 
     stack->data[stack->pos++] = (void *) item;
@@ -59,7 +59,7 @@ static int ufsm_stack_push(struct ufsm_stack *stack, const void *item)
 static int ufsm_stack_pop(struct ufsm_stack *stack, void **item)
 {
     if(!stack->pos)
-        return UFSM_ERROR_STACK_UNDERFLOW;
+        return -UFSM_ERROR_STACK_UNDERFLOW;
 
     stack->pos--;
 
@@ -551,7 +551,7 @@ static int ufsm_leave_nested_states(struct ufsm_machine *m,
 static int ufsm_init_region_history(struct ufsm_machine *m,
                                     const struct ufsm_region *regions)
 {
-    int err = UFSM_ERROR_NO_INIT_REGION;
+    int err = -UFSM_ERROR_NO_INIT_REGION;
 
     const struct ufsm_state *history = m->r_data[regions->index].history;
 
@@ -702,7 +702,7 @@ static int ufsm_process_join(struct ufsm_machine *m,
     struct ufsm_region *orth_region = NULL;
 
     if (!src->parent_region->parent_state)
-        return UFSM_ERROR_EVENT_NOT_PROCESSED;
+        return -UFSM_ERROR_EVENT_NOT_PROCESSED;
 
     orth_region = (struct ufsm_region *) src->parent_region->parent_state->region;
 
@@ -775,7 +775,7 @@ static int ufsm_make_transition(struct ufsm_machine *m,
         ufsm_load_history(m, src, &dest);
 
         if (!ufsm_test_guards(m, act_t)) {
-            err = UFSM_ERROR_EVENT_NOT_PROCESSED;
+            err = -UFSM_ERROR_EVENT_NOT_PROCESSED;
             break;
         }
 
@@ -845,7 +845,7 @@ static int ufsm_make_transition(struct ufsm_machine *m,
                 return UFSM_OK;
             break;
             default:
-                err = UFSM_ERROR_UNKNOWN_STATE_KIND;
+                err = -UFSM_ERROR_UNKNOWN_STATE_KIND;
             break;
         }
     }
@@ -959,7 +959,7 @@ int ufsm_process(struct ufsm_machine *m, int ev)
     struct ufsm_state *s = NULL;
 
     if (m->terminated)
-        return UFSM_ERROR_MACHINE_TERMINATED;
+        return -UFSM_ERROR_MACHINE_TERMINATED;
 
     if (ev == -1)
         return UFSM_OK;
