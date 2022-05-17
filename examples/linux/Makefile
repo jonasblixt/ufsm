@@ -1,35 +1,33 @@
 UFSMGENERATE ?= ufsm-generate
 
 CC ?= gcc
+CFLAGS = -Wall -O2 -I .
 
-CFLAGS = -Wall -O2 -I ../../ -I .
-LDFLAGS = $(shell pkg-config --cflags --libs ufsm-core) -lpthread
-
-UFSM_MODEL = emit.ufsm
+UFSM_MODEL = linux_async.ufsm
 UFSM_MODEL_OBJS = $(UFSM_MODEL:.ufsm=.ufsmo)
 
 C_SRCS  = main.c queue.c timer.c
 C_OBJS = $(C_SRCS:.c=.o)
 
-all: emit
+all: linux_async
 
 %.ufsmo : %.ufsm
 	@echo UFSMGEN $< 
-	@$(UFSMGENERATE) --input $< --output $(patsubst %.ufsm, %, $(<))
+	@$(UFSMGENERATE) -v2 c -l 8 $< .
 	@$(CC) $(CFLAGS) -c $(patsubst %.ufsm, %.c, $(<)) -o $@
 
 %.o : %.c
 	@echo CC $<
 	@$(CC) $(CFLAGS) -c $< -o $@
 
-emit: $(UFSM_MODEL_OBJS) $(C_OBJS)
+linux_async: $(UFSM_MODEL_OBJS) $(C_OBJS)
 	@echo LINK $@
-	@$(CC) $(UFSM_MODEL_OBJS) $(C_OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+	@$(CC) $(UFSM_MODEL_OBJS) $(C_OBJS) $(CFLAGS) -o $@
 
 
 clean:
 	@rm -f *.o *.ufsmo
-	@rm -f emit
+	@rm -f linux_async
 	@$(foreach UFSMGEN,$(UFSM_MODEL), \
 		@rm -f $(patsubst %.ufsm, %.[ch], $(UFSMGEN)))
 

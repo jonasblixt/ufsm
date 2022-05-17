@@ -9,6 +9,8 @@
       "id":"cfee4adf-1c8c-47b2-814d-889809e3575a"
     }
   ],
+  "signals":[
+  ],
   "actions":[
     {
       "name":"led_on",
@@ -51,6 +53,7 @@
           {
             "id":"37dba180-f909-451d-88fa-84c1313a1f9d",
             "trigger":"cfee4adf-1c8c-47b2-814d-889809e3575a",
+            "trigger-kind":0,
             "source":{
               "state":"3d4799eb-68bc-4ad8-b537-707d9505eb35",
               "side":"right",
@@ -100,6 +103,7 @@
           {
             "id":"ef26996f-9638-408c-bcca-1833d467d9aa",
             "trigger":"cfee4adf-1c8c-47b2-814d-889809e3575a",
+            "trigger-kind":0,
             "source":{
               "state":"8abc362c-f675-45c0-a6ff-713ba9e78825",
               "side":"left",
@@ -143,6 +147,7 @@
         "transitions":[
           {
             "id":"c364e3ee-6822-4446-9f98-bd7570545dd2",
+            "trigger-kind":0,
             "source":{
               "state":"1dcb4c62-1607-430b-9073-36ebf23c71ab",
               "side":"bottom",

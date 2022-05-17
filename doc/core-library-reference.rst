@@ -1,4 +1,0 @@
-Core Library Reference
-======================
-
-TBD

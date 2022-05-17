@@ -8,11 +8,8 @@ Welcome to the ufsm documentation
 
    intro
    build
-   architecture
    user-guide
    developer-guide
    examples
-   core-library-reference
-   model-library-reference
    license
 

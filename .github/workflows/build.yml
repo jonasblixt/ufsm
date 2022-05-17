@@ -9,13 +9,40 @@ jobs:
     - uses: actions/checkout@v1
     - name: Install deps
       run: |
-          sudo apt-get update
-          sudo apt-get install autoconf-archive libjson-c-dev lcov libgtk-3-0 libgtk-3-dev libcairo2 libcairo2-dev uuid-dev
+          sudo apt update
+          sudo apt install -y libjson-c-dev \
+                         lcov \
+                         libgtk-3-0 \
+                         libgtk-3-dev \
+                         libcairo2 \
+                         libcairo2-dev \
+                         uuid-dev \
+                         cmake \
+                         libfuse2 \
+                         python3-pip
+    - name: Download appimage tools
+      run: |
+          curl -L -O "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+          chmod a+x linuxdeploy*.AppImage
+    - name: Install python-appimage
+      run: python3 -m pip install python-appimage
+    - name: Install ufsm-generate
+      run: cd generator && python3 -m pip install .
     - name: configure
-      run: mkdir build && autoreconf -fi && cd build && ../configure --enable-code-coverage CFLAGS="-O0"
+      run: mkdir build && cd build && cmake .. -DUFSM_BUILD_TESTS=1 -DCMAKE_INSTALL_PREFIX=/usr
     - name: build
-      run: cd build && make -j $(nproc)
+      run: cd build && make -j
     - name: test
-      run: cd build && make check
-    - name: codecov
-      run: cd build/libufsm-core && bash <(curl -s https://codecov.io/bash)
+      run: cd build && make test
+    - name: Dist install
+      run: cd build && make install DESTDIR=../dist/ufsm-compose/
+    - name: Build compose appimage
+      run: ./linuxdeploy*.AppImage --appdir dist/ufsm-compose --output appimage
+    - name: Buld generator appimage
+      run: python-appimage build app generator && mv generator-x86_64.AppImage ufsm-generate-x86_64.AppImage
+    - name: Upload release
+      uses: actions/upload-artifact@v2
+      #if: startsWith(github.ref, 'refs/tags/')
+      with:
+        name: ufsm
+        path: "ufsm*.AppImage"

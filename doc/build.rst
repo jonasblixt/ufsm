@@ -4,36 +4,28 @@
 Building and installing
 -----------------------
 
-Building using the docker environment::
+Appimages for linux:
 
-    $ ./build_docker.sh
-    $ ./run_docker.sh
-    $ autoreconf -fi
-    $ mkdir build && cd build/
-    $ ../configure
+    Under releases appimages are available for the drawing tool and the code
+    generator. This is the easiest way to quickly test ufsm.
+
+Building::
+
+    $ mkdir build && cd build
+    $ cmake ..
     $ make
-    $ ./ufsm-compose/ufsm-compose
-
 
 Dependencies:
 
 ==========  ===================
 Package     Ubuntu package name
 ==========  ===================
-automake    automake, autoconf-archive, autoconf, pkgconf
-libtool     libtool
+cmake       cmake
 uuid        uuid-runtime, uuid-dev
 GTK 3       libgtk-3-0, libgtk-3-dev
 ==========  ===================
 
 Running tests::
 
-    $ ./configure --enable-code-coverage
-    $ make && make check
-
-.. toctree::
-   :maxdepth: 1
-   :glob:
-
-   build/*
+    $ make tests
 

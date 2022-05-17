@@ -1,4 +1,3 @@
-#include <ufsm/ufsm.h>
 #include <stdio.h>
 #include "dimmer.h"
 
@@ -31,16 +30,16 @@ int main(int argc, char **argv)
 {
     struct dimmer_machine m;
 
-    ufsm_debug_machine(&m.machine);
-    dimmer_machine_initialize(&m, NULL);
+    dimmer_init(&m, NULL);
 
-    dimmer_machine_process(&m, eButton);
-    dimmer_machine_process(&m, eButton);
-    dimmer_machine_process(&m, eOffButton);
-    dimmer_machine_process(&m, eButton);
-    dimmer_machine_process(&m, eButton);
-    dimmer_machine_process(&m, eButton);
-    dimmer_machine_process(&m, eButton);
+    dimmer_process(&m, UFSM_RESET);
+    dimmer_process(&m, eButton);
+    dimmer_process(&m, eButton);
+    dimmer_process(&m, eOffButton);
+    dimmer_process(&m, eButton);
+    dimmer_process(&m, eButton);
+    dimmer_process(&m, eButton);
+    dimmer_process(&m, eButton);
     return 0;
 }
 
