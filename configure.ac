@@ -80,7 +80,6 @@ AC_CONFIG_FILES([Makefile
                 libufsm-core/ufsm-core.pc
                 libufsm-model/Makefile
                 libufsm-model/ufsm-model.pc
-                ufsm-generate/Makefile
                 ufsm-compose/Makefile
                 test/Makefile
                 test/model/Makefile

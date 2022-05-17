@@ -1,7 +1,6 @@
 
 SUBDIRS = libufsm-core \
           libufsm-model \
-          ufsm-generate \
           ufsm-compose \
           test \
           test/model \
