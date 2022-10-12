@@ -69,7 +69,3 @@ def main():
     flattener = Flattener()
     flat_model = flattener.flat(model)
     return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())

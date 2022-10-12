@@ -1,6 +1,6 @@
 import unittest
 from unittest import mock
-import ufsm
+import ufsm_compile
 
 class UFSMSimpleTest(unittest.TestCase):
     def test_simple(self):
