@@ -69,13 +69,13 @@ class Flattener:
             rule = Rule()
             rule.add_state_conditions(s, parent_states)
             rule.add_actions(s.exits)
-            logger.debug("x: " + str(rule))
+            logger.debug(f"exit({s.name}): " + str(rule))
             self.exit_rules[s_id] = rule
 
             rule = Rule()
             rule.add_state_conditions(None, parent_states)
             rule.add_actions(s.entries)
-            logger.debug("e: " + str(rule))
+            logger.debug(f"enter({s.name}): " + str(rule))
             self.entry_rules[s_id] = rule
 
     def nca(self, s1, s2):
@@ -175,6 +175,7 @@ class Flattener:
                 transition = s.transitions[0]
                 return transition.dest
             elif isinstance(s, ShallowHistory):
+                logging.debug("TODO TODO TODO")
                 # TODO: This is not correct
                 transition = s.transitions[0]
                 return transition.dest

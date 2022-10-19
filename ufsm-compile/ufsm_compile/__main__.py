@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from .version import __version__
 from . import backend
-from .ufsm_parser import UfsmParser
+from .parser import UfsmParser
 from .flattener import Flattener
 
 
@@ -37,7 +37,7 @@ def main():
     levels = [logging.CRITICAL, logging.WARNING, logging.DEBUG]
     level = levels[args.verbose]
 
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=level)
+    logging.basicConfig(format="%(module)s: %(message)s", level=level)
 
     logger = logging.getLogger(__name__)
 
