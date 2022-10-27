@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from uuid import UUID
-from typing import List, Any
+from typing import List, Any, Dict
 
 @dataclass
 class Event:
@@ -61,7 +61,6 @@ class GuardBase:
 
 @dataclass
 class GuardFunction(GuardBase):
-    name: str
     guard: Guard
 
 @dataclass
@@ -94,9 +93,12 @@ class State(StateBase):
     regions: List[Region] = field(default_factory=list)
 
 @dataclass
-class GuardStateCondition(GuardBase):
-    pstate: State
-    nstate: State
+class GuardPState(GuardBase):
+    state: State
+
+@dataclass
+class GuardNState(GuardBase):
+    state: State
 
 @dataclass
 class Init(StateBase):
@@ -128,10 +130,14 @@ class Terminate(StateBase):
 
 @dataclass
 class Model:
-    name: str = ""
-    events: List[Event] = field(default_factory=list) 
-    signals: List[Signal] = field(default_factory=list) 
-    guards: List[Guard] = field(default_factory=list) 
-    functions: List[Function] = field(default_factory=list) 
+    name: str
+    version: str
+    kind: str
+    events: Dict[UUID, Event] = field(default_factory=dict)
+    signals: Dict[UUID, Signal] = field(default_factory=dict)
+    guards: Dict[UUID, Guard] = field(default_factory=dict)
+    actions: Dict[UUID, Function] = field(default_factory=dict)
+    states: Dict[UUID, StateBase] = field(default_factory=dict)
+    regions: Dict[UUID, Region] = field(default_factory=dict)
     root: Region = None
 

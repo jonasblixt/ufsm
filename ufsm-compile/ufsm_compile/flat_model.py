@@ -26,7 +26,7 @@ class Rule:
             result = "true"
         else:
             result = "^".join(s.name for s in self.conditions)
-        result += " / " + ", ".join(a.name for a in self.actions)
+        result += " / " + ", ".join(a.action.name for a in self.actions)
         return result
 
 

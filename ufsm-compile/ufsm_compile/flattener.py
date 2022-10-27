@@ -12,13 +12,12 @@ class Flattener:
         self.initial_configuration = []
         self.events = []
         self.signals = []
-        self.states = {}
         self.exit_rules = {}
         self.entry_rules = {}
 
     def build_state_group(self, hmodel):
         logger.debug("Building state groups")
-        for region in hmodel.regions:
+        for r_id, region in hmodel.regions.items():
             states = []
             for s in region.states:
                 if isinstance(s, State):
@@ -37,16 +36,15 @@ class Flattener:
 
     def build_initial_configuration(self, hmodel):
         logger.debug("Building initial configuration")
-        for region in hmodel.regions:
-            for s in region.states:
-                if (
-                    isinstance(s, Init)
-                    or isinstance(s, ShallowHistory)
-                    or isinstance(s, DeepHistory)
-                ):
-                    t = s.transitions[0]
-                    # logger.debug(f'Region {region.name} -> {t.dest.name}')
-                    self.initial_configuration.append(t.dest)
+        for s_id, s in hmodel.states.items():
+            if (
+                isinstance(s, Init)
+                or isinstance(s, ShallowHistory)
+                or isinstance(s, DeepHistory)
+            ):
+                t = s.transitions[0]
+                # logger.debug(f'Region {region.name} -> {t.dest.name}')
+                self.initial_configuration.append(t.dest)
         output_string = ", ".join(s.name for s in self.initial_configuration)
         logger.debug(f"s0 = {output_string}")
 
@@ -54,8 +52,8 @@ class Flattener:
         result = []
         s = state
         while s != None:
-            pr = s.parent_region
-            s = pr.parent_state
+            pr = s.parent
+            s = pr.parent
 
             if s != None:
                 result.append(s)
@@ -63,8 +61,10 @@ class Flattener:
 
     def build_entry_exit_rules(self):
         logger.debug("Building entry and exit rules")
-        for s_id in self.states.keys():
-            s = self.states[s_id]
+        for s_id, s in self.hmodel.states.items():
+            if not isinstance(s, State):
+                continue
+
             parent_states = self.parent_states(s)
             rule = Rule()
             rule.add_state_conditions(s, parent_states)
@@ -80,20 +80,20 @@ class Flattener:
 
     def nca(self, s1, s2):
         """Compute the nearest common anscestor region between 's1' and 's2'"""
-        lca = s1.parent_region
-        lca2 = s2.parent_region
+        lca = s1.parent
+        lca2 = s2.parent
 
         while lca != None:
-            lca2 = s2.parent_region
+            lca2 = s2.parent
             while True:
                 if lca == lca2:
                     return lca
-                if lca2.parent_state == None:
+                if lca2.parent == None:
                     break
-                lca2 = lca2.parent_state.parent_region
+                lca2 = lca2.parent.parent
                 if lca2 == None:
                     break
-            lca = lca.parent_state.parent_region
+            lca = lca.parent.parent
         return None
 
     def descendant_states_inner(self, region, depth):
@@ -159,15 +159,15 @@ class Flattener:
         """Find, if it exists, and ancestor to 'child' in
         'ancestor_region'"""
 
-        pr = child.parent_region
+        pr = child.parent
 
         if pr == ancestor_region:
             return None
         while (pr != None) and (pr != ancestor_region):
-            ps = pr.parent_state
-            if ps.parent_region == ancestor_region:
+            ps = pr.parent
+            if ps.parent == ancestor_region:
                 return ps
-            pr = ps.parent_region
+            pr = ps.parent
 
     def find_init_state_in_region(self, region):
         for s in region.states:
@@ -223,9 +223,9 @@ class Flattener:
         for ts in target_states:
             s = ts
             while s is not ancestor_state:
-                pr = s.parent_region
+                pr = s.parent
                 explicit_target_regions[pr.id] = s
-                s = pr.parent_state
+                s = pr.parent
 
         if ancestor_state is not None:
             logger.debug(f"Have ancestor state {ancestor_state.name}")
@@ -254,7 +254,7 @@ class Flattener:
         logger.debug("Building transition schedule")
 
         # Step 1 handle transitions between normal states
-        for region in hmodel.regions:
+        for r_id, region in hmodel.regions.items():
             states = []
             for s in region.states:
                 # Only process normal states here
@@ -299,11 +299,6 @@ class Flattener:
 
     def flat(self, hmodel):
         logger.debug(f"Flattning model")
-
-        for region in hmodel.regions:
-            for s in region.states:
-                if isinstance(s, State):
-                    self.states[s.id] = s
 
         self.hmodel = hmodel
         self.build_state_group(hmodel)
