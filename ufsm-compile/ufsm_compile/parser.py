@@ -11,6 +11,7 @@ UFSMM_ACTION_REF_SIGNAL = 1
 UFSMM_GUARD_PSTATE = 7
 UFSMM_GUARD_NSTATE = 8
 
+
 def _parse_events(model, data):
     logger.debug(f"Parsing events")
 
@@ -20,6 +21,7 @@ def _parse_events(model, data):
         logger.debug(f"Trigger {t_name}")
         event = Event(uuid.UUID(t_id), t_name)
         model.events[event.id] = event
+
 
 def _parse_signals(model, data):
     logger.debug(f"Parsing signals")
@@ -31,6 +33,7 @@ def _parse_signals(model, data):
         signal = Signal(uuid.UUID(s_id), s_name)
         model.signals[signal.id] = signal
 
+
 def _parse_actions(model, data):
     logger.debug(f"Parsing action function names")
     for a in data["actions"]:
@@ -40,6 +43,7 @@ def _parse_actions(model, data):
         action = Function(a_id, a_name)
         model.actions[a_id] = action
 
+
 def _parse_guards(model, data):
     logger.debug(f"Parsing guard function names")
     for g in data["guards"]:
@@ -48,6 +52,7 @@ def _parse_guards(model, data):
         logger.debug(f"Guard {g_name} {g_id}")
         guard = Guard(uuid.UUID(g_id), g_name)
         model.guards[guard.id] = guard
+
 
 def _parse_region(model, region_data, parent_state):
     for region_data_elm in region_data:
@@ -66,6 +71,7 @@ def _parse_region(model, region_data, parent_state):
 
         if len(region_data_elm["states"]) > 0:
             _parse_state(model, region_data_elm["states"], region)
+
 
 def _parse_state(model, state_data, parent_region):
     for state_data_elm in state_data:
@@ -116,6 +122,7 @@ def _parse_state(model, state_data, parent_region):
         if len(state_data_elm["region"]) > 0:
             _parse_region(model, state_data_elm["region"], state)
 
+
 def _parse_one_transition(model, transition_data):
     t_id = uuid.UUID(transition_data["id"])
     # TODO: 'state' should probably be 'state-id'
@@ -124,8 +131,9 @@ def _parse_one_transition(model, transition_data):
     source_state = model.states[source_id]
     dest_state = model.states[dest_id]
 
-    logging.debug(f"Parsing transition {t_id} {source_state.name} -> "
-                    f"{dest_state.name}")
+    logging.debug(
+        f"Parsing transition {t_id} {source_state.name} → " f"{dest_state.name}"
+    )
     t = Transition(t_id, source_state, dest_state)
     source_state.transitions.append(t)
 
@@ -175,20 +183,28 @@ def _parse_one_transition(model, transition_data):
             guard = GuardFunction(g_id, g)
         t.guards.append(guard)
 
+
 def _parse_transition_state(model, state_data):
     for transition_data in state_data["transitions"]:
         _parse_one_transition(model, transition_data)
     for region_data in state_data["region"]:
         _parse_transition_region(model, region_data)
+
+
 def _parse_transition_region(model, region_data):
     for state_data in region_data["states"]:
         _parse_transition_state(model, state_data)
+
+
 def _parse_transitions(model, data):
     root_region_data = data["region"]
     _parse_transition_region(model, root_region_data)
+
+
 def _parse_root_region(model, data):
     root_region_data = [data["region"]]
     _parse_region(model, root_region_data, None)
+
 
 def ufsm_parse_model(model_filename: str) -> Model:
     logger.debug(f"Parsing {model_filename}")

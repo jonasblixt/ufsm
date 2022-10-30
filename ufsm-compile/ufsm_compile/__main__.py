@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from .version import __version__
 from . import backend
-from .flattener import Flattener
+from .flattener import flatten_model
 from .parser import ufsm_parse_model
 
 
@@ -57,6 +57,5 @@ def main():
 
     model = ufsm_parse_model(model_fn)
 
-    flattener = Flattener()
-    flat_model = flattener.flat(model)
+    flat_model = flatten_model(model)
     return 0

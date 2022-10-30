@@ -1,62 +1,83 @@
-class StateConditionGroup:
-    def __init__(self):
-        pass
+from dataclasses import dataclass, field
+from uuid import UUID
+from typing import List, Any, Dict
+from .model import *
 
 
+@dataclass
 class Rule:
-    def __init__(self):
-        self.conditions = []
-        self.actions = []
-        self.target_states = []
-
-    def add_state_conditions(self, state, conditions):
-        if state:
-            self.conditions = [state] + conditions
-        else:
-            self.conditions = conditions
-
-    def add_actions(self, actions):
-        self.actions = actions
-
-    def add_target_state(self, state):
-        self.target_states.append(state)
+    invert: bool = False
+    states: List[State] = field(default_factory=list)
 
     def __str__(self):
-        if len(self.conditions) == 0:
-            result = "true"
-        else:
-            result = "^".join(s.name for s in self.conditions)
-        result += " / " + ", ".join(a.action.name for a in self.actions)
+        if len(self.states) == 0:
+            return "True"
+
+        result = ""
+        if self.invert:
+            result = "¬"
+
+        result += "(" + "^".join(s.name for s in self.states) + ")"
         return result
 
 
-class TransitionSchedule:
-    def __init__(self):
-        self.pos_state_conditions = []
-        self.neg_state_conditions = []
-        self.event_trigger = None
-        self.guards = []
+@dataclass
+class EntryRule:
+    rule: Rule
+    target: State
+    actions: List[ActionBase] = field(default_factory=list)
 
-    def add_positive_state_conditions(self, states):
-        self.pos_state_conditions += states
+    def __str__(self):
+        result = f"{self.rule}"
+        result += " / " + ", ".join(str(a) for a in self.actions)
+        result += f" → {self.target.name}"
+        return result
 
-    def add_negative_state_conditions(self, states):
-        self.neg_state_conditions += states
 
-    def set_event_trigger(self, event):
-        self.event_trigger = event
+@dataclass
+class ExitRule:
+    rule: Rule
+    state: State
+    actions: List[ActionBase] = field(default_factory=list)
 
-    def add_guard(self, guard):
-        self.guards.apped(guard)
+    def __str__(self):
+        result = f"{self.rule}"
+        result += " / " + ", ".join(str(a) for a in self.actions)
+        return result
 
-    def add_exit_rule(self, exit_rule):
-        pass
 
-    def add_entry_rule(self, entry_rule):
-        pass
+@dataclass
+class FlatTransition:
+    trigger: Any
+    source: State
+    dest: State
+    rules: List[Rule] = field(default_factory=list)
+    guard_funcs: List[GuardFunction] = field(default_factory=list)
+    exits: List[ExitRule] = field(default_factory=list)
+    actions: List[ActionBase] = field(default_factory=list)
+    entries: List[EntryRule] = field(default_factory=list)
 
-    def add_action(self, action):
-        pass
+    def __str__(self):
+        result = f"{self.source.name} ["
 
-    def add_signal_output(self, action):
-        pass
+        if self.trigger != None:
+            resutl += f"{self.trigger.name}: "
+        else:
+            result += "true: "
+
+        result += "^ ".join(str(r) for r in self.rules)
+        result += "^ ".join(str(g) for g in self.guard_funcs)
+        result += "] "
+        result += "/ " + ", ".join(str(a) for a in self.actions)
+        result += f" → {self.dest}"
+
+        # TODO: Entry/Exit rules
+        return result
+
+
+@dataclass
+class FlatModel:
+    exit_rules: Dict[UUID, ExitRule] = field(default_factory=dict)
+    entry_rules: Dict[UUID, EntryRule] = field(default_factory=dict)
+    history_rules: Dict[UUID, List[EntryRule]] = field(default_factory=dict)
+    transitions: List[FlatTransition] = field(default_factory=list)
