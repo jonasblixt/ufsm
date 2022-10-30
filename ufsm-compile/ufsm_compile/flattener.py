@@ -11,14 +11,12 @@ logger = logging.getLogger(__name__)
 def _initial_state_vector(hmodel: Model):
     isv = []
     for s_id, s in hmodel.states.items():
-        if (
-            isinstance(s, Init)
-            or isinstance(s, ShallowHistory)
-        ):
+        if isinstance(s, Init) or isinstance(s, ShallowHistory):
             t = s.transitions[0]
             isv.append(t.dest)
     output_string = ", ".join(str(s) for s in isv)
     logger.debug(f"Initial state vector: s0 = {output_string}")
+
 
 # TODO: Data format
 def _build_state_group(hmodel):
