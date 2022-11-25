@@ -7,6 +7,7 @@ from .model import *
 @dataclass
 class Rule:
     invert: bool = False
+    history: bool = False
     states: List[State] = field(default_factory=list)
 
     def __str__(self):
@@ -14,23 +15,30 @@ class Rule:
             return "True"
 
         result = ""
+        if self.history:
+            result += "H "
         if self.invert:
-            result = "¬"
+            result += "¬"
 
         result += "(" + "^".join(s.name for s in self.states) + ")"
         return result
 
+    def __eq__(self, other):
+        result = (self.invert == other.invert)
+        set1 = set((x.id) for x in self.states)
+        set2 = set((x.id) for x in other.states)
+        return result and (set1 == set2)
 
 @dataclass
 class EntryRule:
     rule: Rule
-    target: State
+    targets: List[State] = field(default_factory=list)
     actions: List[ActionBase] = field(default_factory=list)
 
     def __str__(self):
         result = f"{self.rule}"
         result += " / " + ", ".join(str(a) for a in self.actions)
-        result += f" → {self.target.name}"
+        result += f" → " + ", ".join(str(s) for s in self.targets)
         return result
 
 
@@ -58,20 +66,34 @@ class FlatTransition:
     entries: List[EntryRule] = field(default_factory=list)
 
     def __str__(self):
-        result = f"{self.source.name} ["
+        result = ""
+        result += f"{self.trigger} {self.source} → {self.dest}\n"
+        result += f"State conditions:\n"
 
-        if self.trigger != None:
-            resutl += f"{self.trigger.name}: "
-        else:
-            result += "true: "
+        for r in self.rules:
+            result += f"    {r}\n"
 
-        result += "^ ".join(str(r) for r in self.rules)
-        result += "^ ".join(str(g) for g in self.guard_funcs)
-        result += "] "
-        result += "/ " + ", ".join(str(a) for a in self.actions)
-        result += f" → {self.dest}"
+        if len(self.guard_funcs) > 0:
+            result += f"Guard functions to call:\n"
 
-        # TODO: Entry/Exit rules
+            for g in self.guard_funcs:
+                result += f"    {g}\n"
+
+        result += f"Exit rules to run:\n"
+        for r in self.exits:
+            result += f"    {r}\n"
+
+        if len(self.actions) > 0:
+            result += f"Actions to run\n"
+
+            for action in self.actions:
+                result += f"    {action}\n"
+
+        result += f"Entry rules to run:\n"
+
+        for r in self.entries:
+            result += f"    {r}\n"
+
         return result
 
 
@@ -80,4 +102,5 @@ class FlatModel:
     exit_rules: Dict[UUID, ExitRule] = field(default_factory=dict)
     entry_rules: Dict[UUID, EntryRule] = field(default_factory=dict)
     history_rules: Dict[UUID, List[EntryRule]] = field(default_factory=dict)
-    transitions: List[FlatTransition] = field(default_factory=list)
+    isv: List[FlatTransition] = field(default_factory=list)
+    transition_schedule: List[FlatTransition] = field(default_factory=list)

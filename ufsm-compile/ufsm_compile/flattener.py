@@ -7,15 +7,16 @@ from .model_utils import *
 
 logger = logging.getLogger(__name__)
 
-# TODO: Data format
 def _initial_state_vector(hmodel: Model):
     isv = []
     for s_id, s in hmodel.states.items():
         if isinstance(s, Init) or isinstance(s, ShallowHistory):
             t = s.transitions[0]
-            isv.append(t.dest)
-    output_string = ", ".join(str(s) for s in isv)
+            isv.append(t)
+    output_string = ", ".join(str(s.dest) for s in isv)
     logger.debug(f"Initial state vector: s0 = {output_string}")
+    isv.reverse()
+    return isv
 
 
 # TODO: Data format
@@ -54,7 +55,8 @@ def _build_entry_exit_rules(hmodel: Model):
         rule = Rule()
         rule.states = parent_states.copy()
 
-        entry_rule = EntryRule(rule, s)
+        entry_rule = EntryRule(rule)
+        entry_rule.targets.append(s)
         entry_rule.actions = s.entries.copy()
         entry_rules[s_id] = entry_rule
 
@@ -88,7 +90,8 @@ def _build_history_rules(hmodel: Model, fmodel: FlatModel):
                     continue
                 logger.debug(f"{s}")
                 rule = copy.deepcopy(fmodel.entry_rules[s.id])
-                rule.rule.states.insert(0, s)
+                rule.rule.history = True
+                #rule.rule.states.insert(0, s)
                 rules.append(rule)
             history_rules[history_state.id] = rules
 
@@ -100,12 +103,13 @@ def _transition_enter(
     fmodel: FlatModel,
     top_state: State,
     explicit_target_states: List[State],
+    nca: State,
 ) -> List[EntryRule]:
     result = []
     state_stack = [top_state]
 
     # Add the top state to entry rules list
-    result.append(fmodel.entry_rules[top_state.id])
+    result.append(copy.deepcopy(fmodel.entry_rules[top_state.id]))
 
     while len(state_stack) > 0:
         current_state = state_stack.pop()
@@ -121,31 +125,47 @@ def _transition_enter(
             if ancestor_state != None:
                 # Found ancestor, we should not go through init/history states
                 logging.debug(f"Found ancestor {ancestor_state.name} in region {r}")
-                result.append(fmodel.entry_rules[ancestor_state.id])
+                result.append(copy.deepcopy(fmodel.entry_rules[ancestor_state.id]))
             else:
                 # Normal init, find init/history state in region
                 init_trans = find_init_transition_in_region(r)
 
                 if isinstance(init_trans.source, Init):
                     logging.debug(f"Normal init for region: {r} {init_trans.dest}")
-                    result.append(fmodel.entry_rules[init_trans.dest.id])
+                    result.append(copy.deepcopy(fmodel.entry_rules[init_trans.dest.id]))
                 elif isinstance(init_trans.source, ShallowHistory):
                     logging.debug(f"History init for region: {r}")
-                    result += fmodel.history_rules[init_trans.source.id]
+                    result += copy.deepcopy(fmodel.history_rules[init_trans.source.id])
 
             for s in r.states:
                 if isinstance(s, State):
                     state_stack.append(s)
 
+    # If NCA is found in the rules, we should delete rules up until and including
+    # NCA
+    if nca.parent:
+        logger.debug(f"NCA: {nca.parent}")
+        nca_state = nca.parent
+        for r in result:
+            found_nca = False
+            for s in r.rule.states:
+                if s.id == nca_state.id:
+                    found_nca = True
+                    break
+            if found_nca:
+                while True:
+                    popped = r.rule.states.pop()
+                    logger.debug(f"{popped}")
+                    if popped.id == nca_state.id:
+                        break
     return result
 
 
 def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, t: Transition):
+    ft = FlatTransition(t.trigger, t.source, t.dest)
     explicit_target_states = []
 
-    logger.debug("")
-    logger.debug(f"{t.trigger} {t.source} → {t.dest} id: {t.id}")
-
+    logging.debug(f"Transition {t.source} -> {t.dest}")
     if isinstance(t.dest, State):
         explicit_target_states = [t.dest]
     elif isinstance(t.dest, Fork):
@@ -153,10 +173,6 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, t: Transiti
     else:
         logger.error("Don't know what to do")
         raise Exception()
-
-    logger.debug(
-        f"Explicit target states: " + ", ".join(str(s) for s in explicit_target_states)
-    )
 
     # Compute nearest common ancestor region and check that the nca is the same
     #  when we have multiple explicit target states.
@@ -169,8 +185,6 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, t: Transiti
             # TODO: Raise exception in stead of assert
             #  InconsistentNCAException
             assert nearest_common_ancestor(t.source, ts) == nca
-
-    logger.debug(f"NCA: {nca}")
 
     # Compute state conditions (Source state + guard states) and guard functions
     state_conditions = []
@@ -193,37 +207,22 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, t: Transiti
         if isinstance(guard, GuardFunction):
             guard_functions.append(guard.guard)
 
-    logger.debug(f"State conditions:")
-
-    for r in state_conditions:
-        logger.debug(f"    {r}")
-
-    if len(guard_functions) > 0:
-        logger.debug(f"Guard functions to call:")
-
-        for g in guard_functions:
-            logger.debug(f"    {g}")
+    ft.rules = state_conditions
+    ft.guard_funcs = guard_functions
 
     # Compute states to exit
     exit_rules = []
     top_state_to_exit = find_ancestor_state(t.source, nca)
-    logger.debug(f"Top state to exit: {top_state_to_exit}")
 
     if top_state_to_exit:
         for s in descendant_states(top_state_to_exit):
-            exit_rules.append(fmodel.exit_rules[s.id])
+            exit_rules.append(copy.deepcopy(fmodel.exit_rules[s.id]))
     else:
-        exit_rules.append(fmodel.exit_rules[t.source.id])
+        exit_rules.append(copy.deepcopy(fmodel.exit_rules[t.source.id]))
 
-    logger.debug(f"Exit rules to run:")
-    for r in exit_rules:
-        logger.debug("    " + str(r))
+    ft.exits = exit_rules
 
-    # Call transition actions
-    logger.debug(f"Actions to run")
-
-    for action in t.actions:
-        logger.debug(f"    {action}")
+    ft.actions = t.actions
 
     # Compute states to enter
 
@@ -237,38 +236,30 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, t: Transiti
             # TODO: Don't assert, throw InconsistentTopState?
             assert find_ancestor_state(ts, nca) == top_state_to_enter
 
-    logger.debug(f"Top state to enter: {top_state_to_enter}")
-
     entry_rules = _transition_enter(
-        hmodel, fmodel, top_state_to_enter, explicit_target_states
+        hmodel, fmodel, top_state_to_enter, explicit_target_states, nca
     )
 
-    logger.debug(f"Entry rules to run:")
-
-    for r in entry_rules:
-        logger.debug("    " + str(r))
+    ft.entries = entry_rules
+    return ft
 
 
 def _build_transition_schedule(hmodel: Model, fmodel: FlatModel):
+    result = []
     for s_id, s in hmodel.states.items():
         if not isinstance(s, State):
             continue
         for t in s.transitions:
-            if (
-                t.id != uuid.UUID("3077f730-a639-4c24-b3d5-fa6f57daeac9")
-                and t.id != uuid.UUID("e65a1b52-9eae-4cba-9ace-f546b77d2f97")
-                and t.id != uuid.UUID("585b1e55-bbff-4456-9bec-ad1c0ff65e8d")
-            ):
-                continue
-            _build_one_transition_schedule(hmodel, fmodel, t)
-    return {}
+            result.append(_build_one_transition_schedule(hmodel, fmodel, t))
+    return result
 
 
 def flatten_model(hmodel: Model) -> FlatModel:
     logger.debug(f"Flattening {hmodel.name}")
     fmodel = FlatModel()
 
-    _initial_state_vector(hmodel)
+    isv = _initial_state_vector(hmodel)
+    fmodel.isv = isv
     _build_state_group(hmodel)
 
     entry_rules, exit_rules = _build_entry_exit_rules(hmodel)
@@ -279,17 +270,11 @@ def flatten_model(hmodel: Model) -> FlatModel:
 
     fmodel.history_rules = history_rules
 
-    logger.debug("Entry rules:")
-    for s_id, r in entry_rules.items():
-        logger.debug(f"en({r.target}): {r}")
-
-    logger.debug("Exit rules:")
-    for s_id, r in exit_rules.items():
-        logger.debug(f"ex({r.state}): {r}")
-
-    logger.debug("History rules:")
-    for s_id, rules in history_rules.items():
-        for r in rules:
-            logger.debug(f"hi({r.target}): {r}")
-
     transition_schedule = _build_transition_schedule(hmodel, fmodel)
+
+    for t in transition_schedule:
+        logger.debug(f"\n{t}")
+
+    fmodel.transition_schedule = transition_schedule
+
+    return fmodel

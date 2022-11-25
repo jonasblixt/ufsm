@@ -12,6 +12,7 @@ class Event:
 
     id: UUID
     name: str
+    index: int
 
     def __str__(self):
         return f"<{self.name}>"
@@ -25,6 +26,7 @@ class Signal:
 
     id: UUID
     name: str
+    index: int
 
     def __str__(self):
         return f"<{self.name}>"
@@ -105,6 +107,7 @@ class Region:
     id: UUID
     name: str
     parent: Any
+    index: int
     states: List[Any] = field(default_factory=list)
 
     def __str__(self):
@@ -116,11 +119,13 @@ class StateBase:
     id: UUID
     name: str
     parent: Region
+    index: int = 0
     transitions: List[Transition] = field(default_factory=list)
 
     def __str__(self):
         return self.name
-
+    def __eq__(self, other):
+        return (self.id == other.id)
 
 @dataclass
 class State(StateBase):
@@ -179,6 +184,8 @@ class Model:
     name: str
     version: str
     kind: str
+    no_of_regions: int = 0
+    no_of_states: int = 0
     events: Dict[UUID, Event] = field(default_factory=dict)
     signals: Dict[UUID, Signal] = field(default_factory=dict)
     guards: Dict[UUID, Guard] = field(default_factory=dict)

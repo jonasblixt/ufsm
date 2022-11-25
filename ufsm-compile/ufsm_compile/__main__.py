@@ -6,7 +6,8 @@ from .version import __version__
 from . import backend
 from .flattener import flatten_model
 from .parser import ufsm_parse_model
-
+from .optimizer import optimizer
+from .c_generator import c_generator
 
 def main():
     parser = argparse.ArgumentParser(description="uFSM compiler")
@@ -55,7 +56,9 @@ def main():
     output_dir = args.output_dir
     verbosity = args.verbose
 
-    model = ufsm_parse_model(model_fn)
+    hmodel = ufsm_parse_model(model_fn)
+    fmodel = flatten_model(hmodel)
+    fmodel_optimized = optimizer(fmodel)
 
-    flat_model = flatten_model(model)
+    c_generator(fmodel_optimized, hmodel, "output.c", "output.h")
     return 0

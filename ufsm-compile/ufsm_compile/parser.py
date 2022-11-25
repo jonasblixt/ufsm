@@ -14,23 +14,25 @@ UFSMM_GUARD_NSTATE = 8
 
 def _parse_events(model, data):
     logger.debug(f"Parsing events")
-
+    index = 10 # 0 - 9 are reserved
     for t in data["events"]:
         t_name = t["name"]
         t_id = t["id"]
         logger.debug(f"Trigger {t_name}")
-        event = Event(uuid.UUID(t_id), t_name)
+        event = Event(uuid.UUID(t_id), t_name, index)
+        index += 1
         model.events[event.id] = event
 
 
 def _parse_signals(model, data):
     logger.debug(f"Parsing signals")
-
+    index = 10 # 0 - 9 Are reserved
     for s in data["signals"]:
         s_name = s["name"]
         s_id = s["id"]
         logger.debug(f"Signal {s_name}")
-        signal = Signal(uuid.UUID(s_id), s_name)
+        signal = Signal(uuid.UUID(s_id), s_name, index)
+        index += 1
         model.signals[signal.id] = signal
 
 
@@ -59,7 +61,9 @@ def _parse_region(model, region_data, parent_state):
         r_name = region_data_elm["name"]
         r_id = uuid.UUID(region_data_elm["id"])
         logger.debug(f"R {r_id} {r_name}")
-        region = Region(r_id, r_name, parent_state)
+        region_index = model.no_of_regions
+        model.no_of_regions += 1
+        region = Region(r_id, r_name, parent_state, region_index)
 
         model.regions[r_id] = region
 
@@ -82,7 +86,9 @@ def _parse_state(model, state_data, parent_region):
         logger.debug(f"S {s_id} {s_name}")
 
         if s_kind == "state":
-            state = State(s_id, s_name, parent_region)
+            state_index = model.no_of_states + 1
+            model.no_of_states += 1
+            state = State(s_id, s_name, parent_region, state_index)
         elif s_kind == "init":
             state = Init(s_id, s_name, parent_region)
         elif s_kind == "final":
