@@ -3,12 +3,12 @@ requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name = "ufsm_compile"
+name = "ufsm_generate"
 version = "0.0.1"
 authors = [
   { name="Jonas Blixt", email="jonpe960@gmail.com" },
 ]
-description = "uFSM statechart compiler"
+description = "uFSM statechart code generator"
 readme = "README.rst"
 requires-python = ">=3.7"
 classifiers = [
@@ -22,7 +22,7 @@ classifiers = [
 "Bug Tracker" = "https://github.com/jonasblixt/ufsm/issues"
 
 [project.scripts]
-ufsm-compile = "ufsm_compile.__main__:main"
+ufsm-generate = "ufsm_generate.__main__:main"
 
 [project.optional-dependencies]
 dev = [

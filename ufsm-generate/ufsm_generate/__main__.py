@@ -10,7 +10,7 @@ from .optimizer import optimizer
 from .c_generator import c_generator
 
 def main():
-    parser = argparse.ArgumentParser(description="uFSM compiler")
+    parser = argparse.ArgumentParser(description="uFSM generator")
     parser.add_argument("backend", help="Code generator backend")
     parser.add_argument("model", help="Input model")
     parser.add_argument("output_dir", help="Output directory")
@@ -42,7 +42,7 @@ def main():
 
     logger = logging.getLogger(__name__)
 
-    logging.debug(f"ufsm-compile {__version__}")
+    logging.debug(f"ufsm-generate {__version__}")
 
     if not Path(args.model).is_file():
         logging.error(f"Could not open file {args.model}")
