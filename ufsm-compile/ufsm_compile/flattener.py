@@ -129,13 +129,15 @@ def _transition_enter(
             else:
                 # Normal init, find init/history state in region
                 init_trans = find_init_transition_in_region(r)
-
-                if isinstance(init_trans.source, Init):
-                    logging.debug(f"Normal init for region: {r} {init_trans.dest}")
-                    result.append(copy.deepcopy(fmodel.entry_rules[init_trans.dest.id]))
-                elif isinstance(init_trans.source, ShallowHistory):
-                    logging.debug(f"History init for region: {r}")
-                    result += copy.deepcopy(fmodel.history_rules[init_trans.source.id])
+                if init_trans is not None:
+                    if isinstance(init_trans.source, Init):
+                        logging.debug(f"Normal init for region: {r} {init_trans.dest}")
+                        result.append(copy.deepcopy(fmodel.entry_rules[init_trans.dest.id]))
+                    elif isinstance(init_trans.source, ShallowHistory):
+                        logging.debug(f"History init for region: {r}")
+                        result += copy.deepcopy(fmodel.history_rules[init_trans.source.id])
+                else:
+                    logger.debug(f"WARNING found no initalizer in region {r}")
 
             for s in r.states:
                 if isinstance(s, State):
