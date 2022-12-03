@@ -9,17 +9,27 @@ logger = logging.getLogger(__name__)
 
 def _initial_state_vector(hmodel: Model):
     isv = []
+    logger.debug("Entry rules:")
     for s_id, s in hmodel.states.items():
         if isinstance(s, Init) or isinstance(s, ShallowHistory):
             t = s.transitions[0]
-            isv.append(t)
-    output_string = ", ".join(str(s.dest) for s in isv)
-    logger.debug(f"Initial state vector: s0 = {output_string}")
+
+            parent_states = find_parent_states(t.dest)
+
+            rule = Rule()
+            rule.states = parent_states.copy()
+
+            entry_rule = EntryRule(rule)
+            entry_rule.targets.append(t.dest)
+            entry_rule.actions = t.actions.copy()
+            logger.debug(f"{entry_rule}")
+
+            isv.append(entry_rule)
+
     isv.reverse()
     return isv
 
 
-# TODO: Data format
 def _build_state_group(hmodel):
     state_groups = {}
     for r_id, region in hmodel.regions.items():
@@ -174,7 +184,8 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, t: Transiti
         explicit_target_states = find_target_states_from_fork(t.dest)
     else:
         logger.error("Don't know what to do")
-        raise Exception()
+        return
+        #raise Exception()
 
     # Compute nearest common ancestor region and check that the nca is the same
     #  when we have multiple explicit target states.

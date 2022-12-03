@@ -149,10 +149,6 @@ def _gen_transition_entries(hmodel, fmodel, f, ft, indent):
     for en in ft.entries:
         indent_extra = 0
         if len(en.rule.states) > 0:
-            #if en.rule.history:
-            #    _emit(f, indent, f"if ({_sc_expr_helper(en.rule, 'csv')}) {{")
-            #    indent_extra = 1
-            #else:
             _emit(f, indent, f"if ({_sc_expr_helper(en.rule, 'wsv')}) {{")
             indent_extra = 1
         else:
@@ -189,6 +185,29 @@ def _gen_transition_inner(hmodel, fmodel, f, ft, rules, indent):
 
     _emit(f, indent, "}")
 
+def _gen_reset_vector(hmodel, fmodel, f):
+    for r in fmodel.isv:
+        s = r.targets[0]
+        _emit(f, 3, f"m->wsv[{s.parent.index}] = {s.index};")
+
+    for r in fmodel.isv:
+        s = r.targets[0]
+        indent = 3
+
+        if len(r.rule.states) > 0:
+            _emit(f, indent, f"if ({_sc_expr_helper(r.rule, vector='wsv')}) {{")
+            indent += 1
+
+        # TODO: Signals
+        for a in r.actions:
+            _emit(f, indent, f"{a.action.name}(m->user);")
+        for entry in s.entries:
+            _emit(f, indent, f"{entry.action.name}(m->user);")
+
+        if len(r.rule.states) > 0:
+            indent -= 1
+            _emit(f, indent, "}")
+
 
 def _gen_transition(hmodel, fmodel, f, ft, indent):
     _emit(f, indent, f"/* {ft.source.name} -> {ft.dest.name} */")
@@ -207,16 +226,16 @@ def _gen_process_func(hmodel, fmodel, f):
     _nl(f)
     _emit(f, 1, "switch(event) {")
     _emit(f, 2, "case UFSM_RESET:")
-    for t in fmodel.isv:
-        _emit(f, 3, f"m->wsv[{t.dest.parent.index}] = {t.dest.index};")
-        for a in t.actions:
-            _emit(f, 3, f"{a.name}(m->user);")
-        for entry in t.dest.entries:
-            _emit(f, 3, f"{entry.action.name}(m->user);")
+    _gen_reset_vector(hmodel, fmodel, f)
     _emit(f, 2, "break;")
     for _, event in hmodel.events.items():
         _emit(f, 2, f"case {event.name}:")
         for ft in fmodel.transition_schedule:
+            if ft == None:
+                continue
+            if ft.trigger == None:
+                logger.error(f"Transition with no trigger: {ft}")
+                continue
             if ft.trigger.id == event.id:
                 _gen_transition(hmodel, fmodel, f, ft, 3)
         _emit(f, 2, f"break;")

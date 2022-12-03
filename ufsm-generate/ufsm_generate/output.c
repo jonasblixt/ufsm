@@ -42,19 +42,31 @@ int ufsm_process(struct ufsm_machine *m, unsigned int event)
     switch(event) {
         case UFSM_RESET:
             m->wsv[0] = 1;
-            eA(m->user);
             m->wsv[5] = 10;
-            eD1(m->user);
             m->wsv[6] = 11;
-            eD11(m->user);
             m->wsv[3] = 7;
-            eE1(m->user);
             m->wsv[4] = 8;
-            eE11(m->user);
             m->wsv[1] = 2;
-            eC1(m->user);
             m->wsv[2] = 3;
-            eC11(m->user);
+            eA(m->user);
+            if ((m->wsv[0] == 6)) {
+                eD1(m->user);
+            }
+            if ((m->wsv[5] == 10) && (m->wsv[0] == 6)) {
+                eD11(m->user);
+            }
+            if ((m->wsv[0] == 6)) {
+                eE1(m->user);
+            }
+            if ((m->wsv[3] == 7) && (m->wsv[0] == 6)) {
+                eE11(m->user);
+            }
+            if ((m->wsv[0] == 1)) {
+                eC1(m->user);
+            }
+            if ((m->wsv[1] == 2) && (m->wsv[0] == 1)) {
+                eC11(m->user);
+            }
         break;
         case e2:
             /* C2 -> Fork */
