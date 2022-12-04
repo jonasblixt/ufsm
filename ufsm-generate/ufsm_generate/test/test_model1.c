@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "test_helper.h"
-#include "output.h"
+#include "gen/test_model1.h"
 
 void eA(void *user) { ufsm_test_rec(__func__); }
 void xA(void *user) { ufsm_test_rec(__func__); }
@@ -37,13 +37,13 @@ void o1(void *user) { ufsm_test_rec(__func__); }
 
 int main(int argc, char **argv)
 {
-    struct ufsm_machine m = {0};
+    struct test_model1_machine m = {0};
 
     {
         printf("-> Reset\n");
         ufsm_test_reset();
         const char *exp[] = {"eA", "eC1", "eC11", NULL};
-        ufsm_process(&m, UFSM_RESET);
+        test_model1_process(&m, UFSM_RESET);
         assert (ufsm_test_check(exp) && "reset");
     }
 
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
         printf("-> e4\n");
         ufsm_test_reset();
         const char *exp[] = {"xC11", "xC1", "eC2", NULL};
-        ufsm_process(&m, e4);
+        test_model1_process(&m, e4);
         assert (ufsm_test_check(exp));
     }
 
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
         printf("-> e2\n");
         ufsm_test_reset();
         const char *exp[] = {"xC2", "xA", "eB", "eE1", "eD1", "eD12", "eE11", NULL};
-        ufsm_process(&m, e2);
+        test_model1_process(&m, e2);
         assert (ufsm_test_check(exp));
     }
 
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
         printf("-> e1\n");
         ufsm_test_reset();
         const char *exp[] = {NULL};
-        ufsm_process(&m, e1);
+        test_model1_process(&m, e1);
         assert(ufsm_test_check(exp));
     }
 
@@ -75,14 +75,14 @@ int main(int argc, char **argv)
         printf("-> e7\n");
         ufsm_test_reset();
         const char *exp[] = {"xE11", "eE12", NULL};
-        ufsm_process(&m, e7);
+        test_model1_process(&m, e7);
         assert(ufsm_test_check(exp));
     }
 
     {
         printf("-> e1\n");
         ufsm_test_reset();
-        ufsm_process(&m, e1);
+        test_model1_process(&m, e1);
         const char *exp[] = { "xD12",
                                 "xE12",
                                 "xD1",

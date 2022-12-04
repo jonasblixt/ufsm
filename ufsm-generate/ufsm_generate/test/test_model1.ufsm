@@ -1,7 +1,7 @@
 {
   "kind":"uFSM Model",
   "version":0,
-  "name":"test_andrzej",
+  "name":"test_model1",
   "paper-size":3,
   "signals":[
     {

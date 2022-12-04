@@ -58,7 +58,10 @@ def main():
 
     hmodel = ufsm_parse_model(model_fn)
     fmodel = flatten_model(hmodel)
-    fmodel_optimized = optimizer(fmodel)
+    #fmodel_optimized = optimizer(fmodel)
 
-    c_generator(fmodel_optimized, hmodel, "output.c", "output.h")
+    c_generator(fmodel, hmodel,
+            f"{args.output_dir}/{hmodel.name}.c",
+            f"{args.output_dir}/{hmodel.name}.h",
+    )
     return 0

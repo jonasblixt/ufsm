@@ -188,7 +188,7 @@ def _parse_one_transition(model, transition_data):
             g = model.guards[g_action_id]
             guard = GuardFunction(g_id, g)
         t.guards.append(guard)
-
+    model.transitions.append(t)
 
 def _parse_transition_state(model, state_data):
     for transition_data in state_data["transitions"]:

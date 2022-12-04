@@ -192,4 +192,5 @@ class Model:
     actions: Dict[UUID, Function] = field(default_factory=dict)
     states: Dict[UUID, StateBase] = field(default_factory=dict)
     regions: Dict[UUID, Region] = field(default_factory=dict)
+    transitions: List[Transition] = field(default_factory=list)
     root: Region = None

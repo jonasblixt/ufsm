@@ -3,8 +3,9 @@ UFSM_GEN ?= ufsm-generate
 
 CFLAGS = -Wall -pedantic -O2
 
-TESTS = test1 \
-		test_nested_states3
+TESTS = test_model1 \
+		test_nested_states3 \
+		test_fork_join
 
 all: $(TESTS) run
 
@@ -22,3 +23,4 @@ run:
 
 clean:
 	@rm -f *.o $(TESTS)
+	@rm -f gen/*

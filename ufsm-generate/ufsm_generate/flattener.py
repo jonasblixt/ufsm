@@ -173,6 +173,67 @@ def _transition_enter(
     return result
 
 
+def _build_join(hmodel: Model, fmodel: FlatModel, t: Transition):
+    ft = FlatTransition(t.trigger, t.source, t.dest)
+    # Find all source states
+    # LCA (Source states, target state)
+    logger.debug("Join source states: ")
+    source_states = []
+
+    for tran in hmodel.transitions:
+        if tran.dest.id == t.source.id:
+            logger.debug(f"{tran.source}")
+            source_states.append(tran.source)
+
+    state_conditions = []
+    guard_functions = []
+
+    for s in source_states:
+        rule = Rule()
+        rule.states = [s] + find_parent_states(s)
+        state_conditions.append(rule)
+
+    ft.rules = state_conditions
+
+    # TODO: Break out in separate function
+    for guard in t.guards:
+        if isinstance(guard, GuardPState):
+            rule = Rule()
+            rule.states = [guard.state] + find_parent_states(guard.state)
+            state_conditions.append(rule)
+        if isinstance(guard, GuardNState):
+            rule = Rule()
+            rule.invert = True
+            rule.states = [guard.state] + find_parent_states(guard.state)
+            state_conditions.append(rule)
+        if isinstance(guard, GuardFunction):
+            guard_functions.append(guard.guard)
+
+    ft.guard_funcs = guard_functions
+
+    # Compute states to exit
+    exit_rules = []
+
+    nca = nearest_common_ancestor(source_states[0], t.dest)
+    top_state_to_exit = find_ancestor_state(source_states[0], nca)
+
+    if top_state_to_exit:
+        for s in descendant_states(top_state_to_exit):
+            exit_rules.append(copy.deepcopy(fmodel.exit_rules[s.id]))
+    else:
+        exit_rules.append(copy.deepcopy(fmodel.exit_rules[source_states[0].id]))
+
+    ft.exits = exit_rules
+    top_state_to_enter = find_ancestor_state(t.dest, nca)
+    entry_rules = _transition_enter(
+        hmodel, fmodel, top_state_to_enter, t.dest, nca
+    )
+
+    ft.entries = entry_rules
+
+    ft.actions = t.actions
+    return ft
+
 def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, t: Transition):
     ft = FlatTransition(t.trigger, t.source, t.dest)
     explicit_target_states = []
@@ -182,10 +243,16 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, t: Transiti
         explicit_target_states = [t.dest]
     elif isinstance(t.dest, Fork):
         explicit_target_states = find_target_states_from_fork(t.dest)
+    elif isinstance(t.dest, Join):
+        # Do nothing, joins are evaluated on out-bound transitions
+        return
     else:
         logger.error("Don't know what to do")
         return
         #raise Exception()
+
+    if isinstance(t.source, Join):
+        return _build_join(hmodel, fmodel, t)
 
     # Compute nearest common ancestor region and check that the nca is the same
     #  when we have multiple explicit target states.
@@ -260,7 +327,7 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, t: Transiti
 def _build_transition_schedule(hmodel: Model, fmodel: FlatModel):
     result = []
     for s_id, s in hmodel.states.items():
-        if not isinstance(s, State):
+        if not (isinstance(s, State) or isinstance(s, Join)):
             continue
         for t in s.transitions:
             result.append(_build_one_transition_schedule(hmodel, fmodel, t))
