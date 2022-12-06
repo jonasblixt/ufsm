@@ -9,7 +9,7 @@
       "id":"105f27f9-9e01-4206-a7db-b7b96260b4bb"
     }
   ],
-  "events":[
+  "triggers":[
     {
       "name":"e2",
       "id":"2979fe85-8f96-4ce7-9a40-91814cbb3ace"
@@ -37,6 +37,10 @@
     {
       "name":"e7",
       "id":"69610c49-de84-4be9-acad-3727ff8c0109"
+    },
+    {
+      "name":"UFSM_TRIGGER_LESS",
+      "id":"96b19d77-57c8-4219-8784-8c846f5bbb53"
     }
   ],
   "actions":[
@@ -249,7 +253,7 @@
                         "transitions":[
                           {
                             "id":"f66511be-8d05-4a27-ac28-70143bcc3362",
-                            "event":"543b7c48-91ed-4114-85a8-3fccdd120c31",
+                            "trigger":"543b7c48-91ed-4114-85a8-3fccdd120c31",
                             "source":{
                               "state":"f1e01847-fa1b-465d-a97a-aed15bba02b2",
                               "side":"bottom",
@@ -303,7 +307,7 @@
                         "transitions":[
                           {
                             "id":"9c2f2276-4952-4873-ae16-e0f3f72f5b3d",
-                            "event":"543b7c48-91ed-4114-85a8-3fccdd120c31",
+                            "trigger":"543b7c48-91ed-4114-85a8-3fccdd120c31",
                             "source":{
                               "state":"96a7ee59-ceb1-402a-863e-e1503cb1261d",
                               "side":"top",
@@ -378,7 +382,7 @@
                 "transitions":[
                   {
                     "id":"c6bb99f2-cc4d-4410-ae72-ac1b4a888103",
-                    "event":"8e5e8e1a-100a-44a8-b3df-f944054b6908",
+                    "trigger":"8e5e8e1a-100a-44a8-b3df-f944054b6908",
                     "source":{
                       "state":"d931ba3a-3b1e-4239-bd3b-409efbe403cf",
                       "side":"right",
@@ -432,7 +436,7 @@
                 "transitions":[
                   {
                     "id":"e65a1b52-9eae-4cba-9ace-f546b77d2f97",
-                    "event":"2979fe85-8f96-4ce7-9a40-91814cbb3ace",
+                    "trigger":"2979fe85-8f96-4ce7-9a40-91814cbb3ace",
                     "source":{
                       "state":"b21968af-1b69-42be-89d5-b74da8737318",
                       "side":"right",
@@ -458,7 +462,7 @@
                   },
                   {
                     "id":"93e0babc-1fe3-472e-a3ac-24e9da758079",
-                    "event":"8e5e8e1a-100a-44a8-b3df-f944054b6908",
+                    "trigger":"8e5e8e1a-100a-44a8-b3df-f944054b6908",
                     "source":{
                       "state":"b21968af-1b69-42be-89d5-b74da8737318",
                       "side":"left",
@@ -533,7 +537,8 @@
         "transitions":[
           {
             "id":"3077f730-a639-4c24-b3d5-fa6f57daeac9",
-            "signal":"105f27f9-9e01-4206-a7db-b7b96260b4bb",
+            "trigger":"105f27f9-9e01-4206-a7db-b7b96260b4bb",
+            "trigger_type":1,
             "source":{
               "state":"4277b5e0-1854-4f1a-b95b-6cb0e1696d2a",
               "side":"right",
@@ -657,7 +662,7 @@
                         "transitions":[
                           {
                             "id":"1f33eed8-dc23-4cf2-aa15-60f6e82ca812",
-                            "event":"69610c49-de84-4be9-acad-3727ff8c0109",
+                            "trigger":"69610c49-de84-4be9-acad-3727ff8c0109",
                             "source":{
                               "state":"7050f7ec-9b60-48b4-afef-b93c2ea9512b",
                               "side":"bottom",
@@ -711,7 +716,7 @@
                         "transitions":[
                           {
                             "id":"7f475e84-a9c6-405f-abe3-0751cbac5b88",
-                            "event":"69610c49-de84-4be9-acad-3727ff8c0109",
+                            "trigger":"69610c49-de84-4be9-acad-3727ff8c0109",
                             "source":{
                               "state":"e2d9659c-35c9-445d-be91-2fa7ca7fd8fd",
                               "side":"top",
@@ -895,7 +900,7 @@
                         "transitions":[
                           {
                             "id":"4463ba11-7ce4-49b8-8024-e85c0b4b97bb",
-                            "event":"036932eb-ec1a-4f9e-b857-6e2edc5df8b1",
+                            "trigger":"036932eb-ec1a-4f9e-b857-6e2edc5df8b1",
                             "source":{
                               "state":"7f7021d5-5049-457c-b0d9-ef7c168d4826",
                               "side":"bottom",
@@ -949,7 +954,7 @@
                         "transitions":[
                           {
                             "id":"81ed8699-e01e-49a6-8f07-a93dab9c8f59",
-                            "event":"036932eb-ec1a-4f9e-b857-6e2edc5df8b1",
+                            "trigger":"036932eb-ec1a-4f9e-b857-6e2edc5df8b1",
                             "source":{
                               "state":"6a714232-df5a-4ec6-b0eb-836f4edcc189",
                               "side":"top",
@@ -1024,7 +1029,7 @@
                 "transitions":[
                   {
                     "id":"585b1e55-bbff-4456-9bec-ad1c0ff65e8d",
-                    "event":"6675bbe4-9c9f-4046-b97d-33eb8d934092",
+                    "trigger":"6675bbe4-9c9f-4046-b97d-33eb8d934092",
                     "source":{
                       "state":"81dca803-da16-45c5-9c4a-051bdaa71fe2",
                       "side":"left",
@@ -1078,7 +1083,7 @@
                   },
                   {
                     "id":"8c91995c-7c5a-47fa-8079-99cb0bc45866",
-                    "event":"48ce6b56-8a24-425e-ad55-e8c9b3a34b98",
+                    "trigger":"48ce6b56-8a24-425e-ad55-e8c9b3a34b98",
                     "source":{
                       "state":"81dca803-da16-45c5-9c4a-051bdaa71fe2",
                       "side":"right",
@@ -1132,7 +1137,7 @@
                 "transitions":[
                   {
                     "id":"d6cd20e2-cfdb-401d-b6a6-317d367a230f",
-                    "event":"48ce6b56-8a24-425e-ad55-e8c9b3a34b98",
+                    "trigger":"48ce6b56-8a24-425e-ad55-e8c9b3a34b98",
                     "source":{
                       "state":"57e0df48-c4d5-4aa6-b124-4bf41a2e2871",
                       "side":"left",

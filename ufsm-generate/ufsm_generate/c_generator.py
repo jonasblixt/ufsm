@@ -161,6 +161,12 @@ def _gen_transition_entries(hmodel, fmodel, f, ft, indent):
                 _emit(f, indent + indent_extra, f"m->wsv[{t.parent.index}] = {t.index};")
             else:
                 _emit(f, indent + indent_extra, f"m->wsv[{t.parent.index}] = {t.index};")
+            # If the target state has an out-bound, trigger-less transition
+            #  we set 'process_trigger_less' to enable the trigger-less loop.
+            for trans in t.transitions:
+                if trans.trigger != None:
+                    if trans.trigger.id == uuid.UUID("96b19d77-57c8-4219-8784-8c846f5bbb53"):
+                        _emit(f, indent + indent_extra, "process_trigger_less = 1;")
         for a in en.actions:
             if isinstance(a, ActionFunction):
                 _emit(f, indent + indent_extra, f"{a.action.name}(m->user);")
@@ -219,6 +225,8 @@ def _gen_process_func(hmodel, fmodel, f):
     _nl(f)
     _emit(f, 0, f"int {hmodel.name}_process(struct {hmodel.name}_machine *m, unsigned int event)")
     _emit(f, 0, "{")
+    _emit(f, 1, "unsigned int process_trigger_less = 0;")
+    _emit(f, 0, "process_more:")
     _nl(f)
 
     # Events
@@ -231,6 +239,9 @@ def _gen_process_func(hmodel, fmodel, f):
     _emit(f, 2, "break;")
     for _, event in hmodel.events.items():
         _emit(f, 2, f"case {event.name}:")
+        # Trigger-less, reserved UUID, special event
+        if event.id == uuid.UUID("96b19d77-57c8-4219-8784-8c846f5bbb53"):
+            _emit(f, 3, "process_trigger_less = 0;")
         for ft in fmodel.transition_schedule:
             if ft == None:
                 continue
@@ -270,6 +281,12 @@ def _gen_process_func(hmodel, fmodel, f):
         _emit(f, 3, "if(m->wsv[i] != 0)")
         _emit(f, 4, "m->csv[i] = m->wsv[i];")
         _emit(f, 1, "}")
+
+    # Trigger-less transitions
+    _emit(f, 1, "if (process_trigger_less == 1) {")
+    _emit(f, 2, "event = UFSM_TRIGGER_LESS;")
+    _emit(f, 2, "goto process_more;")
+    _emit(f, 1, "}")
 
     _emit(f, 1, "return 0;")
     _emit(f, 0, "}")

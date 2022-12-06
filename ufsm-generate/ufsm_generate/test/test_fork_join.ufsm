@@ -3,7 +3,7 @@
   "version":0,
   "name":"test_fork_join",
   "paper-size":1,
-  "events":[
+  "triggers":[
     {
       "name":"eBegin",
       "id":"b7e7f4d8-9810-43dd-9122-eca96f1dd7c1"
@@ -15,6 +15,10 @@
     {
       "name":"eEvent2",
       "id":"f6d6fab4-a445-42d0-b9a7-e3f5963669f7"
+    },
+    {
+      "name":"UFSM_TRIGGER_LESS",
+      "id":"96b19d77-57c8-4219-8784-8c846f5bbb53"
     }
   ],
   "signals":[
@@ -101,7 +105,7 @@
         "transitions":[
           {
             "id":"477cffe0-51bd-461a-b369-6637033ae504",
-            "event":"b7e7f4d8-9810-43dd-9122-eca96f1dd7c1",
+            "trigger":"b7e7f4d8-9810-43dd-9122-eca96f1dd7c1",
             "source":{
               "state":"46897167-2e8a-404f-b00a-dd6ea0ab18cc",
               "side":"right",
@@ -246,7 +250,7 @@
                 "transitions":[
                   {
                     "id":"f2b97bc3-94e0-4e31-b6a3-13bb7687d942",
-                    "event":"ac3fd304-23c5-45df-bb0c-6bf3f2ca7fac",
+                    "trigger":"ac3fd304-23c5-45df-bb0c-6bf3f2ca7fac",
                     "source":{
                       "state":"ebada67c-da69-415c-8455-76643bf1a238",
                       "side":"right",
@@ -483,7 +487,7 @@
         "transitions":[
           {
             "id":"b4f0f28e-4e23-40e1-b75f-5aacc17ff60c",
-            "event":"f6d6fab4-a445-42d0-b9a7-e3f5963669f7",
+            "trigger":"f6d6fab4-a445-42d0-b9a7-e3f5963669f7",
             "source":{
               "state":"940437ae-150f-447e-8ed1-fc0a373eeadd",
               "side":"right",

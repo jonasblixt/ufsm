@@ -13,7 +13,7 @@ void eB11(void *user) { ufsm_test_rec(__func__); }
 void eB20(void *user) { ufsm_test_rec(__func__); }
 void xB11(void *user) { ufsm_test_rec(__func__); }
 
-void main(void)
+int main(void)
 {
     struct test_nested_states3_machine m = {0};
 

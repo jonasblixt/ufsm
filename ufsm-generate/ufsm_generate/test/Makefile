@@ -5,6 +5,7 @@ CFLAGS = -Wall -pedantic -O2
 
 TESTS = test_model1 \
 		test_nested_states3 \
+		test_nested_states4 \
 		test_fork_join
 
 all: $(TESTS) run

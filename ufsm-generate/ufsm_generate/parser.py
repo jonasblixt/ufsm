@@ -12,10 +12,10 @@ UFSMM_GUARD_PSTATE = 7
 UFSMM_GUARD_NSTATE = 8
 
 
-def _parse_events(model, data):
-    logger.debug(f"Parsing events")
+def _parse_triggers(model, data):
+    logger.debug(f"Parsing triggers")
     index = 10 # 0 - 9 are reserved
-    for t in data["events"]:
+    for t in data["triggers"]:
         t_name = t["name"]
         t_id = t["id"]
         logger.debug(f"Trigger {t_name}")
@@ -143,12 +143,19 @@ def _parse_one_transition(model, transition_data):
     t = Transition(t_id, source_state, dest_state)
     source_state.transitions.append(t)
 
-    if "event" in transition_data.keys():
-        t.trigger_id = transition_data["event"]
-        t.trigger = model.events[uuid.UUID(t.trigger_id)]
-    elif "signal" in transition_data.keys():
-        t.trigger_id = transition_data["signal"]
-        t.trigger = model.signals[uuid.UUID(t.trigger_id)]
+    # Some transitions don't have triggers, for example transitions from
+    #  init states.
+    if "trigger" in transition_data.keys():
+        t.trigger_id = transition_data["trigger"]
+
+        if "trigger_type" in transition_data.keys():
+            if transition_data["trigger_type"] == 0:
+                t.trigger = model.events[uuid.UUID(t.trigger_id)]
+            else:
+                t.trigger = model.signals[uuid.UUID(t.trigger_id)]
+        else:
+            # Assume it's an normal event
+            t.trigger = model.events[uuid.UUID(t.trigger_id)]
 
     for action_data in transition_data["actions"]:
         action_kind = action_data["kind"]
@@ -230,7 +237,7 @@ def ufsm_parse_model(model_filename: str) -> Model:
 
     model = Model(model_name, model_version, model_kind)
 
-    _parse_events(model, data)
+    _parse_triggers(model, data)
     _parse_signals(model, data)
     _parse_actions(model, data)
     _parse_guards(model, data)
