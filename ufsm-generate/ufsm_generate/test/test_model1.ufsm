@@ -3,12 +3,6 @@
   "version":0,
   "name":"test_model1",
   "paper-size":3,
-  "signals":[
-    {
-      "name":"s1",
-      "id":"105f27f9-9e01-4206-a7db-b7b96260b4bb"
-    }
-  ],
   "triggers":[
     {
       "name":"e2",
@@ -41,6 +35,12 @@
     {
       "name":"UFSM_TRIGGER_LESS",
       "id":"96b19d77-57c8-4219-8784-8c846f5bbb53"
+    }
+  ],
+  "signals":[
+    {
+      "name":"s1",
+      "id":"105f27f9-9e01-4206-a7db-b7b96260b4bb"
     }
   ],
   "actions":[
