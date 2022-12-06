@@ -538,7 +538,7 @@
           {
             "id":"3077f730-a639-4c24-b3d5-fa6f57daeac9",
             "trigger":"105f27f9-9e01-4206-a7db-b7b96260b4bb",
-            "trigger_type":1,
+            "trigger-kind":1,
             "source":{
               "state":"4277b5e0-1854-4f1a-b95b-6cb0e1696d2a",
               "side":"right",

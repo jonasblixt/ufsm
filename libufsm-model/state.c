@@ -474,25 +474,25 @@ int ufsmm_state_add_entry_signal(struct ufsmm_model *model,
                                  uuid_t id,
                                  uuid_t signal_id)
 {
-    struct ufsmm_trigger *trigger;
+    struct ufsmm_signal *signal;
     struct ufsmm_action_ref *action_ref;
     int rc;
 
-    rc = ufsmm_model_get_trigger(model, signal_id, &trigger);
+    rc = ufsmm_model_get_signal(model, signal_id, &signal);
 
     if (rc != UFSMM_OK) {
         char uuid_str[37];
         uuid_unparse(id, uuid_str);
-        L_ERR("Unkown trigger %s", uuid_str);
+        L_ERR("Unkown signal %s", uuid_str);
         return rc;
     }
 
-    L_DEBUG("Adding signal entry action '%s' to state '%s'", trigger->name, state->name);
+    L_DEBUG("Adding signal entry action '%s' to state '%s'", signal->name, state->name);
 
     action_ref = malloc(sizeof(struct ufsmm_action_ref));
     memset(action_ref, 0, sizeof(*action_ref));
     action_ref->kind = UFSMM_ACTION_REF_SIGNAL;
-    action_ref->signal = trigger;
+    action_ref->signal = signal;
     memcpy(action_ref->id, id, 16);
     TAILQ_INSERT_TAIL(&state->entries, action_ref, tailq);
     return UFSMM_OK;
@@ -503,24 +503,24 @@ int ufsmm_state_add_exit_signal(struct ufsmm_model *model,
                                  uuid_t id,
                                  uuid_t signal_id)
 {
-    struct ufsmm_trigger *trigger;
+    struct ufsmm_signal *signal;
     struct ufsmm_action_ref *action_ref;
     int rc;
 
-    rc = ufsmm_model_get_trigger(model, signal_id, &trigger);
+    rc = ufsmm_model_get_signal(model, signal_id, &signal);
 
     if (rc != UFSMM_OK) {
         char uuid_str[37];
         uuid_unparse(id, uuid_str);
-        L_ERR("Unkown trigger %s", uuid_str);
+        L_ERR("Unkown signal %s", uuid_str);
         return rc;
     }
 
-    L_DEBUG("Adding signal exit action '%s' to state '%s'", trigger->name, state->name);
+    L_DEBUG("Adding signal exit action '%s' to state '%s'", signal->name, state->name);
 
     action_ref = malloc(sizeof(struct ufsmm_action_ref));
     memset(action_ref, 0, sizeof(*action_ref));
-    action_ref->signal = trigger;
+    action_ref->signal = signal;
     action_ref->kind = UFSMM_ACTION_REF_SIGNAL;
     memcpy(action_ref->id, id, 16);
     TAILQ_INSERT_TAIL(&state->exits, action_ref, tailq);

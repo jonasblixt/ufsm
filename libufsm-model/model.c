@@ -155,6 +155,55 @@ static int parse_triggers(json_object *j_list, struct ufsmm_model *model)
     return UFSMM_OK;
 }
 
+
+static int parse_signals(json_object *j_list, struct ufsmm_model *model)
+{
+    size_t no_of_signals = json_object_array_length(j_list);
+    json_object *j_signal;
+    json_object *j_name;
+    json_object *j_id;
+
+    L_DEBUG("no_of_signals = %zu", no_of_signals);
+
+    struct ufsmm_signal *signal;
+
+    TAILQ_INIT(&model->signals);
+    if (no_of_signals == 0) {
+        return UFSMM_OK;
+    }
+
+    for (unsigned int n = 0; n < no_of_signals; n++) {
+        j_signal = json_object_array_get_idx(j_list, n);
+
+        if (!json_object_object_get_ex(j_signal, "name", &j_name)) {
+            L_ERR("Could not read name property\n");
+            return -UFSMM_ERROR;
+        }
+
+        if (!json_object_object_get_ex(j_signal, "id", &j_id)) {
+            L_ERR("Could not read id property\n");
+            return -UFSMM_ERROR;
+        }
+
+        signal = malloc(sizeof(*signal));
+
+        if (signal == NULL)
+            return -UFSMM_ERROR;
+
+        memset(signal, 0, sizeof(*signal));
+
+        signal->name = strdup(json_object_get_string(j_name));
+        uuid_parse(json_object_get_string(j_id), signal->id);
+
+        L_DEBUG("Loaded signal '%s' %s", signal->name,
+                                          json_object_get_string(j_id));
+
+        TAILQ_INSERT_TAIL(&model->signals, signal, tailq);
+    }
+
+    return UFSMM_OK;
+}
+
 static int parse_root_region(struct ufsmm_model *model, json_object *j_region)
 {
     int rc = UFSMM_OK;
@@ -380,6 +429,10 @@ static int ufsmm_model_parse(struct ufsmm_model *model)
         {
             rc = parse_triggers(val, model);
         }
+        else if (strcmp(key, "signals") == 0)
+        {
+            rc = parse_signals(val, model);
+        }
         else if (strcmp(key, "region") == 0)
         {
             found_region = true;
@@ -414,8 +467,7 @@ int ufsmm_model_load(const char *filename, struct ufsmm_model **model_pp)
 
     model = malloc(sizeof(struct ufsmm_model));
 
-    if (!model)
-    {
+    if (!model) {
         L_ERR("Could not allocate memory for model");
         return -UFSMM_ERR_MEM;
     }
@@ -425,8 +477,7 @@ int ufsmm_model_load(const char *filename, struct ufsmm_model **model_pp)
 
     FILE *fp = fopen(filename, "r");
 
-    if (!fp)
-    {
+    if (!fp) {
         L_ERR("Could not open '%s'", filename);
         rc = -UFSMM_ERR_IO;
         goto err_free_model;
@@ -568,6 +619,32 @@ static int serialize_trigger_list(struct ufsmm_model *model,
     return UFSMM_OK;
 }
 
+static int serialize_signal_list(struct ufsmm_model *model,
+                                 json_object **out)
+{
+    struct ufsmm_signal *item;
+    char uuid_str[37];
+
+    json_object *signals = json_object_new_array();
+    json_object *signal;
+    json_object *name;
+    json_object *id;
+
+    TAILQ_FOREACH(item, &model->signals, tailq) {
+        signal = json_object_new_object();
+        name = json_object_new_string(item->name);
+        uuid_unparse(item->id, uuid_str);
+        id = json_object_new_string(uuid_str);
+
+        json_object_object_add(signal, "name", name);
+        json_object_object_add(signal, "id", id);
+        json_object_array_add(signals, signal);
+    }
+
+    (*out) = signals;
+    return UFSMM_OK;
+}
+
 int ufsmm_model_create(struct ufsmm_model **model_pp, const char *name)
 {
     struct ufsmm_model *model = NULL;
@@ -593,6 +670,7 @@ int ufsmm_model_create(struct ufsmm_model **model_pp, const char *name)
     TAILQ_INIT(&model->actions);
     TAILQ_INIT(&model->guards);
     TAILQ_INIT(&model->triggers);
+    TAILQ_INIT(&model->signals);
     TAILQ_INIT(&model->root->states);
     L_DEBUG("Created model '%s'", name);
 
@@ -698,6 +776,18 @@ int ufsmm_model_write(const char *filename, struct ufsmm_model *model)
         goto err_free_out;
     }
 
+    /* Serialize signals */
+
+    json_object *j_signals;
+
+    rc = serialize_signal_list(model, &j_signals);
+
+    if (rc != UFSMM_OK)
+    {
+        L_ERR("Signal serialization failed");
+        goto err_free_out;
+    }
+
     /* Create the model root object */
 
     jr = json_object_new_object();
@@ -711,6 +801,7 @@ int ufsmm_model_write(const char *filename, struct ufsmm_model *model)
     json_object_object_add(jr, "name", jr_name);
     json_object_object_add(jr, "paper-size", jr_paper_size);
     json_object_object_add(jr, "triggers", j_triggers);
+    json_object_object_add(jr, "signals", j_triggers);
     json_object_object_add(jr, "actions", j_actions);
     json_object_object_add(jr, "guards", j_guards);
     json_object_object_add(jr, "region", root_j_region);
@@ -799,6 +890,18 @@ static int free_triggers(struct ufsmm_model *model)
     return UFSMM_OK;
 }
 
+static int free_signals(struct ufsmm_model *model)
+{
+    struct ufsmm_signal *item;
+
+    while ((item = TAILQ_FIRST(&model->signals))) {
+        TAILQ_REMOVE(&model->signals, item, tailq);
+        free((void *) item->name);
+        free(item);
+    }
+
+    return UFSMM_OK;
+}
 int ufsmm_model_free(struct ufsmm_model *model)
 {
     struct ufsmm_stack *stack, *free_stack;
@@ -831,6 +934,11 @@ int ufsmm_model_free(struct ufsmm_model *model)
     L_DEBUG("Freeing triggers");
     rc = free_triggers(model);
 
+    if (rc != UFSMM_OK)
+        return rc;
+
+    L_DEBUG("Freeing signals");
+    rc = free_signals(model);
     if (rc != UFSMM_OK)
         return rc;
 
@@ -1037,6 +1145,7 @@ int ufsmm_model_get_action_by_name(struct ufsmm_model *model,
 
     return -UFSMM_ERROR;
 }
+
 int ufsmm_model_add_trigger(struct ufsmm_model *model, const char *name,
                            struct ufsmm_trigger **out)
 {
@@ -1071,6 +1180,40 @@ int ufsmm_model_add_trigger(struct ufsmm_model *model, const char *name,
     return rc;
 }
 
+int ufsmm_model_add_signal(struct ufsmm_model *model, const char *name,
+                           struct ufsmm_signal**out)
+{
+    int rc = UFSMM_OK;
+    struct ufsmm_signal *signal;
+
+    /* Check if signal already exits */
+
+    TAILQ_FOREACH(signal, &model->signals, tailq) {
+        if (strcmp(signal->name, name) == 0) {
+            (*out) = signal;
+            return UFSMM_OK;
+        }
+    }
+
+    signal = malloc(sizeof(struct ufsmm_signal));
+
+    if (signal == NULL)
+        return -UFSMM_ERROR;
+
+    memset(signal, 0, sizeof(*signal));
+
+    uuid_generate_random(signal->id);
+    signal->name = strdup(name);
+
+    TAILQ_INSERT_TAIL(&model->signals, signal, tailq);
+
+    if (out) {
+        (*out) = signal;
+    }
+
+    return rc;
+}
+
 int ufsmm_model_delete_trigger(struct ufsmm_model *model, uuid_t id)
 {
     bool found_item = false;
@@ -1099,6 +1242,21 @@ int ufsmm_model_get_trigger(struct ufsmm_model *model, uuid_t id,
     struct ufsmm_trigger *list;
 
     TAILQ_FOREACH(list, &model->triggers, tailq) {
+        if (uuid_compare(id, list->id) == 0) {
+            (*out) = list;
+            return UFSMM_OK;
+        }
+    }
+
+    return -UFSMM_ERROR;
+}
+
+int ufsmm_model_get_signal(struct ufsmm_model *model, uuid_t id,
+                           struct ufsmm_signal **out)
+{
+    struct ufsmm_signal *list;
+
+    TAILQ_FOREACH(list, &model->signals, tailq) {
         if (uuid_compare(id, list->id) == 0) {
             (*out) = list;
             return UFSMM_OK;
@@ -1148,6 +1306,20 @@ struct ufsmm_trigger * ufsmm_model_get_trigger_from_uuid(struct ufsmm_model *mod
     struct ufsmm_trigger *list;
 
     TAILQ_FOREACH(list, &model->triggers, tailq) {
+        if (uuid_compare(list->id, id) == 0) {
+            return list;
+        }
+    }
+
+    return NULL;
+}
+
+struct ufsmm_signal * ufsmm_model_get_signal_from_uuid(struct ufsmm_model *model,
+                                                       uuid_t id)
+{
+    struct ufsmm_signal *list;
+
+    TAILQ_FOREACH(list, &model->signals, tailq) {
         if (uuid_compare(list->id, id) == 0) {
             return list;
         }

@@ -52,6 +52,12 @@ enum ufsmm_state_kind
     UFSMM_STATE_TERMINATE,
 };
 
+enum ufsmm_trigger_kind
+{
+    UFSMM_TRIGGER_EVENT,
+    UFSMM_TRIGGER_SIGNAL,
+};
+
 enum ufsmm_action_kind
 {
     UFSMM_ACTION_ACTION,
@@ -129,7 +135,7 @@ struct ufsmm_action_ref
     double x, y, w, h; /* Support variables for the canvas */
     enum ufsmm_action_ref_kind kind;
     struct ufsmm_action *act;
-    struct ufsmm_trigger *signal;
+    struct ufsmm_signal *signal;
     TAILQ_ENTRY(ufsmm_action_ref) tailq;
 };
 
@@ -158,6 +164,16 @@ struct ufsmm_trigger
 };
 
 TAILQ_HEAD(ufsmm_triggers, ufsmm_trigger);
+
+struct ufsmm_signal
+{
+    uuid_t id;
+    const char *name;
+    int usage_count;
+    TAILQ_ENTRY(ufsmm_signal) tailq;
+};
+
+TAILQ_HEAD(ufsmm_signals, ufsmm_signal);
 
 struct ufsmm_vertice
 {
@@ -194,6 +210,7 @@ struct ufsmm_transition
 {
     uuid_t id;
     struct ufsmm_trigger *trigger;
+    struct ufsmm_signal *signal;
     struct ufsmm_action_refs actions;
     struct ufsmm_guard_refs guards;
     struct ufsmm_transition_state_ref source;
@@ -275,6 +292,7 @@ struct ufsmm_model
     struct ufsmm_actions guards;  /* Global list of guard functions */
     struct ufsmm_actions actions; /* Global list of action functions */
     struct ufsmm_triggers triggers;
+    struct ufsmm_signals signals;
     const char *name;
     int version;
     unsigned int no_of_regions;
@@ -307,6 +325,12 @@ int ufsmm_model_delete_trigger(struct ufsmm_model *model, uuid_t id);
 int ufsmm_model_get_trigger(struct ufsmm_model *model, uuid_t id,
                            struct ufsmm_trigger **out);
 
+int ufsmm_model_get_signal(struct ufsmm_model *model, uuid_t id,
+                           struct ufsmm_signal **out);
+
+int ufsmm_model_add_signal(struct ufsmm_model *model, const char *name,
+                           struct ufsmm_signal **out);
+
 int ufsmm_model_deserialize_coords(json_object *j_coords,
                                   struct ufsmm_coords *coords);
 
@@ -320,6 +344,10 @@ struct ufsmm_state *ufsmm_model_get_state_from_uuid(struct ufsmm_model *model,
 
 struct ufsmm_trigger * ufsmm_model_get_trigger_from_uuid(struct ufsmm_model *model,
                                                        uuid_t id);
+
+struct ufsmm_signal * ufsmm_model_get_signal_from_uuid(struct ufsmm_model *model,
+                                                       uuid_t id);
+
 int free_action_ref_list(struct ufsmm_action_refs *list);
 int free_guard_ref_list(struct ufsmm_guard_refs *list);
 int ufsmm_model_delete_region(struct ufsmm_model *model,

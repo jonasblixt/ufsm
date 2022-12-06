@@ -864,8 +864,13 @@ static void render_transition_text(cairo_t *cr,
 
     if (t->trigger) {
         text_ptr = t->trigger->name;
+    } else if (t->signal) {
+        text_ptr = t->signal->name;
     } else {
-        text_ptr = "trigger-less";
+        if (t->source.state->kind == UFSMM_STATE_INIT)
+            text_ptr = "";
+        else
+            text_ptr = "?";
     }
 
     cairo_text_extents (cr, text_ptr, &extents);

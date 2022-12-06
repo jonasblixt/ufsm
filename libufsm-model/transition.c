@@ -114,6 +114,7 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
     json_object *j_t;
     json_object *j_id;
     json_object *j_trigger;
+    json_object *j_trigger_kind;
     json_object *j_source;
     json_object *j_dest;
     json_object *j_text_block;
@@ -122,6 +123,7 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
     json_object *j_actions;
     struct ufsmm_transition *transition;
     uuid_t trigger_uu;
+    enum ufsmm_trigger_kind trigger_kind = UFSMM_TRIGGER_EVENT;
 
     size_t n_entries = json_object_array_length(j_transitions_list);
 
@@ -148,11 +150,22 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
 
         uuid_parse(json_object_get_string(j_id), transition->id);
 
+        if (json_object_object_get_ex(j_t, "trigger-kind", &j_trigger_kind)) {
+            trigger_kind = json_object_get_int(j_trigger_kind);
+            L_ERR("Trigger kind = %i", trigger_kind);
+        }
+
         if (json_object_object_get_ex(j_t, "trigger", &j_trigger)) {
             uuid_parse(json_object_get_string(j_trigger), trigger_uu);
-            transition->trigger = ufsmm_model_get_trigger_from_uuid(model,
-                                                                   trigger_uu);
-            transition->trigger->usage_count++;
+            if (trigger_kind == UFSMM_TRIGGER_EVENT) {
+                transition->trigger = ufsmm_model_get_trigger_from_uuid(model,
+                                                                       trigger_uu);
+                transition->trigger->usage_count++;
+            } else {
+                transition->signal = ufsmm_model_get_signal_from_uuid(model,
+                                                                       trigger_uu);
+                transition->signal->usage_count++;
+            }
         }
 
 /*
@@ -681,11 +694,11 @@ int ufsmm_transition_add_signal_action(struct ufsmm_model *model,
                                uuid_t id,
                                uuid_t signal_id)
 {
-    struct ufsmm_trigger *trigger;
+    struct ufsmm_signal *signal;
     struct ufsmm_action_ref *aref;
     int rc;
 
-    rc = ufsmm_model_get_trigger(model, signal_id, &trigger);
+    rc = ufsmm_model_get_signal(model, signal_id, &signal);
 
     if (rc != UFSMM_OK) {
         char uuid_str[37];
@@ -694,11 +707,11 @@ int ufsmm_transition_add_signal_action(struct ufsmm_model *model,
         return rc;
     }
 
-    L_DEBUG("Adding action signal '%s' to transition", trigger->name);
+    L_DEBUG("Adding action signal '%s' to transition", signal->name);
 
     aref = malloc(sizeof(struct ufsmm_action_ref));
     memset(aref, 0, sizeof(*aref));
-    aref->signal = trigger;
+    aref->signal = signal;
     aref->kind = UFSMM_ACTION_REF_SIGNAL;
     memcpy(aref->id, id, 16);
     TAILQ_INSERT_TAIL(&transition->actions, aref, tailq);

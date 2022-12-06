@@ -148,8 +148,8 @@ def _parse_one_transition(model, transition_data):
     if "trigger" in transition_data.keys():
         t.trigger_id = transition_data["trigger"]
 
-        if "trigger_type" in transition_data.keys():
-            if transition_data["trigger_type"] == 0:
+        if "trigger-kind" in transition_data.keys():
+            if transition_data["trigger-kind"] == 0:
                 t.trigger = model.events[uuid.UUID(t.trigger_id)]
             else:
                 t.trigger = model.signals[uuid.UUID(t.trigger_id)]
