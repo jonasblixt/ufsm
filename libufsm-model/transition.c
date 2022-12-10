@@ -596,9 +596,11 @@ int ufsmm_transition_free_one(struct ufsmm_transition *transition)
 
 int ufsmm_transition_set_trigger(struct ufsmm_model *model,
                                 struct ufsmm_transition *transition,
-                                struct ufsmm_trigger *trigger)
+                                struct ufsmm_trigger *trigger,
+                                enum ufsmm_trigger_kind kind)
 {
     transition->trigger = trigger;
+    transition->trigger_kind = kind;
     return UFSMM_OK;
 }
 

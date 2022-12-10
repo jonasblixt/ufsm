@@ -863,9 +863,9 @@ static void render_transition_text(cairo_t *cr,
     double x_space = tw;
     enum ufsmm_state_kind s_kind = t->source.state->kind;
 
-    if (t->trigger) {
+    if (t->trigger && t->trigger_kind == UFSMM_TRIGGER_EVENT) {
         text_ptr = t->trigger->name;
-    } else if (t->signal) {
+    } else if (t->signal && t->trigger_kind == UFSMM_TRIGGER_SIGNAL) {
         text_ptr = t->signal->name;
     } else if (t->trigger_kind == UFSMM_TRIGGER_AUTO) {
         text_ptr = "auto-transition";

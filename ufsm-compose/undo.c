@@ -112,7 +112,9 @@ struct ufsmm_undo_delete_region {
 struct ufsmm_undo_set_trigger {
     struct ufsmm_transition *transition;
     struct ufsmm_trigger *old_trigger;
+    enum ufsmm_trigger_kind old_kind;
     struct ufsmm_trigger *new_trigger;
+    enum ufsmm_trigger_kind new_kind;
 };
 
 struct ufsmm_undo_toggle_off_page {
@@ -437,6 +439,7 @@ int ufsmm_undo(struct ufsmm_undo_context *undo)
                     (struct ufsmm_undo_set_trigger *) op->data;
 
                 set_op->transition->trigger = set_op->old_trigger;
+                set_op->transition->trigger_kind = set_op->old_kind;
             }
             break;
             case UFSMM_UNDO_TOGGLE_OFF_PAGE:
@@ -710,6 +713,7 @@ int ufsmm_redo(struct ufsmm_undo_context *undo)
                     (struct ufsmm_undo_set_trigger *) op->data;
 
                 set_op->transition->trigger = set_op->new_trigger;
+                set_op->transition->trigger_kind = set_op->new_kind;
             }
             break;
             case UFSMM_UNDO_TOGGLE_OFF_PAGE:
@@ -1552,7 +1556,8 @@ err_free_data:
 
 int ufsmm_undo_set_trigger(struct ufsmm_undo_ops *ops,
                            struct ufsmm_transition *transition,
-                           struct ufsmm_trigger *old_trigger)
+                           struct ufsmm_trigger *old_trigger,
+                           enum ufsmm_trigger_kind old_kind)
 {
     int rc = 0;
     struct ufsmm_undo_set_trigger *data = \
@@ -1572,6 +1577,7 @@ int ufsmm_undo_set_trigger(struct ufsmm_undo_ops *ops,
 
     data->transition = transition;
     data->old_trigger = old_trigger;
+    data->old_kind = old_kind;
     data->new_trigger = transition->trigger;
     op->data = data;
     op->kind = UFSMM_UNDO_SET_TRIGGER;

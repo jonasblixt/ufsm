@@ -11,7 +11,8 @@ enum
   NUM_COLUMNS
 };
 
-struct ufsmm_trigger *selected_trigger;
+static struct ufsmm_trigger *selected_trigger;
+static enum ufsmm_trigger_kind selected_trigger_kind;
 
 static void input_changed(GtkEntry *entry, gpointer user_data)
 {
@@ -115,6 +116,26 @@ static void cell_data_func (GtkTreeViewColumn *col,
     g_free(label);
 }
 
+static enum ufsmm_trigger_kind trigger_kind(GtkTreeModel *model,
+                                            GtkTreeIter *iter)
+{
+    gchar *name;
+    enum ufsmm_trigger_kind result;
+    gtk_tree_model_get(model, iter, COLUMN_NAME, &name, -1);
+
+    if (strcmp(name, "completion") == 0)
+        result = UFSMM_TRIGGER_COMPLETION;
+    else if (strcmp(name, "auto-transition") == 0)
+        result = UFSMM_TRIGGER_AUTO;
+    else if (name[0] == '^')
+        result = UFSMM_TRIGGER_SIGNAL;
+    else
+        result = UFSMM_TRIGGER_EVENT;
+
+    g_free(name);
+    return result;
+}
+
 static gboolean view_selection_func(GtkTreeSelection *selection,
                                GtkTreeModel     *model,
                                GtkTreePath      *path,
@@ -131,6 +152,7 @@ static gboolean view_selection_func(GtkTreeSelection *selection,
         if (!path_currently_selected) {
             gtk_tree_model_get(model, &iter, COLUMN_TRIGGER_REF,
                                 &selected_trigger, -1);
+            selected_trigger_kind = trigger_kind(model, &iter);
         }
 
         g_free(name);
@@ -151,14 +173,9 @@ static void list_row_activated_cb(GtkTreeView        *treeview,
     model = gtk_tree_view_get_model(treeview);
 
     if (gtk_tree_model_get_iter(model, &iter, path)) {
-       gchar *name;
-
-       gtk_tree_model_get(model, &iter, COLUMN_NAME, &name, -1);
-       gtk_tree_model_get(model, &iter, COLUMN_TRIGGER_REF, &selected_trigger, -1);
-
-       L_DEBUG("Selected trigger '%s'", name);
-       gtk_dialog_response(GTK_DIALOG(userdata), GTK_RESPONSE_ACCEPT);
-       g_free(name);
+        gtk_tree_model_get(model, &iter, COLUMN_TRIGGER_REF, &selected_trigger, -1);
+        selected_trigger_kind = trigger_kind(model, &iter);
+        gtk_dialog_response(GTK_DIALOG(userdata), GTK_RESPONSE_ACCEPT);
     }
 }
 
@@ -171,6 +188,7 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
     GtkDialogFlags flags;
 
     selected_trigger = NULL;
+    selected_trigger_kind = UFSMM_TRIGGER_EVENT;
 
     flags = GTK_DIALOG_MODAL;
     dialog = gtk_dialog_new_with_buttons("Set trigger",
@@ -279,9 +297,11 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
     L_DEBUG("result = %i", result);
 
     if (result == GTK_RESPONSE_ACCEPT) {
+        L_DEBUG("Setting new trigger to %p %i", selected_trigger, selected_trigger_kind);
         rc = ufsmm_transition_set_trigger(model, transition,
-                                            selected_trigger);
-    } else if (result == 1) { /* Create new action */
+                                            selected_trigger,
+                                            selected_trigger_kind);
+    } else if (result == 1 && selected_trigger_kind == UFSMM_TRIGGER_EVENT) { /* Create new event */
         const char *new_name = gtk_entry_get_text(GTK_ENTRY(input));
 
         if (strlen(new_name) == 0 && (selected_trigger != NULL))
@@ -293,7 +313,8 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
             goto err_out;
 
         rc = ufsmm_transition_set_trigger(model, transition,
-                                            selected_trigger);
+                                            selected_trigger,
+                                            UFSMM_TRIGGER_EVENT);
     } else {
         rc = -1;
     }
@@ -301,5 +322,6 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
 err_out:
     gtk_widget_destroy (dialog);
 
+    L_DEBUG("rc = %i", rc);
     return rc;
 }

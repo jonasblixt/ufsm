@@ -2924,6 +2924,7 @@ void canvas_set_transition_trigger(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_trigger *old_trigger = priv->selected_transition->trigger;
+    enum ufsmm_trigger_kind old_kind = priv->selected_transition->trigger_kind;
     struct ufsmm_transition *t = priv->selected_transition;
     int rc;
 
@@ -2945,14 +2946,15 @@ void canvas_set_transition_trigger(void *context)
 
     if (rc == UFSMM_OK) {
         struct ufsmm_undo_ops *undo_ops = ufsmm_undo_new_ops();
-        ufsmm_undo_set_trigger(undo_ops, t, old_trigger);
+        ufsmm_undo_set_trigger(undo_ops, t, old_trigger, old_kind);
 
         if (old_trigger) {
             old_trigger->usage_count--;
         }
 
-        t->trigger->usage_count++;
-
+        if (t->trigger)
+            t->trigger->usage_count++;
+        L_DEBUG("Unto commit, old trigger = %p, new_trigger = %p", old_trigger, t->trigger);
         ufsmm_undo_commit_ops(priv->undo, undo_ops);
     }
 }

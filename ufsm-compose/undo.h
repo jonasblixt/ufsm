@@ -142,7 +142,8 @@ int ufsmm_undo_delete_region(struct ufsmm_undo_ops *ops,
 
 int ufsmm_undo_set_trigger(struct ufsmm_undo_ops *ops,
                            struct ufsmm_transition *transition,
-                           struct ufsmm_trigger *old_trigger);
+                           struct ufsmm_trigger *old_trigger,
+                           enum ufsmm_trigger_kind old_kind);
 
 int ufsmm_undo_toggle_offpage(struct ufsmm_undo_ops *ops,
                               struct ufsmm_region *region,

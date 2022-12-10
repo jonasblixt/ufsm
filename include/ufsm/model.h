@@ -456,7 +456,8 @@ int ufsmm_transitions_serialize(struct ufsmm_state *state,
 
 int ufsmm_transition_set_trigger(struct ufsmm_model *model,
                                 struct ufsmm_transition *transition,
-                                struct ufsmm_trigger *trigger);
+                                struct ufsmm_trigger *trigger,
+                                enum ufsmm_trigger_kind kind);
 
 int ufsmm_transition_add_guard(struct ufsmm_model *model,
                               struct ufsmm_transition *transition,
