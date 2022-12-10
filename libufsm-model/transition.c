@@ -419,6 +419,14 @@ int ufsmm_transitions_serialize(struct ufsmm_state *state,
             uuid_unparse(t->trigger->id, uuid_str);
             j_trigger_id = json_object_new_string(uuid_str);
             json_object_object_add(j_t, "trigger", j_trigger_id);
+            json_object_object_add(j_t, "trigger-kind",
+                                json_object_new_int(UFSMM_TRIGGER_EVENT));
+        } else if (t->signal) {
+            uuid_unparse(t->signal->id, uuid_str);
+            j_trigger_id = json_object_new_string(uuid_str);
+            json_object_object_add(j_t, "trigger", j_trigger_id);
+            json_object_object_add(j_t, "trigger-kind",
+                                json_object_new_int(UFSMM_TRIGGER_SIGNAL));
         }
 
         /* Add source state */

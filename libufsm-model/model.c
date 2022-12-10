@@ -801,7 +801,7 @@ int ufsmm_model_write(const char *filename, struct ufsmm_model *model)
     json_object_object_add(jr, "name", jr_name);
     json_object_object_add(jr, "paper-size", jr_paper_size);
     json_object_object_add(jr, "triggers", j_triggers);
-    json_object_object_add(jr, "signals", j_triggers);
+    json_object_object_add(jr, "signals", j_signals);
     json_object_object_add(jr, "actions", j_actions);
     json_object_object_add(jr, "guards", j_guards);
     json_object_object_add(jr, "region", root_j_region);

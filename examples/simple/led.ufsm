@@ -3,6 +3,8 @@
   "version":0,
   "name":"led",
   "paper-size":1,
+  "signals":[
+  ],
   "triggers":[
     {
       "name":"eToggle",

@@ -160,7 +160,7 @@ def _gen_transition_entries(hmodel, fmodel, f, ft, indent):
                 indent_extra += 1
                 _emit(f, indent + indent_extra, f"m->wsv[{t.parent.index}] = {t.index};")
             else:
-                _emit(f, indent + indent_extra, f"m->wsv[{t.parent.index}] = {t.index};")
+                _emit(f, indent + indent_extra, f"m->wsv[{t.parent.index}] = {t.index}; // {t.parent} = {t}")
             # If the target state has an out-bound, trigger-less transition
             #  we set 'process_trigger_less' to enable the trigger-less loop.
             for trans in t.transitions:
@@ -238,6 +238,9 @@ def _gen_process_func(hmodel, fmodel, f):
     _gen_reset_vector(hmodel, fmodel, f)
     _emit(f, 2, "break;")
     for _, event in hmodel.events.items():
+        # Ignore 'completion-events' here
+        if event.id == uuid.UUID("a7312b45-d88a-4f8c-9800-5be79e0d900a"):
+            continue
         _emit(f, 2, f"case {event.name}:")
         # Trigger-less, reserved UUID, special event
         if event.id == uuid.UUID("96b19d77-57c8-4219-8784-8c846f5bbb53"):

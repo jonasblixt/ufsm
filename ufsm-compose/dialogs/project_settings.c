@@ -131,6 +131,84 @@ static GtkListStore *create_trigger_tab(GtkNotebook *notebook, struct ufsmm_mode
     return store;
 }
 
+static GtkListStore *create_signal_tab(GtkNotebook *notebook, struct ufsmm_model *model)
+{
+    GtkWidget *lbl = gtk_label_new("Signals");
+    GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+    gtk_widget_set_margin_bottom(scrolled_window, 10);
+
+    /* Create treeview */
+    GtkTreeIter iter;
+    GtkListStore *store = gtk_list_store_new (ACT_NUM_COLUMNS,
+                                                G_TYPE_STRING,
+                                                G_TYPE_UINT,
+                                                G_TYPE_BOOLEAN,
+                                                G_TYPE_POINTER,
+                                                G_TYPE_POINTER);
+
+    struct ufsmm_signal *s;
+
+
+    TAILQ_FOREACH(s, &model->signals, tailq) {
+        gtk_list_store_append(store, &iter);
+        gtk_list_store_set (store, &iter,
+                            ACT_COLUMN_NAME, s->name,
+                            ACT_COLUMN_USAGE, s->usage_count,
+                            ACT_COLUMN_DEL, false,
+                            ACT_COLUMN_ACTION_REF, s,
+                            ACT_COLUMN_LIST_REF, &model->signals,
+                            -1);
+    }
+
+    GtkWidget *treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), TRUE);
+    gtk_tree_view_set_enable_search(GTK_TREE_VIEW(treeview), TRUE);
+
+    GtkCellRenderer *renderer;
+    GtkTreeViewColumn *column;
+
+    /* Delete column */
+    renderer = gtk_cell_renderer_toggle_new();
+    g_signal_connect(renderer, "toggled", G_CALLBACK(fixed_toggled), store);
+    column = gtk_tree_view_column_new_with_attributes("Del",
+                                                       renderer,
+                                                       "active", ACT_COLUMN_DEL,
+                                                       NULL);
+
+    /* set this column to a fixed sizing (of 50 pixels) */
+    gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),
+                                   GTK_TREE_VIEW_COLUMN_FIXED);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column), 70);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+
+    /* Name column */
+    renderer = gtk_cell_renderer_text_new();
+    g_object_set(renderer, "editable", TRUE, NULL);
+    g_signal_connect(renderer, "edited", G_CALLBACK(cell_edited), store);
+    column = gtk_tree_view_column_new_with_attributes("Name",
+                                                       renderer,
+                                                       "text", ACT_COLUMN_NAME,
+                                                       NULL);
+
+    gtk_tree_view_column_set_sort_column_id(column, ACT_COLUMN_NAME);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+
+    /* Usage column */
+    renderer = gtk_cell_renderer_text_new();
+    column = gtk_tree_view_column_new_with_attributes("Usage",
+                                                       renderer,
+                                                       "text", ACT_COLUMN_USAGE,
+                                                       NULL);
+
+    gtk_tree_view_column_set_sort_column_id(column, ACT_COLUMN_USAGE);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+
+
+    gtk_container_add(GTK_CONTAINER(scrolled_window), treeview);
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), scrolled_window, lbl);
+
+    return store;
+}
 
 static GtkListStore *create_guard_tab(GtkNotebook *notebook, struct ufsmm_model *model)
 {
@@ -487,6 +565,70 @@ static void delete_trigger(struct ufsmm_model *model, struct ufsmm_region *copy_
     free((void *) trigger->name);
     free(trigger);
 }
+
+static void delete_signal(struct ufsmm_model *model, struct ufsmm_region *copy_bfr,
+                                struct ufsmm_signal *signal)
+{
+    struct ufsmm_stack *stack;
+    struct ufsmm_region *r, *r2;
+    struct ufsmm_state *s;
+    struct ufsmm_transition *t;
+    struct ufsmm_action_ref *aref, *aref_tmp;
+
+    ufsmm_stack_init(&stack);
+    ufsmm_stack_push(stack, model->root);
+    if (copy_bfr) {
+        ufsmm_stack_push(stack, copy_bfr);
+    }
+
+    /* Delete all references to signal
+     *  - Reset trigger where the signal is the trigger
+     *  - Remove Entry/Exit actions that emit this signal
+     *  - Remove transition actions that emit this singal
+     **/
+
+    while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
+        TAILQ_FOREACH(s, &r->states, tailq) {
+            /* Locate and delete entry actions where this signal is emitted */
+            for (aref = TAILQ_FIRST(&s->entries); aref != NULL; aref = aref_tmp) {
+                aref_tmp = TAILQ_NEXT(aref, tailq);
+                if (aref->signal == signal) {
+                    TAILQ_REMOVE(&s->entries, aref, tailq);
+                    free(aref);
+                }
+            }
+            /* Locate and delete exit actions where this signal is emitted */
+            for (aref = TAILQ_FIRST(&s->exits); aref != NULL; aref = aref_tmp) {
+                aref_tmp = TAILQ_NEXT(aref, tailq);
+                if (aref->signal == signal) {
+                    TAILQ_REMOVE(&s->exits, aref, tailq);
+                    free(aref);
+                }
+            }
+            TAILQ_FOREACH(t, &s->transitions, tailq) {
+                if (t->signal == signal)
+                    t->signal = NULL;
+                /* Locate and delete transition actions where this signal is emitted */
+                for (aref = TAILQ_FIRST(&t->actions); aref != NULL; aref = aref_tmp) {
+                    aref_tmp = TAILQ_NEXT(aref, tailq);
+                    if (aref->signal == signal) {
+                        TAILQ_REMOVE(&t->actions, aref, tailq);
+                        free(aref);
+                    }
+                }
+            }
+
+            TAILQ_FOREACH(r2, &s->regions, tailq) {
+                ufsmm_stack_push(stack, r2);
+            }
+        }
+    }
+
+    TAILQ_REMOVE(&model->signals, signal, tailq);
+    free((void *) signal->name);
+    free(signal);
+}
+
 int ufsm_project_settings_dialog(GtkWindow *parent, struct ufsmm_model *model,
                                         struct ufsmm_region *copy_bfr)
 {
@@ -527,6 +669,7 @@ int ufsm_project_settings_dialog(GtkWindow *parent, struct ufsmm_model *model,
     GtkListStore *action_list = create_action_tab(GTK_NOTEBOOK(notebook), model);
     GtkListStore *guard_list = create_guard_tab(GTK_NOTEBOOK(notebook), model);
     GtkListStore *trigger_list = create_trigger_tab(GTK_NOTEBOOK(notebook), model);
+    GtkListStore *signal_list = create_signal_tab(GTK_NOTEBOOK(notebook), model);
 
     gtk_box_pack_start(GTK_BOX(content_area), notebook, TRUE, TRUE, 0);
     gtk_widget_show_all(notebook);
@@ -536,10 +679,11 @@ int ufsm_project_settings_dialog(GtkWindow *parent, struct ufsmm_model *model,
     if (result == GTK_RESPONSE_ACCEPT) {
         GtkTreeIter iter;
         gboolean delete_iter;
-        gchar *act_name, *trigger_name;
+        gchar *act_name, *trigger_name, *signal_name;
         struct ufsmm_action *act;
         struct ufsmm_actions *act_list;
         struct ufsmm_trigger *trigger;
+        struct ufsmm_signal *signal;
 
         if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(action_list), &iter)) {
             do {
@@ -607,6 +751,28 @@ int ufsm_project_settings_dialog(GtkWindow *parent, struct ufsmm_model *model,
                 }
             } while (gtk_tree_model_iter_next(GTK_TREE_MODEL(trigger_list), &iter));
         }
+
+        if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(signal_list), &iter)) {
+            do {
+                gtk_tree_model_get(GTK_TREE_MODEL(signal_list), &iter,
+                                    ACT_COLUMN_NAME, &signal_name, -1);
+                gtk_tree_model_get(GTK_TREE_MODEL(signal_list), &iter,
+                                    ACT_COLUMN_DEL, &delete_iter, -1);
+                gtk_tree_model_get(GTK_TREE_MODEL(signal_list), &iter,
+                                    ACT_COLUMN_ACTION_REF, &signal, -1);
+
+                if (strcmp(signal_name, signal->name) != 0) {
+                    L_DEBUG("Signal %s changed name to %s", signal->name, signal_name);
+                    free((void *) signal->name);
+                    signal->name = signal_name;
+                }
+                if (delete_iter) {
+                    L_DEBUG("Want to delete signal '%s'", signal->name);
+                    delete_signal(model, copy_bfr, signal);
+                }
+            } while (gtk_tree_model_iter_next(GTK_TREE_MODEL(signal_list), &iter));
+        }
+
         rc = 0;
     } else {
         memcpy(model, &model_copy, sizeof(*model));

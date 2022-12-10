@@ -861,16 +861,21 @@ static void render_transition_text(cairo_t *cr,
     double x = tx;
     double y = ty + 20;
     double x_space = tw;
+    enum ufsmm_state_kind s_kind = t->source.state->kind;
 
     if (t->trigger) {
         text_ptr = t->trigger->name;
     } else if (t->signal) {
         text_ptr = t->signal->name;
     } else {
-        if (t->source.state->kind == UFSMM_STATE_INIT)
+        if ((s_kind == UFSMM_STATE_INIT) ||
+            (s_kind == UFSMM_STATE_SHALLOW_HISTORY) ||
+            (s_kind == UFSMM_STATE_DEEP_HISTORY) ||
+            (s_kind == UFSMM_STATE_FORK)) {
             text_ptr = "";
-        else
+        } else {
             text_ptr = "?";
+        }
     }
 
     cairo_text_extents (cr, text_ptr, &extents);

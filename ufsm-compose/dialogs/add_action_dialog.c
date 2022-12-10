@@ -225,15 +225,15 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                             -1);
     }
 
-    struct ufsmm_trigger *t;
-    TAILQ_FOREACH(t, &model->triggers, tailq) {
+    struct ufsmm_signal *s;
+    TAILQ_FOREACH(s, &model->signals, tailq) {
         char tmp_buf[1024];
         gtk_list_store_append(store, &iter);
-        snprintf(tmp_buf, sizeof(tmp_buf), "^%s", t->name);
+        snprintf(tmp_buf, sizeof(tmp_buf), "^%s", s->name);
         gtk_list_store_set (store, &iter,
                             COLUMN_MATCH_RATING, 0,
                             COLUMN_NAME, tmp_buf,
-                            COLUMN_SIGNAL, t,
+                            COLUMN_SIGNAL, s,
                             -1);
     }
 
@@ -290,6 +290,8 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
     int result = gtk_dialog_run(GTK_DIALOG(dialog));
     const char *action_name = gtk_entry_get_text(GTK_ENTRY(input));
 
+    L_DEBUG("Result = %i, %p %p", result, selected_action, selected_signal);
+
     if (strlen(action_name) == 0 && (selected_action != NULL))
         action_name = selected_action->name;
 
@@ -316,7 +318,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                 rc = -1;
             break;
         }
-    } else if ((result == 1) && (action_name[0] != '^')) { /* Create new action */
+    } else if (result == 1 && !selected_action && !selected_signal) { /* Create new action */
         uuid_t id;
         uuid_generate_random(id);
 
@@ -347,7 +349,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                 rc = -1;
             break;
         }
-    } else if (selected_signal && (result == GTK_RESPONSE_ACCEPT)) {
+    } else if (selected_signal) {
         uuid_t id;
         uuid_generate_random(id);
 

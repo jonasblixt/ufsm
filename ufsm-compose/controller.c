@@ -4525,13 +4525,13 @@ static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
     if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
         ufsm_process(&priv->machine.machine, eRMBDown);
     } else if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
-        //if (!menu_process(priv->menu, &priv->machine.machine, event->x, event->y)) {
+        if (!menu_process(priv->menu, &priv->machine.machine, event->x, event->y)) {
             if (!ufsmm_nav_process(priv, event->x, event->y)) {
                 ufsm_process(&priv->machine.machine, eLMBDown);
             }
-        //} else {
-        //    priv->redraw = true;
-        //}
+        } else {
+            priv->redraw = true;
+        }
     } else if (event->type == GDK_DOUBLE_BUTTON_PRESS) {
         if (priv->selection == UFSMM_SELECTION_REGION) {
             if (priv->selected_region->off_page) {
@@ -4648,13 +4648,13 @@ static void draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data)
     height = allocation.height;
 
     priv->cr = cr;
-    //priv->menu->cr = cr;
+    priv->menu->cr = cr;
     priv->window_width = width;
     priv->window_height = height;
 
     ufsmm_canvas_render(priv, width, height);
     ufsmm_nav_render(priv, width, height);
-    //menu_render(priv->menu, priv->theme, priv->selection, width, height);
+    menu_render(priv->menu, priv->theme, priv->selection, width, height);
     uc_status_render(priv, width, height);
 }
 
@@ -4664,7 +4664,7 @@ static void destroy_event_cb(GtkWidget *widget)
                     g_object_get_data(G_OBJECT(widget), "canvas private");
     L_DEBUG("Freeing canvas %p", priv);
 
-    //menu_free(priv->menu);
+    menu_free(priv->menu);
     ufsmm_undo_free(priv->undo);
     free(priv);
 }
@@ -4690,7 +4690,7 @@ GtkWidget* ufsmm_canvas_new(GtkWidget *parent, int verbosity)
 
     memset(priv, 0, sizeof(*priv));
     priv->draw_menu = true;
-    //priv->menu = menu_init();
+    priv->menu = menu_init();
 
     if (verbosity > 2) {
         ufsm_debug_machine(&priv->machine.machine);

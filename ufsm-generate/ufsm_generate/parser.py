@@ -92,7 +92,9 @@ def _parse_state(model, state_data, parent_region):
         elif s_kind == "init":
             state = Init(s_id, s_name, parent_region)
         elif s_kind == "final":
-            state = Final(s_id, s_name, parent_region)
+            state_index = model.no_of_states + 1
+            model.no_of_states += 1
+            state = Final(s_id, s_name, parent_region, state_index)
         elif s_kind == "shallow-history":
             state = ShallowHistory(s_id, s_name, parent_region)
         elif s_kind == "deep-history":

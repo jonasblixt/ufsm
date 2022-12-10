@@ -56,28 +56,41 @@ def _build_entry_exit_rules(hmodel: Model):
 
     logger.debug("Building entry and exit rules")
     for s_id, s in hmodel.states.items():
-        # We only care about normal states
-        if not isinstance(s, State):
-            continue
+        # We only care about normal states and final states
+        if isinstance(s, State):
+            parent_states = find_parent_states(s)
 
-        parent_states = find_parent_states(s)
+            rule = Rule()
+            rule.states = parent_states.copy()
 
-        rule = Rule()
-        rule.states = parent_states.copy()
+            entry_rule = EntryRule(rule)
+            entry_rule.targets.append(s)
+            entry_rule.actions = s.entries.copy()
+            entry_rules[s_id] = entry_rule
 
-        entry_rule = EntryRule(rule)
-        entry_rule.targets.append(s)
-        entry_rule.actions = s.entries.copy()
-        entry_rules[s_id] = entry_rule
+            rule = Rule()
+            rule.states = [s] + parent_states.copy()
 
-        rule = Rule()
-        rule.states = [s] + parent_states.copy()
+            exit_rule = ExitRule(rule, s)
+            exit_rule.actions = s.exits.copy()
 
-        exit_rule = ExitRule(rule, s)
-        exit_rule.actions = s.exits.copy()
+            exit_rules[s_id] = exit_rule
+        elif isinstance(s, Final):
+            parent_states = find_parent_states(s)
 
-        exit_rules[s_id] = exit_rule
+            rule = Rule()
+            rule.states = parent_states.copy()
 
+            entry_rule = EntryRule(rule)
+            entry_rule.targets.append(s)
+            entry_rules[s_id] = entry_rule
+
+            rule = Rule()
+            rule.states = [s] + parent_states.copy()
+
+            exit_rule = ExitRule(rule, s)
+
+            exit_rules[s_id] = exit_rule
     return (entry_rules, exit_rules)
 
 
@@ -123,6 +136,9 @@ def _transition_enter(
 
     while len(state_stack) > 0:
         current_state = state_stack.pop()
+
+        if isinstance(current_state, Final):
+            continue
 
         for r in current_state.regions:
             ancestor_state = None
@@ -234,12 +250,69 @@ def _build_join(hmodel: Model, fmodel: FlatModel, t: Transition):
     ft.actions = t.actions
     return ft
 
-def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, t: Transition):
+def _compute_completion_event(hmodel: Model, fmodel: FlatModel, t: Transition):
+    """ Completion-event algorithm:
+
+        't'                     Transition
+        'ct'                    Completion transition
+        'exit_exclution_list'   List of states that must be excluded when
+                                computing the exit scope of a state
+
+        0) source_state = t.source, append t.source to the 'exit_exclusion_list'
+        1) We transition into a final state 'Final'
+        2) Check if the parent state to 'Final' has a 'completion-event' transition.
+            if it does, we continue with 'ct'
+        3) If orthogonal regions to 'Final' have one ore more final states, one
+           of them must be reached per region
+        4) If '3' is satisfied the 'ct' is executed
+            4a) Exit(ct.source, exit_exclution_list)
+            4b) Run 
+            4c) Append 'ct.source' on the 'exit_exclusion_list'
+        5) If ct.dest is another Final state: source_state = ct.source,
+            goto 1
+    """
+    completion_target = t.dest
+    completion_source_final = t.source
+    logging.debug(f"Searching from completion transitions to {t.dest.parent}.{t.dest}")
+
+    while completion_t := find_completion_transition_from_final(completion_target):
+        logging.debug(f"Completion transition {completion_t.source} -> {completion_t.dest}")
+        # Compute states to exit
+        exit_rules = []
+
+        # TODO: We need to consider final states in ortogonal regions
+
+        nca = nearest_common_ancestor(completion_source_final, completion_t.dest)
+        top_state_to_exit = find_ancestor_state(completion_source_final, nca)
+
+        if top_state_to_exit:
+            for s in descendant_states(top_state_to_exit):
+                if s.id == completion_source_final.id:
+                    continue
+                exit_rules.append(copy.deepcopy(fmodel.exit_rules[s.id]))
+        else:
+            exit_rules.append(copy.deepcopy(fmodel.exit_rules[completion_source_final.id]))
+
+        for xr in exit_rules:
+            logging.debug(f"{xr}")
+        ft.exits += exit_rules
+
+        top_state_to_enter = find_ancestor_state(completion_t.dest, nca)
+        ft.entries += _transition_enter(
+            hmodel, fmodel, top_state_to_enter, completion_t.dest, nca
+        )
+
+        completion_target = completion_t.dest
+        completion_source_final = completion_t.source
+
+
+def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, input_transition: Transition):
+    t = input_transition
+    logging.debug(f"Transition {t.trigger} {t.source} -> {t.dest}")
     ft = FlatTransition(t.trigger, t.source, t.dest)
     explicit_target_states = []
 
-    logging.debug(f"Transition {t.source} -> {t.dest}")
-    if isinstance(t.dest, State):
+    if isinstance(t.dest, State) or isinstance(t.dest, Final):
         explicit_target_states = [t.dest]
     elif isinstance(t.dest, Fork):
         explicit_target_states = find_target_states_from_fork(t.dest)
@@ -301,7 +374,6 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, t: Transiti
         exit_rules.append(copy.deepcopy(fmodel.exit_rules[t.source.id]))
 
     ft.exits = exit_rules
-
     ft.actions = t.actions
 
     # Compute states to enter
@@ -321,6 +393,12 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, t: Transiti
     )
 
     ft.entries = entry_rules
+
+    # If the destination state is a 'Final' state we shall try to statically
+    #  compute 'completion-events'
+    if isinstance(t.dest, Final):
+        _process_completion_event(hmodel, fmodel, t, tf)
+
     return ft
 
 
@@ -330,6 +408,10 @@ def _build_transition_schedule(hmodel: Model, fmodel: FlatModel):
         if not (isinstance(s, State) or isinstance(s, Join)):
             continue
         for t in s.transitions:
+            # Ignore 'completion-event' triggers
+            if t.trigger:
+                if t.trigger.id == uuid.UUID("a7312b45-d88a-4f8c-9800-5be79e0d900a"):
+                    continue
             result.append(_build_one_transition_schedule(hmodel, fmodel, t))
     return result
 

@@ -1,5 +1,22 @@
+import uuid
 from .model import *
 
+def find_completion_transition_from_final(state: State) -> [Transition]:
+    if not isinstance(state, Final):
+        return None
+
+    pr = state.parent
+    ps = pr.parent
+
+    if ps is None:
+        return None
+
+    for t in ps.transitions:
+        if t.trigger is None:
+            continue
+        if t.trigger.id == uuid.UUID("a7312b45-d88a-4f8c-9800-5be79e0d900a"):
+            return t
+    return None
 
 def find_parent_states(state: State) -> [State]:
     """Find all parent states of state 'state'"""
