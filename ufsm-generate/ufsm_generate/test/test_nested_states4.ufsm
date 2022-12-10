@@ -297,7 +297,7 @@
         "transitions":[
           {
             "id":"d6d2320d-955e-4969-ab51-4eedeb3f137f",
-            "trigger-kind":2,
+            "trigger-kind":0,
             "source":{
               "state":"fca52df3-95ed-4de6-baca-27b98149b8d0",
               "side":"bottom",

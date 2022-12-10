@@ -430,6 +430,9 @@ int ufsmm_transitions_serialize(struct ufsmm_state *state,
             json_object_object_add(j_t, "trigger", j_trigger_id);
             json_object_object_add(j_t, "trigger-kind",
                                 json_object_new_int(UFSMM_TRIGGER_SIGNAL));
+        } else {
+            json_object_object_add(j_t, "trigger-kind",
+                                json_object_new_int(t->trigger_kind));
         }
 
         /* Add source state */

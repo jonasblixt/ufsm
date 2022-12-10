@@ -48,8 +48,8 @@ bool ufsm_test_check(const char *expected[])
         printf("-----    ------   --------\n");
 
         for (unsigned int i = 0; i < max_count; i++) {
-            const char *exp = "?";
-            const char *act = "?";
+            const char *exp = "<NULL>";
+            const char *act = "<NULL>";
 
             if (i < test_vec_count)
                 act = test_vec[i];

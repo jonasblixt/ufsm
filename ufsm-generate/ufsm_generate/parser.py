@@ -146,6 +146,9 @@ def _parse_one_transition(model, transition_data):
 
     if "trigger" in transition_data.keys():
         t.trigger_id = transition_data["trigger"]
+    else:
+        t.trigger_id = None
+
     if "trigger-kind" in transition_data.keys():
         kind = transition_data["trigger-kind"]
 
