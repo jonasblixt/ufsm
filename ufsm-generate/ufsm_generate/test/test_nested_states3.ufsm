@@ -11,10 +11,6 @@
     {
       "name":"eStop",
       "id":"8017456c-8963-491d-86de-6300b2c454e8"
-    },
-    {
-      "name":"UFSM_TRIGGER_LESS",
-      "id":"96b19d77-57c8-4219-8784-8c846f5bbb53"
     }
   ],
   "signals":[
@@ -149,6 +145,7 @@
                           {
                             "id":"f327e7f2-e6ec-4997-a702-3011b0cce995",
                             "trigger":"8017456c-8963-491d-86de-6300b2c454e8",
+                            "trigger-kind":0,
                             "source":{
                               "state":"a2e620e9-7d68-4575-8f24-223913c47708",
                               "side":"right",
@@ -449,6 +446,7 @@
           {
             "id":"b96f33da-657e-40db-8ff9-f42699e71405",
             "trigger":"729e2449-02f7-49c3-8665-955897152903",
+            "trigger-kind":0,
             "source":{
               "state":"8e420283-0a71-4c0f-bf5c-195ffd65ba04",
               "side":"right",

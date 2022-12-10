@@ -258,7 +258,7 @@ def _compute_completion_event(hmodel: Model, fmodel: FlatModel, t: Transition):
         'exit_exclution_list'   List of states that must be excluded when
                                 computing the exit scope of a state
 
-        0) source_state = t.source, append t.source to the 'exit_exclusion_list'
+        0) source = t.source, append t.source to the 'exit_exclusion_list'
         1) We transition into a final state 'Final'
         2) Check if the parent state to 'Final' has a 'completion-event' transition.
             if it does, we continue with 'ct'
@@ -268,43 +268,48 @@ def _compute_completion_event(hmodel: Model, fmodel: FlatModel, t: Transition):
             4a) Exit(ct.source, exit_exclution_list)
             4b) Run 
             4c) Append 'ct.source' on the 'exit_exclusion_list'
-        5) If ct.dest is another Final state: source_state = ct.source,
+        5) If ct.dest is another Final state: source = ct.source,
             goto 1
     """
-    completion_target = t.dest
-    completion_source_final = t.source
-    logging.debug(f"Searching from completion transitions to {t.dest.parent}.{t.dest}")
 
-    while completion_t := find_completion_transition_from_final(completion_target):
-        logging.debug(f"Completion transition {completion_t.source} -> {completion_t.dest}")
-        # Compute states to exit
-        exit_rules = []
+    source = t.source
+    dest = t.dest
+    exit_exclusion_list = [source.id]
+    exit_rules = []
+    entry_rules = []
 
-        # TODO: We need to consider final states in ortogonal regions
+    logging.debug(f"Searching from completion transitions to {dest.parent}.{dest}")
 
-        nca = nearest_common_ancestor(completion_source_final, completion_t.dest)
-        top_state_to_exit = find_ancestor_state(completion_source_final, nca)
+    # Begining with the input transition 't' which has a 'Final' destination state
+    # we try to resolve all completion-events
+    while ct := find_completion_transition_from_final(dest):
+        logging.debug(f"Completion transition {ct.source} -> {ct.dest}")
+
+        nca = nearest_common_ancestor(source, ct.dest)
+        top_state_to_exit = find_ancestor_state(source, nca)
 
         if top_state_to_exit:
             for s in descendant_states(top_state_to_exit):
-                if s.id == completion_source_final.id:
+                if s.id in exit_exclusion_list:
                     continue
                 exit_rules.append(copy.deepcopy(fmodel.exit_rules[s.id]))
         else:
-            exit_rules.append(copy.deepcopy(fmodel.exit_rules[completion_source_final.id]))
+            exit_rules.append(copy.deepcopy(fmodel.exit_rules[source.id]))
+
+        exit_exclusion_list.append(ct.source.id)
 
         for xr in exit_rules:
             logging.debug(f"{xr}")
-        ft.exits += exit_rules
 
-        top_state_to_enter = find_ancestor_state(completion_t.dest, nca)
-        ft.entries += _transition_enter(
-            hmodel, fmodel, top_state_to_enter, completion_t.dest, nca
+        top_state_to_enter = find_ancestor_state(ct.dest, nca)
+        entry_rules += _transition_enter(
+            hmodel, fmodel, top_state_to_enter, ct.dest, nca
         )
 
-        completion_target = completion_t.dest
-        completion_source_final = completion_t.source
+        dest = ct.dest
+        source = ct.source
 
+    return exit_rules, entry_rules
 
 def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, input_transition: Transition):
     t = input_transition
@@ -397,7 +402,10 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, input_trans
     # If the destination state is a 'Final' state we shall try to statically
     #  compute 'completion-events'
     if isinstance(t.dest, Final):
-        _process_completion_event(hmodel, fmodel, t, tf)
+        completion_exits, completion_entries = _compute_completion_event(hmodel, fmodel, t)
+
+        ft.entries += completion_entries
+        ft.exits += completion_exits
 
     return ft
 
@@ -409,10 +417,11 @@ def _build_transition_schedule(hmodel: Model, fmodel: FlatModel):
             continue
         for t in s.transitions:
             # Ignore 'completion-event' triggers
-            if t.trigger:
-                if t.trigger.id == uuid.UUID("a7312b45-d88a-4f8c-9800-5be79e0d900a"):
-                    continue
-            result.append(_build_one_transition_schedule(hmodel, fmodel, t))
+            if isinstance(t.trigger, CompletionTrigger):
+                continue
+            schedule = _build_one_transition_schedule(hmodel, fmodel, t)
+            if schedule is not None:
+                result.append(schedule)
     return result
 
 

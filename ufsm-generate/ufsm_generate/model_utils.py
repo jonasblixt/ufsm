@@ -14,7 +14,7 @@ def find_completion_transition_from_final(state: State) -> [Transition]:
     for t in ps.transitions:
         if t.trigger is None:
             continue
-        if t.trigger.id == uuid.UUID("a7312b45-d88a-4f8c-9800-5be79e0d900a"):
+        if isinstance(t.trigger, CompletionTrigger):
             return t
     return None
 

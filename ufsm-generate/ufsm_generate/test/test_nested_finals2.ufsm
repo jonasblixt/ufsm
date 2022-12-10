@@ -7,10 +7,6 @@
     {
       "name":"e1",
       "id":"95b20b81-3470-4164-a535-d646bafcbce2"
-    },
-    {
-      "name":"completion-event",
-      "id":"a7312b45-d88a-4f8c-9800-5be79e0d900a"
     }
   ],
   "signals":[
@@ -239,8 +235,7 @@
                 "transitions":[
                   {
                     "id":"9d1411fe-08b9-431d-9766-15a592552d37",
-                    "trigger":"a7312b45-d88a-4f8c-9800-5be79e0d900a",
-                    "trigger-kind":0,
+                    "trigger-kind":3,
                     "source":{
                       "state":"81d677bb-490f-4d59-8b36-bb3db88b5213",
                       "side":"right",
@@ -338,8 +333,7 @@
         "transitions":[
           {
             "id":"fdeb38ab-5446-45ae-8e75-7e26c5ceb28f",
-            "trigger":"a7312b45-d88a-4f8c-9800-5be79e0d900a",
-            "trigger-kind":0,
+            "trigger-kind":3,
             "source":{
               "state":"eb474d08-5ac6-4e6c-8ca0-fd980a3ab95b",
               "side":"right",

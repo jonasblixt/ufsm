@@ -199,11 +199,19 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
                                 G_TYPE_STRING,
                                 G_TYPE_POINTER);
 
-    /* Addd 'trigger-less' trigger */
+    /* Add special 'auto-transition' trigger */
     gtk_tree_store_append(store, &iter, NULL);
     gtk_tree_store_set (store, &iter,
                         COLUMN_MATCH_RATING, 0,
-                        COLUMN_NAME, "trigger-less",
+                        COLUMN_NAME, "auto-transition",
+                        COLUMN_TRIGGER_REF, NULL,
+                        -1);
+
+    /* Add special 'completion' trigger */
+    gtk_tree_store_append(store, &iter, NULL);
+    gtk_tree_store_set (store, &iter,
+                        COLUMN_MATCH_RATING, 0,
+                        COLUMN_NAME, "completion",
                         COLUMN_TRIGGER_REF, NULL,
                         -1);
 

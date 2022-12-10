@@ -867,6 +867,10 @@ static void render_transition_text(cairo_t *cr,
         text_ptr = t->trigger->name;
     } else if (t->signal) {
         text_ptr = t->signal->name;
+    } else if (t->trigger_kind == UFSMM_TRIGGER_AUTO) {
+        text_ptr = "auto-transition";
+    } else if (t->trigger_kind == UFSMM_TRIGGER_COMPLETION) {
+        text_ptr = "completion";
     } else {
         if ((s_kind == UFSMM_STATE_INIT) ||
             (s_kind == UFSMM_STATE_SHALLOW_HISTORY) ||

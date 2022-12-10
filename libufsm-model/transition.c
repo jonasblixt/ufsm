@@ -152,7 +152,10 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
 
         if (json_object_object_get_ex(j_t, "trigger-kind", &j_trigger_kind)) {
             trigger_kind = json_object_get_int(j_trigger_kind);
-            L_ERR("Trigger kind = %i", trigger_kind);
+            L_DEBUG("Trigger kind = %i", trigger_kind);
+            transition->trigger_kind = trigger_kind;
+        } else {
+            transition->trigger_kind = UFSMM_TRIGGER_EVENT;
         }
 
         if (json_object_object_get_ex(j_t, "trigger", &j_trigger)) {
@@ -161,7 +164,7 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
                 transition->trigger = ufsmm_model_get_trigger_from_uuid(model,
                                                                        trigger_uu);
                 transition->trigger->usage_count++;
-            } else {
+            } else if (trigger_kind == UFSMM_TRIGGER_SIGNAL) {
                 transition->signal = ufsmm_model_get_signal_from_uuid(model,
                                                                        trigger_uu);
                 transition->signal->usage_count++;

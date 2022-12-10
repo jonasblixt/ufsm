@@ -11,7 +11,6 @@ UFSMM_ACTION_REF_SIGNAL = 1
 UFSMM_GUARD_PSTATE = 7
 UFSMM_GUARD_NSTATE = 8
 
-
 def _parse_triggers(model, data):
     logger.debug(f"Parsing triggers")
     index = 10 # 0 - 9 are reserved
@@ -145,19 +144,22 @@ def _parse_one_transition(model, transition_data):
     t = Transition(t_id, source_state, dest_state)
     source_state.transitions.append(t)
 
-    # Some transitions don't have triggers, for example transitions from
-    #  init states.
     if "trigger" in transition_data.keys():
         t.trigger_id = transition_data["trigger"]
+    if "trigger-kind" in transition_data.keys():
+        kind = transition_data["trigger-kind"]
 
-        if "trigger-kind" in transition_data.keys():
-            if transition_data["trigger-kind"] == 0:
-                t.trigger = model.events[uuid.UUID(t.trigger_id)]
-            else:
-                t.trigger = model.signals[uuid.UUID(t.trigger_id)]
-        else:
-            # Assume it's an normal event
+        if (kind == UFSMM_TRIGGER_EVENT) and t.trigger_id:
             t.trigger = model.events[uuid.UUID(t.trigger_id)]
+        elif (kind == UFSMM_TRIGGER_SIGNAL) and t.trigger_id:
+            t.trigger = model.signals[uuid.UUID(t.trigger_id)]
+        elif kind == UFSMM_TRIGGER_AUTO:
+            t.trigger = AutoTransitionTrigger()
+        elif kind == UFSMM_TRIGGER_COMPLETION:
+            t.trigger = CompletionTrigger()
+
+    # Some transitions don't have triggers, for example transitions from
+    #  init states.
 
     for action_data in transition_data["actions"]:
         action_kind = action_data["kind"]

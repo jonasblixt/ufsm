@@ -17,21 +17,8 @@ int main(void)
 {
     struct test_nested_states4_machine m = {0};
 
-    {
-        printf("-> Reset\n");
-        ufsm_test_reset();
-        const char *exp[] = {"eA", NULL};
-        test_nested_states4_process(&m, UFSM_RESET);
-        assert (ufsm_test_check(exp) && "reset");
-    }
-
-    {
-        printf("-> eEvent\n");
-        ufsm_test_reset();
-        const char *exp[] = {"xA", "eB", "eB1", "xB1", "xB", "eC", "xC", "eD", NULL};
-        test_nested_states4_process(&m, eEvent);
-        assert (ufsm_test_check(exp) && "eEvent");
-    }
+    UFSM_TEST(test_nested_states4, UFSM_RESET, "eA");
+    UFSM_TEST(test_nested_states4, eEvent, "xA", "eB", "eB1", "xB1", "xB", "eC", "xC", "eD");
 
     return 0;
 }

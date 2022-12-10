@@ -56,6 +56,8 @@ enum ufsmm_trigger_kind
 {
     UFSMM_TRIGGER_EVENT,
     UFSMM_TRIGGER_SIGNAL,
+    UFSMM_TRIGGER_AUTO,
+    UFSMM_TRIGGER_COMPLETION,
 };
 
 enum ufsmm_action_kind
@@ -209,6 +211,7 @@ struct ufsmm_coords
 struct ufsmm_transition
 {
     uuid_t id;
+    enum ufsmm_trigger_kind trigger_kind;
     struct ufsmm_trigger *trigger;
     struct ufsmm_signal *signal;
     struct ufsmm_action_refs actions;

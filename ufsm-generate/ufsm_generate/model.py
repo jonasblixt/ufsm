@@ -2,6 +2,10 @@ from dataclasses import dataclass, field
 from uuid import UUID
 from typing import List, Any, Dict
 
+UFSMM_TRIGGER_EVENT = 0
+UFSMM_TRIGGER_SIGNAL = 1
+UFSMM_TRIGGER_AUTO = 2
+UFSMM_TRIGGER_COMPLETION = 3
 
 @dataclass
 class Event:
@@ -17,6 +21,15 @@ class Event:
     def __str__(self):
         return f"<{self.name}>"
 
+@dataclass
+class AutoTransitionTrigger:
+    def __str__(self):
+        return "<auto-transition>"
+
+@dataclass
+class CompletionTrigger:
+    def __str__(self):
+        return "<completion-event>"
 
 @dataclass
 class Signal:

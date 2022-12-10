@@ -72,6 +72,7 @@ def _gen_events(hmodel, f):
     _nl(f)
     _emit(f, 0, "/* Events */")
     _emit(f, 0, "#define UFSM_RESET 0")
+    _emit(f, 0, "#define UFSM_AUTO_TRANSITION 1")
     for _, event in hmodel.events.items():
         _emit(f, 0, f"#define {event.name} {event.index}")
 
@@ -162,11 +163,10 @@ def _gen_transition_entries(hmodel, fmodel, f, ft, indent):
             else:
                 _emit(f, indent + indent_extra, f"m->wsv[{t.parent.index}] = {t.index}; // {t.parent} = {t}")
             # If the target state has an out-bound, trigger-less transition
-            #  we set 'process_trigger_less' to enable the trigger-less loop.
+            #  we set 'process_auto_transition' to enable the trigger-less loop.
             for trans in t.transitions:
-                if trans.trigger != None:
-                    if trans.trigger.id == uuid.UUID("96b19d77-57c8-4219-8784-8c846f5bbb53"):
-                        _emit(f, indent + indent_extra, "process_trigger_less = 1;")
+                if isinstance(trans.trigger, AutoTransitionTrigger):
+                    _emit(f, indent + indent_extra, "process_auto_transition = 1;")
         for a in en.actions:
             if isinstance(a, ActionFunction):
                 _emit(f, indent + indent_extra, f"{a.action.name}(m->user);")
@@ -225,7 +225,7 @@ def _gen_process_func(hmodel, fmodel, f):
     _nl(f)
     _emit(f, 0, f"int {hmodel.name}_process(struct {hmodel.name}_machine *m, unsigned int event)")
     _emit(f, 0, "{")
-    _emit(f, 1, "unsigned int process_trigger_less = 0;")
+    _emit(f, 1, "unsigned int process_auto_transition = 0;")
     _emit(f, 0, "process_more:")
     _nl(f)
 
@@ -238,22 +238,22 @@ def _gen_process_func(hmodel, fmodel, f):
     _gen_reset_vector(hmodel, fmodel, f)
     _emit(f, 2, "break;")
     for _, event in hmodel.events.items():
-        # Ignore 'completion-events' here
-        if event.id == uuid.UUID("a7312b45-d88a-4f8c-9800-5be79e0d900a"):
-            continue
         _emit(f, 2, f"case {event.name}:")
-        # Trigger-less, reserved UUID, special event
-        if event.id == uuid.UUID("96b19d77-57c8-4219-8784-8c846f5bbb53"):
-            _emit(f, 3, "process_trigger_less = 0;")
+        # Auto-transition, reserved UUID, special event
+        if isinstance(event, AutoTransitionTrigger):
+            _emit(f, 3, "process_auto_transition = 0;")
         for ft in fmodel.transition_schedule:
-            if ft == None:
-                continue
-            if ft.trigger == None:
-                logger.error(f"Transition with no trigger: {ft}")
-                continue
-            if ft.trigger.id == event.id:
+            if isinstance(ft.trigger, Event) and ft.trigger.id == event.id:
                 _gen_transition(hmodel, fmodel, f, ft, 3)
         _emit(f, 2, f"break;")
+
+    _emit(f, 2, f"case UFSM_AUTO_TRANSITION:")
+    _emit(f, 3, "process_auto_transition = 0;")
+    for ft in fmodel.transition_schedule:
+        if isinstance(ft.trigger, AutoTransitionTrigger):
+            _gen_transition(hmodel, fmodel, f, ft, 3)
+    _emit(f, 2, f"break;")
+
     _emit(f, 2, "default:")
     _emit(f, 3, "return -UFSM_BAD_ARGUMENT;")
     _emit(f, 1, "}")
@@ -286,8 +286,8 @@ def _gen_process_func(hmodel, fmodel, f):
         _emit(f, 1, "}")
 
     # Trigger-less transitions
-    _emit(f, 1, "if (process_trigger_less == 1) {")
-    _emit(f, 2, "event = UFSM_TRIGGER_LESS;")
+    _emit(f, 1, "if (process_auto_transition == 1) {")
+    _emit(f, 2, "event = UFSM_AUTO_TRANSITION;")
     _emit(f, 2, "goto process_more;")
     _emit(f, 1, "}")
 

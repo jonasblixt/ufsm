@@ -7,10 +7,6 @@
     {
       "name":"eEvent",
       "id":"fd3c6f25-1da5-48f8-92cb-21dea0d855d8"
-    },
-    {
-      "name":"UFSM_TRIGGER_LESS",
-      "id":"96b19d77-57c8-4219-8784-8c846f5bbb53"
     }
   ],
   "signals":[
@@ -90,6 +86,7 @@
           {
             "id":"5c65c555-7c52-4166-8e3d-cef1a2d7dd79",
             "trigger":"fd3c6f25-1da5-48f8-92cb-21dea0d855d8",
+            "trigger-kind":0,
             "source":{
               "state":"5a8b241f-aca7-47d2-a0ac-879fa9e78305",
               "side":"right",
@@ -173,7 +170,7 @@
                 "transitions":[
                   {
                     "id":"3b97cb8a-ae2c-4e31-8922-f01f5156a993",
-                    "trigger":"96b19d77-57c8-4219-8784-8c846f5bbb53",
+                    "trigger-kind":2,
                     "source":{
                       "state":"95e32647-482e-4ded-810c-0ca01f84a19f",
                       "side":"right",
@@ -233,7 +230,7 @@
         "transitions":[
           {
             "id":"9653e0df-e438-466b-b35d-8308a69fd4f4",
-            "trigger":"96b19d77-57c8-4219-8784-8c846f5bbb53",
+            "trigger-kind":2,
             "source":{
               "state":"b0c5b28e-23ab-482f-b1de-21b4a529c978",
               "side":"bottom",
@@ -300,7 +297,7 @@
         "transitions":[
           {
             "id":"d6d2320d-955e-4969-ab51-4eedeb3f137f",
-            "trigger":"96b19d77-57c8-4219-8784-8c846f5bbb53",
+            "trigger-kind":2,
             "source":{
               "state":"fca52df3-95ed-4de6-baca-27b98149b8d0",
               "side":"bottom",
