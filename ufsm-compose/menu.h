@@ -5,6 +5,7 @@
 #include <sys/queue.h>
 #include <stdbool.h>
 #include <ufsm/ufsm.h>
+#include "logic/canvas.h"
 #include "colors.h"
 #include "common.h"
 
@@ -26,6 +27,6 @@ void menu_render(struct menu *menu,
                  enum ufsmm_color_theme theme,
                  enum ufsmm_selection selection,
                  double width, double height);
-bool menu_process(struct menu *menu, struct ufsm_machine *m, double px, double py);
+bool menu_process(struct menu *menu, struct canvas_machine *m, double px, double py);
 
 #endif

@@ -149,6 +149,8 @@
       "id":"014f10aa-1b3a-423c-be00-22220412d6a4"
     }
   ],
+  "signals":[
+  ],
   "actions":[
     {
       "name":"canvas_select_root_region",
@@ -954,6 +956,7 @@
                   {
                     "id":"a94b1fd9-8715-4bec-b13e-e1592c9c311b",
                     "trigger":"5ec4ff43-e0aa-46b7-9085-ca4be308c8de",
+                    "trigger-kind":0,
                     "source":{
                       "state":"b161a894-ee79-4914-9ffe-821aee80716d",
                       "side":"right",
@@ -1000,6 +1003,7 @@
                   {
                     "id":"c656057c-b847-4b93-b2a8-201c4f4f868f",
                     "trigger":"6153e3ce-a758-469e-b559-b8f06b691d7a",
+                    "trigger-kind":0,
                     "source":{
                       "state":"b161a894-ee79-4914-9ffe-821aee80716d",
                       "side":"left",
@@ -1063,6 +1067,7 @@
                 "transitions":[
                   {
                     "id":"5aa8162c-d843-4c22-9af5-26085e074234",
+                    "trigger-kind":0,
                     "source":{
                       "state":"7b2ce0c9-549e-4528-a973-10a81abdd30e",
                       "side":"bottom",
@@ -1137,6 +1142,7 @@
                           {
                             "id":"a099ec68-9b49-4120-bfcb-fec36e6dd2f1",
                             "trigger":"5349540e-9a6f-491f-af54-6ecb652967a3",
+                            "trigger-kind":0,
                             "source":{
                               "state":"223f70cb-38ae-4c00-9494-2607338ed1a6",
                               "side":"bottom",
@@ -1236,6 +1242,7 @@
                                   {
                                     "id":"9e7fc12d-9c61-4e0c-bd94-6f51d5877f02",
                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"e436ef7d-f25a-4d52-ba1b-283601376c32",
                                       "side":"bottom",
@@ -1287,6 +1294,7 @@
                                 "transitions":[
                                   {
                                     "id":"aebc2d1d-d994-4c5c-96de-62d398e8bbd8",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"ed87f942-dd47-4552-bd28-59932e5e8e65",
                                       "side":"bottom",
@@ -1319,6 +1327,7 @@
                           {
                             "id":"1e8fb3e0-4d85-4b06-b802-bdee125b9c9f",
                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                            "trigger-kind":0,
                             "source":{
                               "state":"e213fe3e-23fb-4e07-bae2-c086c52d3994",
                               "side":"top",
@@ -1345,6 +1354,7 @@
                           {
                             "id":"336586dc-0cfb-4c2c-91c4-54f28f09727f",
                             "trigger":"14ee1854-d31e-4144-bd11-005095ca8d93",
+                            "trigger-kind":0,
                             "source":{
                               "state":"e213fe3e-23fb-4e07-bae2-c086c52d3994",
                               "side":"right",
@@ -1401,6 +1411,7 @@
                         "transitions":[
                           {
                             "id":"727e1526-99d1-435f-be1d-2243893c7bc6",
+                            "trigger-kind":0,
                             "source":{
                               "state":"58e7c225-4a72-47d3-83a8-7b1a88b91e46",
                               "side":"bottom",
@@ -1433,6 +1444,7 @@
                   {
                     "id":"a2a0c17a-ab0a-4a3b-8377-6af80addc6da",
                     "trigger":"5ec4ff43-e0aa-46b7-9085-ca4be308c8de",
+                    "trigger-kind":0,
                     "source":{
                       "state":"602a0612-0a02-4e76-824a-2dd8ae31fd69",
                       "side":"left",
@@ -1483,6 +1495,7 @@
                   {
                     "id":"cee1d7a5-712e-473c-bae2-6de0dc7191b3",
                     "trigger":"6153e3ce-a758-469e-b559-b8f06b691d7a",
+                    "trigger-kind":0,
                     "source":{
                       "state":"602a0612-0a02-4e76-824a-2dd8ae31fd69",
                       "side":"left",
@@ -1572,6 +1585,7 @@
                         "transitions":[
                           {
                             "id":"d5f3c646-886d-408a-b806-8c49a8b50e05",
+                            "trigger-kind":0,
                             "source":{
                               "state":"6a5019bd-c188-4a4b-b19e-eac79b63b469",
                               "side":"bottom",
@@ -1616,6 +1630,7 @@
                           {
                             "id":"37e6eb6b-8e7b-4cc4-ae94-167781f2a436",
                             "trigger":"5349540e-9a6f-491f-af54-6ecb652967a3",
+                            "trigger-kind":0,
                             "source":{
                               "state":"0ab2e2b1-dd4f-436f-b760-3a645ce40f6e",
                               "side":"bottom",
@@ -1715,6 +1730,7 @@
                                   {
                                     "id":"f5112f43-906f-4ec5-aea8-97a3f1db48e8",
                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"a8d2a0d9-e7bd-47fa-b737-3abb98399a83",
                                       "side":"bottom",
@@ -1766,6 +1782,7 @@
                                 "transitions":[
                                   {
                                     "id":"3cde4930-184b-4ddd-811f-bea1ea630a4f",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"db01b573-d5d0-45b0-9e6c-2dc9ada391c1",
                                       "side":"bottom",
@@ -1798,6 +1815,7 @@
                           {
                             "id":"5fe9b09c-60bb-48a3-af78-9f733a7f81b7",
                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                            "trigger-kind":0,
                             "source":{
                               "state":"e32acd4c-87f2-45ff-9742-82e6171b220a",
                               "side":"top",
@@ -1824,6 +1842,7 @@
                           {
                             "id":"3f952898-93ea-44f8-b3a2-2478ad763e5f",
                             "trigger":"14ee1854-d31e-4144-bd11-005095ca8d93",
+                            "trigger-kind":0,
                             "source":{
                               "state":"e32acd4c-87f2-45ff-9742-82e6171b220a",
                               "side":"left",
@@ -1869,6 +1888,7 @@
                   {
                     "id":"5169e0d1-6f61-4249-8870-14ccea4c73a2",
                     "trigger":"5ec4ff43-e0aa-46b7-9085-ca4be308c8de",
+                    "trigger-kind":0,
                     "source":{
                       "state":"5e8c2596-65a5-4374-a311-e7f9e48ae0b0",
                       "side":"right",
@@ -1911,6 +1931,7 @@
                   {
                     "id":"048d8b57-4f3b-433d-8576-ec45d0f59f75",
                     "trigger":"6153e3ce-a758-469e-b559-b8f06b691d7a",
+                    "trigger-kind":0,
                     "source":{
                       "state":"5e8c2596-65a5-4374-a311-e7f9e48ae0b0",
                       "side":"right",
@@ -2007,6 +2028,7 @@
                           {
                             "id":"a14ae10d-f459-4b56-aebe-dc2e57a1b401",
                             "trigger":"aa3e0691-1994-453b-b506-d9e2400ca6d9",
+                            "trigger-kind":0,
                             "source":{
                               "state":"7a1b7a10-f832-4030-8c35-776bbbb875ee",
                               "side":"right",
@@ -2051,6 +2073,7 @@
                           {
                             "id":"b9bb2bcd-b84c-4a19-8d92-5a804dc0ac12",
                             "trigger":"477900d8-124e-45b9-99d9-4e2aca45fe1d",
+                            "trigger-kind":0,
                             "source":{
                               "state":"f4b307c8-9f14-4cb9-a831-ed1b2c880da8",
                               "side":"left",
@@ -2094,6 +2117,7 @@
                         "transitions":[
                           {
                             "id":"f71545d1-ff1a-4e7f-9359-00608784a108",
+                            "trigger-kind":0,
                             "source":{
                               "state":"9be8b825-74aa-4185-a617-f0aed90f6936",
                               "side":"bottom",
@@ -2151,6 +2175,7 @@
                           {
                             "id":"0d952ee9-a9d7-42cb-8ba0-40cffaefdd54",
                             "trigger":"f32da138-d706-4387-a006-0c18d7536c22",
+                            "trigger-kind":0,
                             "source":{
                               "state":"76e701bf-0087-4327-ba57-7af876aa8d54",
                               "side":"right",
@@ -2200,6 +2225,7 @@
                           {
                             "id":"56c466e5-6588-4b67-8aa3-e06b9b8bc4a3",
                             "trigger":"5296d696-4af1-4b34-964a-5333918c26fc",
+                            "trigger-kind":0,
                             "source":{
                               "state":"407b78da-ed06-4199-ac2b-fd1d4d96fd3f",
                               "side":"left",
@@ -2243,6 +2269,7 @@
                         "transitions":[
                           {
                             "id":"6cc030a5-6dfe-4e6b-ab8f-ae988f3fda7f",
+                            "trigger-kind":0,
                             "source":{
                               "state":"e76e829b-0f8a-492b-b5d3-4b7471806955",
                               "side":"bottom",
@@ -2292,6 +2319,7 @@
                 "transitions":[
                   {
                     "id":"545f1330-ec85-420a-8f89-3ac98bc49ced",
+                    "trigger-kind":0,
                     "source":{
                       "state":"608b5acc-93da-4a5b-a22f-eb85e1ea304c",
                       "side":"bottom",
@@ -2364,6 +2392,7 @@
                           {
                             "id":"09dd9b8a-6758-4c30-ab8a-2301cecb65c0",
                             "trigger":"f32da138-d706-4387-a006-0c18d7536c22",
+                            "trigger-kind":0,
                             "source":{
                               "state":"f0c7e403-c56a-46b3-8be6-65e98b3139d5",
                               "side":"right",
@@ -2407,6 +2436,7 @@
                         "transitions":[
                           {
                             "id":"831cc64d-8954-49a8-9388-e8c610b8611e",
+                            "trigger-kind":0,
                             "source":{
                               "state":"7fa96351-42e2-4c7c-ba87-77430add1985",
                               "side":"bottom",
@@ -2451,6 +2481,7 @@
                           {
                             "id":"763b0c37-a490-406d-99f0-dcfc5890f740",
                             "trigger":"5296d696-4af1-4b34-964a-5333918c26fc",
+                            "trigger-kind":0,
                             "source":{
                               "state":"d192cdf5-2e61-4224-a429-b90403b1ec0e",
                               "side":"left",
@@ -2477,6 +2508,7 @@
                           {
                             "id":"2c1bc37e-b4a7-44a9-9fb3-15de5f3fc9ac",
                             "trigger":"bbc53dc1-e6ff-4a0f-85eb-b3d9d82ade5c",
+                            "trigger-kind":0,
                             "source":{
                               "state":"d192cdf5-2e61-4224-a429-b90403b1ec0e",
                               "side":"right",
@@ -2520,6 +2552,7 @@
                           {
                             "id":"2414b1c9-ade6-4cca-8af7-08c564240324",
                             "trigger":"c3bf0ec6-1fa5-480b-a7ca-71c9b0a124de",
+                            "trigger-kind":0,
                             "source":{
                               "state":"d192cdf5-2e61-4224-a429-b90403b1ec0e",
                               "side":"right",
@@ -2589,6 +2622,7 @@
                           {
                             "id":"a6c9ad6d-0290-4175-a002-2a36de53e02d",
                             "trigger":"b3971a16-8744-4c8c-a7a0-676033b2e187",
+                            "trigger-kind":0,
                             "source":{
                               "state":"d9ed73a5-4e63-4284-8ce8-b41d3930e553",
                               "side":"right",
@@ -2632,6 +2666,7 @@
                         "transitions":[
                           {
                             "id":"f95a589f-0686-4b72-b064-00e444c74a09",
+                            "trigger-kind":0,
                             "source":{
                               "state":"8de67316-11d4-4923-bfa1-e31d7b696cae",
                               "side":"bottom",
@@ -2706,6 +2741,7 @@
                                   {
                                     "id":"04ece7bb-e03b-453c-86cd-eddd3573b248",
                                     "trigger":"ae622a23-f651-4fab-bad2-ecfbd96d2883",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"3f3cbe39-6420-4c24-b653-9da89a7a08e2",
                                       "side":"left",
@@ -2732,6 +2768,7 @@
                                   {
                                     "id":"ffa1104c-81c0-4abc-8285-5e4119ca657b",
                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"3f3cbe39-6420-4c24-b653-9da89a7a08e2",
                                       "side":"right",
@@ -2804,6 +2841,7 @@
                 "transitions":[
                   {
                     "id":"c376aa4e-3eca-4125-8eb6-f9583650187d",
+                    "trigger-kind":0,
                     "source":{
                       "state":"40b97351-2a93-4f50-9636-60f3ec2d626d",
                       "side":"bottom",
@@ -2875,6 +2913,7 @@
                         "transitions":[
                           {
                             "id":"46e6de4f-7811-4a5b-a6dd-6d8602ba7649",
+                            "trigger-kind":0,
                             "source":{
                               "state":"ee8b0968-9dd9-4249-bdc8-cfb8795dc5d8",
                               "side":"bottom",
@@ -2929,6 +2968,7 @@
                           {
                             "id":"1d1a3c07-4ac5-43c1-a78f-9acd2fc3c911",
                             "trigger":"8026ece2-dd00-44e8-8613-a68197aaec7c",
+                            "trigger-kind":0,
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"right",
@@ -2968,6 +3008,7 @@
                           {
                             "id":"d0f1f748-3041-4a61-b544-c50f04d0c1c4",
                             "trigger":"a5bd1392-5461-489e-ad96-12bec38ed212",
+                            "trigger-kind":0,
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"right",
@@ -2999,6 +3040,7 @@
                           {
                             "id":"60e95b7f-92e2-4a79-8a36-2dcfc82f5e50",
                             "trigger":"93f84b98-6e9e-4acb-8011-6c758d37ba1b",
+                            "trigger-kind":0,
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"right",
@@ -3025,6 +3067,7 @@
                           {
                             "id":"a1459f99-7543-45cc-ac90-1cd1c5d1140e",
                             "trigger":"ff3ba5c8-93e8-430e-b37a-8196a4be36fa",
+                            "trigger-kind":0,
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"right",
@@ -3051,6 +3094,7 @@
                           {
                             "id":"17ad28ea-3fc2-4875-a15b-8a393236fb8b",
                             "trigger":"2dcc8a3e-f0b8-4e8a-96a0-a339f4dc3bfb",
+                            "trigger-kind":0,
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"right",
@@ -3090,6 +3134,7 @@
                           {
                             "id":"4add5c8f-ed8e-40b0-8d84-8665c1967643",
                             "trigger":"01c3953d-daef-4604-a917-c93c9ae3ca2e",
+                            "trigger-kind":0,
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"right",
@@ -3134,6 +3179,7 @@
                           {
                             "id":"3e957f3b-4562-434b-b798-7fabc0b86132",
                             "trigger":"faf24206-d5cc-4593-8f94-2951717e6154",
+                            "trigger-kind":0,
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"right",
@@ -3178,6 +3224,7 @@
                           {
                             "id":"0d565ded-da5d-4d95-aa05-0c3cf3c6a1ad",
                             "trigger":"e2c677bd-26b5-45c2-98d1-5ce6dbc2f054",
+                            "trigger-kind":0,
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"right",
@@ -3217,6 +3264,7 @@
                           {
                             "id":"394e1870-e788-4a96-88b9-61dc6f90afa2",
                             "trigger":"a5bd1392-5461-489e-ad96-12bec38ed212",
+                            "trigger-kind":0,
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"right",
@@ -3261,6 +3309,7 @@
                           {
                             "id":"d98d9a6e-813f-4e71-8203-7a2ab9e7ac52",
                             "trigger":"01c3953d-daef-4604-a917-c93c9ae3ca2e",
+                            "trigger-kind":0,
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"left",
@@ -3292,6 +3341,7 @@
                           {
                             "id":"0824192b-171a-4324-bf48-bc5b3011bac6",
                             "trigger":"811bd289-72b4-4820-a353-b4a201e404e1",
+                            "trigger-kind":0,
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"left",
@@ -3318,6 +3368,7 @@
                           {
                             "id":"d3ea73a6-e4a9-4279-965d-3017c926d9ca",
                             "trigger":"a512404b-2fef-4437-a967-0438c86cf9b8",
+                            "trigger-kind":0,
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"left",
@@ -3357,6 +3408,7 @@
                           {
                             "id":"9c2e3952-6bbd-4ccc-beb9-697034777903",
                             "trigger":"014f10aa-1b3a-423c-be00-22220412d6a4",
+                            "trigger-kind":0,
                             "source":{
                               "state":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
                               "side":"right",
@@ -3491,6 +3543,7 @@
                                         "transitions":[
                                           {
                                             "id":"4759f1ab-3791-46b0-b32d-396c8890baa6",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"64f365ee-925e-4768-88ac-e6f611727a77",
                                               "side":"right",
@@ -3570,6 +3623,7 @@
                                                   {
                                                     "id":"59129edf-e5c4-4e73-af4c-6fd92261070c",
                                                     "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                                    "trigger-kind":0,
                                                     "source":{
                                                       "state":"579a57b9-4811-47b4-bcb3-e29e3d5bfbd0",
                                                       "side":"right",
@@ -3596,6 +3650,7 @@
                                                   {
                                                     "id":"a785c7c8-17bb-4cda-a4a8-54cb56ed988e",
                                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                                    "trigger-kind":0,
                                                     "source":{
                                                       "state":"579a57b9-4811-47b4-bcb3-e29e3d5bfbd0",
                                                       "side":"bottom",
@@ -3689,6 +3744,7 @@
                                                   {
                                                     "id":"3bbe2091-6c8b-4e30-a60a-a78f3ebd9b09",
                                                     "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                                    "trigger-kind":0,
                                                     "source":{
                                                       "state":"cb754c9b-c2c9-4e9f-bbfd-3b54a04fa4c3",
                                                       "side":"right",
@@ -3720,6 +3776,7 @@
                                                   {
                                                     "id":"200190ee-53b7-42d2-8994-4860957025fd",
                                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                                    "trigger-kind":0,
                                                     "source":{
                                                       "state":"cb754c9b-c2c9-4e9f-bbfd-3b54a04fa4c3",
                                                       "side":"bottom",
@@ -3765,6 +3822,7 @@
                                 "transitions":[
                                   {
                                     "id":"ed35fcb9-118a-418e-b749-bde652a713e0",
+                                    "trigger-kind":3,
                                     "source":{
                                       "state":"981f9378-69f5-43fe-b5dc-9d20146f8512",
                                       "side":"right",
@@ -3862,6 +3920,7 @@
                                           {
                                             "id":"26cd65f2-5b3c-4b6a-972e-4c373f725c31",
                                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"0aba8ad4-38a9-4738-9804-0ea11c158a5b",
                                               "side":"right",
@@ -3934,6 +3993,7 @@
                                         "transitions":[
                                           {
                                             "id":"ce3086db-01e8-4c68-bdb3-f56372a51b71",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"b2e76fd4-31d3-41d3-a4c4-e3d94a1385a8",
                                               "side":"bottom",
@@ -4008,6 +4068,7 @@
                                                   {
                                                     "id":"75bf6d51-b12a-4965-88af-8322eed7532b",
                                                     "trigger":"9d381acf-d99d-4a5d-8320-3218bb2d45e9",
+                                                    "trigger-kind":0,
                                                     "source":{
                                                       "state":"fc6399d1-c9b5-4a38-88d7-755d83db66e7",
                                                       "side":"left",
@@ -4047,6 +4108,7 @@
                                                   {
                                                     "id":"d1f22920-1bcd-4548-884e-d6ba74e81c7f",
                                                     "trigger":"aa3e0691-1994-453b-b506-d9e2400ca6d9",
+                                                    "trigger-kind":0,
                                                     "source":{
                                                       "state":"fc6399d1-c9b5-4a38-88d7-755d83db66e7",
                                                       "side":"bottom",
@@ -4073,6 +4135,7 @@
                                                   {
                                                     "id":"27aa2504-6418-4dec-bcb2-572989c1087c",
                                                     "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                                    "trigger-kind":0,
                                                     "source":{
                                                       "state":"fc6399d1-c9b5-4a38-88d7-755d83db66e7",
                                                       "side":"right",
@@ -4104,6 +4167,7 @@
                                                   {
                                                     "id":"828528b5-a58d-486f-b18e-b3149f3e7e0e",
                                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                                    "trigger-kind":0,
                                                     "source":{
                                                       "state":"fc6399d1-c9b5-4a38-88d7-755d83db66e7",
                                                       "side":"right",
@@ -4192,6 +4256,7 @@
                                                   {
                                                     "id":"b0bd24ef-27bd-46c6-9d1d-f086fbe9a48c",
                                                     "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                                    "trigger-kind":0,
                                                     "source":{
                                                       "state":"643d909a-46c4-48b9-83ec-e5aa2bfcbc41",
                                                       "side":"left",
@@ -4231,6 +4296,7 @@
                                                   {
                                                     "id":"fa7c7c0e-8a81-496a-8513-1bebe3784711",
                                                     "trigger":"477900d8-124e-45b9-99d9-4e2aca45fe1d",
+                                                    "trigger-kind":0,
                                                     "source":{
                                                       "state":"643d909a-46c4-48b9-83ec-e5aa2bfcbc41",
                                                       "side":"top",
@@ -4257,6 +4323,7 @@
                                                   {
                                                     "id":"b753d3a9-c7cb-4653-a0e1-a5738638c55c",
                                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                                    "trigger-kind":0,
                                                     "source":{
                                                       "state":"643d909a-46c4-48b9-83ec-e5aa2bfcbc41",
                                                       "side":"right",
@@ -4302,6 +4369,7 @@
                                 "transitions":[
                                   {
                                     "id":"37ba5277-6ab7-4a89-aa5c-c86356d2d835",
+                                    "trigger-kind":3,
                                     "source":{
                                       "state":"5577a77a-a350-4e46-b546-d8e30a5a4218",
                                       "side":"right",
@@ -4436,6 +4504,7 @@
                                   {
                                     "id":"2164f156-98bb-407f-8c0a-847be7458a49",
                                     "trigger":"8026ece2-dd00-44e8-8613-a68197aaec7c",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
@@ -4462,6 +4531,7 @@
                                   {
                                     "id":"2c3f3617-b549-4c5c-bb11-e09289e06e6c",
                                     "trigger":"2dcc8a3e-f0b8-4e8a-96a0-a339f4dc3bfb",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
@@ -4488,6 +4558,7 @@
                                   {
                                     "id":"5df44fb0-3e60-4696-a28f-231b349e715b",
                                     "trigger":"faf24206-d5cc-4593-8f94-2951717e6154",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
@@ -4525,6 +4596,7 @@
                                   {
                                     "id":"f4a49ef2-816c-4f06-a62b-636ee7a4dcde",
                                     "trigger":"93f84b98-6e9e-4acb-8011-6c758d37ba1b",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
@@ -4562,6 +4634,7 @@
                                   {
                                     "id":"e36cfa2f-65fa-411d-9052-814066a2515d",
                                     "trigger":"6153e3ce-a758-469e-b559-b8f06b691d7a",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
@@ -4599,6 +4672,7 @@
                                   {
                                     "id":"0c7fc31d-617b-4ff2-96d1-a53816e902db",
                                     "trigger":"696c9837-5d54-4336-a903-61eeb02b6953",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
@@ -4636,6 +4710,7 @@
                                   {
                                     "id":"508621c6-25d1-496f-bfac-03555fd6b7af",
                                     "trigger":"a5bd1392-5461-489e-ad96-12bec38ed212",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
@@ -4673,6 +4748,7 @@
                                   {
                                     "id":"5a2845b5-225c-48c9-92e0-fe6024f5080a",
                                     "trigger":"811bd289-72b4-4820-a353-b4a201e404e1",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
@@ -4699,6 +4775,7 @@
                                   {
                                     "id":"dc8f023f-1e73-49d0-a5aa-15e92b4277c8",
                                     "trigger":"09ee783b-a1b2-437c-b79b-1e9465ede84b",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
@@ -4725,6 +4802,7 @@
                                   {
                                     "id":"5e90343c-28af-4b47-a4ed-51f01b556464",
                                     "trigger":"343119e1-f240-4224-be6b-718c58b2bf6f",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"left",
@@ -4751,6 +4829,7 @@
                                   {
                                     "id":"bc3844db-2654-43dd-bc17-17284e148576",
                                     "trigger":"f94faf56-8ff7-430b-8601-935430e66b94",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"left",
@@ -4777,6 +4856,7 @@
                                   {
                                     "id":"f6fb00c4-ca94-44ef-ac29-8d069d2f475f",
                                     "trigger":"7914eef5-44a2-46a7-a54e-1bb0c81fa5b7",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"left",
@@ -4803,6 +4883,7 @@
                                   {
                                     "id":"fcbdad31-e2a7-413d-8d6f-7ce107709e8c",
                                     "trigger":"312affef-dc71-4190-93b8-b8b3f2623d71",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"left",
@@ -4829,6 +4910,7 @@
                                   {
                                     "id":"ee623910-7856-4a2a-a5ef-862d8234148e",
                                     "trigger":"5436ff7d-0fcb-4cfb-bd94-e82f14913849",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"left",
@@ -4855,6 +4937,7 @@
                                   {
                                     "id":"50ca8836-2247-4662-ac61-1b8e4a95b69e",
                                     "trigger":"5349540e-9a6f-491f-af54-6ecb652967a3",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"left",
@@ -4881,6 +4964,7 @@
                                   {
                                     "id":"8aeef8cb-caf1-4038-abee-7971336c00a7",
                                     "trigger":"a5bd1392-5461-489e-ad96-12bec38ed212",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
@@ -4924,6 +5008,7 @@
                                 "transitions":[
                                   {
                                     "id":"18bf7e02-43e1-47b5-9ecc-5f51760b04ac",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"7abb5fd1-094d-4aee-90e6-00a01d8375f0",
                                       "side":"bottom",
@@ -5003,6 +5088,7 @@
                                           {
                                             "id":"98d7de85-38bd-49f7-8f29-822a5b97acf5",
                                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"9ba4e9f1-27be-4a75-b1c3-fc90f6ca4c4c",
                                               "side":"right",
@@ -5029,6 +5115,7 @@
                                           {
                                             "id":"fcfb8c08-aea7-4272-8eac-f643b7bdea0f",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"9ba4e9f1-27be-4a75-b1c3-fc90f6ca4c4c",
                                               "side":"bottom",
@@ -5063,6 +5150,7 @@
                                           {
                                             "id":"89855e9d-d8d8-4cb4-a997-ca6207d2a8c3",
                                             "trigger":"faf24206-d5cc-4593-8f94-2951717e6154",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"9ba4e9f1-27be-4a75-b1c3-fc90f6ca4c4c",
                                               "side":"bottom",
@@ -5119,6 +5207,7 @@
                                         "transitions":[
                                           {
                                             "id":"7b732cd2-1365-4a78-809c-0eacbacead20",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"6c791aa4-6b91-4295-b184-93eed8ad183e",
                                               "side":"bottom",
@@ -5188,6 +5277,7 @@
                                                   {
                                                     "id":"fb4f72de-9a82-48c5-8c53-02ae1a3c8363",
                                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                                    "trigger-kind":0,
                                                     "source":{
                                                       "state":"4c67329b-ac14-4610-861b-b276240c3334",
                                                       "side":"top",
@@ -5233,6 +5323,7 @@
                                           {
                                             "id":"803a15b3-7587-41fe-b326-4661c902138a",
                                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"c501196b-7d86-4781-bcc9-7798c902db47",
                                               "side":"bottom",
@@ -5281,6 +5372,7 @@
                                         "transitions":[
                                           {
                                             "id":"ee480d84-2142-4766-a8bd-7bcec040f8b5",
+                                            "trigger-kind":2,
                                             "source":{
                                               "state":"b1207aa3-5e04-4719-8981-9d773a622e39",
                                               "side":"bottom",
@@ -5330,6 +5422,7 @@
                                 "transitions":[
                                   {
                                     "id":"3254288b-acb7-4dcd-b4bc-75e5b790cfad",
+                                    "trigger-kind":3,
                                     "source":{
                                       "state":"f3f031b1-7d37-44e0-824d-edf182629a87",
                                       "side":"right",
@@ -5427,6 +5520,7 @@
                                           {
                                             "id":"705e3970-85ac-4ff3-b963-4c60ad95a41b",
                                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"229fc3d4-e2d6-4a4e-b530-f804bd98123a",
                                               "side":"right",
@@ -5453,6 +5547,7 @@
                                           {
                                             "id":"c578c045-491e-44e7-89cb-74232500394d",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"229fc3d4-e2d6-4a4e-b530-f804bd98123a",
                                               "side":"bottom",
@@ -5487,6 +5582,7 @@
                                           {
                                             "id":"9a45f8c4-6e77-47b1-8e6e-ef4410a8cf85",
                                             "trigger":"faf24206-d5cc-4593-8f94-2951717e6154",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"229fc3d4-e2d6-4a4e-b530-f804bd98123a",
                                               "side":"bottom",
@@ -5543,6 +5639,7 @@
                                         "transitions":[
                                           {
                                             "id":"b25f4e8c-160d-46bd-a0a6-24626fa5e20e",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"ed928aa1-2f8b-4322-bf38-a08988b71f9f",
                                               "side":"bottom",
@@ -5612,6 +5709,7 @@
                                                   {
                                                     "id":"d3fa1f59-3bf8-4278-86d9-45ccd0a25497",
                                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                                    "trigger-kind":0,
                                                     "source":{
                                                       "state":"b9f7b323-d646-4a02-a344-825a7cff94d6",
                                                       "side":"top",
@@ -5657,6 +5755,7 @@
                                           {
                                             "id":"bd0f3e32-05d5-4c11-a937-f513841cc89a",
                                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"08678776-e06f-4ef1-b770-b149dbc79cfa",
                                               "side":"bottom",
@@ -5705,6 +5804,7 @@
                                         "transitions":[
                                           {
                                             "id":"0bc0a0eb-2a6f-49ca-aa1f-78740d5bb2d4",
+                                            "trigger-kind":2,
                                             "source":{
                                               "state":"653f2d54-cfc9-4b71-a1ff-82a7bf809ec7",
                                               "side":"bottom",
@@ -5754,6 +5854,7 @@
                                 "transitions":[
                                   {
                                     "id":"644943f5-8ab9-4ebe-b644-27e4d718ea3c",
+                                    "trigger-kind":3,
                                     "source":{
                                       "state":"ec0dad49-3a8f-4fcf-8c72-1e6d07595450",
                                       "side":"right",
@@ -5869,6 +5970,7 @@
                                           {
                                             "id":"412fa571-776d-45f3-8707-6810bb94af89",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"b2b74e5f-416c-49af-80c6-44226ced7c2a",
                                               "side":"bottom",
@@ -5903,6 +6005,7 @@
                                           {
                                             "id":"f67e550a-d134-416c-8280-d74f5e6c0983",
                                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"b2b74e5f-416c-49af-80c6-44226ced7c2a",
                                               "side":"right",
@@ -5946,6 +6049,7 @@
                                         "transitions":[
                                           {
                                             "id":"fdd68460-89f4-44be-90df-69d916066227",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"97dd2959-b94b-4c9a-8f67-d4959d55b94e",
                                               "side":"bottom",
@@ -5994,6 +6098,7 @@
                                         "transitions":[
                                           {
                                             "id":"1ecef29a-f32b-46b2-93f3-b6dee4d820b4",
+                                            "trigger-kind":2,
                                             "source":{
                                               "state":"54d6c865-296e-489e-a1a4-dec64e566161",
                                               "side":"right",
@@ -6043,6 +6148,7 @@
                                 "transitions":[
                                   {
                                     "id":"48e7a2d9-9870-4da0-9568-5efca4ffa816",
+                                    "trigger-kind":3,
                                     "source":{
                                       "state":"fa59bf30-b72a-4364-ba95-10f1b8a73280",
                                       "side":"left",
@@ -6140,6 +6246,7 @@
                                           {
                                             "id":"83a02ceb-c27a-406d-a778-b354122c98d9",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"152fcfeb-ae90-4334-a520-8e2104f5cadb",
                                               "side":"bottom",
@@ -6174,6 +6281,7 @@
                                           {
                                             "id":"48f6f85c-cfc5-475c-9171-bdcf2518c531",
                                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"152fcfeb-ae90-4334-a520-8e2104f5cadb",
                                               "side":"right",
@@ -6217,6 +6325,7 @@
                                         "transitions":[
                                           {
                                             "id":"44e63233-d37c-4ca9-8bd7-b4cf9c791593",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"092525bb-d30a-4f0f-a48f-fb856d6e4ea4",
                                               "side":"bottom",
@@ -6266,6 +6375,7 @@
                                           {
                                             "id":"7ad4c065-cbd2-4c31-877a-ac71ec7858ed",
                                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"dcd3bd0b-44f4-480a-b689-c82b7d90e4a8",
                                               "side":"right",
@@ -6315,6 +6425,7 @@
                                 "transitions":[
                                   {
                                     "id":"5eebc5a8-84af-4cbb-a0c4-27c91dcb0720",
+                                    "trigger-kind":3,
                                     "source":{
                                       "state":"d1ce37f7-0e3d-4250-9c7d-5d1521d1f03f",
                                       "side":"left",
@@ -6412,6 +6523,7 @@
                                           {
                                             "id":"d9f2b9fd-0427-4d04-b762-f20af4dc8b46",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"93628463-949e-40a6-838b-cbed0ad07666",
                                               "side":"bottom",
@@ -6446,6 +6558,7 @@
                                           {
                                             "id":"4b7c57f8-e93e-4a9e-9595-795c46d15d23",
                                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"93628463-949e-40a6-838b-cbed0ad07666",
                                               "side":"right",
@@ -6494,6 +6607,7 @@
                                         "transitions":[
                                           {
                                             "id":"b5a96424-4231-45eb-ab1a-2912a6c7c6f5",
+                                            "trigger-kind":2,
                                             "source":{
                                               "state":"c5db0525-eeb9-43a1-bef8-fb25e721775f",
                                               "side":"right",
@@ -6555,6 +6669,7 @@
                                         "transitions":[
                                           {
                                             "id":"42e7c6fc-70cf-4785-b9c3-20abaf58abbb",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"9ade8e91-6a02-4d66-b574-d608e971c8d2",
                                               "side":"bottom",
@@ -6586,6 +6701,7 @@
                                 "transitions":[
                                   {
                                     "id":"bf3a70da-be34-4f1f-a533-b3d1fe5b4ebb",
+                                    "trigger-kind":3,
                                     "source":{
                                       "state":"837a505f-8167-4724-a661-25389d6d3821",
                                       "side":"left",
@@ -6683,6 +6799,7 @@
                                           {
                                             "id":"e00470cc-9493-4082-8809-9c06450bde4b",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"524e7254-b1df-4023-bd97-6d1aafca3164",
                                               "side":"bottom",
@@ -6717,6 +6834,7 @@
                                           {
                                             "id":"d46f431e-f31a-4c46-8cda-f29c7316d27c",
                                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"524e7254-b1df-4023-bd97-6d1aafca3164",
                                               "side":"right",
@@ -6765,6 +6883,7 @@
                                         "transitions":[
                                           {
                                             "id":"5b7610b3-f03b-4e64-84db-a948c4cf47f2",
+                                            "trigger-kind":2,
                                             "source":{
                                               "state":"767f8114-1e73-412e-9095-5cd374264ef9",
                                               "side":"right",
@@ -6808,6 +6927,7 @@
                                         "transitions":[
                                           {
                                             "id":"39e9ee0c-fd90-4468-9bd4-d714bc98372b",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"dc8d77e0-4070-4563-b4e9-2a295c1529e2",
                                               "side":"bottom",
@@ -6857,6 +6977,7 @@
                                 "transitions":[
                                   {
                                     "id":"f150b8a1-6f04-48cd-884b-1c6359946922",
+                                    "trigger-kind":3,
                                     "source":{
                                       "state":"2a794203-d3f4-4565-ad12-56f3eba78369",
                                       "side":"left",
@@ -6954,6 +7075,7 @@
                                           {
                                             "id":"17d2abd6-4552-42ad-99d6-23548a90250f",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"715a7196-68a2-44f8-b95d-17fad731ceb1",
                                               "side":"bottom",
@@ -6988,6 +7110,7 @@
                                           {
                                             "id":"60236d5c-6a76-41ea-b19c-82ee23898456",
                                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"715a7196-68a2-44f8-b95d-17fad731ceb1",
                                               "side":"right",
@@ -7031,6 +7154,7 @@
                                         "transitions":[
                                           {
                                             "id":"ac9b2169-c0e9-4676-b302-585559566e33",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"8102b1e9-63b5-4b3d-b619-4348bd4dc396",
                                               "side":"bottom",
@@ -7079,6 +7203,7 @@
                                         "transitions":[
                                           {
                                             "id":"a3f23af9-b16a-4453-8d0e-d37fa79af1ba",
+                                            "trigger-kind":2,
                                             "source":{
                                               "state":"307667c1-00e1-4879-915d-4586b0999874",
                                               "side":"right",
@@ -7128,6 +7253,7 @@
                                 "transitions":[
                                   {
                                     "id":"05e8757c-71d8-4075-8d1c-7b91b570333c",
+                                    "trigger-kind":3,
                                     "source":{
                                       "state":"1d869ae7-d6c4-43dd-996a-9db1b4fae539",
                                       "side":"left",
@@ -7224,6 +7350,7 @@
                                         "transitions":[
                                           {
                                             "id":"875f04f0-f277-4c9b-95f8-e2394697126a",
+                                            "trigger-kind":2,
                                             "source":{
                                               "state":"a2b84644-f9af-4559-b677-c4a2da8c3661",
                                               "side":"right",
@@ -7267,6 +7394,7 @@
                                         "transitions":[
                                           {
                                             "id":"f56e6d7f-27b6-4320-a81f-7b46a71e2818",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"2299ab5a-e47a-477e-8d76-e5ffb27941b0",
                                               "side":"bottom",
@@ -7359,6 +7487,7 @@
                                                   {
                                                     "id":"1c25ab89-4ccb-4430-b407-3ac9b86427d7",
                                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                                    "trigger-kind":0,
                                                     "source":{
                                                       "state":"44829230-c92d-46df-a7fc-889a418ecbac",
                                                       "side":"right",
@@ -7404,6 +7533,7 @@
                                           {
                                             "id":"a502b0f1-8f45-4531-9b29-de104e793c49",
                                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"e143b7e6-7379-4523-9997-a94c5e3b8a52",
                                               "side":"right",
@@ -7430,6 +7560,7 @@
                                           {
                                             "id":"4c02c28d-3754-4fab-9711-690790fd3f9b",
                                             "trigger":"14ee1854-d31e-4144-bd11-005095ca8d93",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"e143b7e6-7379-4523-9997-a94c5e3b8a52",
                                               "side":"right",
@@ -7484,6 +7615,7 @@
                                 "transitions":[
                                   {
                                     "id":"f7233e83-1702-4496-9faf-d7ae9c30278f",
+                                    "trigger-kind":3,
                                     "source":{
                                       "state":"5e2aef63-2a1e-4034-a46d-0f542399cc2a",
                                       "side":"left",
@@ -7575,6 +7707,7 @@
                                         "transitions":[
                                           {
                                             "id":"60566bb4-1532-48db-819b-427b0b99f66d",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"5046264d-1055-453f-b563-2212bb221525",
                                               "side":"bottom",
@@ -7623,6 +7756,7 @@
                                         "transitions":[
                                           {
                                             "id":"9c20bc6e-de98-45fc-88f4-405f4b2374d5",
+                                            "trigger-kind":2,
                                             "source":{
                                               "state":"515347fb-4cb6-4ac9-9d0e-c0bf08f3b346",
                                               "side":"bottom",
@@ -7672,6 +7806,7 @@
                                           {
                                             "id":"f58ee8db-4cc5-494a-babc-b74c4f84aacd",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"324001d7-c477-43f5-aa65-844351d78152",
                                               "side":"right",
@@ -7706,6 +7841,7 @@
                                           {
                                             "id":"5b25fe85-c13e-496f-8bce-2915c9bd0e06",
                                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"324001d7-c477-43f5-aa65-844351d78152",
                                               "side":"bottom",
@@ -7755,6 +7891,7 @@
                                           {
                                             "id":"702f9cbf-519c-44c4-8c83-f08464bf4ee1",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"193ac642-2701-4d99-b153-3f87ecad7a96",
                                               "side":"right",
@@ -7789,6 +7926,7 @@
                                           {
                                             "id":"674ac430-90dc-4600-a15a-4525eb9f10a1",
                                             "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"193ac642-2701-4d99-b153-3f87ecad7a96",
                                               "side":"bottom",
@@ -7838,6 +7976,7 @@
                                 "transitions":[
                                   {
                                     "id":"aa64506a-0c71-41ca-9044-b2c9308eb749",
+                                    "trigger-kind":3,
                                     "source":{
                                       "state":"314c3161-057b-4385-a329-0b42916552f7",
                                       "side":"right",
@@ -7887,6 +8026,7 @@
                         "transitions":[
                           {
                             "id":"5e8ad22e-5060-4fe7-adc8-dfa18aeffaac",
+                            "trigger-kind":3,
                             "source":{
                               "state":"36c58958-3a41-4b90-b455-9258ad6400ab",
                               "side":"left",
@@ -8009,6 +8149,7 @@
                                 "transitions":[
                                   {
                                     "id":"5eab8cc6-a546-4d54-8ce1-17ae54205b61",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"9dcc0d0a-9027-433a-98a9-6484ee801210",
                                       "side":"right",
@@ -8045,6 +8186,7 @@
                                   },
                                   {
                                     "id":"920a29b7-5375-466c-ac35-9c3a6735d0da",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"9dcc0d0a-9027-433a-98a9-6484ee801210",
                                       "side":"right",
@@ -8082,6 +8224,7 @@
                                   {
                                     "id":"8313a454-c083-40eb-a201-b253c3fc2da4",
                                     "trigger":"5d4dd5c5-09a7-4182-b0a2-89bd6a79049f",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"9dcc0d0a-9027-433a-98a9-6484ee801210",
                                       "side":"right",
@@ -8119,6 +8262,7 @@
                                   {
                                     "id":"d2b68cb1-e708-49f0-b917-9c193982ef49",
                                     "trigger":"2dcc8a3e-f0b8-4e8a-96a0-a339f4dc3bfb",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"9dcc0d0a-9027-433a-98a9-6484ee801210",
                                       "side":"right",
@@ -8156,6 +8300,7 @@
                                   {
                                     "id":"2dc5af86-610b-4cb8-9702-777028c2a36a",
                                     "trigger":"f33c8b54-fd9e-4308-ac59-5592f5ec5889",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"9dcc0d0a-9027-433a-98a9-6484ee801210",
                                       "side":"right",
@@ -8193,6 +8338,7 @@
                                   {
                                     "id":"48bc8d2e-7ada-4efa-81cb-a688650b9f2f",
                                     "trigger":"5d4dd5c5-09a7-4182-b0a2-89bd6a79049f",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"9dcc0d0a-9027-433a-98a9-6484ee801210",
                                       "side":"right",
@@ -8230,6 +8376,7 @@
                                   {
                                     "id":"45d45a37-4700-4ee2-bf3f-9822fc3af472",
                                     "trigger":"faf24206-d5cc-4593-8f94-2951717e6154",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"9dcc0d0a-9027-433a-98a9-6484ee801210",
                                       "side":"right",
@@ -8302,6 +8449,7 @@
                                 "transitions":[
                                   {
                                     "id":"125f8ffd-7bcf-4459-aa09-bf778d4898d4",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"c348e261-ce50-4413-8388-b0da86f54def",
                                       "side":"bottom",
@@ -8387,6 +8535,7 @@
                         "transitions":[
                           {
                             "id":"64dc0251-8f38-42ac-abc9-ee7d88ccb16a",
+                            "trigger-kind":3,
                             "source":{
                               "state":"2bd8f391-b996-4788-bc5a-87a94104aecf",
                               "side":"left",
@@ -8514,6 +8663,7 @@
                                 "transitions":[
                                   {
                                     "id":"2213c167-5061-41b8-a38c-85537f9410db",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8550,6 +8700,7 @@
                                   },
                                   {
                                     "id":"caab11b2-f47c-42b7-a525-d3a227fe5db1",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8586,6 +8737,7 @@
                                   },
                                   {
                                     "id":"7843fc2c-6b48-447c-84b1-84c2c97fbd0e",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8622,6 +8774,7 @@
                                   },
                                   {
                                     "id":"902d5b73-59cf-468c-ab9d-231e52960d38",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8658,6 +8811,7 @@
                                   },
                                   {
                                     "id":"48303ade-8f71-4c56-af0a-3e0cde447c08",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8694,6 +8848,7 @@
                                   },
                                   {
                                     "id":"e4e87702-65b8-4aa8-9901-dd40d19d2e53",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8730,6 +8885,7 @@
                                   },
                                   {
                                     "id":"bdda3eae-47ce-4224-9930-9578041beb6c",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8766,6 +8922,7 @@
                                   },
                                   {
                                     "id":"27b43bb0-16a8-42ab-b1af-fce3185d2f70",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8820,6 +8977,7 @@
                                 "transitions":[
                                   {
                                     "id":"7ca2cf71-1756-4840-acb5-d4a1251fc366",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"06efe6da-f6c6-43d5-859e-73eab82940a9",
                                       "side":"bottom",
@@ -8953,6 +9111,7 @@
                                 "transitions":[
                                   {
                                     "id":"08aa6cfe-cdb9-44c3-8ef8-a013a6dc374e",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"f9a634b4-5563-4787-8d52-d0f236ad15c6",
                                       "side":"right",
@@ -8984,6 +9143,7 @@
                                   },
                                   {
                                     "id":"5b5adda7-9aba-44d6-8c0c-c44e3be35068",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"f9a634b4-5563-4787-8d52-d0f236ad15c6",
                                       "side":"bottom",
@@ -9044,6 +9204,7 @@
                         "transitions":[
                           {
                             "id":"2686bfb3-8f9a-4bac-8e0a-708630356e3b",
+                            "trigger-kind":3,
                             "source":{
                               "state":"87bfb8b8-e7a4-4d82-9c4d-4891f7780e13",
                               "side":"left",
@@ -9113,6 +9274,7 @@
                                   {
                                     "id":"1cbc69fa-a57f-41a2-a2ec-b34b5e661c21",
                                     "trigger":"5436ff7d-0fcb-4cfb-bd94-e82f14913849",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"e2e18276-f82f-4cce-ad3f-5ae26643bd20",
                                       "side":"right",
@@ -9144,6 +9306,7 @@
                                   {
                                     "id":"a3e15747-e2ab-408a-9d7d-f42bd53670a9",
                                     "trigger":"5d4dd5c5-09a7-4182-b0a2-89bd6a79049f",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"e2e18276-f82f-4cce-ad3f-5ae26643bd20",
                                       "side":"right",
@@ -9192,6 +9355,7 @@
                                 "transitions":[
                                   {
                                     "id":"41bd79e8-f33d-4996-be28-d14bf307fe3b",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"c92c3fc1-3442-4886-a049-b581319d4f14",
                                       "side":"bottom",
@@ -9259,6 +9423,7 @@
                         "transitions":[
                           {
                             "id":"b18cb57f-9e83-43a0-a151-b1f0d1009b39",
+                            "trigger-kind":3,
                             "source":{
                               "state":"b8ad0c78-d6b9-4b10-8d49-3b7186fb4a4b",
                               "side":"right",
@@ -9328,6 +9493,7 @@
                                   {
                                     "id":"7267a404-6228-4ad3-8bad-74dd1b0a26ae",
                                     "trigger":"a5bd1392-5461-489e-ad96-12bec38ed212",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d589f1ca-22cb-43e4-a895-e5baee095a89",
                                       "side":"right",
@@ -9359,6 +9525,7 @@
                                   {
                                     "id":"1da034ed-29bd-4021-9d76-6dbf0c2a69b3",
                                     "trigger":"faf24206-d5cc-4593-8f94-2951717e6154",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"d589f1ca-22cb-43e4-a895-e5baee095a89",
                                       "side":"right",
@@ -9425,6 +9592,7 @@
                                 "transitions":[
                                   {
                                     "id":"6a6a9fd1-22b3-4f02-adef-1f5605d18d7a",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"436c8480-6ed6-4ef1-b55a-07bf50e08315",
                                       "side":"bottom",
@@ -9474,6 +9642,7 @@
                         "transitions":[
                           {
                             "id":"f81a01a4-a648-46f8-9944-6cf25227a88c",
+                            "trigger-kind":3,
                             "source":{
                               "state":"dd7d65b0-71e8-4faf-8bbc-35813a518407",
                               "side":"right",
@@ -9506,6 +9675,7 @@
                   {
                     "id":"406c6520-fad9-4509-9a24-607f71f6357f",
                     "trigger":"14ee1854-d31e-4144-bd11-005095ca8d93",
+                    "trigger-kind":0,
                     "source":{
                       "state":"9bc407ce-cf13-4456-b060-9742ec032659",
                       "side":"right",
@@ -9545,6 +9715,7 @@
                   {
                     "id":"84e1155e-3532-4be9-8d8f-e14a4d1afeed",
                     "trigger":"147c056e-9041-4a99-bad7-c5c25b13104a",
+                    "trigger-kind":0,
                     "source":{
                       "state":"9bc407ce-cf13-4456-b060-9742ec032659",
                       "side":"right",
@@ -9571,6 +9742,7 @@
                   {
                     "id":"828c8c92-3f9b-4d2a-95f7-3caf8701cbf4",
                     "trigger":"5d4dd5c5-09a7-4182-b0a2-89bd6a79049f",
+                    "trigger-kind":0,
                     "source":{
                       "state":"9bc407ce-cf13-4456-b060-9742ec032659",
                       "side":"right",
@@ -9657,6 +9829,7 @@
                         "transitions":[
                           {
                             "id":"d4648cf6-67f7-4118-b3eb-ce9382b5748e",
+                            "trigger-kind":0,
                             "source":{
                               "state":"c01acffd-075f-4cb7-a3e4-ddba8d0cab7f",
                               "side":"bottom",
@@ -9725,6 +9898,7 @@
                                 "transitions":[
                                   {
                                     "id":"1b0a4a74-2134-4a13-aff2-f5200140f251",
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"71b9383e-a54c-4c13-94a9-75f5674af90f",
                                       "side":"right",
@@ -9756,6 +9930,7 @@
                                   },
                                   {
                                     "id":"ad1f4d53-682f-4c7a-9f89-8b66d6a5ac4a",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"71b9383e-a54c-4c13-94a9-75f5674af90f",
                                       "side":"bottom",
@@ -9805,6 +9980,7 @@
                                 "transitions":[
                                   {
                                     "id":"98ca97da-adfb-44c7-b266-336daa44292e",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"8d5cba4a-4581-4ad2-b279-efb55f60fa57",
                                       "side":"bottom",
@@ -9858,6 +10034,7 @@
                                 "transitions":[
                                   {
                                     "id":"1056be5e-6925-4fc0-b8b1-506d7f7b5c75",
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"4b1878b4-404c-407e-8a33-4e2ef72cdae6",
                                       "side":"right",
@@ -9889,6 +10066,7 @@
                                   },
                                   {
                                     "id":"86de4f6b-ab31-42c4-a75f-0711716430da",
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"4b1878b4-404c-407e-8a33-4e2ef72cdae6",
                                       "side":"right",
@@ -9920,6 +10098,7 @@
                                   },
                                   {
                                     "id":"71bb64ea-43c9-4b0c-8ed3-769f2a0a0eb2",
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"4b1878b4-404c-407e-8a33-4e2ef72cdae6",
                                       "side":"right",
@@ -9952,6 +10131,7 @@
                                   {
                                     "id":"38809818-394c-4cd0-aa29-3e479701e79a",
                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"4b1878b4-404c-407e-8a33-4e2ef72cdae6",
                                       "side":"right",
@@ -10001,6 +10181,7 @@
                                   {
                                     "id":"a985b330-a1d1-45a0-96d0-30d2b08c1e48",
                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"6af64093-51b3-4564-be9a-fcb682134262",
                                       "side":"right",
@@ -10050,6 +10231,7 @@
                                   {
                                     "id":"5bd2c595-4c24-4dd0-a2f0-59dbfe8bc08f",
                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"7921f170-0693-4d0b-bc73-b4567901a39b",
                                       "side":"right",
@@ -10129,6 +10311,7 @@
                                           {
                                             "id":"f42275e1-7e49-40d1-88e0-df4e07040e22",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"708c0dd3-6a6f-40f4-8b4e-8d6dadfd297e",
                                               "side":"top",
@@ -10222,6 +10405,7 @@
                                           {
                                             "id":"f30d2580-2f1f-4257-bd12-2c2f780b9029",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"df6079eb-9b1d-4ab8-9980-6eb01a8cb3fb",
                                               "side":"right",
@@ -10315,6 +10499,7 @@
                                           {
                                             "id":"94071954-472c-422c-a322-0a31479f1599",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"6fe1a397-5832-4d54-b332-afe219b0657b",
                                               "side":"right",
@@ -10413,6 +10598,7 @@
                                           {
                                             "id":"d010d02d-9635-4009-895e-cdf9c932add3",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"10a0497c-81c8-436a-adb9-9bdb6d4a8ec1",
                                               "side":"right",
@@ -10506,6 +10692,7 @@
                                           {
                                             "id":"782ad007-283e-457a-9d7b-d60095752a5f",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"ff59afa4-aaeb-4d1d-9909-3d96064755cb",
                                               "side":"right",
@@ -10620,6 +10807,7 @@
                                           {
                                             "id":"9c85c251-44e9-4a43-a131-a04cdc9d4057",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"1b2ffdbc-6a1b-4d0b-8724-087d39a819c1",
                                               "side":"top",
@@ -10687,6 +10875,7 @@
                                 "transitions":[
                                   {
                                     "id":"35b67067-970f-4a34-9bb4-2af935ffaa03",
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"353c633d-e736-4464-81a1-90466dade15d",
                                       "side":"right",
@@ -10719,6 +10908,7 @@
                                   {
                                     "id":"668319e0-a3c4-41a1-b01a-f416d0111a43",
                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"353c633d-e736-4464-81a1-90466dade15d",
                                       "side":"bottom",
@@ -10766,6 +10956,7 @@
                                 "transitions":[
                                   {
                                     "id":"d4ec23b8-378e-4060-bcf4-220fa9e0a753",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"55e03ac2-bb58-4928-88ba-8a7cdc44d9d5",
                                       "side":"bottom",
@@ -10845,6 +11036,7 @@
                                           {
                                             "id":"da088bd7-62af-4c59-8b0c-fee2bff0d575",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"c5650f0f-0bdd-4ab5-8b90-d37ba79c7a10",
                                               "side":"top",
@@ -10959,6 +11151,7 @@
                                           {
                                             "id":"f10bfc6c-4000-40a2-b10b-bfeffc5ba21c",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"50565759-c7e0-426f-948e-1cbc276a1204",
                                               "side":"top",
@@ -11036,6 +11229,7 @@
                                 "transitions":[
                                   {
                                     "id":"a393faff-3d7b-4919-8ec5-06cf0e54ca7c",
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"0ca836f8-de8d-42bf-99ed-16a0d40e3541",
                                       "side":"right",
@@ -11067,6 +11261,7 @@
                                   },
                                   {
                                     "id":"c33d6574-3641-428f-862c-25c85ff0ccbf",
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"0ca836f8-de8d-42bf-99ed-16a0d40e3541",
                                       "side":"right",
@@ -11098,6 +11293,7 @@
                                   },
                                   {
                                     "id":"a832561d-14c4-4157-9142-673305be9a55",
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"0ca836f8-de8d-42bf-99ed-16a0d40e3541",
                                       "side":"right",
@@ -11130,6 +11326,7 @@
                                   {
                                     "id":"d6576de2-6011-4513-a900-e25a293dc40d",
                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"0ca836f8-de8d-42bf-99ed-16a0d40e3541",
                                       "side":"right",
@@ -11179,6 +11376,7 @@
                                   {
                                     "id":"e2642724-a630-4c0c-9901-2cc25ce0e8dc",
                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"306e164b-3b1b-4fa4-93e3-1628a8fb054c",
                                       "side":"right",
@@ -11228,6 +11426,7 @@
                                   {
                                     "id":"3f2ec5a1-8d1e-4943-820b-a7ac8d0832c3",
                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"c955e985-b169-4bce-b36a-70d31da164c5",
                                       "side":"right",
@@ -11271,6 +11470,7 @@
                                 "transitions":[
                                   {
                                     "id":"2019fe62-c0a1-4cda-abe2-772d092ec220",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"9e011c38-c929-4604-aafe-61cf07b44540",
                                       "side":"bottom",
@@ -11345,6 +11545,7 @@
                                           {
                                             "id":"6e597e40-5261-41bb-8f1b-1301e7665bfb",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"566c339a-2e94-4e8e-847e-507d1a039d8f",
                                               "side":"top",
@@ -11443,6 +11644,7 @@
                                           {
                                             "id":"a51e652a-1b06-4382-a900-d89472bafa77",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"0927c8db-df16-47c6-9daa-de6fbc7efabc",
                                               "side":"top",
@@ -11536,6 +11738,7 @@
                                           {
                                             "id":"aac34847-9995-44a2-9069-e81246a9b537",
                                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                            "trigger-kind":0,
                                             "source":{
                                               "state":"061d7113-39c1-4620-af5e-d1aa724e0463",
                                               "side":"top",
@@ -11614,6 +11817,7 @@
                         "transitions":[
                           {
                             "id":"05be9ba2-6bde-499b-9db1-f1c7c6a867f7",
+                            "trigger-kind":2,
                             "source":{
                               "state":"84c9c375-971a-47f4-b4b7-dfa4c6a9250c",
                               "side":"right",
@@ -11645,6 +11849,7 @@
                           },
                           {
                             "id":"c6261e9a-00b0-4c9c-8e39-77482611a303",
+                            "trigger-kind":2,
                             "source":{
                               "state":"84c9c375-971a-47f4-b4b7-dfa4c6a9250c",
                               "side":"right",
@@ -11682,6 +11887,7 @@
                           },
                           {
                             "id":"dbd92d5c-3903-4b27-b659-af475bd9dbbf",
+                            "trigger-kind":2,
                             "source":{
                               "state":"84c9c375-971a-47f4-b4b7-dfa4c6a9250c",
                               "side":"right",
@@ -11731,6 +11937,7 @@
                         "transitions":[
                           {
                             "id":"19694fd7-4aab-4229-bf82-9c278b24ee42",
+                            "trigger-kind":2,
                             "source":{
                               "state":"fb1d11e6-c97f-4d3d-b06a-af0671089b46",
                               "side":"right",
@@ -11767,6 +11974,7 @@
                           },
                           {
                             "id":"667a933a-a931-4593-a6a1-de5db1c2ee6e",
+                            "trigger-kind":2,
                             "source":{
                               "state":"fb1d11e6-c97f-4d3d-b06a-af0671089b46",
                               "side":"right",
@@ -11809,6 +12017,7 @@
                           },
                           {
                             "id":"9f983256-4a6c-4887-96eb-9ce04afc2573",
+                            "trigger-kind":2,
                             "source":{
                               "state":"fb1d11e6-c97f-4d3d-b06a-af0671089b46",
                               "side":"right",
@@ -11839,6 +12048,7 @@
                           },
                           {
                             "id":"0a402540-76f0-4926-bc2a-d277df7fb227",
+                            "trigger-kind":2,
                             "source":{
                               "state":"fb1d11e6-c97f-4d3d-b06a-af0671089b46",
                               "side":"right",
@@ -11910,6 +12120,7 @@
                           {
                             "id":"51780821-61ea-4cfb-b3d3-8157224b91ef",
                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                            "trigger-kind":0,
                             "source":{
                               "state":"2ee5e886-8236-4376-8171-1bc1d1ef2b2a",
                               "side":"right",
@@ -11959,6 +12170,7 @@
                           {
                             "id":"7e9490c4-a1e0-4af5-8b72-6aa6e74f33e4",
                             "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                            "trigger-kind":0,
                             "source":{
                               "state":"b30e82eb-e062-4050-a667-3fd3221a994d",
                               "side":"right",
@@ -12038,6 +12250,7 @@
                                   {
                                     "id":"cf8266c8-b484-47ad-9016-c4ff64f04112",
                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"6850282e-a01f-49d1-a31a-cb02886a4663",
                                       "side":"right",
@@ -12136,6 +12349,7 @@
                                   {
                                     "id":"cbe45970-464c-41f3-b3c4-cfb9a0cf2859",
                                     "trigger":"060051ac-b9c7-4b85-b478-dcdf54362f21",
+                                    "trigger-kind":0,
                                     "source":{
                                       "state":"5c6f9542-29a0-4dfe-bb5a-acd0ee22a985",
                                       "side":"right",
@@ -12182,6 +12396,7 @@
                   {
                     "id":"65a23640-7596-4ba0-9448-9f20c000de48",
                     "trigger":"ea5929ab-c6d9-4cee-90eb-9544709d6034",
+                    "trigger-kind":0,
                     "source":{
                       "state":"96f83830-76b5-43b5-97f6-eeb7f5b74510",
                       "side":"left",
@@ -12213,6 +12428,7 @@
                   {
                     "id":"a25364ab-abe4-4d09-be6a-94d95334cc36",
                     "trigger":"ea5929ab-c6d9-4cee-90eb-9544709d6034",
+                    "trigger-kind":0,
                     "source":{
                       "state":"96f83830-76b5-43b5-97f6-eeb7f5b74510",
                       "side":"left",
@@ -12266,6 +12482,7 @@
                 "transitions":[
                   {
                     "id":"d2aaf618-7ded-41d5-93cf-e6717b8de7b5",
+                    "trigger-kind":0,
                     "source":{
                       "state":"8f355b8a-b35b-413e-aa59-6975b26c60f6",
                       "side":"bottom",
@@ -12320,6 +12537,7 @@
         "transitions":[
           {
             "id":"47ae9a9d-0e4d-4e2d-bfaa-6754c0233425",
+            "trigger-kind":0,
             "source":{
               "state":"91d049a2-ff7c-4b6c-87e8-43775562220e",
               "side":"bottom",

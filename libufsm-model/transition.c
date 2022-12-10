@@ -130,6 +130,7 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
     if (n_entries == 0)
         return UFSMM_OK;
 
+        L_DEBUG("A");
     L_DEBUG("Parsing transitions in state '%s'", state->name);
 
     for (unsigned int n = 0; n < n_entries; n++) {
@@ -149,10 +150,10 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
         }
 
         uuid_parse(json_object_get_string(j_id), transition->id);
-
         if (json_object_object_get_ex(j_t, "trigger-kind", &j_trigger_kind)) {
             trigger_kind = json_object_get_int(j_trigger_kind);
-            L_DEBUG("Trigger kind = %i", trigger_kind);
+
+            //L_DEBUG("Trigger kind = %i %p", trigger_kind, transition);
             transition->trigger_kind = trigger_kind;
         } else {
             transition->trigger_kind = UFSMM_TRIGGER_EVENT;

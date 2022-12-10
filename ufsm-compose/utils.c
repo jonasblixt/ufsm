@@ -294,6 +294,7 @@ int transition_calc_begin_end_point(struct ufsmm_state *s,
 {
     double sx, sy, sw, sh;
     int rc = 0;
+
     sx = s->x;
     sy = s->y;
     sw = s->w;

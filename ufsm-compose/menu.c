@@ -818,7 +818,7 @@ void menu_render(struct menu *menu,
     }
 }
 
-bool menu_process(struct menu *menu, struct ufsm_machine *m, double px, double py)
+bool menu_process(struct menu *menu, struct canvas_machine *m, double px, double py)
 {
     if (!menu->visible)
         return false;

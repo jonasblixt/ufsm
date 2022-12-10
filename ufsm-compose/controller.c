@@ -692,11 +692,13 @@ void canvas_reset_selection(void *context)
 int canvas_selection_count(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    L_DEBUG(__func__);
     return priv->selection_count;
 }
 
 int canvas_clicked_on_selected(void *context)
 {
+    L_DEBUG(__func__);
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_stack *stack;
     struct ufsmm_region *r, *r2;
@@ -1115,6 +1117,9 @@ void canvas_check_sresize_boxes(void *context)
     double px = priv->px;
     double py = priv->py;
 
+    if (priv->selected_state == NULL)
+        return;
+
     //ufsmm_get_state_absolute_coords(priv->selected_state, &x, &y, &w, &h);
 
     x = priv->selected_state->x + r->ox;
@@ -1247,6 +1252,7 @@ struct move_vertice_op {
 
 void canvas_move_vertice_begin(void *context)
 {
+
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
     struct ufsmm_vertice *v;
@@ -1271,6 +1277,7 @@ void canvas_move_vertice_begin(void *context)
 
 void canvas_move_vertice_end(void *context)
 {
+    L_DEBUG(__func__);
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct ufsmm_transition *t = priv->selected_transition;
     struct ufsmm_vertice *v;
@@ -3352,6 +3359,8 @@ void canvas_create_final_begin(void *context)
 
 void canvas_create_final_end(void *context)
 {
+    L_DEBUG(__func__);
+
     create_simple_state_end(context);
 }
 
@@ -3685,7 +3694,7 @@ struct mselect_op {
 void canvas_mselect_begin(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-
+    L_DEBUG("%s: begin", __func__);
     priv->command_data = malloc(sizeof(struct mselect_op));
     memset(priv->command_data, 0, sizeof(struct mselect_op));
 
@@ -3697,6 +3706,8 @@ void canvas_mselect_begin(void *context)
     struct mselect_op *op = (struct mselect_op *) priv->command_data;
     op->sx = priv->px;
     op->sy = priv->py;
+
+    L_DEBUG("%s: end", __func__);
 }
 
 void canvas_mselect_end(void *context)
@@ -4023,6 +4034,7 @@ static void mselect_move_end(void *context, bool undo)
 
 void canvas_mselect_move_end2(void *context)
 {
+    L_DEBUG(__func__);
     mselect_move_end(context, false);
 }
 
@@ -4255,6 +4267,7 @@ void canvas_state_select_end_begin(void *context)
 
 void canvas_state_select_end_end(void *context)
 {
+    L_DEBUG(__func__);
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     uc_status_pop();
     priv->redraw = true;
@@ -4269,6 +4282,7 @@ void canvas_state_select_start_begin(void *context)
 
 void canvas_state_select_start_end(void *context)
 {
+    L_DEBUG(__func__);
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     uc_status_pop();
     priv->redraw = true;
@@ -4299,6 +4313,7 @@ void canvas_add_end(void *context)
 void canvas_tools_begin(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    L_DEBUG(__func__);
     uc_status_show_path(priv->current_region);
     priv->redraw = true;
 }
@@ -4309,14 +4324,19 @@ void canvas_tools_end(void *context)
     uc_status_clear();
     uc_rstatus_set_error(NULL);
     priv->redraw = true;
+
+    L_DEBUG(__func__);
 }
 
 void canvas_select_begin(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
+    L_DEBUG("%s: begin", __func__);
     uc_status_clear();
     uc_status_push2("SELECT", UFSMM_COLOR_GRAY1);
     priv->redraw = true;
+
+    L_DEBUG("%s: end", __func__);
 }
 
 void canvas_select_end(void *context)
@@ -4436,59 +4456,59 @@ static gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
     if (event->keyval == GDK_KEY_Shift_L) {
-        canvas_machine_process(&priv->machine, eKey_shift_down);
+        canvas_process(&priv->machine, eKey_shift_down);
     } else if (event->keyval == GDK_KEY_Control_L) {
-        canvas_machine_process(&priv->machine, eKey_ctrl_down);
+        canvas_process(&priv->machine, eKey_ctrl_down);
     } else if (event->keyval == GDK_KEY_a) {
-        canvas_machine_process(&priv->machine, eKey_a_down);
+        canvas_process(&priv->machine, eKey_a_down);
     } else if (event->keyval == GDK_KEY_p) {
-        canvas_machine_process(&priv->machine, eKey_p_down);
+        canvas_process(&priv->machine, eKey_p_down);
     } else if (event->keyval == GDK_KEY_c) {
-        canvas_machine_process(&priv->machine, eKey_c_down);
+        canvas_process(&priv->machine, eKey_c_down);
     } else if (event->keyval == GDK_KEY_n) {
-        canvas_machine_process(&priv->machine, eKey_n_down);
+        canvas_process(&priv->machine, eKey_n_down);
     } else if (event->keyval == GDK_KEY_O) {
-        canvas_machine_process(&priv->machine, eKey_O_down);
+        canvas_process(&priv->machine, eKey_O_down);
     } else if (event->keyval == GDK_KEY_r) {
-        canvas_machine_process(&priv->machine, eKey_r_down);
+        canvas_process(&priv->machine, eKey_r_down);
     } else if (event->keyval == GDK_KEY_v) {
-        canvas_machine_process(&priv->machine, eKey_v_down);
+        canvas_process(&priv->machine, eKey_v_down);
     } else if (event->keyval == GDK_KEY_t) {
-        canvas_machine_process(&priv->machine, eKey_t_down);
+        canvas_process(&priv->machine, eKey_t_down);
     } else if (event->keyval == GDK_KEY_T) {
-        canvas_machine_process(&priv->machine, eKey_T_down);
+        canvas_process(&priv->machine, eKey_T_down);
     } else if (event->keyval == GDK_KEY_h) {
-        canvas_machine_process(&priv->machine, eKey_h_down);
+        canvas_process(&priv->machine, eKey_h_down);
     } else if (event->keyval == GDK_KEY_H) {
-        canvas_machine_process(&priv->machine, eKey_H_down);
+        canvas_process(&priv->machine, eKey_H_down);
     } else if (event->keyval == GDK_KEY_i) {
-        canvas_machine_process(&priv->machine, eKey_i_down);
+        canvas_process(&priv->machine, eKey_i_down);
     } else if (event->keyval == GDK_KEY_j) {
-        canvas_machine_process(&priv->machine, eKey_j_down);
+        canvas_process(&priv->machine, eKey_j_down);
     } else if (event->keyval == GDK_KEY_f) {
-        canvas_machine_process(&priv->machine, eKey_f_down);
+        canvas_process(&priv->machine, eKey_f_down);
     } else if (event->keyval == GDK_KEY_F) {
-        canvas_machine_process(&priv->machine, eKey_F_down);
+        canvas_process(&priv->machine, eKey_F_down);
     } else if (event->keyval == GDK_KEY_g) {
-        canvas_machine_process(&priv->machine, eKey_g_down);
+        canvas_process(&priv->machine, eKey_g_down);
     } else if (event->keyval == GDK_KEY_e) {
-        canvas_machine_process(&priv->machine, eKey_e_down);
+        canvas_process(&priv->machine, eKey_e_down);
     } else if (event->keyval == GDK_KEY_o) {
-        canvas_machine_process(&priv->machine, eKey_o_down);
+        canvas_process(&priv->machine, eKey_o_down);
     } else if (event->keyval == GDK_KEY_Escape) {
-        canvas_machine_process(&priv->machine, eKey_esc_down);
+        canvas_process(&priv->machine, eKey_esc_down);
     } else if (event->keyval == GDK_KEY_x) {
-        canvas_machine_process(&priv->machine, eKey_x_down);
+        canvas_process(&priv->machine, eKey_x_down);
     } else if (event->keyval == GDK_KEY_Delete) {
-        canvas_machine_process(&priv->machine, eKey_delete_down);
+        canvas_process(&priv->machine, eKey_delete_down);
     } else if (event->keyval == GDK_KEY_BackSpace) {
-        canvas_machine_process(&priv->machine, eKey_backspace_down);
+        canvas_process(&priv->machine, eKey_backspace_down);
     } else if (event->keyval == GDK_KEY_s) {
-        canvas_machine_process(&priv->machine, eKey_s_down);
+        canvas_process(&priv->machine, eKey_s_down);
     } else if (event->keyval == GDK_KEY_S) {
-        canvas_machine_process(&priv->machine, eKey_S_down);
+        canvas_process(&priv->machine, eKey_S_down);
     } else if (event->keyval == GDK_KEY_z) {
-        canvas_machine_process(&priv->machine, eKey_z_down);
+        canvas_process(&priv->machine, eKey_z_down);
     }
     if (priv->redraw) {
         gtk_widget_queue_draw(priv->widget);
@@ -4503,9 +4523,9 @@ static gboolean keyrelease_cb(GtkWidget *widget, GdkEventKey *event, gpointer da
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
     if (event->keyval == GDK_KEY_Shift_L) {
-        canvas_machine_process(&priv->machine, eKey_shift_up);
+        canvas_process(&priv->machine, eKey_shift_up);
     } else if (event->keyval == GDK_KEY_Control_L) {
-        canvas_machine_process(&priv->machine, eKey_ctrl_up);
+        canvas_process(&priv->machine, eKey_ctrl_up);
     }
 
     if (priv->redraw) {
@@ -4526,11 +4546,11 @@ static gboolean buttonpress_cb(GtkWidget *widget, GdkEventButton *event)
     priv->sy = ufsmm_canvas_nearest_grid_point(event->y / (priv->current_region->scale/2.0));
 
     if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
-        ufsm_process(&priv->machine.machine, eRMBDown);
+        canvas_process(&priv->machine, eRMBDown);
     } else if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
-        if (!menu_process(priv->menu, &priv->machine.machine, event->x, event->y)) {
+        if (!menu_process(priv->menu, &priv->machine, event->x, event->y)) {
             if (!ufsmm_nav_process(priv, event->x, event->y)) {
-                ufsm_process(&priv->machine.machine, eLMBDown);
+                canvas_process(&priv->machine, eLMBDown);
             }
         } else {
             priv->redraw = true;
@@ -4562,9 +4582,9 @@ static gboolean buttonrelease_cb(GtkWidget *widget, GdkEventButton *event)
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
     if (event->type == GDK_BUTTON_RELEASE && event->button == 3) {
-        ufsm_process(&priv->machine.machine, eRMBUp);
+        canvas_process(&priv->machine, eRMBUp);
     } else if (event->type == GDK_BUTTON_RELEASE && event->button == 1) {
-        ufsm_process(&priv->machine.machine, eLMBUp);
+        canvas_process(&priv->machine, eLMBUp);
     }
 
     if (priv->redraw) {
@@ -4583,9 +4603,9 @@ static gboolean scroll_event_cb(GtkWidget *widget, GdkEventScroll *event)
 
     if (!ufsmm_nav_scroll(priv, nav_scroll)) {
         if (event->direction == GDK_SCROLL_UP)
-            canvas_machine_process(&priv->machine, eScrollUp);
+            canvas_process(&priv->machine, eScrollUp);
         else if (event->direction == GDK_SCROLL_DOWN)
-            canvas_machine_process(&priv->machine, eScrollDown);
+            canvas_process(&priv->machine, eScrollDown);
     }
 
     if (priv->redraw) {
@@ -4627,7 +4647,7 @@ static gboolean motion_notify_event_cb(GtkWidget      *widget,
         priv->dy = py - priv->sy;
     }
 
-    ufsm_process(&priv->machine.machine, eMotion);
+    canvas_process(&priv->machine, eMotion);
 
     if (priv->redraw) {
         gtk_widget_queue_draw(priv->widget);
@@ -4672,13 +4692,6 @@ static void destroy_event_cb(GtkWidget *widget)
     free(priv);
 }
 
-static void debug_event(int ev)
-{
-    if (ev == eMotion)
-        return;
-
-    printf (" %-3i|            |\n",ev);
-}
 
 GtkWidget* ufsmm_canvas_new(GtkWidget *parent, int verbosity)
 {
@@ -4695,15 +4708,9 @@ GtkWidget* ufsmm_canvas_new(GtkWidget *parent, int verbosity)
     priv->draw_menu = true;
     priv->menu = menu_init();
 
-    if (verbosity > 2) {
-        ufsm_debug_machine(&priv->machine.machine);
-        /* Override the debug_event to filter out 'eMotion' -event, since
-         * there are so many of them */
-        priv->machine.machine.debug_event = debug_event;
-    }
-
     uc_status_init();
-    canvas_machine_initialize(&priv->machine, priv);
+    priv->machine.user = priv;
+    canvas_process(&priv->machine, UFSM_RESET);
 
     widget = gtk_drawing_area_new();
 

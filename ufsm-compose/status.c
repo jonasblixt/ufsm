@@ -202,7 +202,6 @@ void uc_status_show_path(struct ufsmm_region *region)
 {
     struct ufsmm_region *r = region;
 
-
     uc_status_clear();
 
     if (r == NULL) {
