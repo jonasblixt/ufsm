@@ -126,6 +126,8 @@ def _guard_expr_helper(guards):
 def _gen_transition_exits(hmodel, fmodel, f, ft, indent):
     _emit(f, indent, "/* Exit actions */")
     for ex in ft.exits:
+        if len(ex.actions) == 0:
+            continue
         if len(ex.rule.states) > 0:
             _emit(f, indent, f"if ({_sc_expr_helper(ex.rule)}) {{")
             indent_extra = 1
