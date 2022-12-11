@@ -9,9 +9,10 @@ class Rule:
     invert: bool = False
     history: bool = False
     states: List[State] = field(default_factory=list)
+    csv_states: List[State] = field(default_factory=list)
 
     def __str__(self):
-        if len(self.states) == 0:
+        if len(self.states) == 0 and len(self.csv_states) == 0:
             return "True"
 
         result = ""
@@ -20,14 +21,8 @@ class Rule:
         if self.invert:
             result += "¬"
 
-        result += "(" + "^".join(s.name for s in self.states) + ")"
+        result += "(" + "^".join(s.name for s in self.states + self.csv_states) + ")"
         return result
-
-    def __eq__(self, other):
-        result = (self.invert == other.invert)
-        set1 = set((x.id) for x in self.states)
-        set2 = set((x.id) for x in other.states)
-        return result and (set1 == set2)
 
 @dataclass
 class EntryRule:

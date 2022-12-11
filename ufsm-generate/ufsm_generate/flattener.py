@@ -262,18 +262,16 @@ def _compute_completion_event(hmodel: Model, fmodel: FlatModel, t: Transition):
         1) We transition into a final state 'Final'
         2) Check if the parent state to 'Final' has a 'completion-event' transition.
             if it does, we continue with 'ct'
-        3) If orthogonal regions to 'Final' have one ore more final states, one
-           of them must be reached per region
-        4) If '3' is satisfied the 'ct' is executed
-            4a) Exit(ct.source, exit_exclution_list)
-            4b) Run 
-            4c) Append 'ct.source' on the 'exit_exclusion_list'
-        5) If ct.dest is another Final state: source = ct.source,
+        3) If '2' is satisfied the 'ct' is executed
+            3a) Exit(ct.source, exit_exclution_list)
+            3b) Run 
+            3c) Append 'ct.source' on the 'exit_exclusion_list'
+        4) If ct.dest is another Final state: source = ct.source,
             goto 1
     """
 
-    source = t.source
-    dest = t.dest
+    source = t.source # Source state that triggered a 'completion' transition
+    dest = t.dest     # Current destination state
     exit_exclusion_list = [source.id]
     exit_rules = []
     entry_rules = []
@@ -287,12 +285,23 @@ def _compute_completion_event(hmodel: Model, fmodel: FlatModel, t: Transition):
 
         nca = nearest_common_ancestor(source, ct.dest)
         top_state_to_exit = find_ancestor_state(source, nca)
+        orth_finals = find_orth_finals(source)         # Final states in orthogonal regions
+        orth_regions = [s.parent for s in orth_finals] # List of parent regions of final states
+
+        logger.debug(f"Found {len(orth_finals)} orthogonal final's")
 
         if top_state_to_exit:
             for s in descendant_states(top_state_to_exit):
                 if s.id in exit_exclusion_list:
                     continue
-                exit_rules.append(copy.deepcopy(fmodel.exit_rules[s.id]))
+                # If state 's' is in a region with a final state we should not
+                # add an exit rule, since that final state will be a condition
+                # to the current 'ct'
+                if s.parent in orth_regions:
+                    continue
+                new_rule = copy.deepcopy(fmodel.exit_rules[s.id])
+                new_rule.rule.states = orth_finals + new_rule.rule.states
+                exit_rules.append(new_rule)
         else:
             exit_rules.append(copy.deepcopy(fmodel.exit_rules[source.id]))
 
@@ -305,6 +314,9 @@ def _compute_completion_event(hmodel: Model, fmodel: FlatModel, t: Transition):
         entry_rules += _transition_enter(
             hmodel, fmodel, top_state_to_enter, ct.dest, nca
         )
+
+        for er in entry_rules:
+            er.rule.csv_states = orth_finals + er.rule.csv_states
 
         dest = ct.dest
         source = ct.source

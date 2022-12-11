@@ -16,7 +16,8 @@ int main(void)
     struct test_final_machine m = {0};
 
     UFSM_TEST(test_final, UFSM_RESET, "eA", "eA1", "eA2");
+    UFSM_TEST(test_final, e1, "xA1");
     UFSM_TEST(test_final, e1, NULL);
-
+    UFSM_TEST(test_final, e2, "xA2", "xA", "eB");
     return 0;
 }
