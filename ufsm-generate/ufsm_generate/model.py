@@ -62,7 +62,8 @@ class Guard:
 
     id: UUID
     name: str
-
+    def __str__(self):
+        return f"{self.name}()"
 
 # TODO: ActionBase, ActionFunction and ActionSignal
 # These objects represents the 'instance' when, for example, an action fuction

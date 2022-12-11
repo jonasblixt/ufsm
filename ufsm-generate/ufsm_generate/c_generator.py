@@ -86,7 +86,7 @@ def _gen_guard_protos(hmodel, f):
     _nl(f)
     _emit(f, 0, "/* Guard prototypes */")
     for _, guard in hmodel.guards.items():
-        _emit(f, 0, f"bool {guard.name}(void *user);")
+        _emit(f, 0, f"int {guard.name}(void *user);")
 
 
 def _gen_action_protos(hmodel, f):
@@ -118,6 +118,10 @@ def _sc_expr_helper(rule, vector="csv"):
         result = f"!({result})"
     return result
 
+
+def _guard_expr_helper(guards):
+    result = " && ".join(f"{g.name}(m->user)" for g in guards)
+    return result
 
 def _gen_transition_exits(hmodel, fmodel, f, ft, indent):
     _emit(f, indent, "/* Exit actions */")
@@ -186,10 +190,17 @@ def _gen_transition_inner(hmodel, fmodel, f, ft, rules, indent):
     if len(rules) > 1:
         _gen_transition_inner(hmodel, fmodel, f, ft, rules[1:], indent + 1)
     else:
+        if len(ft.guard_funcs) > 0:
+            indent += 1
+            _emit(f, indent, f"if ({_guard_expr_helper(ft.guard_funcs)}) {{")
+
         _gen_transition_exits(hmodel, fmodel, f, ft, indent + 1)
         _gen_transition_actions(hmodel, fmodel, f, ft, indent + 1)
         _gen_transition_entries(hmodel, fmodel, f, ft, indent + 1)
 
+        if len(ft.guard_funcs) > 0:
+            _emit(f, indent, "}")
+            indent -= 1
     _emit(f, indent, "}")
 
 def _gen_reset_vector(hmodel, fmodel, f):
