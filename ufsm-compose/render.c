@@ -1084,8 +1084,6 @@ int ufsmm_canvas_render_one_transition(struct ufsmm_canvas *canvas,
     struct ufsmm_vertice *v;
     cairo_t *cr = canvas->cr;
 
-    L_DEBUG("%s: %p %p %p %s", __func__, canvas, t, t->source.state);
-
     transition_calc_begin_end_point(t->source.state,
                          t->source.side,
                          t->source.offset,

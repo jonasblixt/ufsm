@@ -2,7 +2,6 @@
 #ifndef UFSM_CANVAS
 #define UFSM_CANVAS
 
-
 #define UFSM_OK 0
 #define UFSM_BAD_ARGUMENT 1
 #define UFSM_SIGNAL_QUEUE_FULL 2
