@@ -17,7 +17,7 @@ def _initial_state_vector(hmodel: Model):
             parent_states = find_parent_states(t.dest)
 
             rule = Rule()
-            rule.states = parent_states.copy()
+            rule.wsv_states = parent_states.copy()
 
             entry_rule = EntryRule(rule)
             entry_rule.targets.append(t.dest)
@@ -61,7 +61,7 @@ def _build_entry_exit_rules(hmodel: Model):
             parent_states = find_parent_states(s)
 
             rule = Rule()
-            rule.states = parent_states.copy()
+            rule.wsv_states = parent_states.copy()
 
             entry_rule = EntryRule(rule)
             entry_rule.targets.append(s)
@@ -69,7 +69,7 @@ def _build_entry_exit_rules(hmodel: Model):
             entry_rules[s_id] = entry_rule
 
             rule = Rule()
-            rule.states = [s] + parent_states.copy()
+            rule.csv_states = [s] + parent_states.copy()
 
             exit_rule = ExitRule(rule, s)
             exit_rule.actions = s.exits.copy()
@@ -79,14 +79,14 @@ def _build_entry_exit_rules(hmodel: Model):
             parent_states = find_parent_states(s)
 
             rule = Rule()
-            rule.states = parent_states.copy()
+            rule.wsv_states = parent_states.copy()
 
             entry_rule = EntryRule(rule)
             entry_rule.targets.append(s)
             entry_rules[s_id] = entry_rule
 
             rule = Rule()
-            rule.states = [s] + parent_states.copy()
+            rule.csv_states = [s] + parent_states.copy()
 
             exit_rule = ExitRule(rule, s)
 
@@ -176,13 +176,13 @@ def _transition_enter(
         nca_state = nca.parent
         for r in result:
             found_nca = False
-            for s in r.rule.states:
+            for s in r.rule.wsv_states:
                 if s.id == nca_state.id:
                     found_nca = True
                     break
             if found_nca:
                 while True:
-                    popped = r.rule.states.pop()
+                    popped = r.rule.wsv_states.pop()
                     logger.debug(f"{popped}")
                     if popped.id == nca_state.id:
                         break
@@ -206,7 +206,7 @@ def _build_join(hmodel: Model, fmodel: FlatModel, t: Transition):
 
     for s in source_states:
         rule = Rule()
-        rule.states = [s] + find_parent_states(s)
+        rule.csv_states = [s] + find_parent_states(s)
         state_conditions.append(rule)
 
     ft.rules = state_conditions
@@ -215,12 +215,12 @@ def _build_join(hmodel: Model, fmodel: FlatModel, t: Transition):
     for guard in t.guards:
         if isinstance(guard, GuardPState):
             rule = Rule()
-            rule.states = [guard.state] + find_parent_states(guard.state)
+            rule.csv_states = [guard.state] + find_parent_states(guard.state)
             state_conditions.append(rule)
         if isinstance(guard, GuardNState):
             rule = Rule()
             rule.invert = True
-            rule.states = [guard.state] + find_parent_states(guard.state)
+            rule.csv_states = [guard.state] + find_parent_states(guard.state)
             state_conditions.append(rule)
         if isinstance(guard, GuardFunction):
             guard_functions.append(guard.guard)
@@ -300,7 +300,7 @@ def _compute_completion_event(hmodel: Model, fmodel: FlatModel, t: Transition):
                 if s.parent in orth_regions:
                     continue
                 new_rule = copy.deepcopy(fmodel.exit_rules[s.id])
-                new_rule.rule.states = orth_finals + new_rule.rule.states
+                new_rule.rule.csv_states = orth_finals + new_rule.rule.csv_states
                 exit_rules.append(new_rule)
         else:
             exit_rules.append(copy.deepcopy(fmodel.exit_rules[source.id]))
@@ -361,18 +361,18 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, input_trans
     guard_functions = []
 
     rule = Rule()
-    rule.states = [t.source] + find_parent_states(t.source)
+    rule.csv_states = [t.source] + find_parent_states(t.source)
     state_conditions.append(rule)
 
     for guard in t.guards:
         if isinstance(guard, GuardPState):
             rule = Rule()
-            rule.states = [guard.state] + find_parent_states(guard.state)
+            rule.csv_states = [guard.state] + find_parent_states(guard.state)
             state_conditions.append(rule)
         if isinstance(guard, GuardNState):
             rule = Rule()
             rule.invert = True
-            rule.states = [guard.state] + find_parent_states(guard.state)
+            rule.csv_states = [guard.state] + find_parent_states(guard.state)
             state_conditions.append(rule)
         if isinstance(guard, GuardFunction):
             guard_functions.append(guard.guard)

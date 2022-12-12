@@ -862,6 +862,7 @@ static void render_transition_text(cairo_t *cr,
     double y = ty + 20;
     double x_space = tw;
     enum ufsmm_state_kind s_kind = t->source.state->kind;
+    enum ufsmm_state_kind d_kind = t->dest.state->kind;
 
     if (t->trigger && t->trigger_kind == UFSMM_TRIGGER_EVENT) {
         text_ptr = t->trigger->name;
@@ -875,7 +876,8 @@ static void render_transition_text(cairo_t *cr,
         if ((s_kind == UFSMM_STATE_INIT) ||
             (s_kind == UFSMM_STATE_SHALLOW_HISTORY) ||
             (s_kind == UFSMM_STATE_DEEP_HISTORY) ||
-            (s_kind == UFSMM_STATE_FORK)) {
+            (s_kind == UFSMM_STATE_FORK) ||
+            (d_kind == UFSMM_STATE_JOIN)) {
             text_ptr = "";
         } else {
             text_ptr = "?";

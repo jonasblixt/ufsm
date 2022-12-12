@@ -204,6 +204,7 @@
                         "transitions":[
                           {
                             "id":"ef1601ba-2e7c-4908-8437-3318d96c402c",
+                            "trigger-kind":0,
                             "source":{
                               "state":"c2ad2bb7-dfd2-4d05-a6d6-7a55fc9ccd7a",
                               "side":"bottom",
@@ -248,20 +249,15 @@
                     },
                     "text-block":{
                       "x":760.0,
-                      "y":650.0,
-                      "w":130.0,
-                      "h":50.0
+                      "y":670.0,
+                      "w":100.0,
+                      "h":30.0
                     },
                     "vertices":[
                     ],
                     "guards":[
                     ],
                     "actions":[
-                      {
-                        "action-id":"ee431a27-8d3a-4068-a212-4e062b444683",
-                        "kind":0,
-                        "id":"32728856-c0a5-48e2-980d-601803d59928"
-                      }
                     ]
                   }
                 ]
@@ -284,6 +280,7 @@
                 "transitions":[
                   {
                     "id":"ff047eaf-94b7-4426-9df9-5d64b4db5b9e",
+                    "trigger-kind":0,
                     "source":{
                       "state":"51a11ef5-d9db-4581-b9b5-403e3f46cf7b",
                       "side":"bottom",
@@ -377,6 +374,7 @@
         "transitions":[
           {
             "id":"8ddf7c9e-77eb-4872-8cd7-406a18ba8110",
+            "trigger-kind":0,
             "source":{
               "state":"773db3fc-ae70-4e1e-be5d-f4cbc59100ea",
               "side":"bottom",

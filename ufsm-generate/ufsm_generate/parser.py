@@ -5,12 +5,6 @@ from .model import *
 
 logger = logging.getLogger(__name__)
 
-UFSMM_ACTION_REF_NORMAL = 0
-UFSMM_ACTION_REF_SIGNAL = 1
-
-UFSMM_GUARD_PSTATE = 7
-UFSMM_GUARD_NSTATE = 8
-
 def _parse_triggers(model, data):
     logger.debug(f"Parsing triggers")
     index = 10 # 0 - 9 are reserved
@@ -157,6 +151,7 @@ def _parse_one_transition(model, transition_data):
         elif (kind == UFSMM_TRIGGER_SIGNAL) and t.trigger_id:
             t.trigger = model.signals[uuid.UUID(t.trigger_id)]
         elif kind == UFSMM_TRIGGER_AUTO:
+            model.no_of_auto_transitions += 1
             t.trigger = AutoTransitionTrigger()
         elif kind == UFSMM_TRIGGER_COMPLETION:
             t.trigger = CompletionTrigger()

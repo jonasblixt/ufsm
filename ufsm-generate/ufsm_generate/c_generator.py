@@ -112,8 +112,9 @@ def _gen_machine_struct(hmodel, f):
     _nl(f)
     _emit(f, 0, f"int {hmodel.name}_process(struct {hmodel.name}_machine *m, unsigned int event);")
 
-def _sc_expr_helper(rule, vector="csv"):
-    result = " && ".join(f"(m->{vector}[{s.parent.index}] == {s.index})" for s in rule.states)
+def _sc_expr_helper(rule):
+    result = " && ".join(f"(m->csv[{s.parent.index}] == {s.index})" for s in rule.csv_states)
+    result += " && ".join(f"(m->wsv[{s.parent.index}] == {s.index})" for s in rule.wsv_states)
     if rule.invert:
         result = f"!({result})"
     return result
@@ -128,7 +129,7 @@ def _gen_transition_exits(hmodel, fmodel, f, ft, indent):
     for ex in ft.exits:
         if len(ex.actions) == 0:
             continue
-        if len(ex.rule.states) > 0:
+        if len(ex.rule) > 0:
             _emit(f, indent, f"if ({_sc_expr_helper(ex.rule)}) {{")
             indent_extra = 1
         else:
@@ -139,7 +140,7 @@ def _gen_transition_exits(hmodel, fmodel, f, ft, indent):
             elif isinstance(a, ActionSignal):
                 _emit(f, indent + indent_extra, f"if(sq_push(m, {a.signal.index}) != 0)")
                 _emit(f, indent + indent_extra + 1, f"return -UFSM_SIGNAL_QUEUE_FULL;")
-        if len(ex.rule.states) > 0:
+        if len(ex.rule):
             _emit(f, indent, "}")
 
 def _gen_transition_actions(hmodel, fmodel, f, ft, indent):
@@ -156,8 +157,8 @@ def _gen_transition_entries(hmodel, fmodel, f, ft, indent):
     _emit(f, indent, "/* Entry actions */")
     for en in ft.entries:
         indent_extra = 0
-        if len(en.rule.states) > 0:
-            _emit(f, indent, f"if ({_sc_expr_helper(en.rule, 'wsv')}) {{")
+        if len(en.rule) > 0:
+            _emit(f, indent, f"if ({_sc_expr_helper(en.rule)}) {{")
             indent_extra = 1
         else:
             indent_extra = 0
@@ -182,7 +183,7 @@ def _gen_transition_entries(hmodel, fmodel, f, ft, indent):
         if en.rule.history:
             indent_extra -= 1
             _emit(f, indent + indent_extra, "}")
-        if len(en.rule.states) > 0:
+        if len(en.rule) > 0:
             _emit(f, indent, "}")
 
 def _gen_transition_inner(hmodel, fmodel, f, ft, rules, indent):
@@ -214,8 +215,8 @@ def _gen_reset_vector(hmodel, fmodel, f):
         s = r.targets[0]
         indent = 3
 
-        if len(r.rule.states) > 0:
-            _emit(f, indent, f"if ({_sc_expr_helper(r.rule, vector='wsv')}) {{")
+        if len(r.rule) > 0:
+            _emit(f, indent, f"if ({_sc_expr_helper(r.rule)}) {{")
             indent += 1
 
         # TODO: Signals
@@ -224,7 +225,7 @@ def _gen_reset_vector(hmodel, fmodel, f):
         for entry in s.entries:
             _emit(f, indent, f"{entry.action.name}(m->user);")
 
-        if len(r.rule.states) > 0:
+        if len(r.rule) > 0:
             indent -= 1
             _emit(f, indent, "}")
 
@@ -238,9 +239,10 @@ def _gen_process_func(hmodel, fmodel, f):
     _nl(f)
     _emit(f, 0, f"int {hmodel.name}_process(struct {hmodel.name}_machine *m, unsigned int event)")
     _emit(f, 0, "{")
-    _emit(f, 1, "unsigned int process_auto_transition = 0;")
-    _emit(f, 0, "process_more:")
-    _nl(f)
+    if hmodel.no_of_auto_transitions > 0:
+        _emit(f, 1, "unsigned int process_auto_transition = 0;")
+        _emit(f, 0, "process_more:")
+        _nl(f)
 
     # Events
     _emit(f, 1, f"for (unsigned int i = 0; i < {hmodel.no_of_regions}; i++)")
@@ -260,12 +262,13 @@ def _gen_process_func(hmodel, fmodel, f):
                 _gen_transition(hmodel, fmodel, f, ft, 3)
         _emit(f, 2, f"break;")
 
-    _emit(f, 2, f"case UFSM_AUTO_TRANSITION:")
-    _emit(f, 3, "process_auto_transition = 0;")
-    for ft in fmodel.transition_schedule:
-        if isinstance(ft.trigger, AutoTransitionTrigger):
-            _gen_transition(hmodel, fmodel, f, ft, 3)
-    _emit(f, 2, f"break;")
+    if hmodel.no_of_auto_transitions > 0:
+        _emit(f, 2, f"case UFSM_AUTO_TRANSITION:")
+        _emit(f, 3, "process_auto_transition = 0;")
+        for ft in fmodel.transition_schedule:
+            if isinstance(ft.trigger, AutoTransitionTrigger):
+                _gen_transition(hmodel, fmodel, f, ft, 3)
+        _emit(f, 2, f"break;")
 
     _emit(f, 2, "default:")
     _emit(f, 3, "return -UFSM_BAD_ARGUMENT;")
@@ -299,10 +302,11 @@ def _gen_process_func(hmodel, fmodel, f):
         _emit(f, 1, "}")
 
     # Trigger-less transitions
-    _emit(f, 1, "if (process_auto_transition == 1) {")
-    _emit(f, 2, "event = UFSM_AUTO_TRANSITION;")
-    _emit(f, 2, "goto process_more;")
-    _emit(f, 1, "}")
+    if hmodel.no_of_auto_transitions > 0:
+        _emit(f, 1, "if (process_auto_transition == 1) {")
+        _emit(f, 2, "event = UFSM_AUTO_TRANSITION;")
+        _emit(f, 2, "goto process_more;")
+        _emit(f, 1, "}")
 
     _emit(f, 1, "return 0;")
     _emit(f, 0, "}")

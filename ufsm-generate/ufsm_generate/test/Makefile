@@ -9,6 +9,7 @@ TESTS = test_model1 \
 		test_fork_join \
 		test_final \
 		test_guard1 \
+		test_nested_finals \
 		test_nested_finals2
 
 all: $(TESTS) run

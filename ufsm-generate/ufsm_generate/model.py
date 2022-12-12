@@ -7,6 +7,19 @@ UFSMM_TRIGGER_SIGNAL = 1
 UFSMM_TRIGGER_AUTO = 2
 UFSMM_TRIGGER_COMPLETION = 3
 
+UFSMM_ACTION_REF_NORMAL = 0
+UFSMM_ACTION_REF_SIGNAL = 1
+
+UFSMM_GUARD_TRUE = 0
+UFSMM_GUARD_FALSE = 1
+UFSMM_GUARD_EQ = 2
+UFSMM_GUARD_GT = 3
+UFSMM_GUARD_GTE = 4
+UFSMM_GUARD_LT = 5
+UFSMM_GUARD_LTE = 6
+UFSMM_GUARD_PSTATE = 7
+UFSMM_GUARD_NSTATE = 8
+
 @dataclass
 class Event:
     """Model wide event object.
@@ -200,6 +213,7 @@ class Model:
     kind: str
     no_of_regions: int = 0
     no_of_states: int = 0
+    no_of_auto_transitions: int = 0
     events: Dict[UUID, Event] = field(default_factory=dict)
     signals: Dict[UUID, Signal] = field(default_factory=dict)
     guards: Dict[UUID, Guard] = field(default_factory=dict)
