@@ -279,6 +279,13 @@ def _gen_process_func(hmodel, fmodel, f):
     _emit(f, 3, "m->csv[i] = m->wsv[i];")
     _nl(f)
 
+    # Trigger-less transitions
+    if hmodel.no_of_auto_transitions > 0:
+        _emit(f, 1, "if (process_auto_transition == 1) {")
+        _emit(f, 2, "event = UFSM_AUTO_TRANSITION;")
+        _emit(f, 2, "goto process_more;")
+        _emit(f, 1, "}")
+
     # Signals
     if len(hmodel.signals) > 0:
         _nl(f)
@@ -290,6 +297,10 @@ def _gen_process_func(hmodel, fmodel, f):
         for _, signal in hmodel.signals.items():
             _emit(f, 3, f"case {signal.name}:")
             for ft in fmodel.transition_schedule:
+                if isinstance(ft.trigger, AutoTransitionTrigger):
+                    continue
+                if isinstance(ft.trigger, CompletionTrigger):
+                    continue
                 if ft.trigger.id == signal.id:
                     _gen_transition(hmodel, fmodel, f, ft, 4)
             _emit(f, 3, f"break;")

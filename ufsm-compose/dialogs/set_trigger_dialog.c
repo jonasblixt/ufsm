@@ -12,6 +12,7 @@ enum
 };
 
 static struct ufsmm_trigger *selected_trigger;
+static struct ufsmm_signal *selected_signal;
 static enum ufsmm_trigger_kind selected_trigger_kind;
 
 static void input_changed(GtkEntry *entry, gpointer user_data)
@@ -150,9 +151,14 @@ static gboolean view_selection_func(GtkTreeSelection *selection,
         gtk_tree_model_get(model, &iter, COLUMN_NAME, &name, -1);
 
         if (!path_currently_selected) {
+            void *result = NULL;
             gtk_tree_model_get(model, &iter, COLUMN_TRIGGER_REF,
-                                &selected_trigger, -1);
+                                &result, -1);
             selected_trigger_kind = trigger_kind(model, &iter);
+            if (selected_trigger_kind == UFSMM_TRIGGER_SIGNAL)
+                selected_signal = result;
+            else
+                selected_trigger = result;
         }
 
         g_free(name);
@@ -173,8 +179,13 @@ static void list_row_activated_cb(GtkTreeView        *treeview,
     model = gtk_tree_view_get_model(treeview);
 
     if (gtk_tree_model_get_iter(model, &iter, path)) {
-        gtk_tree_model_get(model, &iter, COLUMN_TRIGGER_REF, &selected_trigger, -1);
+        void *result = NULL;
+        gtk_tree_model_get(model, &iter, COLUMN_TRIGGER_REF, &result, -1);
         selected_trigger_kind = trigger_kind(model, &iter);
+        if (selected_trigger_kind == UFSMM_TRIGGER_SIGNAL)
+            selected_signal = result;
+        else
+            selected_trigger = result;
         gtk_dialog_response(GTK_DIALOG(userdata), GTK_RESPONSE_ACCEPT);
     }
 }
@@ -188,6 +199,7 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
     GtkDialogFlags flags;
 
     selected_trigger = NULL;
+    selected_signal = NULL;
     selected_trigger_kind = UFSMM_TRIGGER_EVENT;
 
     flags = GTK_DIALOG_MODAL;
@@ -240,6 +252,18 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
                             COLUMN_MATCH_RATING, 0,
                             COLUMN_NAME, t->name,
                             COLUMN_TRIGGER_REF, t,
+                            -1);
+    }
+
+    struct ufsmm_signal *s;
+    TAILQ_FOREACH(s, &model->signals, tailq) {
+        char sig_name_buf[256];
+        snprintf(sig_name_buf, sizeof(sig_name_buf), "^%s", s->name);
+        gtk_tree_store_append(store, &iter, NULL);
+        gtk_tree_store_set (store, &iter,
+                            COLUMN_MATCH_RATING, 0,
+                            COLUMN_NAME, sig_name_buf,
+                            COLUMN_TRIGGER_REF, s,
                             -1);
     }
 
@@ -297,10 +321,16 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
     L_DEBUG("result = %i", result);
 
     if (result == GTK_RESPONSE_ACCEPT) {
-        L_DEBUG("Setting new trigger to %p %i", selected_trigger, selected_trigger_kind);
-        rc = ufsmm_transition_set_trigger(model, transition,
-                                            selected_trigger,
-                                            selected_trigger_kind);
+        L_DEBUG("Setting new trigger to %i", selected_trigger_kind);
+
+        if (selected_trigger_kind == UFSMM_TRIGGER_SIGNAL) {
+            rc = ufsmm_transition_set_signal_trigger(model, transition,
+                                                selected_signal);
+        } else {
+            rc = ufsmm_transition_set_trigger(model, transition,
+                                                selected_trigger,
+                                                selected_trigger_kind);
+        }
     } else if (result == 1 && selected_trigger_kind == UFSMM_TRIGGER_EVENT) { /* Create new event */
         const char *new_name = gtk_entry_get_text(GTK_ENTRY(input));
 

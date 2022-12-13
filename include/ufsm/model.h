@@ -459,6 +459,10 @@ int ufsmm_transition_set_trigger(struct ufsmm_model *model,
                                 struct ufsmm_trigger *trigger,
                                 enum ufsmm_trigger_kind kind);
 
+int ufsmm_transition_set_signal_trigger(struct ufsmm_model *model,
+                                struct ufsmm_transition *transition,
+                                struct ufsmm_signal *trigger);
+
 int ufsmm_transition_add_guard(struct ufsmm_model *model,
                               struct ufsmm_transition *transition,
                               uuid_t id,

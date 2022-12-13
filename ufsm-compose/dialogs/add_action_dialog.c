@@ -318,17 +318,23 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
                 rc = -1;
             break;
         }
-    } else if (result == 1 && !selected_action && !selected_signal) { /* Create new action */
+    } else if (result == 1 && !selected_action && !selected_signal) { /* Create new action or signal */
         uuid_t id;
         uuid_generate_random(id);
 
-        rc = ufsmm_model_get_action_by_name(model, action_name, kind,
-                                                &selected_action);
+        if (action_name[0] == '^') {
+            rc = ufsmm_model_add_signal(model, &action_name[1],
+                                                &selected_signal);
+            selected_action = NULL;
+        } else {
+            rc = ufsmm_model_get_action_by_name(model, action_name, kind,
+                                                    &selected_action);
 
-        if (rc != UFSMM_OK) {
-            /* Create new action */
-            rc = ufsmm_model_add_action(model, kind, action_name,
-                                            &selected_action);
+            if (rc != UFSMM_OK) {
+                /* Create new action */
+                rc = ufsmm_model_add_action(model, kind, action_name,
+                                                &selected_action);
+            }
         }
 
         if (rc != UFSMM_OK)
@@ -336,14 +342,29 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 
         switch (kind) {
             case UFSMM_ACTION_ENTRY:
-                rc = ufsmm_state_add_entry(model, state, id, selected_action->id);
+                if (selected_signal) {
+                    rc = ufsmm_state_add_entry_signal(model, state, id,
+                                                        selected_signal->id);
+                } else {
+                    rc = ufsmm_state_add_entry(model, state, id,
+                                                        selected_action->id);
+                }
             break;
             case UFSMM_ACTION_EXIT:
-                rc = ufsmm_state_add_exit(model, state, id, selected_action->id);
+                if (selected_signal) {
+                    rc = ufsmm_state_add_exit_signal(model, state, id, selected_signal->id);
+                } else {
+                    rc = ufsmm_state_add_exit(model, state, id, selected_action->id);
+                }
             break;
             case UFSMM_ACTION_ACTION:
-                rc = ufsmm_transition_add_action(model, transition, id,
-                                                    selected_action->id);
+                if (selected_signal) {
+                    rc = ufsmm_transition_add_signal_action(model, transition,
+                                                    id, selected_signal->id);
+                } else {
+                    rc = ufsmm_transition_add_action(model, transition, id,
+                                                        selected_action->id);
+                }
             break;
             default:
                 rc = -1;

@@ -602,10 +602,27 @@ int ufsmm_transition_set_trigger(struct ufsmm_model *model,
                                 struct ufsmm_trigger *trigger,
                                 enum ufsmm_trigger_kind kind)
 {
-    transition->trigger = trigger;
+    transition->trigger = NULL;
+    transition->signal = NULL;
     transition->trigger_kind = kind;
+
+    if (kind == UFSMM_TRIGGER_EVENT)
+        transition->trigger = trigger;
+
     return UFSMM_OK;
 }
+
+
+int ufsmm_transition_set_signal_trigger(struct ufsmm_model *model,
+                                struct ufsmm_transition *transition,
+                                struct ufsmm_signal *trigger)
+{
+    transition->trigger = NULL;
+    transition->signal = trigger;
+    transition->trigger_kind = UFSMM_TRIGGER_SIGNAL;
+    return UFSMM_OK;
+}
+
 
 int ufsmm_transition_add_guard(struct ufsmm_model *model,
                               struct ufsmm_transition *transition,
