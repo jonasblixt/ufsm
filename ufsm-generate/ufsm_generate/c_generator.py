@@ -119,9 +119,26 @@ def _sc_expr_helper(rule):
         result = f"!({result})"
     return result
 
+def _guard_expr_inner(g):
+    if g.kind == UFSMM_GUARD_TRUE:
+        return f"{g.guard.name}(m->user)"
+    elif g.kind == UFSMM_GUARD_FALSE:
+        return f"{g.guard.name}(m->user) == 0"
+    elif g.kind == UFSMM_GUARD_EQ:
+        return f"{g.guard.name}(m->user) == {g.value}"
+    elif g.kind == UFSMM_GUARD_GT:
+        return f"{g.guard.name}(m->user) > {g.value}"
+    elif g.kind == UFSMM_GUARD_GTE:
+        return f"{g.guard.name}(m->user) >= {g.value}"
+    elif g.kind == UFSMM_GUARD_LT:
+        return f"{g.guard.name}(m->user) < {g.value}"
+    elif g.kind == UFSMM_GUARD_LTE:
+        return f"{g.guard.name}(m->user) <= {g.value}"
+    else:
+        raise Exception("Unknown guard kind")
 
 def _guard_expr_helper(guards):
-    result = " && ".join(f"{g.name}(m->user)" for g in guards)
+    result = " && ".join(_guard_expr_inner(g) for g in guards)
     return result
 
 def _gen_transition_exits(hmodel, fmodel, f, ft, indent):
@@ -193,15 +210,15 @@ def _gen_transition_inner(hmodel, fmodel, f, ft, rules, indent):
     if len(rules) > 1:
         _gen_transition_inner(hmodel, fmodel, f, ft, rules[1:], indent + 1)
     else:
-        if len(ft.guard_funcs) > 0:
+        if len(ft.guards) > 0:
             indent += 1
-            _emit(f, indent, f"if ({_guard_expr_helper(ft.guard_funcs)}) {{")
+            _emit(f, indent, f"if ({_guard_expr_helper(ft.guards)}) {{")
 
         _gen_transition_exits(hmodel, fmodel, f, ft, indent + 1)
         _gen_transition_actions(hmodel, fmodel, f, ft, indent + 1)
         _gen_transition_entries(hmodel, fmodel, f, ft, indent + 1)
 
-        if len(ft.guard_funcs) > 0:
+        if len(ft.guards) > 0:
             _emit(f, indent, "}")
             indent -= 1
     _emit(f, indent, "}")

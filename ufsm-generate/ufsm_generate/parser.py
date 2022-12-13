@@ -194,8 +194,9 @@ def _parse_one_transition(model, transition_data):
         else:
             g_id = uuid.UUID(guard_data["id"])
             g_action_id = uuid.UUID(guard_data["action-id"])
+            g_val = guard_data["value"]
             g = model.guards[g_action_id]
-            guard = GuardFunction(g_id, g)
+            guard = GuardFunction(g_id, g, g_val, kind)
         t.guards.append(guard)
     model.transitions.append(t)
 

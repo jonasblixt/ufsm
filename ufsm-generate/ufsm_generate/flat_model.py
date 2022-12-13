@@ -61,7 +61,7 @@ class FlatTransition:
     source: State
     dest: State
     rules: List[Rule] = field(default_factory=list)
-    guard_funcs: List[GuardFunction] = field(default_factory=list)
+    guards: List[GuardFunction] = field(default_factory=list)
     exits: List[ExitRule] = field(default_factory=list)
     actions: List[ActionBase] = field(default_factory=list)
     entries: List[EntryRule] = field(default_factory=list)
@@ -74,11 +74,11 @@ class FlatTransition:
         for r in self.rules:
             result += f"    {r}\n"
 
-        if len(self.guard_funcs) > 0:
+        if len(self.guards) > 0:
             result += f"Guard functions to call:\n"
 
-            for g in self.guard_funcs:
-                result += f"    {g}\n"
+            for g in self.guards:
+                result += f"    {g.guard}\n"
 
         result += f"Exit rules to run:\n"
         for r in self.exits:

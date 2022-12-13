@@ -85,6 +85,10 @@ class Guard:
 # different places in the state machine.
 #
 # The names are however confusing
+# ActionCall?
+# ActionEmitSignal?
+#
+
 @dataclass
 class ActionBase:
     """Base object for state machine actions. These can be function calls
@@ -117,6 +121,8 @@ class GuardBase:
 @dataclass
 class GuardFunction(GuardBase):
     guard: Guard
+    value: int
+    kind: int
 
 
 @dataclass

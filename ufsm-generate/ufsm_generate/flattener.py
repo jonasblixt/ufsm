@@ -202,7 +202,7 @@ def _build_join(hmodel: Model, fmodel: FlatModel, t: Transition):
             source_states.append(tran.source)
 
     state_conditions = []
-    guard_functions = []
+    guards = []
 
     for s in source_states:
         rule = Rule()
@@ -223,9 +223,9 @@ def _build_join(hmodel: Model, fmodel: FlatModel, t: Transition):
             rule.csv_states = [guard.state] + find_parent_states(guard.state)
             state_conditions.append(rule)
         if isinstance(guard, GuardFunction):
-            guard_functions.append(guard.guard)
+            guards.append(guard)
 
-    ft.guard_funcs = guard_functions
+    ft.guards = guards
 
     # Compute states to exit
     exit_rules = []
@@ -358,7 +358,7 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, input_trans
 
     # Compute state conditions (Source state + guard states) and guard functions
     state_conditions = []
-    guard_functions = []
+    guards = []
 
     rule = Rule()
     rule.csv_states = [t.source] + find_parent_states(t.source)
@@ -375,10 +375,10 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, input_trans
             rule.csv_states = [guard.state] + find_parent_states(guard.state)
             state_conditions.append(rule)
         if isinstance(guard, GuardFunction):
-            guard_functions.append(guard.guard)
+            guards.append(guard)
 
     ft.rules = state_conditions
-    ft.guard_funcs = guard_functions
+    ft.guards = guards
 
     # Compute states to exit
     exit_rules = []
