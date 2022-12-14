@@ -158,7 +158,9 @@ def _transition_enter(
                 if init_trans is not None:
                     if isinstance(init_trans.source, Init):
                         logging.debug(f"Normal init for region: {r} {init_trans.dest}")
-                        result.append(copy.deepcopy(fmodel.entry_rules[init_trans.dest.id]))
+                        entry_rule = copy.deepcopy(fmodel.entry_rules[init_trans.dest.id])
+                        entry_rule.actions = init_trans.actions + entry_rule.actions
+                        result.append(entry_rule)
                     elif isinstance(init_trans.source, ShallowHistory):
                         logging.debug(f"History init for region: {r}")
                         result += copy.deepcopy(fmodel.history_rules[init_trans.source.id])
