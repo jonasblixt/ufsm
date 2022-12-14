@@ -108,18 +108,34 @@ def _parse_state(model, state_data, parent_region):
         # TODO: Signals can also be emitted as entry/exit actions
         for entry_data in state_data_elm["entries"]:
             action_id = entry_data["id"]
-            function_id = uuid.UUID(entry_data["action-id"])
-            action = model.actions[function_id]
-            action_func = ActionFunction(uuid.UUID(action_id), action)
-            state.entries.append(action_func)
+            action_kind = entry_data["kind"]
+
+            if action_kind == UFSMM_ACTION_REF_NORMAL:
+                function_id = uuid.UUID(entry_data["action-id"])
+                action = model.actions[function_id]
+                action_func = ActionFunction(uuid.UUID(action_id), action)
+                state.entries.append(action_func)
+            elif action_kind == UFSMM_ACTION_REF_SIGNAL:
+                signal_id = entry_data["signal-id"]
+                signal = model.signals[uuid.UUID(signal_id)]
+                action_signal = ActionSignal(signal.name, signal)
+                state.entries.append(action_signal)
+                logger.debug(f"Added signal action ^{signal.name}")
 
         for exit_data in state_data_elm["exits"]:
             action_id = entry_data["id"]
-            function_id = uuid.UUID(exit_data["action-id"])
-            action = model.actions[function_id]
-            action = ActionFunction(uuid.UUID(action_id), action)
-            state.exits.append(action)
 
+            if action_kind == UFSMM_ACTION_REF_NORMAL:
+                function_id = uuid.UUID(exit_data["action-id"])
+                action = model.actions[function_id]
+                action = ActionFunction(uuid.UUID(action_id), action)
+                state.exits.append(action)
+            elif action_kind == UFSMM_ACTION_REF_SIGNAL:
+                signal_id = exit_data["signal-id"]
+                signal = model.signals[uuid.UUID(signal_id)]
+                action_signal = ActionSignal(signal.name, signal)
+                state.exits.append(action_signal)
+                logger.debug(f"Added signal action ^{signal.name}")
         if len(state_data_elm["region"]) > 0:
             _parse_region(model, state_data_elm["region"], state)
 

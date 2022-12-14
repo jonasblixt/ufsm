@@ -2811,6 +2811,7 @@ void canvas_create_state_end(void *context)
 
 void canvas_new_state_set_start(void *context)
 {
+    L_DEBUG(__func__);
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct state_op *op = (struct state_op *) priv->command_data;
 
