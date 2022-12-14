@@ -3,6 +3,36 @@
 #include "canvas.h"
 
 
+unsigned int sq_len(struct canvas_machine *m)
+{
+    if (m->head == m->tail)
+        return 0;
+    if (m->tail < m->head)
+        return m->head + 16 - m->tail;
+    return m->tail - m->head;
+}
+
+unsigned int sq_push(struct canvas_machine *m, unsigned int signal)
+{
+    if (sq_len(m) == 16)
+        return 1;
+    m->signal[m->head++] = signal;
+    if (m->head == 16)
+        m->head = 0;
+    return 0;
+}
+
+unsigned int sq_pop(struct canvas_machine *m)
+{
+    unsigned int result = m->signal[m->tail++];
+
+    if (m->tail == 16)
+        m->tail = 0;
+
+    return result;
+}
+
+
 int canvas_process(struct canvas_machine *m, unsigned int event)
 {
     unsigned int process_auto_transition = 0;
@@ -15,26 +45,26 @@ process_more:
         case UFSM_RESET:
             m->wsv[0] = 1;
             m->wsv[13] = 22;
-            m->wsv[48] = 152;
-            m->wsv[45] = 146;
-            m->wsv[39] = 129;
-            m->wsv[38] = 162;
-            m->wsv[37] = 124;
-            m->wsv[36] = 120;
-            m->wsv[35] = 117;
-            m->wsv[34] = 102;
-            m->wsv[33] = 93;
-            m->wsv[31] = 86;
-            m->wsv[30] = 81;
-            m->wsv[29] = 76;
-            m->wsv[28] = 71;
-            m->wsv[27] = 66;
-            m->wsv[26] = 61;
-            m->wsv[24] = 53;
-            m->wsv[22] = 46;
-            m->wsv[15] = 44;
-            m->wsv[19] = 33;
-            m->wsv[17] = 28;
+            m->wsv[48] = 115;
+            m->wsv[45] = 109;
+            m->wsv[39] = 92;
+            m->wsv[38] = 125;
+            m->wsv[37] = 87;
+            m->wsv[36] = 83;
+            m->wsv[35] = 80;
+            m->wsv[34] = 76;
+            m->wsv[33] = 71;
+            m->wsv[31] = 66;
+            m->wsv[30] = 63;
+            m->wsv[29] = 60;
+            m->wsv[28] = 57;
+            m->wsv[27] = 53;
+            m->wsv[26] = 50;
+            m->wsv[24] = 45;
+            m->wsv[22] = 40;
+            m->wsv[15] = 38;
+            m->wsv[19] = 32;
+            m->wsv[17] = 27;
             m->wsv[14] = 23;
             m->wsv[9] = 16;
             m->wsv[11] = 19;
@@ -50,59 +80,59 @@ process_more:
             if ((m->wsv[0] == 1)) {
                 canvas_select_root_region(m->user);
             }
-            if ((m->wsv[38] == 149) && (m->wsv[13] == 127) && (m->wsv[0] == 1)) {
+            if ((m->wsv[38] == 112) && (m->wsv[13] == 90) && (m->wsv[0] == 1)) {
                 canvas_check_sresize_boxes(m->user);
                 canvas_check_action_func(m->user);
             }
-            if ((m->wsv[38] == 143) && (m->wsv[13] == 127) && (m->wsv[0] == 1)) {
+            if ((m->wsv[38] == 106) && (m->wsv[13] == 90) && (m->wsv[0] == 1)) {
                 canvas_check_rresize_boxes(m->user);
             }
-            if ((m->wsv[38] == 128) && (m->wsv[13] == 127) && (m->wsv[0] == 1)) {
+            if ((m->wsv[38] == 91) && (m->wsv[13] == 90) && (m->wsv[0] == 1)) {
                 canvas_check_text_block(m->user);
             }
-            if ((m->wsv[13] == 127) && (m->wsv[0] == 1)) {
+            if ((m->wsv[13] == 90) && (m->wsv[0] == 1)) {
             }
-            if ((m->wsv[14] == 123) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
+            if ((m->wsv[14] == 86) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
             }
-            if ((m->wsv[14] == 119) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
+            if ((m->wsv[14] == 82) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
             }
-            if ((m->wsv[14] == 107) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
+            if ((m->wsv[14] == 78) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
             }
-            if ((m->wsv[14] == 98) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-            }
-            if ((m->wsv[15] == 92) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_show_annotation_dialog(m->user);
-            }
-            if ((m->wsv[15] == 85) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_add_vertice(m->user);
-            }
-            if ((m->wsv[15] == 80) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_update_final_preview(m->user);
-            }
-            if ((m->wsv[15] == 75) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_update_init_preview(m->user);
+            if ((m->wsv[14] == 75) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
             }
             if ((m->wsv[15] == 70) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_dhistory_update_preview(m->user);
+                canvas_show_annotation_dialog(m->user);
             }
             if ((m->wsv[15] == 65) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_history_update_preview(m->user);
+                canvas_add_vertice(m->user);
             }
-            if ((m->wsv[15] == 60) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_terminate_update_preview(m->user);
+            if ((m->wsv[15] == 62) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
+                canvas_update_final_preview(m->user);
+            }
+            if ((m->wsv[15] == 59) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
+                canvas_update_init_preview(m->user);
+            }
+            if ((m->wsv[15] == 56) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
+                canvas_dhistory_update_preview(m->user);
             }
             if ((m->wsv[15] == 52) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
+                canvas_history_update_preview(m->user);
+            }
+            if ((m->wsv[15] == 49) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
+                canvas_terminate_update_preview(m->user);
+            }
+            if ((m->wsv[15] == 44) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
                 canvas_update_fork_start(m->user);
             }
-            if ((m->wsv[15] == 45) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
+            if ((m->wsv[15] == 39) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
                 canvas_update_join_start(m->user);
             }
             if ((m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
             }
-            if ((m->wsv[15] == 32) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
+            if ((m->wsv[15] == 31) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
                 canvas_transition_select_source(m->user);
             }
-            if ((m->wsv[16] == 27) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
+            if ((m->wsv[16] == 26) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
                 canvas_new_state_set_start(m->user);
             }
             if ((m->wsv[13] == 22) && (m->wsv[0] == 1)) {
@@ -159,49 +189,49 @@ process_more:
             if ((m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if ((m->csv[14] == 23) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     /* Exit actions */
-                    if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    if ((m->csv[31] == 67) && (m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_move_vertice_end(m->user);
                     }
-                    if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    if ((m->csv[16] == 28) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_state_select_end_end(m->user);
                     }
-                    if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    if ((m->csv[16] == 26) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_state_select_start_end(m->user);
                     }
-                    if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_create_annotation_end(m->user);
                     }
-                    if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_add_vertice_end(m->user);
                     }
-                    if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    if ((m->csv[15] == 62) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_create_final_end(m->user);
                     }
-                    if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    if ((m->csv[15] == 59) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_create_init_end(m->user);
                     }
-                    if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    if ((m->csv[15] == 56) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_create_dhistory_end(m->user);
                     }
-                    if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_create_history_end(m->user);
                     }
-                    if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    if ((m->csv[15] == 49) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_create_terminate_end(m->user);
                     }
-                    if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_create_fork_end(m->user);
                     }
-                    if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    if ((m->csv[15] == 39) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_create_join_end(m->user);
                     }
-                    if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    if ((m->csv[15] == 31) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_create_transition_end(m->user);
                     }
                     if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_create_state_end(m->user);
                     }
-                    if ((m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    if ((m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                         canvas_reset_selection(m->user);
                     }
                     if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
@@ -212,30 +242,30 @@ process_more:
                     }
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[13] = 127; // Main = Object selection
+                    m->wsv[13] = 90; // Main = Object selection
                     canvas_select_begin(m->user);
-                    if ((m->wsv[13] == 127)) {
-                        m->wsv[38] = 162; // Object Selection = Prepare
+                    if ((m->wsv[13] == 90)) {
+                        m->wsv[38] = 125; // Object Selection = Prepare
                         process_auto_transition = 1;
                         process_auto_transition = 1;
                         process_auto_transition = 1;
                         process_auto_transition = 1;
                     }
-                    if ((m->wsv[38] == 149) && (m->wsv[13] == 127)) {
-                        m->wsv[48] = 152; // State selection = State
+                    if ((m->wsv[38] == 112) && (m->wsv[13] == 90)) {
+                        m->wsv[48] = 115; // State selection = State
                         process_auto_transition = 1;
                         process_auto_transition = 1;
                         process_auto_transition = 1;
                         canvas_check_sresize_boxes(m->user);
                         canvas_check_action_func(m->user);
                     }
-                    if ((m->wsv[38] == 143) && (m->wsv[13] == 127)) {
-                        m->wsv[45] = 146; // Region selection = Region
+                    if ((m->wsv[38] == 106) && (m->wsv[13] == 90)) {
+                        m->wsv[45] = 109; // Region selection = Region
                         process_auto_transition = 1;
                         canvas_check_rresize_boxes(m->user);
                     }
-                    if ((m->wsv[38] == 128) && (m->wsv[13] == 127)) {
-                        m->wsv[39] = 129; // Transition selection = Transition
+                    if ((m->wsv[38] == 91) && (m->wsv[13] == 90)) {
+                        m->wsv[39] = 92; // Transition selection = Transition
                         process_auto_transition = 1;
                         process_auto_transition = 1;
                         canvas_check_text_block(m->user);
@@ -243,468 +273,241 @@ process_more:
                 }
             }
             /* Start inner -> Select end point inner */
-            if ((m->csv[17] == 28) && (m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[17] == 27) && (m->csv[16] == 26) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[16] == 26) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_state_select_start_end(m->user);
                 }
                 /* Actions */
                 /* Entry actions */
-                m->wsv[16] = 29; // New state = Select end
+                m->wsv[16] = 28; // New state = Select end
                 canvas_state_select_end_begin(m->user);
-                if ((m->wsv[16] == 29)) {
-                    m->wsv[18] = 30; // New region = Select end point inner
+                if ((m->wsv[16] == 28)) {
+                    m->wsv[18] = 29; // New region = Select end point inner
                     canvas_new_state_set_end(m->user);
                 }
             }
-            /* Select end point inner -> FinalNewState */
-            if ((m->csv[18] == 30) && (m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Select end point inner -> Done */
+            if ((m->csv[18] == 29) && (m->csv[16] == 28) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[16] == 28) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_state_select_end_end(m->user);
-                }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_end_end(m->user);
-                }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_start_end(m->user);
-                }
-                if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_state_end(m->user);
-                }
-                if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_move_vertice_end(m->user);
-                }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_end_end(m->user);
-                }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_start_end(m->user);
-                }
-                if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_annotation_end(m->user);
-                }
-                if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_vertice_end(m->user);
-                }
-                if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_final_end(m->user);
-                }
-                if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_init_end(m->user);
-                }
-                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_dhistory_end(m->user);
-                }
-                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_history_end(m->user);
-                }
-                if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_terminate_end(m->user);
-                }
-                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_fork_end(m->user);
-                }
-                if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_join_end(m->user);
-                }
-                if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_transition_end(m->user);
-                }
-                if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_end(m->user);
                 }
                 /* Actions */
                 canvas_create_new_state(m->user);
                 /* Entry actions */
-                m->wsv[16] = 26; // New state = FinalNewState
-                m->wsv[15] = 59; // Add actions = Final
-                m->wsv[14] = 23; // Tool controller = Tools
-                canvas_tools_begin(m->user);
+                m->wsv[16] = 30; // New state = Done
+                if(sq_push(m, 10) != 0)
+                    return -UFSM_SIGNAL_QUEUE_FULL;
             }
             /* Select source state -> Select dest state */
-            if ((m->csv[19] == 33) && (m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[19] == 32) && (m->csv[15] == 31) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_check_transition_start(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     canvas_create_transition_start(m->user);
                     /* Entry actions */
-                    m->wsv[19] = 35; // New transition = Select destination
+                    m->wsv[19] = 33; // New transition = Select destination
                     canvas_transition_select_dest(m->user);
-                    if ((m->wsv[19] == 35)) {
-                        m->wsv[20] = 36; // New region = Select dest state
+                    if ((m->wsv[19] == 33)) {
+                        m->wsv[20] = 34; // New region = Select dest state
                         canvas_transition_update_preview(m->user);
                     }
                 }
             }
-            /* Select dest state -> Final */
-            if ((m->csv[20] == 36) && (m->csv[19] == 35) && (m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Select dest state -> Done */
+            if ((m->csv[20] == 34) && (m->csv[19] == 33) && (m->csv[15] == 31) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
-                if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_transition_end(m->user);
-                }
-                if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_move_vertice_end(m->user);
-                }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_end_end(m->user);
-                }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_start_end(m->user);
-                }
-                if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_annotation_end(m->user);
-                }
-                if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_vertice_end(m->user);
-                }
-                if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_final_end(m->user);
-                }
-                if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_init_end(m->user);
-                }
-                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_dhistory_end(m->user);
-                }
-                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_history_end(m->user);
-                }
-                if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_terminate_end(m->user);
-                }
-                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_fork_end(m->user);
-                }
-                if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_join_end(m->user);
-                }
-                if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_state_end(m->user);
-                }
-                if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_end(m->user);
-                }
                 /* Actions */
                 canvas_create_transition(m->user);
                 /* Entry actions */
-                m->wsv[19] = 34; // New transition = Final
-                m->wsv[15] = 31; // Add actions = Final
-                m->wsv[14] = 23; // Tool controller = Tools
-                canvas_tools_begin(m->user);
+                m->wsv[19] = 37; // New transition = Done
+                if(sq_push(m, 10) != 0)
+                    return -UFSM_SIGNAL_QUEUE_FULL;
             }
             /* Add vertice -> Add vertice */
-            if ((m->csv[21] == 38) && (m->csv[19] == 37) && (m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[21] == 36) && (m->csv[19] == 35) && (m->csv[15] == 31) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_add_transition_vertice(m->user);
                 /* Entry actions */
-                m->wsv[21] = 38; // New region = Add vertice
+                m->wsv[21] = 36; // New region = Add vertice
                 canvas_transition_update_preview(m->user);
             }
             /* New Join start -> Update join */
-            if ((m->csv[22] == 46) && (m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[22] == 40) && (m->csv[15] == 39) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[22] = 47; // New join = Select start
+                m->wsv[22] = 41; // New join = Select start
                 canvas_create_join_start(m->user);
-                if ((m->wsv[22] == 47)) {
-                    m->wsv[23] = 48; // New region = Update join
+                if ((m->wsv[22] == 41)) {
+                    m->wsv[23] = 42; // New region = Update join
                 }
             }
             /* Select start -> Finalize join */
-            if ((m->csv[22] == 47) && (m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[22] == 41) && (m->csv[15] == 39) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[22] = 49; // New join = Finalize join
-                process_auto_transition = 1;
+                m->wsv[22] = 43; // New join = Finalize join
                 canvas_add_join_to_region(m->user);
+                if(sq_push(m, 10) != 0)
+                    return -UFSM_SIGNAL_QUEUE_FULL;
             }
             /* New Fork start -> Update Fork */
-            if ((m->csv[24] == 53) && (m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[24] == 45) && (m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[24] = 54; // New fork = Select start
+                m->wsv[24] = 46; // New fork = Select start
                 canvas_create_fork_start(m->user);
-                if ((m->wsv[24] == 54)) {
-                    m->wsv[25] = 55; // New region = Update Fork
+                if ((m->wsv[24] == 46)) {
+                    m->wsv[25] = 47; // New region = Update Fork
                 }
             }
             /* Select start -> Finalize Fork */
-            if ((m->csv[24] == 54) && (m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[24] == 46) && (m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[24] = 56; // New fork = Finalize Fork
-                process_auto_transition = 1;
+                m->wsv[24] = 48; // New fork = Finalize Fork
                 canvas_add_fork_to_region(m->user);
+                if(sq_push(m, 10) != 0)
+                    return -UFSM_SIGNAL_QUEUE_FULL;
             }
             /* New Terminate Start -> New terminate commit */
-            if ((m->csv[26] == 61) && (m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[26] == 50) && (m->csv[15] == 49) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[26] = 62; // New terminate = New terminate commit
-                process_auto_transition = 1;
+                m->wsv[26] = 51; // New terminate = New terminate commit
                 canvas_add_terminate_to_region(m->user);
+                if(sq_push(m, 10) != 0)
+                    return -UFSM_SIGNAL_QUEUE_FULL;
             }
             /* New history start -> New history commit */
-            if ((m->csv[27] == 66) && (m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[27] == 53) && (m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[27] = 67; // New history = New history commit
+                m->wsv[27] = 54; // New history = New history commit
                 canvas_add_history_to_region(m->user);
             }
-            /* New history commit -> Final */
-            if ((m->csv[27] == 67) && (m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* New history commit -> Done */
+            if ((m->csv[27] == 54) && (m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
-                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_history_end(m->user);
-                }
-                if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_move_vertice_end(m->user);
-                }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_end_end(m->user);
-                }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_start_end(m->user);
-                }
-                if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_annotation_end(m->user);
-                }
-                if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_vertice_end(m->user);
-                }
-                if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_final_end(m->user);
-                }
-                if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_init_end(m->user);
-                }
-                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_dhistory_end(m->user);
-                }
-                if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_terminate_end(m->user);
-                }
-                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_fork_end(m->user);
-                }
-                if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_join_end(m->user);
-                }
-                if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_transition_end(m->user);
-                }
-                if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_state_end(m->user);
-                }
-                if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_end(m->user);
-                }
                 /* Actions */
                 /* Entry actions */
-                m->wsv[27] = 68; // New history = Final
-                m->wsv[15] = 69; // Add actions = Final
-                m->wsv[14] = 23; // Tool controller = Tools
-                canvas_tools_begin(m->user);
+                m->wsv[27] = 55; // New history = Done
+                if(sq_push(m, 10) != 0)
+                    return -UFSM_SIGNAL_QUEUE_FULL;
             }
             /* New dhistory start -> Add dhistory to region */
-            if ((m->csv[28] == 71) && (m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[28] == 57) && (m->csv[15] == 56) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[28] = 72; // New deep history = Add dhistory to region
-                process_auto_transition = 1;
+                m->wsv[28] = 58; // New deep history = Add dhistory to region
                 canvas_add_dhistory_to_region(m->user);
+                if(sq_push(m, 10) != 0)
+                    return -UFSM_SIGNAL_QUEUE_FULL;
             }
             /* New init start -> Add init to region */
-            if ((m->csv[29] == 76) && (m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[29] == 60) && (m->csv[15] == 59) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[29] = 77; // New init = Add init to region
-                process_auto_transition = 1;
+                m->wsv[29] = 61; // New init = Add init to region
                 canvas_add_init_to_region(m->user);
+                if(sq_push(m, 10) != 0)
+                    return -UFSM_SIGNAL_QUEUE_FULL;
             }
             /* New final start -> Add final to region */
-            if ((m->csv[30] == 81) && (m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[30] == 63) && (m->csv[15] == 62) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[30] = 82; // New final = Add final to region
-                process_auto_transition = 1;
+                m->wsv[30] = 64; // New final = Add final to region
                 canvas_add_final_to_region(m->user);
+                if(sq_push(m, 10) != 0)
+                    return -UFSM_SIGNAL_QUEUE_FULL;
             }
-            /* Move vertice -> Final */
-            if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Move vertice -> Done */
+            if ((m->csv[31] == 67) && (m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
-                if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[31] == 67) && (m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_move_vertice_end(m->user);
                 }
-                if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_vertice_end(m->user);
-                }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_end_end(m->user);
-                }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_start_end(m->user);
-                }
-                if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_annotation_end(m->user);
-                }
-                if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_final_end(m->user);
-                }
-                if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_init_end(m->user);
-                }
-                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_dhistory_end(m->user);
-                }
-                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_history_end(m->user);
-                }
-                if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_terminate_end(m->user);
-                }
-                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_fork_end(m->user);
-                }
-                if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_join_end(m->user);
-                }
-                if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_transition_end(m->user);
-                }
-                if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_state_end(m->user);
-                }
-                if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_end(m->user);
-                }
                 /* Actions */
                 /* Entry actions */
-                m->wsv[31] = 87; // New vertice = Final
-                m->wsv[15] = 91; // Add actions = Final
-                m->wsv[14] = 23; // Tool controller = Tools
-                canvas_tools_begin(m->user);
+                m->wsv[31] = 69; // New vertice = Done
+                if(sq_push(m, 10) != 0)
+                    return -UFSM_SIGNAL_QUEUE_FULL;
             }
             /* Select start -> Select end */
-            if ((m->csv[33] == 94) && (m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[33] == 72) && (m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[33] = 95; // New annotation = Select end
+                m->wsv[33] = 73; // New annotation = Select end
                 canvas_annotation_select_end(m->user);
             }
-            /* Select end -> Final */
-            if ((m->csv[33] == 95) && (m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Select end -> Done */
+            if ((m->csv[33] == 73) && (m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
-                if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_annotation_end(m->user);
-                }
-                if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_move_vertice_end(m->user);
-                }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_end_end(m->user);
-                }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_start_end(m->user);
-                }
-                if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_vertice_end(m->user);
-                }
-                if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_final_end(m->user);
-                }
-                if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_init_end(m->user);
-                }
-                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_dhistory_end(m->user);
-                }
-                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_history_end(m->user);
-                }
-                if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_terminate_end(m->user);
-                }
-                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_fork_end(m->user);
-                }
-                if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_join_end(m->user);
-                }
-                if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_transition_end(m->user);
-                }
-                if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_state_end(m->user);
-                }
-                if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_end(m->user);
-                }
                 /* Actions */
                 /* Entry actions */
-                m->wsv[33] = 96; // New annotation = Final
-                m->wsv[15] = 97; // Add actions = Final
-                m->wsv[14] = 23; // Tool controller = Tools
-                canvas_tools_begin(m->user);
+                m->wsv[33] = 74; // New annotation = Done
+                if(sq_push(m, 10) != 0)
+                    return -UFSM_SIGNAL_QUEUE_FULL;
             }
         break;
         case eLMBUp:
             /* Object selection -> Tool Mode */
-            if ((m->csv[13] == 127) && (m->csv[0] == 1)) {
-                if (!((m->csv[38] == 164) && (m->csv[13] == 127) && (m->csv[0] == 1))) {
+            if ((m->csv[13] == 90) && (m->csv[0] == 1)) {
+                if (!((m->csv[38] == 127) && (m->csv[13] == 90) && (m->csv[0] == 1))) {
                     /* Exit actions */
-                    if ((m->csv[48] == 159) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[48] == 122) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_reorder_entry_end(m->user);
                     }
-                    if ((m->csv[48] == 157) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[48] == 120) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_reorder_exit_end(m->user);
                     }
-                    if ((m->csv[48] == 155) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[48] == 118) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_resize_state_end(m->user);
                     }
-                    if ((m->csv[48] == 150) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[48] == 113) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_move_state_end(m->user);
                     }
-                    if ((m->csv[45] == 147) && (m->csv[38] == 143) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[45] == 110) && (m->csv[38] == 106) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_mselect_end(m->user);
                     }
-                    if ((m->csv[45] == 144) && (m->csv[38] == 143) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[45] == 107) && (m->csv[38] == 106) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_resize_region_end(m->user);
                     }
-                    if ((m->csv[39] == 141) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[39] == 104) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_reorder_guard_end(m->user);
                     }
-                    if ((m->csv[39] == 139) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[39] == 102) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_reorder_action_end(m->user);
                     }
-                    if ((m->csv[39] == 137) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[39] == 100) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_move_vertice_end(m->user);
                     }
-                    if ((m->csv[39] == 135) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[39] == 98) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_resize_text_block_end(m->user);
                     }
-                    if ((m->csv[39] == 133) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[39] == 96) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_move_text_block_end(m->user);
                     }
-                    if ((m->csv[38] == 167) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[38] == 130) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_mselect_end(m->user);
                     }
-                    if ((m->csv[38] == 165) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[38] == 128) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_mselect_move_end(m->user);
                     }
-                    if ((m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_select_end(m->user);
                     }
                     /* Actions */
@@ -714,117 +517,117 @@ process_more:
                         m->wsv[14] = 23; // Tool controller = Tools
                         canvas_tools_begin(m->user);
                     }
-                    if ((m->wsv[14] == 123) && (m->wsv[13] == 22)) {
-                        m->wsv[37] = 124; // Jump = Jump
+                    if ((m->wsv[14] == 86) && (m->wsv[13] == 22)) {
+                        m->wsv[37] = 87; // Jump = Jump
                     }
-                    if ((m->wsv[14] == 119) && (m->wsv[13] == 22)) {
-                        m->wsv[36] = 120; // Zoom = Zoom
+                    if ((m->wsv[14] == 82) && (m->wsv[13] == 22)) {
+                        m->wsv[36] = 83; // Zoom = Zoom
                     }
-                    if ((m->wsv[14] == 107) && (m->wsv[13] == 22)) {
-                        m->wsv[35] = 117; // Delete actions = Delete selection
+                    if ((m->wsv[14] == 78) && (m->wsv[13] == 22)) {
+                        m->wsv[35] = 80; // Delete actions = Delete selection
                         process_auto_transition = 1;
                         process_auto_transition = 1;
                     }
-                    if ((m->wsv[14] == 98) && (m->wsv[13] == 22)) {
-                        m->wsv[34] = 102; // Edit actions = Edit
+                    if ((m->wsv[14] == 75) && (m->wsv[13] == 22)) {
+                        m->wsv[34] = 76; // Edit actions = Edit
                         process_auto_transition = 1;
                         process_auto_transition = 1;
                     }
                     if ((m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[15] = 44; // Add actions = Add
+                        m->wsv[15] = 38; // Add actions = Add
                     }
-                    if ((m->wsv[15] == 92) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[33] = 93; // New annotation = Input text
+                    if ((m->wsv[15] == 70) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[33] = 71; // New annotation = Input text
                         process_auto_transition = 1;
                         canvas_show_annotation_dialog(m->user);
                     }
-                    if ((m->wsv[15] == 85) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[31] = 86; // New vertice = Add vertice
+                    if ((m->wsv[15] == 65) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[31] = 66; // New vertice = Add vertice
                         process_auto_transition = 1;
                         canvas_add_vertice(m->user);
                     }
-                    if ((m->wsv[15] == 80) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[30] = 81; // New final = New final start
+                    if ((m->wsv[15] == 62) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[30] = 63; // New final = New final start
                         canvas_update_final_preview(m->user);
                     }
-                    if ((m->wsv[15] == 75) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[29] = 76; // New init = New init start
+                    if ((m->wsv[15] == 59) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[29] = 60; // New init = New init start
                         canvas_update_init_preview(m->user);
                     }
-                    if ((m->wsv[15] == 70) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[28] = 71; // New deep history = New dhistory start
+                    if ((m->wsv[15] == 56) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[28] = 57; // New deep history = New dhistory start
                         canvas_dhistory_update_preview(m->user);
                     }
-                    if ((m->wsv[15] == 65) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[27] = 66; // New history = New history start
+                    if ((m->wsv[15] == 52) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[27] = 53; // New history = New history start
                         canvas_history_update_preview(m->user);
                     }
-                    if ((m->wsv[15] == 60) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[26] = 61; // New terminate = New Terminate Start
+                    if ((m->wsv[15] == 49) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[26] = 50; // New terminate = New Terminate Start
                         canvas_terminate_update_preview(m->user);
                     }
-                    if ((m->wsv[15] == 52) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[24] = 53; // New fork = New Fork start
+                    if ((m->wsv[15] == 44) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[24] = 45; // New fork = New Fork start
                         canvas_update_fork_start(m->user);
                     }
-                    if ((m->wsv[15] == 45) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[22] = 46; // New join = New Join start
+                    if ((m->wsv[15] == 39) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[22] = 40; // New join = New Join start
                         canvas_update_join_start(m->user);
                     }
-                    if ((m->wsv[15] == 32) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[19] = 33; // New transition = Select source state
+                    if ((m->wsv[15] == 31) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[19] = 32; // New transition = Select source state
                         canvas_transition_select_source(m->user);
                     }
-                    if ((m->wsv[16] == 27) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[17] = 28; // New region = Start inner
+                    if ((m->wsv[16] == 26) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[17] = 27; // New region = Start inner
                         canvas_new_state_set_start(m->user);
                     }
                 }
             }
             /* Object selection -> Tool Mode */
-            if ((m->csv[13] == 127) && (m->csv[0] == 1)) {
-                if ((m->csv[38] == 164) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[13] == 90) && (m->csv[0] == 1)) {
+                if ((m->csv[38] == 127) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                     /* Exit actions */
-                    if ((m->csv[48] == 159) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[48] == 122) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_reorder_entry_end(m->user);
                     }
-                    if ((m->csv[48] == 157) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[48] == 120) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_reorder_exit_end(m->user);
                     }
-                    if ((m->csv[48] == 155) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[48] == 118) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_resize_state_end(m->user);
                     }
-                    if ((m->csv[48] == 150) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[48] == 113) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_move_state_end(m->user);
                     }
-                    if ((m->csv[45] == 147) && (m->csv[38] == 143) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[45] == 110) && (m->csv[38] == 106) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_mselect_end(m->user);
                     }
-                    if ((m->csv[45] == 144) && (m->csv[38] == 143) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[45] == 107) && (m->csv[38] == 106) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_resize_region_end(m->user);
                     }
-                    if ((m->csv[39] == 141) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[39] == 104) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_reorder_guard_end(m->user);
                     }
-                    if ((m->csv[39] == 139) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[39] == 102) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_reorder_action_end(m->user);
                     }
-                    if ((m->csv[39] == 137) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[39] == 100) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_move_vertice_end(m->user);
                     }
-                    if ((m->csv[39] == 135) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[39] == 98) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_resize_text_block_end(m->user);
                     }
-                    if ((m->csv[39] == 133) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[39] == 96) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_move_text_block_end(m->user);
                     }
-                    if ((m->csv[38] == 167) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[38] == 130) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_mselect_end(m->user);
                     }
-                    if ((m->csv[38] == 165) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[38] == 128) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_mselect_move_end(m->user);
                     }
-                    if ((m->csv[13] == 127) && (m->csv[0] == 1)) {
+                    if ((m->csv[13] == 90) && (m->csv[0] == 1)) {
                         canvas_select_end(m->user);
                     }
                     /* Actions */
@@ -835,69 +638,69 @@ process_more:
                         m->wsv[14] = 23; // Tool controller = Tools
                         canvas_tools_begin(m->user);
                     }
-                    if ((m->wsv[14] == 123) && (m->wsv[13] == 22)) {
-                        m->wsv[37] = 124; // Jump = Jump
+                    if ((m->wsv[14] == 86) && (m->wsv[13] == 22)) {
+                        m->wsv[37] = 87; // Jump = Jump
                     }
-                    if ((m->wsv[14] == 119) && (m->wsv[13] == 22)) {
-                        m->wsv[36] = 120; // Zoom = Zoom
+                    if ((m->wsv[14] == 82) && (m->wsv[13] == 22)) {
+                        m->wsv[36] = 83; // Zoom = Zoom
                     }
-                    if ((m->wsv[14] == 107) && (m->wsv[13] == 22)) {
-                        m->wsv[35] = 117; // Delete actions = Delete selection
+                    if ((m->wsv[14] == 78) && (m->wsv[13] == 22)) {
+                        m->wsv[35] = 80; // Delete actions = Delete selection
                         process_auto_transition = 1;
                         process_auto_transition = 1;
                     }
-                    if ((m->wsv[14] == 98) && (m->wsv[13] == 22)) {
-                        m->wsv[34] = 102; // Edit actions = Edit
+                    if ((m->wsv[14] == 75) && (m->wsv[13] == 22)) {
+                        m->wsv[34] = 76; // Edit actions = Edit
                         process_auto_transition = 1;
                         process_auto_transition = 1;
                     }
                     if ((m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[15] = 44; // Add actions = Add
+                        m->wsv[15] = 38; // Add actions = Add
                     }
-                    if ((m->wsv[15] == 92) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[33] = 93; // New annotation = Input text
+                    if ((m->wsv[15] == 70) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[33] = 71; // New annotation = Input text
                         process_auto_transition = 1;
                         canvas_show_annotation_dialog(m->user);
                     }
-                    if ((m->wsv[15] == 85) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[31] = 86; // New vertice = Add vertice
+                    if ((m->wsv[15] == 65) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[31] = 66; // New vertice = Add vertice
                         process_auto_transition = 1;
                         canvas_add_vertice(m->user);
                     }
-                    if ((m->wsv[15] == 80) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[30] = 81; // New final = New final start
+                    if ((m->wsv[15] == 62) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[30] = 63; // New final = New final start
                         canvas_update_final_preview(m->user);
                     }
-                    if ((m->wsv[15] == 75) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[29] = 76; // New init = New init start
+                    if ((m->wsv[15] == 59) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[29] = 60; // New init = New init start
                         canvas_update_init_preview(m->user);
                     }
-                    if ((m->wsv[15] == 70) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[28] = 71; // New deep history = New dhistory start
+                    if ((m->wsv[15] == 56) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[28] = 57; // New deep history = New dhistory start
                         canvas_dhistory_update_preview(m->user);
                     }
-                    if ((m->wsv[15] == 65) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[27] = 66; // New history = New history start
+                    if ((m->wsv[15] == 52) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[27] = 53; // New history = New history start
                         canvas_history_update_preview(m->user);
                     }
-                    if ((m->wsv[15] == 60) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[26] = 61; // New terminate = New Terminate Start
+                    if ((m->wsv[15] == 49) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[26] = 50; // New terminate = New Terminate Start
                         canvas_terminate_update_preview(m->user);
                     }
-                    if ((m->wsv[15] == 52) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[24] = 53; // New fork = New Fork start
+                    if ((m->wsv[15] == 44) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[24] = 45; // New fork = New Fork start
                         canvas_update_fork_start(m->user);
                     }
-                    if ((m->wsv[15] == 45) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[22] = 46; // New join = New Join start
+                    if ((m->wsv[15] == 39) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[22] = 40; // New join = New Join start
                         canvas_update_join_start(m->user);
                     }
-                    if ((m->wsv[15] == 32) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[19] = 33; // New transition = Select source state
+                    if ((m->wsv[15] == 31) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[19] = 32; // New transition = Select source state
                         canvas_transition_select_source(m->user);
                     }
-                    if ((m->wsv[16] == 27) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                        m->wsv[17] = 28; // New region = Start inner
+                    if ((m->wsv[16] == 26) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[17] = 27; // New region = Start inner
                         canvas_new_state_set_start(m->user);
                     }
                 }
@@ -954,347 +757,347 @@ process_more:
                 m->wsv[12] = 21; // New region = Pan inner
             }
             /* Start inner -> Start inner */
-            if ((m->csv[17] == 28) && (m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[17] == 27) && (m->csv[16] == 26) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[17] = 28; // New region = Start inner
+                m->wsv[17] = 27; // New region = Start inner
                 canvas_new_state_set_start(m->user);
             }
             /* Select end point inner -> Select end point inner */
-            if ((m->csv[18] == 30) && (m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[18] == 29) && (m->csv[16] == 28) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[18] = 30; // New region = Select end point inner
+                m->wsv[18] = 29; // New region = Select end point inner
                 canvas_new_state_set_end(m->user);
             }
             /* Select dest state -> Select dest state */
-            if ((m->csv[20] == 36) && (m->csv[19] == 35) && (m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[20] == 34) && (m->csv[19] == 33) && (m->csv[15] == 31) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[20] = 36; // New region = Select dest state
+                m->wsv[20] = 34; // New region = Select dest state
                 canvas_transition_update_preview(m->user);
             }
             /* Add vertice -> Add vertice */
-            if ((m->csv[21] == 38) && (m->csv[19] == 37) && (m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[21] == 36) && (m->csv[19] == 35) && (m->csv[15] == 31) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[21] = 38; // New region = Add vertice
+                m->wsv[21] = 36; // New region = Add vertice
                 canvas_transition_update_preview(m->user);
             }
             /* New Join start -> New Join start */
-            if ((m->csv[22] == 46) && (m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[22] == 40) && (m->csv[15] == 39) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[22] = 46; // New join = New Join start
+                m->wsv[22] = 40; // New join = New Join start
                 canvas_update_join_start(m->user);
             }
             /* Update join -> Update join */
-            if ((m->csv[23] == 48) && (m->csv[22] == 47) && (m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[23] == 42) && (m->csv[22] == 41) && (m->csv[15] == 39) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_update_join_preview(m->user);
                 /* Entry actions */
-                m->wsv[23] = 48; // New region = Update join
+                m->wsv[23] = 42; // New region = Update join
             }
             /* New Fork start -> New Fork start */
-            if ((m->csv[24] == 53) && (m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[24] == 45) && (m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[24] = 53; // New fork = New Fork start
+                m->wsv[24] = 45; // New fork = New Fork start
                 canvas_update_fork_start(m->user);
             }
             /* Update Fork -> Update Fork */
-            if ((m->csv[25] == 55) && (m->csv[24] == 54) && (m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[25] == 47) && (m->csv[24] == 46) && (m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_update_fork_preview(m->user);
                 /* Entry actions */
-                m->wsv[25] = 55; // New region = Update Fork
+                m->wsv[25] = 47; // New region = Update Fork
             }
             /* New Terminate Start -> New Terminate Start */
-            if ((m->csv[26] == 61) && (m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[26] == 50) && (m->csv[15] == 49) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[26] = 61; // New terminate = New Terminate Start
+                m->wsv[26] = 50; // New terminate = New Terminate Start
                 canvas_terminate_update_preview(m->user);
             }
             /* New history start -> New history start */
-            if ((m->csv[27] == 66) && (m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[27] == 53) && (m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[27] = 66; // New history = New history start
+                m->wsv[27] = 53; // New history = New history start
                 canvas_history_update_preview(m->user);
             }
             /* New dhistory start -> New dhistory start */
-            if ((m->csv[28] == 71) && (m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[28] == 57) && (m->csv[15] == 56) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[28] = 71; // New deep history = New dhistory start
+                m->wsv[28] = 57; // New deep history = New dhistory start
                 canvas_dhistory_update_preview(m->user);
             }
             /* New init start -> New init start */
-            if ((m->csv[29] == 76) && (m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[29] == 60) && (m->csv[15] == 59) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[29] = 76; // New init = New init start
+                m->wsv[29] = 60; // New init = New init start
                 canvas_update_init_preview(m->user);
             }
             /* New final start -> New final start */
-            if ((m->csv[30] == 81) && (m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[30] == 63) && (m->csv[15] == 62) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[30] = 81; // New final = New final start
+                m->wsv[30] = 63; // New final = New final start
                 canvas_update_final_preview(m->user);
             }
             /* Move vertice inner -> Move vertice inner */
-            if ((m->csv[32] == 89) && (m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[32] == 68) && (m->csv[31] == 67) && (m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_move_vertice(m->user);
                 /* Entry actions */
-                m->wsv[32] = 89; // New region = Move vertice inner
+                m->wsv[32] = 68; // New region = Move vertice inner
             }
             /* Select start -> Select start */
-            if ((m->csv[33] == 94) && (m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[33] == 72) && (m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[33] = 94; // New annotation = Select start
+                m->wsv[33] = 72; // New annotation = Select start
                 canvas_annotation_select_start(m->user);
             }
             /* Select end -> Select end */
-            if ((m->csv[33] == 95) && (m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[33] == 73) && (m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[33] = 95; // New annotation = Select end
+                m->wsv[33] = 73; // New annotation = Select end
                 canvas_annotation_select_end(m->user);
             }
             /* Text block -> Move inner */
-            if ((m->csv[39] == 130) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[39] == 93) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[39] = 133; // Transition selection = Move text block
+                m->wsv[39] = 96; // Transition selection = Move text block
                 canvas_move_text_block_begin(m->user);
-                if ((m->wsv[39] == 133)) {
-                    m->wsv[40] = 134; // New region = Move inner
+                if ((m->wsv[39] == 96)) {
+                    m->wsv[40] = 97; // New region = Move inner
                     canvas_move_text_block(m->user);
                 }
             }
             /* Guard -> Reorder */
-            if ((m->csv[39] == 131) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[39] == 94) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[39] = 141; // Transition selection = Reorder guard
+                m->wsv[39] = 104; // Transition selection = Reorder guard
                 canvas_reorder_guard_begin(m->user);
-                if ((m->wsv[39] == 141)) {
-                    m->wsv[44] = 142; // New region = Reorder
+                if ((m->wsv[39] == 104)) {
+                    m->wsv[44] = 105; // New region = Reorder
                     canvas_reorder_guard_func(m->user);
                 }
             }
             /* Action -> Reorder */
-            if ((m->csv[39] == 132) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[39] == 95) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[39] = 139; // Transition selection = Reorder action
+                m->wsv[39] = 102; // Transition selection = Reorder action
                 canvas_reorder_action_begin(m->user);
-                if ((m->wsv[39] == 139)) {
-                    m->wsv[43] = 140; // New region = Reorder
+                if ((m->wsv[39] == 102)) {
+                    m->wsv[43] = 103; // New region = Reorder
                     canvas_reorder_action_func(m->user);
                 }
             }
             /* Move inner -> Move inner */
-            if ((m->csv[40] == 134) && (m->csv[39] == 133) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[40] == 97) && (m->csv[39] == 96) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_move_text_block(m->user);
                 /* Entry actions */
-                m->wsv[40] = 134; // New region = Move inner
+                m->wsv[40] = 97; // New region = Move inner
                 canvas_move_text_block(m->user);
             }
             /* Resize text block inner -> Resize text block inner */
-            if ((m->csv[41] == 136) && (m->csv[39] == 135) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[41] == 99) && (m->csv[39] == 98) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_resize_textblock(m->user);
                 /* Entry actions */
-                m->wsv[41] = 136; // New region = Resize text block inner
+                m->wsv[41] = 99; // New region = Resize text block inner
             }
             /* Move vertice inner -> Move vertice inner */
-            if ((m->csv[42] == 138) && (m->csv[39] == 137) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[42] == 101) && (m->csv[39] == 100) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_move_vertice(m->user);
                 /* Entry actions */
-                m->wsv[42] = 138; // New region = Move vertice inner
+                m->wsv[42] = 101; // New region = Move vertice inner
             }
             /* Reorder -> Reorder */
-            if ((m->csv[43] == 140) && (m->csv[39] == 139) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[43] == 103) && (m->csv[39] == 102) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[43] = 140; // New region = Reorder
+                m->wsv[43] = 103; // New region = Reorder
                 canvas_reorder_action_func(m->user);
             }
             /* Reorder -> Reorder */
-            if ((m->csv[44] == 142) && (m->csv[39] == 141) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[44] == 105) && (m->csv[39] == 104) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[44] = 142; // New region = Reorder
+                m->wsv[44] = 105; // New region = Reorder
                 canvas_reorder_guard_func(m->user);
             }
             /* Resize region inner -> Resize region inner */
-            if ((m->csv[46] == 145) && (m->csv[45] == 144) && (m->csv[38] == 143) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[46] == 108) && (m->csv[45] == 107) && (m->csv[38] == 106) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_resize_region(m->user);
                 /* Entry actions */
-                m->wsv[46] = 145; // New region = Resize region inner
+                m->wsv[46] = 108; // New region = Resize region inner
             }
             /* Region -> Multi select region update */
-            if ((m->csv[45] == 146) && (m->csv[38] == 143) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[45] == 109) && (m->csv[38] == 106) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[45] = 147; // Region selection = Multi select region
+                m->wsv[45] = 110; // Region selection = Multi select region
                 canvas_mselect_begin(m->user);
-                if ((m->wsv[45] == 147)) {
-                    m->wsv[47] = 148; // New region = Multi select region update
+                if ((m->wsv[45] == 110)) {
+                    m->wsv[47] = 111; // New region = Multi select region update
                     canvas_mselect_update(m->user);
                 }
             }
             /* Multi select region update -> Multi select region update */
-            if ((m->csv[47] == 148) && (m->csv[45] == 147) && (m->csv[38] == 143) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[47] == 111) && (m->csv[45] == 110) && (m->csv[38] == 106) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[47] = 148; // New region = Multi select region update
+                m->wsv[47] = 111; // New region = Multi select region update
                 canvas_mselect_update(m->user);
             }
             /* Move state inner -> Move state inner */
-            if ((m->csv[49] == 151) && (m->csv[48] == 150) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[49] == 114) && (m->csv[48] == 113) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if (!((m->csv[11] == 20) && (m->csv[9] == 16) && (m->csv[0] == 1))) {
                     /* Exit actions */
                     /* Actions */
                     canvas_move_state(m->user);
                     /* Entry actions */
-                    m->wsv[49] = 151; // New region = Move state inner
+                    m->wsv[49] = 114; // New region = Move state inner
                 }
             }
             /* State -> Move state inner */
-            if ((m->csv[48] == 152) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[48] == 115) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[48] = 150; // State selection = Move State
+                m->wsv[48] = 113; // State selection = Move State
                 canvas_move_state_begin(m->user);
-                if ((m->wsv[48] == 150)) {
-                    m->wsv[49] = 151; // New region = Move state inner
+                if ((m->wsv[48] == 113)) {
+                    m->wsv[49] = 114; // New region = Move state inner
                 }
             }
             /* Entry selected -> Reorder */
-            if ((m->csv[48] == 153) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[48] == 116) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[48] = 159; // State selection = Reorder entry
+                m->wsv[48] = 122; // State selection = Reorder entry
                 canvas_reorder_entry_begin(m->user);
-                if ((m->wsv[48] == 159)) {
-                    m->wsv[52] = 160; // New region = Reorder
+                if ((m->wsv[48] == 122)) {
+                    m->wsv[52] = 123; // New region = Reorder
                     canvas_reorder_entry_func(m->user);
                 }
             }
             /* Exit selected -> Reorder */
-            if ((m->csv[48] == 154) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[48] == 117) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[48] = 157; // State selection = Reorder exit
+                m->wsv[48] = 120; // State selection = Reorder exit
                 canvas_reorder_exit_begin(m->user);
-                if ((m->wsv[48] == 157)) {
-                    m->wsv[51] = 158; // New region = Reorder
+                if ((m->wsv[48] == 120)) {
+                    m->wsv[51] = 121; // New region = Reorder
                     canvas_reorder_exit_func(m->user);
                 }
             }
             /* Resize state inner -> Resize state inner */
-            if ((m->csv[50] == 156) && (m->csv[48] == 155) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[50] == 119) && (m->csv[48] == 118) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_resize_state(m->user);
                 /* Entry actions */
-                m->wsv[50] = 156; // New region = Resize state inner
+                m->wsv[50] = 119; // New region = Resize state inner
             }
             /* Reorder -> Reorder */
-            if ((m->csv[51] == 158) && (m->csv[48] == 157) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[51] == 121) && (m->csv[48] == 120) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[51] = 158; // New region = Reorder
+                m->wsv[51] = 121; // New region = Reorder
                 canvas_reorder_exit_func(m->user);
             }
             /* Reorder -> Reorder */
-            if ((m->csv[52] == 160) && (m->csv[48] == 159) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[52] == 123) && (m->csv[48] == 122) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[52] = 160; // New region = Reorder
+                m->wsv[52] = 123; // New region = Reorder
                 canvas_reorder_entry_func(m->user);
             }
             /* Add object to selection -> Multi s. inner */
-            if ((m->csv[38] == 163) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[38] == 126) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[38] = 167; // Object Selection = Multi select
+                m->wsv[38] = 130; // Object Selection = Multi select
                 canvas_mselect_begin(m->user);
-                if ((m->wsv[38] == 167)) {
-                    m->wsv[54] = 168; // New region = Multi s. inner
+                if ((m->wsv[38] == 130)) {
+                    m->wsv[54] = 131; // New region = Multi s. inner
                     canvas_mselect_update(m->user);
                 }
             }
             /* Multi select -> Move */
-            if ((m->csv[38] == 164) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[38] == 127) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[38] = 165; // Object Selection = Multi select move
+                m->wsv[38] = 128; // Object Selection = Multi select move
                 canvas_mselect_move_begin(m->user);
-                if ((m->wsv[38] == 165)) {
-                    m->wsv[53] = 166; // New region = Move
+                if ((m->wsv[38] == 128)) {
+                    m->wsv[53] = 129; // New region = Move
                     canvas_mselect_move(m->user);
                 }
             }
             /* Move -> Move */
-            if ((m->csv[53] == 166) && (m->csv[38] == 165) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[53] == 129) && (m->csv[38] == 128) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if (!((m->csv[11] == 20) && (m->csv[9] == 16) && (m->csv[0] == 1))) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[53] = 166; // New region = Move
+                    m->wsv[53] = 129; // New region = Move
                     canvas_mselect_move(m->user);
                 }
             }
             /* Multi s. inner -> Multi s. inner */
-            if ((m->csv[54] == 168) && (m->csv[38] == 167) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[54] == 131) && (m->csv[38] == 130) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[54] = 168; // New region = Multi s. inner
+                m->wsv[54] = 131; // New region = Multi s. inner
                 canvas_mselect_update(m->user);
             }
         break;
@@ -1313,160 +1116,70 @@ process_more:
                     canvas_tools_begin(m->user);
                 }
             }
-            /* Add -> Final */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Add -> Add */
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_state_selected(m->user)) {
                     /* Exit actions */
-                    if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_move_vertice_end(m->user);
-                    }
-                    if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_state_select_end_end(m->user);
-                    }
-                    if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_state_select_start_end(m->user);
-                    }
-                    if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_annotation_end(m->user);
-                    }
-                    if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_add_vertice_end(m->user);
-                    }
-                    if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_final_end(m->user);
-                    }
-                    if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_init_end(m->user);
-                    }
-                    if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_dhistory_end(m->user);
-                    }
-                    if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_history_end(m->user);
-                    }
-                    if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_terminate_end(m->user);
-                    }
-                    if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_fork_end(m->user);
-                    }
-                    if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_join_end(m->user);
-                    }
-                    if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_transition_end(m->user);
-                    }
-                    if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_state_end(m->user);
-                    }
-                    if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_add_end(m->user);
-                    }
                     /* Actions */
                     canvas_add_region(m->user);
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                     /* Entry actions */
-                    m->wsv[15] = 41; // Add actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[15] = 38; // Add actions = Add
                 }
             }
             /* New Join start -> New Join start */
-            if ((m->csv[22] == 46) && (m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[22] == 40) && (m->csv[15] == 39) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_toggle_join_orientation(m->user);
                 /* Entry actions */
-                m->wsv[22] = 46; // New join = New Join start
+                m->wsv[22] = 40; // New join = New Join start
                 canvas_update_join_start(m->user);
             }
             /* New Fork start -> New Fork start */
-            if ((m->csv[24] == 53) && (m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[24] == 45) && (m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_toggle_fork_orientation(m->user);
                 /* Entry actions */
-                m->wsv[24] = 53; // New fork = New Fork start
+                m->wsv[24] = 45; // New fork = New Fork start
                 canvas_update_fork_start(m->user);
             }
-            /* Edit -> Final */
-            if ((m->csv[34] == 102) && (m->csv[14] == 98) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Edit -> Done */
+            if ((m->csv[34] == 76) && (m->csv[14] == 75) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_state_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     canvas_rotate_state(m->user);
                     /* Entry actions */
-                    m->wsv[34] = 106; // Edit actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[34] = 77; // Edit actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
             /* Jump -> Final */
-            if ((m->csv[37] == 124) && (m->csv[14] == 123) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[37] == 87) && (m->csv[14] == 86) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_show_root(m->user);
                 /* Entry actions */
-                m->wsv[37] = 126; // Jump = Final
+                m->wsv[37] = 89; // Jump = Final
                 m->wsv[14] = 23; // Tool controller = Tools
                 canvas_tools_begin(m->user);
             }
         break;
         case eKey_g_down:
-            /* Add -> FinalGuard */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Add -> Add */
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_transition_selected(m->user)) {
                     /* Exit actions */
-                    if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_move_vertice_end(m->user);
-                    }
-                    if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_state_select_end_end(m->user);
-                    }
-                    if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_state_select_start_end(m->user);
-                    }
-                    if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_annotation_end(m->user);
-                    }
-                    if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_add_vertice_end(m->user);
-                    }
-                    if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_final_end(m->user);
-                    }
-                    if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_init_end(m->user);
-                    }
-                    if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_dhistory_end(m->user);
-                    }
-                    if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_history_end(m->user);
-                    }
-                    if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_terminate_end(m->user);
-                    }
-                    if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_fork_end(m->user);
-                    }
-                    if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_join_end(m->user);
-                    }
-                    if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_transition_end(m->user);
-                    }
-                    if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_state_end(m->user);
-                    }
-                    if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_add_end(m->user);
-                    }
                     /* Actions */
                     canvas_add_guard(m->user);
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                     /* Entry actions */
-                    m->wsv[15] = 40; // Add actions = FinalGuard
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[15] = 38; // Add actions = Add
                 }
             }
         break;
@@ -1496,49 +1209,49 @@ process_more:
             /* Tool Mode -> Tool Mode */
             if ((m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
-                if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[31] == 67) && (m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_move_vertice_end(m->user);
                 }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[16] == 28) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_state_select_end_end(m->user);
                 }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[16] == 26) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_state_select_start_end(m->user);
                 }
-                if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_annotation_end(m->user);
                 }
-                if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_add_vertice_end(m->user);
                 }
-                if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 62) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_final_end(m->user);
                 }
-                if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 59) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_init_end(m->user);
                 }
-                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 56) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_dhistory_end(m->user);
                 }
-                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_history_end(m->user);
                 }
-                if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 49) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_terminate_end(m->user);
                 }
-                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_fork_end(m->user);
                 }
-                if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 39) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_join_end(m->user);
                 }
-                if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 31) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_transition_end(m->user);
                 }
                 if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_state_end(m->user);
                 }
-                if ((m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_reset_selection(m->user);
                 }
                 if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
@@ -1555,127 +1268,84 @@ process_more:
                     m->wsv[14] = 23; // Tool controller = Tools
                     canvas_tools_begin(m->user);
                 }
-                if ((m->wsv[14] == 123) && (m->wsv[13] == 22)) {
-                    m->wsv[37] = 124; // Jump = Jump
+                if ((m->wsv[14] == 86) && (m->wsv[13] == 22)) {
+                    m->wsv[37] = 87; // Jump = Jump
                 }
-                if ((m->wsv[14] == 119) && (m->wsv[13] == 22)) {
-                    m->wsv[36] = 120; // Zoom = Zoom
+                if ((m->wsv[14] == 82) && (m->wsv[13] == 22)) {
+                    m->wsv[36] = 83; // Zoom = Zoom
                 }
-                if ((m->wsv[14] == 107) && (m->wsv[13] == 22)) {
-                    m->wsv[35] = 117; // Delete actions = Delete selection
+                if ((m->wsv[14] == 78) && (m->wsv[13] == 22)) {
+                    m->wsv[35] = 80; // Delete actions = Delete selection
                     process_auto_transition = 1;
                     process_auto_transition = 1;
                 }
-                if ((m->wsv[14] == 98) && (m->wsv[13] == 22)) {
-                    m->wsv[34] = 102; // Edit actions = Edit
+                if ((m->wsv[14] == 75) && (m->wsv[13] == 22)) {
+                    m->wsv[34] = 76; // Edit actions = Edit
                     process_auto_transition = 1;
                     process_auto_transition = 1;
                 }
                 if ((m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[15] = 44; // Add actions = Add
+                    m->wsv[15] = 38; // Add actions = Add
                 }
-                if ((m->wsv[15] == 92) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[33] = 93; // New annotation = Input text
+                if ((m->wsv[15] == 70) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[33] = 71; // New annotation = Input text
                     process_auto_transition = 1;
                     canvas_show_annotation_dialog(m->user);
                 }
-                if ((m->wsv[15] == 85) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[31] = 86; // New vertice = Add vertice
+                if ((m->wsv[15] == 65) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[31] = 66; // New vertice = Add vertice
                     process_auto_transition = 1;
                     canvas_add_vertice(m->user);
                 }
-                if ((m->wsv[15] == 80) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[30] = 81; // New final = New final start
+                if ((m->wsv[15] == 62) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[30] = 63; // New final = New final start
                     canvas_update_final_preview(m->user);
                 }
-                if ((m->wsv[15] == 75) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[29] = 76; // New init = New init start
+                if ((m->wsv[15] == 59) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[29] = 60; // New init = New init start
                     canvas_update_init_preview(m->user);
                 }
-                if ((m->wsv[15] == 70) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[28] = 71; // New deep history = New dhistory start
+                if ((m->wsv[15] == 56) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[28] = 57; // New deep history = New dhistory start
                     canvas_dhistory_update_preview(m->user);
                 }
-                if ((m->wsv[15] == 65) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[27] = 66; // New history = New history start
+                if ((m->wsv[15] == 52) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[27] = 53; // New history = New history start
                     canvas_history_update_preview(m->user);
                 }
-                if ((m->wsv[15] == 60) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[26] = 61; // New terminate = New Terminate Start
+                if ((m->wsv[15] == 49) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[26] = 50; // New terminate = New Terminate Start
                     canvas_terminate_update_preview(m->user);
                 }
-                if ((m->wsv[15] == 52) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[24] = 53; // New fork = New Fork start
+                if ((m->wsv[15] == 44) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[24] = 45; // New fork = New Fork start
                     canvas_update_fork_start(m->user);
                 }
-                if ((m->wsv[15] == 45) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[22] = 46; // New join = New Join start
+                if ((m->wsv[15] == 39) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[22] = 40; // New join = New Join start
                     canvas_update_join_start(m->user);
                 }
-                if ((m->wsv[15] == 32) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[19] = 33; // New transition = Select source state
+                if ((m->wsv[15] == 31) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[19] = 32; // New transition = Select source state
                     canvas_transition_select_source(m->user);
                 }
-                if ((m->wsv[16] == 27) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[17] = 28; // New region = Start inner
+                if ((m->wsv[16] == 26) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[17] = 27; // New region = Start inner
                     canvas_new_state_set_start(m->user);
                 }
             }
-            /* Move vertice -> Final */
-            if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Move vertice -> Done */
+            if ((m->csv[31] == 67) && (m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
-                if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[31] == 67) && (m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_move_vertice_end(m->user);
-                }
-                if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_vertice_end(m->user);
-                }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_end_end(m->user);
-                }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_start_end(m->user);
-                }
-                if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_annotation_end(m->user);
-                }
-                if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_final_end(m->user);
-                }
-                if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_init_end(m->user);
-                }
-                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_dhistory_end(m->user);
-                }
-                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_history_end(m->user);
-                }
-                if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_terminate_end(m->user);
-                }
-                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_fork_end(m->user);
-                }
-                if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_join_end(m->user);
-                }
-                if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_transition_end(m->user);
-                }
-                if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_state_end(m->user);
-                }
-                if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_end(m->user);
                 }
                 /* Actions */
                 canvas_add_vertice_cancel(m->user);
                 /* Entry actions */
-                m->wsv[31] = 90; // New vertice = Final
-                m->wsv[15] = 91; // Add actions = Final
-                m->wsv[14] = 23; // Tool controller = Tools
-                canvas_tools_begin(m->user);
+                m->wsv[31] = 69; // New vertice = Done
+                if(sq_push(m, 10) != 0)
+                    return -UFSM_SIGNAL_QUEUE_FULL;
             }
         break;
         case eKey_e_down:
@@ -1687,69 +1357,24 @@ process_more:
                 }
                 /* Actions */
                 /* Entry actions */
-                m->wsv[14] = 98; // Tool controller = Edit actions
+                m->wsv[14] = 75; // Tool controller = Edit actions
                 canvas_edit_begin(m->user);
-                if ((m->wsv[14] == 98)) {
-                    m->wsv[34] = 102; // Edit actions = Edit
+                if ((m->wsv[14] == 75)) {
+                    m->wsv[34] = 76; // Edit actions = Edit
                     process_auto_transition = 1;
                     process_auto_transition = 1;
                 }
             }
-            /* Add -> Final */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Add -> Add */
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_state_selected(m->user)) {
                     /* Exit actions */
-                    if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_move_vertice_end(m->user);
-                    }
-                    if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_state_select_end_end(m->user);
-                    }
-                    if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_state_select_start_end(m->user);
-                    }
-                    if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_annotation_end(m->user);
-                    }
-                    if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_add_vertice_end(m->user);
-                    }
-                    if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_final_end(m->user);
-                    }
-                    if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_init_end(m->user);
-                    }
-                    if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_dhistory_end(m->user);
-                    }
-                    if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_history_end(m->user);
-                    }
-                    if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_terminate_end(m->user);
-                    }
-                    if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_fork_end(m->user);
-                    }
-                    if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_join_end(m->user);
-                    }
-                    if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_transition_end(m->user);
-                    }
-                    if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_state_end(m->user);
-                    }
-                    if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_add_end(m->user);
-                    }
                     /* Actions */
                     canvas_add_entry(m->user);
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                     /* Entry actions */
-                    m->wsv[15] = 42; // Add actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[15] = 38; // Add actions = Add
                 }
             }
         break;
@@ -1829,61 +1454,16 @@ process_more:
                     }
                 }
             }
-            /* Add -> Final */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Add -> Add */
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_state_selected(m->user)) {
                     /* Exit actions */
-                    if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_move_vertice_end(m->user);
-                    }
-                    if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_state_select_end_end(m->user);
-                    }
-                    if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_state_select_start_end(m->user);
-                    }
-                    if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_annotation_end(m->user);
-                    }
-                    if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_add_vertice_end(m->user);
-                    }
-                    if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_final_end(m->user);
-                    }
-                    if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_init_end(m->user);
-                    }
-                    if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_dhistory_end(m->user);
-                    }
-                    if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_history_end(m->user);
-                    }
-                    if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_terminate_end(m->user);
-                    }
-                    if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_fork_end(m->user);
-                    }
-                    if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_join_end(m->user);
-                    }
-                    if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_transition_end(m->user);
-                    }
-                    if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_state_end(m->user);
-                    }
-                    if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_add_end(m->user);
-                    }
                     /* Actions */
                     canvas_add_exit(m->user);
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                     /* Entry actions */
-                    m->wsv[15] = 43; // Add actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[15] = 38; // Add actions = Add
                 }
             }
         break;
@@ -1900,52 +1480,52 @@ process_more:
                     m->wsv[14] = 24; // Tool controller = Add actions
                     canvas_add_begin(m->user);
                     if ((m->wsv[14] == 24)) {
-                        m->wsv[15] = 44; // Add actions = Add
+                        m->wsv[15] = 38; // Add actions = Add
                     }
-                    if ((m->wsv[15] == 92) && (m->wsv[14] == 24)) {
-                        m->wsv[33] = 93; // New annotation = Input text
+                    if ((m->wsv[15] == 70) && (m->wsv[14] == 24)) {
+                        m->wsv[33] = 71; // New annotation = Input text
                         process_auto_transition = 1;
                         canvas_show_annotation_dialog(m->user);
                     }
-                    if ((m->wsv[15] == 85) && (m->wsv[14] == 24)) {
-                        m->wsv[31] = 86; // New vertice = Add vertice
+                    if ((m->wsv[15] == 65) && (m->wsv[14] == 24)) {
+                        m->wsv[31] = 66; // New vertice = Add vertice
                         process_auto_transition = 1;
                         canvas_add_vertice(m->user);
                     }
-                    if ((m->wsv[15] == 80) && (m->wsv[14] == 24)) {
-                        m->wsv[30] = 81; // New final = New final start
+                    if ((m->wsv[15] == 62) && (m->wsv[14] == 24)) {
+                        m->wsv[30] = 63; // New final = New final start
                         canvas_update_final_preview(m->user);
                     }
-                    if ((m->wsv[15] == 75) && (m->wsv[14] == 24)) {
-                        m->wsv[29] = 76; // New init = New init start
+                    if ((m->wsv[15] == 59) && (m->wsv[14] == 24)) {
+                        m->wsv[29] = 60; // New init = New init start
                         canvas_update_init_preview(m->user);
                     }
-                    if ((m->wsv[15] == 70) && (m->wsv[14] == 24)) {
-                        m->wsv[28] = 71; // New deep history = New dhistory start
+                    if ((m->wsv[15] == 56) && (m->wsv[14] == 24)) {
+                        m->wsv[28] = 57; // New deep history = New dhistory start
                         canvas_dhistory_update_preview(m->user);
                     }
-                    if ((m->wsv[15] == 65) && (m->wsv[14] == 24)) {
-                        m->wsv[27] = 66; // New history = New history start
+                    if ((m->wsv[15] == 52) && (m->wsv[14] == 24)) {
+                        m->wsv[27] = 53; // New history = New history start
                         canvas_history_update_preview(m->user);
                     }
-                    if ((m->wsv[15] == 60) && (m->wsv[14] == 24)) {
-                        m->wsv[26] = 61; // New terminate = New Terminate Start
+                    if ((m->wsv[15] == 49) && (m->wsv[14] == 24)) {
+                        m->wsv[26] = 50; // New terminate = New Terminate Start
                         canvas_terminate_update_preview(m->user);
                     }
-                    if ((m->wsv[15] == 52) && (m->wsv[14] == 24)) {
-                        m->wsv[24] = 53; // New fork = New Fork start
+                    if ((m->wsv[15] == 44) && (m->wsv[14] == 24)) {
+                        m->wsv[24] = 45; // New fork = New Fork start
                         canvas_update_fork_start(m->user);
                     }
-                    if ((m->wsv[15] == 45) && (m->wsv[14] == 24)) {
-                        m->wsv[22] = 46; // New join = New Join start
+                    if ((m->wsv[15] == 39) && (m->wsv[14] == 24)) {
+                        m->wsv[22] = 40; // New join = New Join start
                         canvas_update_join_start(m->user);
                     }
-                    if ((m->wsv[15] == 32) && (m->wsv[14] == 24)) {
-                        m->wsv[19] = 33; // New transition = Select source state
+                    if ((m->wsv[15] == 31) && (m->wsv[14] == 24)) {
+                        m->wsv[19] = 32; // New transition = Select source state
                         canvas_transition_select_source(m->user);
                     }
-                    if ((m->wsv[16] == 27) && (m->wsv[15] == 25) && (m->wsv[14] == 24)) {
-                        m->wsv[17] = 28; // New region = Start inner
+                    if ((m->wsv[16] == 26) && (m->wsv[15] == 25) && (m->wsv[14] == 24)) {
+                        m->wsv[17] = 27; // New region = Start inner
                         canvas_new_state_set_start(m->user);
                     }
                 }
@@ -1964,83 +1544,38 @@ process_more:
                     canvas_tools_begin(m->user);
                 }
             }
-            /* Add -> FinalAddAction */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Add -> Add */
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_transition_selected(m->user)) {
                     /* Exit actions */
-                    if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_move_vertice_end(m->user);
-                    }
-                    if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_state_select_end_end(m->user);
-                    }
-                    if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_state_select_start_end(m->user);
-                    }
-                    if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_annotation_end(m->user);
-                    }
-                    if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_add_vertice_end(m->user);
-                    }
-                    if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_final_end(m->user);
-                    }
-                    if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_init_end(m->user);
-                    }
-                    if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_dhistory_end(m->user);
-                    }
-                    if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_history_end(m->user);
-                    }
-                    if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_terminate_end(m->user);
-                    }
-                    if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_fork_end(m->user);
-                    }
-                    if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_join_end(m->user);
-                    }
-                    if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_transition_end(m->user);
-                    }
-                    if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_create_state_end(m->user);
-                    }
-                    if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_add_end(m->user);
-                    }
                     /* Actions */
                     canvas_add_transition_action(m->user);
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                     /* Entry actions */
-                    m->wsv[15] = 39; // Add actions = FinalAddAction
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[15] = 38; // Add actions = Add
                 }
             }
             /* Add -> New annotation */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[15] = 92; // Add actions = New annotation
+                m->wsv[15] = 70; // Add actions = New annotation
                 canvas_create_annotation_begin(m->user);
-                if ((m->wsv[15] == 92)) {
-                    m->wsv[33] = 93; // New annotation = Input text
+                if ((m->wsv[15] == 70)) {
+                    m->wsv[33] = 71; // New annotation = Input text
                     process_auto_transition = 1;
                     canvas_show_annotation_dialog(m->user);
                 }
             }
             /* Jump -> Final */
-            if ((m->csv[37] == 124) && (m->csv[14] == 123) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[37] == 87) && (m->csv[14] == 86) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_ascend(m->user);
                 /* Entry actions */
-                m->wsv[37] = 125; // Jump = Final
+                m->wsv[37] = 88; // Jump = Final
                 m->wsv[14] = 23; // Tool controller = Tools
                 canvas_tools_begin(m->user);
             }
@@ -2059,14 +1594,14 @@ process_more:
                 canvas_tools_begin(m->user);
             }
             /* Add -> New state */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
                 m->wsv[15] = 25; // Add actions = New state
                 canvas_create_state_begin(m->user);
-                if ((m->wsv[16] == 27) && (m->wsv[15] == 25)) {
-                    m->wsv[17] = 28; // New region = Start inner
+                if ((m->wsv[16] == 26) && (m->wsv[15] == 25)) {
+                    m->wsv[17] = 27; // New region = Start inner
                     canvas_new_state_set_start(m->user);
                 }
             }
@@ -2085,27 +1620,27 @@ process_more:
                 canvas_tools_begin(m->user);
             }
             /* Add -> New transition */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[15] = 32; // Add actions = New transition
+                m->wsv[15] = 31; // Add actions = New transition
                 canvas_create_transition_begin(m->user);
-                if ((m->wsv[15] == 32)) {
-                    m->wsv[19] = 33; // New transition = Select source state
+                if ((m->wsv[15] == 31)) {
+                    m->wsv[19] = 32; // New transition = Select source state
                     canvas_transition_select_source(m->user);
                 }
             }
-            /* Edit -> FinalTrigger */
-            if ((m->csv[34] == 102) && (m->csv[14] == 98) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Edit -> Done */
+            if ((m->csv[34] == 76) && (m->csv[14] == 75) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_transition_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     canvas_set_transition_trigger(m->user);
                     /* Entry actions */
-                    m->wsv[34] = 103; // Edit actions = FinalTrigger
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[34] = 77; // Edit actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
         break;
@@ -2118,10 +1653,10 @@ process_more:
                 }
                 /* Actions */
                 /* Entry actions */
-                m->wsv[14] = 107; // Tool controller = Delete Actions
+                m->wsv[14] = 78; // Tool controller = Delete Actions
                 canvas_delete_begin(m->user);
-                if ((m->wsv[14] == 107)) {
-                    m->wsv[35] = 117; // Delete actions = Delete selection
+                if ((m->wsv[14] == 78)) {
+                    m->wsv[35] = 80; // Delete actions = Delete selection
                     process_auto_transition = 1;
                     process_auto_transition = 1;
                 }
@@ -2136,14 +1671,14 @@ process_more:
                 m->wsv[7] = 13; // New region = Shift Active
             }
             /* Select dest state -> Add vertice */
-            if ((m->csv[20] == 36) && (m->csv[19] == 35) && (m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[20] == 34) && (m->csv[19] == 33) && (m->csv[15] == 31) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[19] = 37; // New transition = Add vertice
+                m->wsv[19] = 35; // New transition = Add vertice
                 canvas_add_transition_vertice_mode(m->user);
-                if ((m->wsv[19] == 37)) {
-                    m->wsv[21] = 38; // New region = Add vertice
+                if ((m->wsv[19] == 35)) {
+                    m->wsv[21] = 36; // New region = Add vertice
                     canvas_transition_update_preview(m->user);
                 }
             }
@@ -2157,52 +1692,52 @@ process_more:
                 m->wsv[7] = 12; // New region = Shift inactive
             }
             /* Add vertice -> Select dest state */
-            if ((m->csv[21] == 38) && (m->csv[19] == 37) && (m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[21] == 36) && (m->csv[19] == 35) && (m->csv[15] == 31) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[19] = 35; // New transition = Select destination
+                m->wsv[19] = 33; // New transition = Select destination
                 canvas_transition_select_dest(m->user);
-                if ((m->wsv[19] == 35)) {
-                    m->wsv[20] = 36; // New region = Select dest state
+                if ((m->wsv[19] == 33)) {
+                    m->wsv[20] = 34; // New region = Select dest state
                     canvas_transition_update_preview(m->user);
                 }
             }
         break;
         case eKey_i_down:
             /* Add -> New init */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[15] = 75; // Add actions = New init
+                m->wsv[15] = 59; // Add actions = New init
                 canvas_create_init_begin(m->user);
-                if ((m->wsv[15] == 75)) {
-                    m->wsv[29] = 76; // New init = New init start
+                if ((m->wsv[15] == 59)) {
+                    m->wsv[29] = 60; // New init = New init start
                     canvas_update_init_preview(m->user);
                 }
             }
         break;
         case eKey_f_down:
             /* Add -> New final */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[15] = 80; // Add actions = New final
+                m->wsv[15] = 62; // Add actions = New final
                 canvas_create_final_begin(m->user);
-                if ((m->wsv[15] == 80)) {
-                    m->wsv[30] = 81; // New final = New final start
+                if ((m->wsv[15] == 62)) {
+                    m->wsv[30] = 63; // New final = New final start
                     canvas_update_final_preview(m->user);
                 }
             }
             /* Zoom -> Final */
-            if ((m->csv[36] == 120) && (m->csv[14] == 119) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[36] == 83) && (m->csv[14] == 82) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_zoom_fit(m->user);
                 /* Entry actions */
-                m->wsv[36] = 121; // Zoom = Final
+                m->wsv[36] = 84; // Zoom = Final
                 m->wsv[14] = 23; // Tool controller = Tools
                 canvas_tools_begin(m->user);
             }
@@ -2228,16 +1763,16 @@ process_more:
             }
         break;
         case eKey_O_down:
-            /* Edit -> Final */
-            if ((m->csv[34] == 102) && (m->csv[14] == 98) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Edit -> Done */
+            if ((m->csv[34] == 76) && (m->csv[14] == 75) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_region_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     canvas_toggle_region_offpage(m->user);
                     /* Entry actions */
-                    m->wsv[34] = 104; // Edit actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[34] = 77; // Edit actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
         break;
@@ -2245,49 +1780,49 @@ process_more:
             /* Tool Mode -> Tool Mode */
             if ((m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
-                if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[31] == 67) && (m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_move_vertice_end(m->user);
                 }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[16] == 28) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_state_select_end_end(m->user);
                 }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[16] == 26) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_state_select_start_end(m->user);
                 }
-                if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_annotation_end(m->user);
                 }
-                if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_add_vertice_end(m->user);
                 }
-                if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 62) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_final_end(m->user);
                 }
-                if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 59) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_init_end(m->user);
                 }
-                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 56) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_dhistory_end(m->user);
                 }
-                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_history_end(m->user);
                 }
-                if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 49) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_terminate_end(m->user);
                 }
-                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_fork_end(m->user);
                 }
-                if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 39) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_join_end(m->user);
                 }
-                if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[15] == 31) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_transition_end(m->user);
                 }
                 if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_create_state_end(m->user);
                 }
-                if ((m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                if ((m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                     canvas_reset_selection(m->user);
                 }
                 if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
@@ -2304,103 +1839,103 @@ process_more:
                     m->wsv[14] = 23; // Tool controller = Tools
                     canvas_tools_begin(m->user);
                 }
-                if ((m->wsv[14] == 123) && (m->wsv[13] == 22)) {
-                    m->wsv[37] = 124; // Jump = Jump
+                if ((m->wsv[14] == 86) && (m->wsv[13] == 22)) {
+                    m->wsv[37] = 87; // Jump = Jump
                 }
-                if ((m->wsv[14] == 119) && (m->wsv[13] == 22)) {
-                    m->wsv[36] = 120; // Zoom = Zoom
+                if ((m->wsv[14] == 82) && (m->wsv[13] == 22)) {
+                    m->wsv[36] = 83; // Zoom = Zoom
                 }
-                if ((m->wsv[14] == 107) && (m->wsv[13] == 22)) {
-                    m->wsv[35] = 117; // Delete actions = Delete selection
+                if ((m->wsv[14] == 78) && (m->wsv[13] == 22)) {
+                    m->wsv[35] = 80; // Delete actions = Delete selection
                     process_auto_transition = 1;
                     process_auto_transition = 1;
                 }
-                if ((m->wsv[14] == 98) && (m->wsv[13] == 22)) {
-                    m->wsv[34] = 102; // Edit actions = Edit
+                if ((m->wsv[14] == 75) && (m->wsv[13] == 22)) {
+                    m->wsv[34] = 76; // Edit actions = Edit
                     process_auto_transition = 1;
                     process_auto_transition = 1;
                 }
                 if ((m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[15] = 44; // Add actions = Add
+                    m->wsv[15] = 38; // Add actions = Add
                 }
-                if ((m->wsv[15] == 92) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[33] = 93; // New annotation = Input text
+                if ((m->wsv[15] == 70) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[33] = 71; // New annotation = Input text
                     process_auto_transition = 1;
                     canvas_show_annotation_dialog(m->user);
                 }
-                if ((m->wsv[15] == 85) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[31] = 86; // New vertice = Add vertice
+                if ((m->wsv[15] == 65) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[31] = 66; // New vertice = Add vertice
                     process_auto_transition = 1;
                     canvas_add_vertice(m->user);
                 }
-                if ((m->wsv[15] == 80) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[30] = 81; // New final = New final start
+                if ((m->wsv[15] == 62) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[30] = 63; // New final = New final start
                     canvas_update_final_preview(m->user);
                 }
-                if ((m->wsv[15] == 75) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[29] = 76; // New init = New init start
+                if ((m->wsv[15] == 59) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[29] = 60; // New init = New init start
                     canvas_update_init_preview(m->user);
                 }
-                if ((m->wsv[15] == 70) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[28] = 71; // New deep history = New dhistory start
+                if ((m->wsv[15] == 56) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[28] = 57; // New deep history = New dhistory start
                     canvas_dhistory_update_preview(m->user);
                 }
-                if ((m->wsv[15] == 65) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[27] = 66; // New history = New history start
+                if ((m->wsv[15] == 52) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[27] = 53; // New history = New history start
                     canvas_history_update_preview(m->user);
                 }
-                if ((m->wsv[15] == 60) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[26] = 61; // New terminate = New Terminate Start
+                if ((m->wsv[15] == 49) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[26] = 50; // New terminate = New Terminate Start
                     canvas_terminate_update_preview(m->user);
                 }
-                if ((m->wsv[15] == 52) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[24] = 53; // New fork = New Fork start
+                if ((m->wsv[15] == 44) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[24] = 45; // New fork = New Fork start
                     canvas_update_fork_start(m->user);
                 }
-                if ((m->wsv[15] == 45) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[22] = 46; // New join = New Join start
+                if ((m->wsv[15] == 39) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[22] = 40; // New join = New Join start
                     canvas_update_join_start(m->user);
                 }
-                if ((m->wsv[15] == 32) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[19] = 33; // New transition = Select source state
+                if ((m->wsv[15] == 31) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[19] = 32; // New transition = Select source state
                     canvas_transition_select_source(m->user);
                 }
-                if ((m->wsv[16] == 27) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
-                    m->wsv[17] = 28; // New region = Start inner
+                if ((m->wsv[16] == 26) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[17] = 27; // New region = Start inner
                     canvas_new_state_set_start(m->user);
                 }
             }
-            /* Edit -> Final */
-            if ((m->csv[34] == 102) && (m->csv[14] == 98) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Edit -> Done */
+            if ((m->csv[34] == 76) && (m->csv[14] == 75) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_state_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     canvas_edit_state_name(m->user);
                     /* Entry actions */
-                    m->wsv[34] = 99; // Edit actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[34] = 77; // Edit actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
-            /* Edit -> Final */
-            if ((m->csv[34] == 102) && (m->csv[14] == 98) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Edit -> Done */
+            if ((m->csv[34] == 76) && (m->csv[14] == 75) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_region_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     canvas_edit_region_name(m->user);
                     /* Entry actions */
-                    m->wsv[34] = 105; // Edit actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[34] = 77; // Edit actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
             /* Zoom -> Final */
-            if ((m->csv[36] == 120) && (m->csv[14] == 119) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[36] == 83) && (m->csv[14] == 82) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_zoom_normal(m->user);
                 /* Entry actions */
-                m->wsv[36] = 122; // Zoom = Final
+                m->wsv[36] = 85; // Zoom = Final
                 m->wsv[14] = 23; // Tool controller = Tools
                 canvas_tools_begin(m->user);
             }
@@ -2414,89 +1949,89 @@ process_more:
                 }
                 /* Actions */
                 /* Entry actions */
-                m->wsv[14] = 123; // Tool controller = Jump
+                m->wsv[14] = 86; // Tool controller = Jump
                 canvas_jump_begin(m->user);
-                if ((m->wsv[14] == 123)) {
-                    m->wsv[37] = 124; // Jump = Jump
+                if ((m->wsv[14] == 86)) {
+                    m->wsv[37] = 87; // Jump = Jump
                 }
             }
             /* Add -> New Join */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[15] = 45; // Add actions = New Join
+                m->wsv[15] = 39; // Add actions = New Join
                 canvas_create_join_begin(m->user);
-                if ((m->wsv[15] == 45)) {
-                    m->wsv[22] = 46; // New join = New Join start
+                if ((m->wsv[15] == 39)) {
+                    m->wsv[22] = 40; // New join = New Join start
                     canvas_update_join_start(m->user);
                 }
             }
         break;
         case eKey_F_down:
             /* Add -> New Fork */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[15] = 52; // Add actions = New Fork
+                m->wsv[15] = 44; // Add actions = New Fork
                 canvas_create_fork_begin(m->user);
-                if ((m->wsv[15] == 52)) {
-                    m->wsv[24] = 53; // New fork = New Fork start
+                if ((m->wsv[15] == 44)) {
+                    m->wsv[24] = 45; // New fork = New Fork start
                     canvas_update_fork_start(m->user);
                 }
             }
         break;
         case eKey_T_down:
             /* Add -> New Terminate */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[15] = 60; // Add actions = New Terminate
+                m->wsv[15] = 49; // Add actions = New Terminate
                 canvas_create_terminate_begin(m->user);
-                if ((m->wsv[15] == 60)) {
-                    m->wsv[26] = 61; // New terminate = New Terminate Start
+                if ((m->wsv[15] == 49)) {
+                    m->wsv[26] = 50; // New terminate = New Terminate Start
                     canvas_terminate_update_preview(m->user);
                 }
             }
         break;
         case eKey_h_down:
             /* Add -> New history */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[15] = 65; // Add actions = New history
+                m->wsv[15] = 52; // Add actions = New history
                 canvas_create_history_begin(m->user);
-                if ((m->wsv[15] == 65)) {
-                    m->wsv[27] = 66; // New history = New history start
+                if ((m->wsv[15] == 52)) {
+                    m->wsv[27] = 53; // New history = New history start
                     canvas_history_update_preview(m->user);
                 }
             }
         break;
         case eKey_H_down:
             /* Add -> New deep history */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[15] = 70; // Add actions = New deep history
+                m->wsv[15] = 56; // Add actions = New deep history
                 canvas_create_dhistory_begin(m->user);
-                if ((m->wsv[15] == 70)) {
-                    m->wsv[28] = 71; // New deep history = New dhistory start
+                if ((m->wsv[15] == 56)) {
+                    m->wsv[28] = 57; // New deep history = New dhistory start
                     canvas_dhistory_update_preview(m->user);
                 }
             }
         break;
         case eKey_backspace_down:
             /* Select dest state -> Select dest state */
-            if ((m->csv[20] == 36) && (m->csv[19] == 35) && (m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[20] == 34) && (m->csv[19] == 33) && (m->csv[15] == 31) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 canvas_transition_vdel_last(m->user);
                 /* Entry actions */
-                m->wsv[20] = 36; // New region = Select dest state
+                m->wsv[20] = 34; // New region = Select dest state
                 canvas_transition_update_preview(m->user);
             }
         break;
@@ -2538,14 +2073,14 @@ process_more:
                 }
             }
             /* Add -> New vertice */
-            if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[15] == 38) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[15] = 85; // Add actions = New vertice
+                m->wsv[15] = 65; // Add actions = New vertice
                 canvas_add_vertice_begin(m->user);
-                if ((m->wsv[15] == 85)) {
-                    m->wsv[31] = 86; // New vertice = Add vertice
+                if ((m->wsv[15] == 65)) {
+                    m->wsv[31] = 66; // New vertice = Add vertice
                     process_auto_transition = 1;
                     canvas_add_vertice(m->user);
                 }
@@ -2700,10 +2235,10 @@ process_more:
                     }
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[14] = 119; // Tool controller = Zoom
+                    m->wsv[14] = 82; // Tool controller = Zoom
                     canvas_zoom_begin(m->user);
-                    if ((m->wsv[14] == 119)) {
-                        m->wsv[36] = 120; // Zoom = Zoom
+                    if ((m->wsv[14] == 82)) {
+                        m->wsv[36] = 83; // Zoom = Zoom
                     }
                 }
             }
@@ -2738,506 +2273,152 @@ process_more:
         break;
         case UFSM_AUTO_TRANSITION:
             process_auto_transition = 0;
-            /* Finalize join -> Final */
-            if ((m->csv[22] == 49) && (m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                /* Exit actions */
-                if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_join_end(m->user);
-                }
-                if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_move_vertice_end(m->user);
-                }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_end_end(m->user);
-                }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_start_end(m->user);
-                }
-                if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_annotation_end(m->user);
-                }
-                if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_vertice_end(m->user);
-                }
-                if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_final_end(m->user);
-                }
-                if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_init_end(m->user);
-                }
-                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_dhistory_end(m->user);
-                }
-                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_history_end(m->user);
-                }
-                if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_terminate_end(m->user);
-                }
-                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_fork_end(m->user);
-                }
-                if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_transition_end(m->user);
-                }
-                if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_state_end(m->user);
-                }
-                if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_end(m->user);
-                }
-                /* Actions */
-                /* Entry actions */
-                m->wsv[22] = 50; // New join = Final
-                m->wsv[15] = 51; // Add actions = Final
-                m->wsv[14] = 23; // Tool controller = Tools
-                canvas_tools_begin(m->user);
-            }
-            /* Finalize Fork -> Final */
-            if ((m->csv[24] == 56) && (m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                /* Exit actions */
-                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_fork_end(m->user);
-                }
-                if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_move_vertice_end(m->user);
-                }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_end_end(m->user);
-                }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_start_end(m->user);
-                }
-                if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_annotation_end(m->user);
-                }
-                if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_vertice_end(m->user);
-                }
-                if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_final_end(m->user);
-                }
-                if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_init_end(m->user);
-                }
-                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_dhistory_end(m->user);
-                }
-                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_history_end(m->user);
-                }
-                if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_terminate_end(m->user);
-                }
-                if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_join_end(m->user);
-                }
-                if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_transition_end(m->user);
-                }
-                if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_state_end(m->user);
-                }
-                if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_end(m->user);
-                }
-                /* Actions */
-                /* Entry actions */
-                m->wsv[24] = 57; // New fork = Final
-                m->wsv[15] = 58; // Add actions = Final
-                m->wsv[14] = 23; // Tool controller = Tools
-                canvas_tools_begin(m->user);
-            }
-            /* New terminate commit -> Final */
-            if ((m->csv[26] == 62) && (m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                /* Exit actions */
-                if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_terminate_end(m->user);
-                }
-                if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_move_vertice_end(m->user);
-                }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_end_end(m->user);
-                }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_start_end(m->user);
-                }
-                if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_annotation_end(m->user);
-                }
-                if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_vertice_end(m->user);
-                }
-                if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_final_end(m->user);
-                }
-                if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_init_end(m->user);
-                }
-                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_dhistory_end(m->user);
-                }
-                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_history_end(m->user);
-                }
-                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_fork_end(m->user);
-                }
-                if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_join_end(m->user);
-                }
-                if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_transition_end(m->user);
-                }
-                if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_state_end(m->user);
-                }
-                if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_end(m->user);
-                }
-                /* Actions */
-                /* Entry actions */
-                m->wsv[26] = 63; // New terminate = Final
-                m->wsv[15] = 64; // Add actions = Final
-                m->wsv[14] = 23; // Tool controller = Tools
-                canvas_tools_begin(m->user);
-            }
-            /* Add dhistory to region -> Final */
-            if ((m->csv[28] == 72) && (m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                /* Exit actions */
-                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_dhistory_end(m->user);
-                }
-                if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_move_vertice_end(m->user);
-                }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_end_end(m->user);
-                }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_start_end(m->user);
-                }
-                if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_annotation_end(m->user);
-                }
-                if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_vertice_end(m->user);
-                }
-                if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_final_end(m->user);
-                }
-                if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_init_end(m->user);
-                }
-                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_history_end(m->user);
-                }
-                if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_terminate_end(m->user);
-                }
-                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_fork_end(m->user);
-                }
-                if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_join_end(m->user);
-                }
-                if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_transition_end(m->user);
-                }
-                if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_state_end(m->user);
-                }
-                if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_end(m->user);
-                }
-                /* Actions */
-                /* Entry actions */
-                m->wsv[28] = 73; // New deep history = Final
-                m->wsv[15] = 74; // Add actions = Final
-                m->wsv[14] = 23; // Tool controller = Tools
-                canvas_tools_begin(m->user);
-            }
-            /* Add init to region -> Final */
-            if ((m->csv[29] == 77) && (m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                /* Exit actions */
-                if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_init_end(m->user);
-                }
-                if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_move_vertice_end(m->user);
-                }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_end_end(m->user);
-                }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_start_end(m->user);
-                }
-                if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_annotation_end(m->user);
-                }
-                if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_vertice_end(m->user);
-                }
-                if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_final_end(m->user);
-                }
-                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_dhistory_end(m->user);
-                }
-                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_history_end(m->user);
-                }
-                if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_terminate_end(m->user);
-                }
-                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_fork_end(m->user);
-                }
-                if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_join_end(m->user);
-                }
-                if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_transition_end(m->user);
-                }
-                if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_state_end(m->user);
-                }
-                if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_end(m->user);
-                }
-                /* Actions */
-                /* Entry actions */
-                m->wsv[29] = 78; // New init = Final
-                m->wsv[15] = 79; // Add actions = Final
-                m->wsv[14] = 23; // Tool controller = Tools
-                canvas_tools_begin(m->user);
-            }
-            /* Add final to region -> Final */
-            if ((m->csv[30] == 82) && (m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                /* Exit actions */
-                if ((m->csv[15] == 80) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_final_end(m->user);
-                }
-                if ((m->csv[31] == 88) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_move_vertice_end(m->user);
-                }
-                if ((m->csv[16] == 29) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_end_end(m->user);
-                }
-                if ((m->csv[16] == 27) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_state_select_start_end(m->user);
-                }
-                if ((m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_annotation_end(m->user);
-                }
-                if ((m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_vertice_end(m->user);
-                }
-                if ((m->csv[15] == 75) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_init_end(m->user);
-                }
-                if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_dhistory_end(m->user);
-                }
-                if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_history_end(m->user);
-                }
-                if ((m->csv[15] == 60) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_terminate_end(m->user);
-                }
-                if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_fork_end(m->user);
-                }
-                if ((m->csv[15] == 45) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_join_end(m->user);
-                }
-                if ((m->csv[15] == 32) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_transition_end(m->user);
-                }
-                if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_create_state_end(m->user);
-                }
-                if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                    canvas_add_end(m->user);
-                }
-                /* Actions */
-                /* Entry actions */
-                m->wsv[30] = 83; // New final = Final
-                m->wsv[15] = 84; // Add actions = Final
-                m->wsv[14] = 23; // Tool controller = Tools
-                canvas_tools_begin(m->user);
-            }
             /* Add vertice -> Move vertice inner */
-            if ((m->csv[31] == 86) && (m->csv[15] == 85) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[31] == 66) && (m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[31] = 88; // New vertice = Move vertice
+                m->wsv[31] = 67; // New vertice = Move vertice
                 canvas_move_vertice_begin(m->user);
-                if ((m->wsv[31] == 88)) {
-                    m->wsv[32] = 89; // New region = Move vertice inner
+                if ((m->wsv[31] == 67)) {
+                    m->wsv[32] = 68; // New region = Move vertice inner
                 }
             }
             /* Input text -> Select start */
-            if ((m->csv[33] == 93) && (m->csv[15] == 92) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[33] == 71) && (m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 /* Exit actions */
                 /* Actions */
                 /* Entry actions */
-                m->wsv[33] = 94; // New annotation = Select start
+                m->wsv[33] = 72; // New annotation = Select start
                 canvas_annotation_select_start(m->user);
             }
-            /* Edit -> Final */
-            if ((m->csv[34] == 102) && (m->csv[14] == 98) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Edit -> Done */
+            if ((m->csv[34] == 76) && (m->csv[14] == 75) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_state_entry_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     canvas_edit_state_entry(m->user);
                     /* Entry actions */
-                    m->wsv[34] = 101; // Edit actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[34] = 77; // Edit actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
-            /* Edit -> Final */
-            if ((m->csv[34] == 102) && (m->csv[14] == 98) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Edit -> Done */
+            if ((m->csv[34] == 76) && (m->csv[14] == 75) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_state_exit_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     canvas_edit_state_exit(m->user);
                     /* Entry actions */
-                    m->wsv[34] = 100; // Edit actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[34] = 77; // Edit actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
-            /* Delete -> Final */
-            if ((m->csv[35] == 111) && (m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Delete -> Done */
+            if ((m->csv[35] == 79) && (m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_state_entry_selected(m->user)) {
                     /* Exit actions */
-                    if ((m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_reset_selection(m->user);
-                    }
                     /* Actions */
                     canvas_delete_entry(m->user);
                     /* Entry actions */
-                    m->wsv[35] = 108; // Delete actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[35] = 81; // Delete actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
-            /* Delete -> Final */
-            if ((m->csv[35] == 111) && (m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Delete -> Done */
+            if ((m->csv[35] == 79) && (m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_state_exit_selected(m->user)) {
                     /* Exit actions */
-                    if ((m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_reset_selection(m->user);
-                    }
                     /* Actions */
                     canvas_delete_exit(m->user);
                     /* Entry actions */
-                    m->wsv[35] = 109; // Delete actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[35] = 81; // Delete actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
-            /* Delete -> Final */
-            if ((m->csv[35] == 111) && (m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Delete -> Done */
+            if ((m->csv[35] == 79) && (m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_state_selected(m->user)) {
                     /* Exit actions */
-                    if ((m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_reset_selection(m->user);
-                    }
                     /* Actions */
                     canvas_delete_state(m->user);
                     /* Entry actions */
-                    m->wsv[35] = 110; // Delete actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[35] = 81; // Delete actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
-            /* Delete -> Final */
-            if ((m->csv[35] == 111) && (m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Delete -> Done */
+            if ((m->csv[35] == 79) && (m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_transition_selected2(m->user)) {
                     /* Exit actions */
-                    if ((m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_reset_selection(m->user);
-                    }
                     /* Actions */
                     canvas_delete_transition(m->user);
                     /* Entry actions */
-                    m->wsv[35] = 112; // Delete actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[35] = 81; // Delete actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
-            /* Delete -> Final */
-            if ((m->csv[35] == 111) && (m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Delete -> Done */
+            if ((m->csv[35] == 79) && (m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_guard_selected(m->user)) {
                     /* Exit actions */
-                    if ((m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_reset_selection(m->user);
-                    }
                     /* Actions */
                     canvas_delete_guard(m->user);
                     /* Entry actions */
-                    m->wsv[35] = 114; // Delete actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[35] = 81; // Delete actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
-            /* Delete -> Final */
-            if ((m->csv[35] == 111) && (m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Delete -> Done */
+            if ((m->csv[35] == 79) && (m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_action_selected(m->user)) {
                     /* Exit actions */
-                    if ((m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_reset_selection(m->user);
-                    }
                     /* Actions */
                     canvas_delete_action(m->user);
                     /* Entry actions */
-                    m->wsv[35] = 113; // Delete actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[35] = 81; // Delete actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
-            /* Delete -> Final */
-            if ((m->csv[35] == 111) && (m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Delete -> Done */
+            if ((m->csv[35] == 79) && (m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_region_selected(m->user)) {
                     /* Exit actions */
-                    if ((m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_reset_selection(m->user);
-                    }
                     /* Actions */
                     canvas_delete_region(m->user);
                     /* Entry actions */
-                    m->wsv[35] = 115; // Delete actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[35] = 81; // Delete actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
-            /* Delete -> Final */
-            if ((m->csv[35] == 111) && (m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Delete -> Done */
+            if ((m->csv[35] == 79) && (m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_transition_tvertice_selected(m->user)) {
                     /* Exit actions */
-                    if ((m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_reset_selection(m->user);
-                    }
                     /* Actions */
                     canvas_delete_transition_tvertice(m->user);
                     /* Entry actions */
-                    m->wsv[35] = 116; // Delete actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[35] = 81; // Delete actions = Done
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                 }
             }
             /* Delete selection -> Delete */
-            if ((m->csv[35] == 117) && (m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            if ((m->csv[35] == 80) && (m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_selection_count(m->user) <= 1) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[35] = 111; // Delete actions = Delete
+                    m->wsv[35] = 79; // Delete actions = Delete
                     process_auto_transition = 1;
                     process_auto_transition = 1;
                     process_auto_transition = 1;
@@ -3248,41 +2429,40 @@ process_more:
                     process_auto_transition = 1;
                 }
             }
-            /* Delete selection -> Final */
-            if ((m->csv[35] == 117) && (m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+            /* Delete selection -> Delete selection */
+            if ((m->csv[35] == 80) && (m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
                 if (canvas_selection_count(m->user) > 1) {
                     /* Exit actions */
-                    if ((m->csv[14] == 107) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
-                        canvas_reset_selection(m->user);
-                    }
                     /* Actions */
                     canvas_mselect_delete(m->user);
+                    if(sq_push(m, 10) != 0)
+                        return -UFSM_SIGNAL_QUEUE_FULL;
                     /* Entry actions */
-                    m->wsv[35] = 118; // Delete actions = Final
-                    m->wsv[14] = 23; // Tool controller = Tools
-                    canvas_tools_begin(m->user);
+                    m->wsv[35] = 80; // Delete actions = Delete selection
+                    process_auto_transition = 1;
+                    process_auto_transition = 1;
                 }
             }
             /* Transition -> Move vertice inner */
-            if ((m->csv[39] == 129) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[39] == 92) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if (canvas_transition_vertice_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[39] = 137; // Transition selection = Move vertice
+                    m->wsv[39] = 100; // Transition selection = Move vertice
                     canvas_move_vertice_begin(m->user);
-                    if ((m->wsv[39] == 137)) {
-                        m->wsv[42] = 138; // New region = Move vertice inner
+                    if ((m->wsv[39] == 100)) {
+                        m->wsv[42] = 101; // New region = Move vertice inner
                     }
                 }
             }
             /* Transition -> Text block */
-            if ((m->csv[39] == 129) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[39] == 92) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if (canvas_transition_text_block_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[39] = 130; // Transition selection = Text block
+                    m->wsv[39] = 93; // Transition selection = Text block
                     process_auto_transition = 1;
                     process_auto_transition = 1;
                     process_auto_transition = 1;
@@ -3291,93 +2471,93 @@ process_more:
                 }
             }
             /* Text block -> Action */
-            if ((m->csv[39] == 130) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[39] == 93) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if (canvas_action_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[39] = 132; // Transition selection = Action
+                    m->wsv[39] = 95; // Transition selection = Action
                     canvas_focus_action(m->user);
                 }
             }
             /* Text block -> Guard */
-            if ((m->csv[39] == 130) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[39] == 93) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if (canvas_guard_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[39] = 131; // Transition selection = Guard
+                    m->wsv[39] = 94; // Transition selection = Guard
                     canvas_focus_guard(m->user);
                 }
             }
             /* Text block -> Resize text block inner */
-            if ((m->csv[39] == 130) && (m->csv[38] == 128) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[39] == 93) && (m->csv[38] == 91) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if (canvas_textblock_resize_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[39] = 135; // Transition selection = Resize text block
+                    m->wsv[39] = 98; // Transition selection = Resize text block
                     canvas_resize_text_block_begin(m->user);
-                    if ((m->wsv[39] == 135)) {
-                        m->wsv[41] = 136; // New region = Resize text block inner
+                    if ((m->wsv[39] == 98)) {
+                        m->wsv[41] = 99; // New region = Resize text block inner
                     }
                 }
             }
             /* Region -> Resize region inner */
-            if ((m->csv[45] == 146) && (m->csv[38] == 143) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[45] == 109) && (m->csv[38] == 106) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if (canvas_region_resize_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[45] = 144; // Region selection = Resize region
+                    m->wsv[45] = 107; // Region selection = Resize region
                     canvas_resize_region_begin(m->user);
-                    if ((m->wsv[45] == 144)) {
-                        m->wsv[46] = 145; // New region = Resize region inner
+                    if ((m->wsv[45] == 107)) {
+                        m->wsv[46] = 108; // New region = Resize region inner
                     }
                 }
             }
             /* State -> Resize state inner */
-            if ((m->csv[48] == 152) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[48] == 115) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if (canvas_state_resize_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[48] = 155; // State selection = Resize state
+                    m->wsv[48] = 118; // State selection = Resize state
                     canvas_resize_state_begin(m->user);
-                    if ((m->wsv[48] == 155)) {
-                        m->wsv[50] = 156; // New region = Resize state inner
+                    if ((m->wsv[48] == 118)) {
+                        m->wsv[50] = 119; // New region = Resize state inner
                     }
                 }
             }
             /* State -> Entry selected */
-            if ((m->csv[48] == 152) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[48] == 115) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if (canvas_state_entry_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[48] = 153; // State selection = Entry selected
+                    m->wsv[48] = 116; // State selection = Entry selected
                     canvas_focus_entry(m->user);
                 }
             }
             /* State -> Exit selected */
-            if ((m->csv[48] == 152) && (m->csv[38] == 149) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[48] == 115) && (m->csv[38] == 112) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if (canvas_state_exit_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[48] = 154; // State selection = Exit selected
+                    m->wsv[48] = 117; // State selection = Exit selected
                     canvas_focus_exit(m->user);
                 }
             }
             /* Single Select -> State Selection */
-            if ((m->csv[38] == 161) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[38] == 124) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if (canvas_state_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[38] = 149; // Object Selection = State Selection
-                    if ((m->wsv[38] == 149)) {
-                        m->wsv[48] = 152; // State selection = State
+                    m->wsv[38] = 112; // Object Selection = State Selection
+                    if ((m->wsv[38] == 112)) {
+                        m->wsv[48] = 115; // State selection = State
                         process_auto_transition = 1;
                         process_auto_transition = 1;
                         process_auto_transition = 1;
@@ -3387,28 +2567,28 @@ process_more:
                 }
             }
             /* Single Select -> Region Selection */
-            if ((m->csv[38] == 161) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[38] == 124) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if (canvas_transition_selected(m->user) == 0 && canvas_state_selected(m->user) == 0) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[38] = 143; // Object Selection = Region Selection
-                    if ((m->wsv[38] == 143)) {
-                        m->wsv[45] = 146; // Region selection = Region
+                    m->wsv[38] = 106; // Object Selection = Region Selection
+                    if ((m->wsv[38] == 106)) {
+                        m->wsv[45] = 109; // Region selection = Region
                         process_auto_transition = 1;
                         canvas_check_rresize_boxes(m->user);
                     }
                 }
             }
             /* Single Select -> Transition Selection */
-            if ((m->csv[38] == 161) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[38] == 124) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if (canvas_transition_selected(m->user)) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[38] = 128; // Object Selection = Transition Selection
-                    if ((m->wsv[38] == 128)) {
-                        m->wsv[39] = 129; // Transition selection = Transition
+                    m->wsv[38] = 91; // Object Selection = Transition Selection
+                    if ((m->wsv[38] == 91)) {
+                        m->wsv[39] = 92; // Transition selection = Transition
                         process_auto_transition = 1;
                         process_auto_transition = 1;
                         canvas_check_text_block(m->user);
@@ -3416,13 +2596,13 @@ process_more:
                 }
             }
             /* Prepare -> Single Select */
-            if ((m->csv[38] == 162) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[38] == 125) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if ((m->csv[7] == 12) && (m->csv[6] == 11) && (m->csv[0] == 1)) {
                     if (canvas_selection_count(m->user) <= 1) {
                         /* Exit actions */
                         /* Actions */
                         /* Entry actions */
-                        m->wsv[38] = 161; // Object Selection = Single Select
+                        m->wsv[38] = 124; // Object Selection = Single Select
                         process_auto_transition = 1;
                         process_auto_transition = 1;
                         process_auto_transition = 1;
@@ -3433,36 +2613,36 @@ process_more:
                 }
             }
             /* Prepare -> Multi select */
-            if ((m->csv[38] == 162) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[38] == 125) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if ((m->csv[7] == 12) && (m->csv[6] == 11) && (m->csv[0] == 1)) {
                     if (canvas_clicked_on_selected(m->user) && canvas_selection_count(m->user) > 1) {
                         /* Exit actions */
                         /* Actions */
                         /* Entry actions */
-                        m->wsv[38] = 164; // Object Selection = Multi select
+                        m->wsv[38] = 127; // Object Selection = Multi select
                         canvas_process_selection(m->user);
                     }
                 }
             }
             /* Prepare -> Add object to selection */
-            if ((m->csv[38] == 162) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[38] == 125) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if ((m->csv[7] == 13) && (m->csv[6] == 11) && (m->csv[0] == 1)) {
                     /* Exit actions */
                     /* Actions */
                     /* Entry actions */
-                    m->wsv[38] = 163; // Object Selection = Add object to selection
+                    m->wsv[38] = 126; // Object Selection = Add object to selection
                     canvas_process_selection(m->user);
                     canvas_focus_selection(m->user);
                 }
             }
             /* Prepare -> Single Select */
-            if ((m->csv[38] == 162) && (m->csv[13] == 127) && (m->csv[0] == 1)) {
+            if ((m->csv[38] == 125) && (m->csv[13] == 90) && (m->csv[0] == 1)) {
                 if ((m->csv[7] == 12) && (m->csv[6] == 11) && (m->csv[0] == 1)) {
                     if (canvas_clicked_on_selected(m->user) == 0 && canvas_selection_count(m->user) > 1) {
                         /* Exit actions */
                         /* Actions */
                         /* Entry actions */
-                        m->wsv[38] = 161; // Object Selection = Single Select
+                        m->wsv[38] = 124; // Object Selection = Single Select
                         process_auto_transition = 1;
                         process_auto_transition = 1;
                         process_auto_transition = 1;
@@ -3483,6 +2663,93 @@ process_more:
     if (process_auto_transition == 1) {
         event = UFSM_AUTO_TRANSITION;
         goto process_more;
+    }
+
+    while(sq_len(m) > 0) {
+        for (unsigned int i = 0; i < 55; i++)
+            m->wsv[i] = 0;
+
+        switch(sq_pop(m)) {
+            case sToolDone:
+                /* Add actions -> Tools */
+                if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    /* Exit actions */
+                    if ((m->csv[31] == 67) && (m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_move_vertice_end(m->user);
+                    }
+                    if ((m->csv[16] == 28) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_state_select_end_end(m->user);
+                    }
+                    if ((m->csv[16] == 26) && (m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_state_select_start_end(m->user);
+                    }
+                    if ((m->csv[15] == 70) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_create_annotation_end(m->user);
+                    }
+                    if ((m->csv[15] == 65) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_add_vertice_end(m->user);
+                    }
+                    if ((m->csv[15] == 62) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_create_final_end(m->user);
+                    }
+                    if ((m->csv[15] == 59) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_create_init_end(m->user);
+                    }
+                    if ((m->csv[15] == 56) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_create_dhistory_end(m->user);
+                    }
+                    if ((m->csv[15] == 52) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_create_history_end(m->user);
+                    }
+                    if ((m->csv[15] == 49) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_create_terminate_end(m->user);
+                    }
+                    if ((m->csv[15] == 44) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_create_fork_end(m->user);
+                    }
+                    if ((m->csv[15] == 39) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_create_join_end(m->user);
+                    }
+                    if ((m->csv[15] == 31) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_create_transition_end(m->user);
+                    }
+                    if ((m->csv[15] == 25) && (m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_create_state_end(m->user);
+                    }
+                    if ((m->csv[14] == 24) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_add_end(m->user);
+                    }
+                    /* Actions */
+                    /* Entry actions */
+                    m->wsv[14] = 23; // Tool controller = Tools
+                    canvas_tools_begin(m->user);
+                }
+                /* Edit actions -> Tools */
+                if ((m->csv[14] == 75) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    /* Exit actions */
+                    /* Actions */
+                    /* Entry actions */
+                    m->wsv[14] = 23; // Tool controller = Tools
+                    canvas_tools_begin(m->user);
+                }
+                /* Delete Actions -> Tools */
+                if ((m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                    /* Exit actions */
+                    if ((m->csv[14] == 78) && (m->csv[13] == 22) && (m->csv[0] == 1)) {
+                        canvas_reset_selection(m->user);
+                    }
+                    /* Actions */
+                    /* Entry actions */
+                    m->wsv[14] = 23; // Tool controller = Tools
+                    canvas_tools_begin(m->user);
+                }
+            break;
+            default:
+                return -UFSM_BAD_ARGUMENT;
+        }
+        for (unsigned int i = 0; i < 55; i++)
+            if(m->wsv[i] != 0)
+                m->csv[i] = m->wsv[i];
     }
     if (process_auto_transition == 1) {
         event = UFSM_AUTO_TRANSITION;

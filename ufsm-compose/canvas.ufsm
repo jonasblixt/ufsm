@@ -150,6 +150,10 @@
     }
   ],
   "signals":[
+    {
+      "name":"sToolDone",
+      "id":"170063f2-da67-4cba-8425-4a2d0142b004"
+    }
   ],
   "actions":[
     {
@@ -3508,24 +3512,6 @@
                                     "height":70,
                                     "states":[
                                       {
-                                        "id":"de4a6839-98a3-4ad2-b3e8-afd201ff2526",
-                                        "name":"FinalNewState",
-                                        "kind":"final",
-                                        "width":20.0,
-                                        "height":20.0,
-                                        "x":2290.0,
-                                        "y":1010.0,
-                                        "orientation":0,
-                                        "entries":[
-                                        ],
-                                        "exits":[
-                                        ],
-                                        "region":[
-                                        ],
-                                        "transitions":[
-                                        ]
-                                      },
-                                      {
                                         "id":"06d35e3e-c671-4fb3-a1ce-14ad638af1e2",
                                         "name":"Select start",
                                         "kind":"state",
@@ -3707,9 +3693,9 @@
                                                       "offset":80.0
                                                     },
                                                     "dest":{
-                                                      "state":"de4a6839-98a3-4ad2-b3e8-afd201ff2526",
+                                                      "state":"83f7f9d1-912a-4bd1-989b-eb171d71574a",
                                                       "side":"left",
-                                                      "offset":10.0
+                                                      "offset":60.0
                                                     },
                                                     "text-block":{
                                                       "x":1960.0,
@@ -3773,13 +3759,36 @@
                                         ]
                                       },
                                       {
-                                        "id":"6c8d1e72-7243-4d83-8dae-160e532d4784",
+                                        "id":"83f7f9d1-912a-4bd1-989b-eb171d71574a",
+                                        "name":"Done",
+                                        "kind":"state",
+                                        "width":160.0,
+                                        "height":120.0,
+                                        "x":2340.0,
+                                        "y":960.0,
+                                        "orientation":0,
+                                        "entries":[
+                                          {
+                                            "id":"4d8840be-3020-4ae4-9ed7-d65c66690673",
+                                            "kind":1,
+                                            "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004"
+                                          }
+                                        ],
+                                        "exits":[
+                                        ],
+                                        "region":[
+                                        ],
+                                        "transitions":[
+                                        ]
+                                      },
+                                      {
+                                        "id":"0aded536-fcdf-4a1c-ae43-50ed4240ded4",
                                         "name":"Init",
                                         "kind":"init",
                                         "width":20.0,
                                         "height":20.0,
-                                        "x":880.0,
-                                        "y":1020.0,
+                                        "x":900.0,
+                                        "y":1010.0,
                                         "orientation":0,
                                         "entries":[
                                         ],
@@ -3788,54 +3797,36 @@
                                         "region":[
                                         ],
                                         "transitions":[
+                                          {
+                                            "id":"bec34fe6-3fd6-4a02-86f4-4e29544f13e0",
+                                            "trigger-kind":0,
+                                            "source":{
+                                              "state":"0aded536-fcdf-4a1c-ae43-50ed4240ded4",
+                                              "side":"right",
+                                              "offset":10.0
+                                            },
+                                            "dest":{
+                                              "state":"579a57b9-4811-47b4-bcb3-e29e3d5bfbd0",
+                                              "side":"left",
+                                              "offset":80.0
+                                            },
+                                            "text-block":{
+                                              "x":920.0,
+                                              "y":1020.0,
+                                              "w":100.0,
+                                              "h":30.0
+                                            },
+                                            "vertices":[
+                                            ],
+                                            "guards":[
+                                            ],
+                                            "actions":[
+                                            ]
+                                          }
                                         ]
                                       }
                                     ]
                                   }
-                                ],
-                                "transitions":[
-                                  {
-                                    "id":"ed35fcb9-118a-418e-b749-bde652a713e0",
-                                    "trigger-kind":3,
-                                    "source":{
-                                      "state":"981f9378-69f5-43fe-b5dc-9d20146f8512",
-                                      "side":"right",
-                                      "offset":130.0
-                                    },
-                                    "dest":{
-                                      "state":"fb350c61-7ee3-4f3b-a4e7-04ee49f99203",
-                                      "side":"left",
-                                      "offset":10.0
-                                    },
-                                    "text-block":{
-                                      "x":2230.0,
-                                      "y":1050.0,
-                                      "w":100.0,
-                                      "h":30.0
-                                    },
-                                    "vertices":[
-                                    ],
-                                    "guards":[
-                                    ],
-                                    "actions":[
-                                    ]
-                                  }
-                                ]
-                              },
-                              {
-                                "id":"61e6d20a-06ae-484d-b503-b553a57076fb",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":2350.0,
-                                "y":1250.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
                                 ],
                                 "transitions":[
                                 ]
@@ -3929,24 +3920,6 @@
                                               }
                                             ]
                                           }
-                                        ]
-                                      },
-                                      {
-                                        "id":"4bc349e7-ed14-49e2-a5c6-5e279183799f",
-                                        "name":"Final",
-                                        "kind":"final",
-                                        "width":20.0,
-                                        "height":20.0,
-                                        "x":2430.0,
-                                        "y":1020.0,
-                                        "orientation":0,
-                                        "entries":[
-                                        ],
-                                        "exits":[
-                                        ],
-                                        "region":[
-                                        ],
-                                        "transitions":[
                                         ]
                                       },
                                       {
@@ -4116,9 +4089,9 @@
                                                       "offset":60.0
                                                     },
                                                     "dest":{
-                                                      "state":"4bc349e7-ed14-49e2-a5c6-5e279183799f",
+                                                      "state":"4c0e5e7f-4891-4277-96c7-e364da909c2a",
                                                       "side":"left",
-                                                      "offset":10.0
+                                                      "offset":60.0
                                                     },
                                                     "text-block":{
                                                       "x":2080.0,
@@ -4336,125 +4309,32 @@
                                         ],
                                         "transitions":[
                                         ]
+                                      },
+                                      {
+                                        "id":"4c0e5e7f-4891-4277-96c7-e364da909c2a",
+                                        "name":"Done",
+                                        "kind":"state",
+                                        "width":150.0,
+                                        "height":120.0,
+                                        "x":2520.0,
+                                        "y":970.0,
+                                        "orientation":0,
+                                        "entries":[
+                                          {
+                                            "id":"ec02b712-f137-468b-b690-a8ca4e6073f6",
+                                            "kind":1,
+                                            "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004"
+                                          }
+                                        ],
+                                        "exits":[
+                                        ],
+                                        "region":[
+                                        ],
+                                        "transitions":[
+                                        ]
                                       }
                                     ]
                                   }
-                                ],
-                                "transitions":[
-                                  {
-                                    "id":"37ba5277-6ab7-4a89-aa5c-c86356d2d835",
-                                    "trigger-kind":3,
-                                    "source":{
-                                      "state":"5577a77a-a350-4e46-b546-d8e30a5a4218",
-                                      "side":"right",
-                                      "offset":100.0
-                                    },
-                                    "dest":{
-                                      "state":"61e6d20a-06ae-484d-b503-b553a57076fb",
-                                      "side":"left",
-                                      "offset":0.0
-                                    },
-                                    "text-block":{
-                                      "x":2230.0,
-                                      "y":1210.0,
-                                      "w":100.0,
-                                      "h":30.0
-                                    },
-                                    "vertices":[
-                                    ],
-                                    "guards":[
-                                    ],
-                                    "actions":[
-                                    ]
-                                  }
-                                ]
-                              },
-                              {
-                                "id":"1c628dd0-8520-464f-b8ef-d1d21750c188",
-                                "name":"FinalAddAction",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":2380.0,
-                                "y":620.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"2b0e86d1-1dd3-44ea-b8ce-4f55378130ac",
-                                "name":"FinalGuard",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":2380.0,
-                                "y":650.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"d5563896-3314-42c4-af48-de144f157b2e",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":2380.0,
-                                "y":740.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"ed5c60cd-007c-45e9-bbf2-b28b9bee2f65",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":2380.0,
-                                "y":770.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"79b42026-e0d8-4aea-bf1b-b131d28f76c2",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":2380.0,
-                                "y":800.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
                                 ],
                                 "transitions":[
                                 ]
@@ -4536,20 +4416,28 @@
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
-                                      "offset":140.0
+                                      "offset":200.0
                                     },
                                     "dest":{
-                                      "state":"d5563896-3314-42c4-af48-de144f157b2e",
-                                      "side":"left",
-                                      "offset":10.0
+                                      "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
+                                      "side":"right",
+                                      "offset":230.0
                                     },
                                     "text-block":{
-                                      "x":1750.0,
-                                      "y":700.0,
-                                      "w":500.0,
+                                      "x":1790.0,
+                                      "y":790.0,
+                                      "w":560.0,
                                       "h":30.0
                                     },
                                     "vertices":[
+                                      {
+                                        "x":1770.0,
+                                        "y":810.0
+                                      },
+                                      {
+                                        "x":1770.0,
+                                        "y":840.0
+                                      }
                                     ],
                                     "guards":[
                                       {
@@ -4564,6 +4452,11 @@
                                         "action-id":"bde2d56a-b513-4c5e-b305-e8b45b3c5ebb",
                                         "kind":0,
                                         "id":"0222a355-0e6d-491c-adfb-1ee421385ebe"
+                                      },
+                                      {
+                                        "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004",
+                                        "kind":1,
+                                        "id":"6f301709-1326-4815-b1bd-5dff44ae68ef"
                                       }
                                     ]
                                   },
@@ -4574,20 +4467,28 @@
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
-                                      "offset":170.0
+                                      "offset":250.0
                                     },
                                     "dest":{
-                                      "state":"ed5c60cd-007c-45e9-bbf2-b28b9bee2f65",
-                                      "side":"left",
-                                      "offset":10.0
+                                      "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
+                                      "side":"right",
+                                      "offset":280.0
                                     },
                                     "text-block":{
-                                      "x":1750.0,
-                                      "y":730.0,
-                                      "w":460.0,
+                                      "x":1790.0,
+                                      "y":840.0,
+                                      "w":550.0,
                                       "h":30.0
                                     },
                                     "vertices":[
+                                      {
+                                        "x":1770.0,
+                                        "y":860.0
+                                      },
+                                      {
+                                        "x":1770.0,
+                                        "y":890.0
+                                      }
                                     ],
                                     "guards":[
                                       {
@@ -4602,6 +4503,11 @@
                                         "action-id":"7e9e9f52-a883-49d2-b2d2-7c2540f57235",
                                         "kind":0,
                                         "id":"e7ac0279-26ce-42f1-907b-c6c79bc5ed17"
+                                      },
+                                      {
+                                        "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004",
+                                        "kind":1,
+                                        "id":"a4faefb3-5817-4acc-b3a8-73aa7abb9d90"
                                       }
                                     ]
                                   },
@@ -4612,20 +4518,28 @@
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
-                                      "offset":200.0
+                                      "offset":300.0
                                     },
                                     "dest":{
-                                      "state":"79b42026-e0d8-4aea-bf1b-b131d28f76c2",
-                                      "side":"left",
-                                      "offset":10.0
+                                      "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
+                                      "side":"right",
+                                      "offset":330.0
                                     },
                                     "text-block":{
-                                      "x":1750.0,
-                                      "y":760.0,
-                                      "w":450.0,
+                                      "x":1790.0,
+                                      "y":890.0,
+                                      "w":560.0,
                                       "h":30.0
                                     },
                                     "vertices":[
+                                      {
+                                        "x":1770.0,
+                                        "y":910.0
+                                      },
+                                      {
+                                        "x":1770.0,
+                                        "y":940.0
+                                      }
                                     ],
                                     "guards":[
                                       {
@@ -4640,6 +4554,11 @@
                                         "action-id":"99744aa8-a0e6-4d70-aa61-69b71d26500c",
                                         "kind":0,
                                         "id":"c2ec4bfc-819c-4827-9fc6-09b867dcb484"
+                                      },
+                                      {
+                                        "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004",
+                                        "kind":1,
+                                        "id":"b9927de5-456e-440b-bf4e-3b0a8cef7896"
                                       }
                                     ]
                                   },
@@ -4650,20 +4569,28 @@
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
-                                      "offset":50.0
+                                      "offset":150.0
                                     },
                                     "dest":{
-                                      "state":"2b0e86d1-1dd3-44ea-b8ce-4f55378130ac",
-                                      "side":"left",
-                                      "offset":10.0
+                                      "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
+                                      "side":"right",
+                                      "offset":180.0
                                     },
                                     "text-block":{
-                                      "x":1750.0,
-                                      "y":610.0,
-                                      "w":520.0,
+                                      "x":1790.0,
+                                      "y":740.0,
+                                      "w":590.0,
                                       "h":30.0
                                     },
                                     "vertices":[
+                                      {
+                                        "x":1770.0,
+                                        "y":760.0
+                                      },
+                                      {
+                                        "x":1770.0,
+                                        "y":790.0
+                                      }
                                     ],
                                     "guards":[
                                       {
@@ -4678,6 +4605,11 @@
                                         "action-id":"9267ddf8-8ae9-4840-bb7d-81e354f9b8e1",
                                         "kind":0,
                                         "id":"1d3c3e01-e163-4409-9bc3-5f2b4f836f6d"
+                                      },
+                                      {
+                                        "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004",
+                                        "kind":1,
+                                        "id":"cca673c6-6134-4abe-8a44-66555958fb04"
                                       }
                                     ]
                                   },
@@ -4688,20 +4620,28 @@
                                     "source":{
                                       "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
                                       "side":"right",
-                                      "offset":20.0
+                                      "offset":100.0
                                     },
                                     "dest":{
-                                      "state":"1c628dd0-8520-464f-b8ef-d1d21750c188",
-                                      "side":"left",
-                                      "offset":10.0
+                                      "state":"d00443ac-2597-4673-82b0-e9b6349e5700",
+                                      "side":"right",
+                                      "offset":130.0
                                     },
                                     "text-block":{
-                                      "x":1750.0,
-                                      "y":570.0,
-                                      "w":620.0,
+                                      "x":1790.0,
+                                      "y":690.0,
+                                      "w":670.0,
                                       "h":30.0
                                     },
                                     "vertices":[
+                                      {
+                                        "x":1770.0,
+                                        "y":710.0
+                                      },
+                                      {
+                                        "x":1770.0,
+                                        "y":740.0
+                                      }
                                     ],
                                     "guards":[
                                       {
@@ -4716,6 +4656,11 @@
                                         "action-id":"432c4323-43fb-47be-9f3b-03027e2ea70a",
                                         "kind":0,
                                         "id":"69100478-837c-44d0-b471-4156f4e7d35d"
+                                      },
+                                      {
+                                        "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004",
+                                        "kind":1,
+                                        "id":"f7e152a0-9066-4b8f-b529-e8636d8bb6f3"
                                       }
                                     ]
                                   },
@@ -5337,51 +5282,12 @@
                                             "id":"d4611a54-8666-42ab-be28-7fdd895af109",
                                             "kind":0,
                                             "action-id":"a3881dd6-e5fe-498d-b536-06996fdef603"
-                                          }
-                                        ],
-                                        "exits":[
-                                        ],
-                                        "region":[
-                                        ],
-                                        "transitions":[
+                                          },
                                           {
-                                            "id":"ee480d84-2142-4766-a8bd-7bcec040f8b5",
-                                            "trigger-kind":2,
-                                            "source":{
-                                              "state":"b1207aa3-5e04-4719-8981-9d773a622e39",
-                                              "side":"bottom",
-                                              "offset":150.0
-                                            },
-                                            "dest":{
-                                              "state":"5202c0c1-ff57-4b3f-95db-c1084b2c2132",
-                                              "side":"top",
-                                              "offset":10.0
-                                            },
-                                            "text-block":{
-                                              "x":1710.0,
-                                              "y":1400.0,
-                                              "w":100.0,
-                                              "h":30.0
-                                            },
-                                            "vertices":[
-                                            ],
-                                            "guards":[
-                                            ],
-                                            "actions":[
-                                            ]
+                                            "id":"f9e13573-9842-4826-984c-9708eea2c08d",
+                                            "kind":1,
+                                            "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004"
                                           }
-                                        ]
-                                      },
-                                      {
-                                        "id":"5202c0c1-ff57-4b3f-95db-c1084b2c2132",
-                                        "name":"Final",
-                                        "kind":"final",
-                                        "width":20.0,
-                                        "height":20.0,
-                                        "x":1680.0,
-                                        "y":1470.0,
-                                        "orientation":0,
-                                        "entries":[
                                         ],
                                         "exits":[
                                         ],
@@ -5392,50 +5298,6 @@
                                       }
                                     ]
                                   }
-                                ],
-                                "transitions":[
-                                  {
-                                    "id":"3254288b-acb7-4dcd-b4bc-75e5b790cfad",
-                                    "trigger-kind":3,
-                                    "source":{
-                                      "state":"f3f031b1-7d37-44e0-824d-edf182629a87",
-                                      "side":"right",
-                                      "offset":60.0
-                                    },
-                                    "dest":{
-                                      "state":"0ae7f933-3c3a-4445-9d31-97252b05ace1",
-                                      "side":"left",
-                                      "offset":10.0
-                                    },
-                                    "text-block":{
-                                      "x":2230.0,
-                                      "y":1530.0,
-                                      "w":100.0,
-                                      "h":30.0
-                                    },
-                                    "vertices":[
-                                    ],
-                                    "guards":[
-                                    ],
-                                    "actions":[
-                                    ]
-                                  }
-                                ]
-                              },
-                              {
-                                "id":"0ae7f933-3c3a-4445-9d31-97252b05ace1",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":2350.0,
-                                "y":1580.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
                                 ],
                                 "transitions":[
                                 ]
@@ -5769,51 +5631,12 @@
                                             "id":"5dae9b38-e81e-4b40-a983-f4b0b3250538",
                                             "kind":0,
                                             "action-id":"42ad4446-5230-4c9e-9896-8c5feeaf42c6"
-                                          }
-                                        ],
-                                        "exits":[
-                                        ],
-                                        "region":[
-                                        ],
-                                        "transitions":[
+                                          },
                                           {
-                                            "id":"0bc0a0eb-2a6f-49ca-aa1f-78740d5bb2d4",
-                                            "trigger-kind":2,
-                                            "source":{
-                                              "state":"653f2d54-cfc9-4b71-a1ff-82a7bf809ec7",
-                                              "side":"bottom",
-                                              "offset":120.0
-                                            },
-                                            "dest":{
-                                              "state":"e1242704-3556-4dc0-bc4e-ea089149bbe7",
-                                              "side":"top",
-                                              "offset":10.0
-                                            },
-                                            "text-block":{
-                                              "x":1720.0,
-                                              "y":1250.0,
-                                              "w":100.0,
-                                              "h":30.0
-                                            },
-                                            "vertices":[
-                                            ],
-                                            "guards":[
-                                            ],
-                                            "actions":[
-                                            ]
+                                            "id":"273f7c23-a476-4356-bb92-71523f2fa11f",
+                                            "kind":1,
+                                            "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004"
                                           }
-                                        ]
-                                      },
-                                      {
-                                        "id":"e1242704-3556-4dc0-bc4e-ea089149bbe7",
-                                        "name":"Final",
-                                        "kind":"final",
-                                        "width":20.0,
-                                        "height":20.0,
-                                        "x":1690.0,
-                                        "y":1310.0,
-                                        "orientation":0,
-                                        "entries":[
                                         ],
                                         "exits":[
                                         ],
@@ -5824,68 +5647,6 @@
                                       }
                                     ]
                                   }
-                                ],
-                                "transitions":[
-                                  {
-                                    "id":"644943f5-8ab9-4ebe-b644-27e4d718ea3c",
-                                    "trigger-kind":3,
-                                    "source":{
-                                      "state":"ec0dad49-3a8f-4fcf-8c72-1e6d07595450",
-                                      "side":"right",
-                                      "offset":100.0
-                                    },
-                                    "dest":{
-                                      "state":"f3628aa2-b2d9-4fcc-a2eb-293426076053",
-                                      "side":"left",
-                                      "offset":10.0
-                                    },
-                                    "text-block":{
-                                      "x":2230.0,
-                                      "y":1400.0,
-                                      "w":100.0,
-                                      "h":30.0
-                                    },
-                                    "vertices":[
-                                    ],
-                                    "guards":[
-                                    ],
-                                    "actions":[
-                                    ]
-                                  }
-                                ]
-                              },
-                              {
-                                "id":"f3628aa2-b2d9-4fcc-a2eb-293426076053",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":2350.0,
-                                "y":1440.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"fb350c61-7ee3-4f3b-a4e7-04ee49f99203",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":2350.0,
-                                "y":1090.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
                                 ],
                                 "transitions":[
                                 ]
@@ -6063,51 +5824,12 @@
                                             "id":"c877846b-d062-4f77-aca0-27765ca2af15",
                                             "kind":0,
                                             "action-id":"b3e7e7f3-aa16-48da-b3f7-e82feaef652f"
-                                          }
-                                        ],
-                                        "exits":[
-                                        ],
-                                        "region":[
-                                        ],
-                                        "transitions":[
+                                          },
                                           {
-                                            "id":"1ecef29a-f32b-46b2-93f3-b6dee4d820b4",
-                                            "trigger-kind":2,
-                                            "source":{
-                                              "state":"54d6c865-296e-489e-a1a4-dec64e566161",
-                                              "side":"right",
-                                              "offset":70.0
-                                            },
-                                            "dest":{
-                                              "state":"3745a81d-33e2-4456-8a1a-ff7eb70013f2",
-                                              "side":"left",
-                                              "offset":10.0
-                                            },
-                                            "text-block":{
-                                              "x":1930.0,
-                                              "y":890.0,
-                                              "w":100.0,
-                                              "h":30.0
-                                            },
-                                            "vertices":[
-                                            ],
-                                            "guards":[
-                                            ],
-                                            "actions":[
-                                            ]
+                                            "id":"e86fb13c-f8ea-41e0-873d-4d89b967eaa0",
+                                            "kind":1,
+                                            "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004"
                                           }
-                                        ]
-                                      },
-                                      {
-                                        "id":"3745a81d-33e2-4456-8a1a-ff7eb70013f2",
-                                        "name":"Final",
-                                        "kind":"final",
-                                        "width":20.0,
-                                        "height":20.0,
-                                        "x":2040.0,
-                                        "y":940.0,
-                                        "orientation":0,
-                                        "entries":[
                                         ],
                                         "exits":[
                                         ],
@@ -6118,50 +5840,6 @@
                                       }
                                     ]
                                   }
-                                ],
-                                "transitions":[
-                                  {
-                                    "id":"48e7a2d9-9870-4da0-9568-5efca4ffa816",
-                                    "trigger-kind":3,
-                                    "source":{
-                                      "state":"fa59bf30-b72a-4364-ba95-10f1b8a73280",
-                                      "side":"left",
-                                      "offset":80.0
-                                    },
-                                    "dest":{
-                                      "state":"ad4c4ef4-7b93-4975-8c98-3d28fd889cce",
-                                      "side":"right",
-                                      "offset":10.0
-                                    },
-                                    "text-block":{
-                                      "x":1030.0,
-                                      "y":1560.0,
-                                      "w":100.0,
-                                      "h":30.0
-                                    },
-                                    "vertices":[
-                                    ],
-                                    "guards":[
-                                    ],
-                                    "actions":[
-                                    ]
-                                  }
-                                ]
-                              },
-                              {
-                                "id":"ad4c4ef4-7b93-4975-8c98-3d28fd889cce",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":980.0,
-                                "y":1600.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
                                 ],
                                 "transitions":[
                                 ]
@@ -6356,9 +6034,9 @@
                                               "offset":100.0
                                             },
                                             "dest":{
-                                              "state":"b08709f0-4995-49dc-8e25-54fedf82ce07",
+                                              "state":"213f7a73-9a6d-412a-8a13-2e074eda2519",
                                               "side":"left",
-                                              "offset":10.0
+                                              "offset":100.0
                                             },
                                             "text-block":{
                                               "x":1850.0,
@@ -6376,15 +6054,20 @@
                                         ]
                                       },
                                       {
-                                        "id":"b08709f0-4995-49dc-8e25-54fedf82ce07",
-                                        "name":"Final",
-                                        "kind":"final",
-                                        "width":20.0,
-                                        "height":20.0,
-                                        "x":1930.0,
-                                        "y":1080.0,
+                                        "id":"213f7a73-9a6d-412a-8a13-2e074eda2519",
+                                        "name":"Done",
+                                        "kind":"state",
+                                        "width":150.0,
+                                        "height":190.0,
+                                        "x":2010.0,
+                                        "y":990.0,
                                         "orientation":0,
                                         "entries":[
+                                          {
+                                            "id":"f1e2229b-0611-402e-9a58-2971267e254d",
+                                            "kind":1,
+                                            "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004"
+                                          }
                                         ],
                                         "exits":[
                                         ],
@@ -6395,50 +6078,6 @@
                                       }
                                     ]
                                   }
-                                ],
-                                "transitions":[
-                                  {
-                                    "id":"5eebc5a8-84af-4cbb-a0c4-27c91dcb0720",
-                                    "trigger-kind":3,
-                                    "source":{
-                                      "state":"d1ce37f7-0e3d-4250-9c7d-5d1521d1f03f",
-                                      "side":"left",
-                                      "offset":120.0
-                                    },
-                                    "dest":{
-                                      "state":"4c86f9bd-26dc-4114-a7fd-25374a3467f1",
-                                      "side":"right",
-                                      "offset":10.0
-                                    },
-                                    "text-block":{
-                                      "x":1020.0,
-                                      "y":1410.0,
-                                      "w":100.0,
-                                      "h":30.0
-                                    },
-                                    "vertices":[
-                                    ],
-                                    "guards":[
-                                    ],
-                                    "actions":[
-                                    ]
-                                  }
-                                ]
-                              },
-                              {
-                                "id":"4c86f9bd-26dc-4114-a7fd-25374a3467f1",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":980.0,
-                                "y":1450.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
                                 ],
                                 "transitions":[
                                 ]
@@ -6572,51 +6211,12 @@
                                             "id":"e54ef24a-69b6-4599-b4f6-8e989a11b25b",
                                             "kind":0,
                                             "action-id":"9a98e49f-ca04-4d72-aa2e-74810819e35f"
-                                          }
-                                        ],
-                                        "exits":[
-                                        ],
-                                        "region":[
-                                        ],
-                                        "transitions":[
+                                          },
                                           {
-                                            "id":"b5a96424-4231-45eb-ab1a-2912a6c7c6f5",
-                                            "trigger-kind":2,
-                                            "source":{
-                                              "state":"c5db0525-eeb9-43a1-bef8-fb25e721775f",
-                                              "side":"right",
-                                              "offset":110.0
-                                            },
-                                            "dest":{
-                                              "state":"ae2fb428-70f9-46b7-84bf-982bdab3179f",
-                                              "side":"left",
-                                              "offset":10.0
-                                            },
-                                            "text-block":{
-                                              "x":1980.0,
-                                              "y":990.0,
-                                              "w":100.0,
-                                              "h":30.0
-                                            },
-                                            "vertices":[
-                                            ],
-                                            "guards":[
-                                            ],
-                                            "actions":[
-                                            ]
+                                            "id":"409e9261-278e-4245-9505-4f496e4a2319",
+                                            "kind":1,
+                                            "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004"
                                           }
-                                        ]
-                                      },
-                                      {
-                                        "id":"ae2fb428-70f9-46b7-84bf-982bdab3179f",
-                                        "name":"Final",
-                                        "kind":"final",
-                                        "width":20.0,
-                                        "height":20.0,
-                                        "x":2100.0,
-                                        "y":1030.0,
-                                        "orientation":0,
-                                        "entries":[
                                         ],
                                         "exits":[
                                         ],
@@ -6671,50 +6271,6 @@
                                       }
                                     ]
                                   }
-                                ],
-                                "transitions":[
-                                  {
-                                    "id":"bf3a70da-be34-4f1f-a533-b3d1fe5b4ebb",
-                                    "trigger-kind":3,
-                                    "source":{
-                                      "state":"837a505f-8167-4724-a661-25389d6d3821",
-                                      "side":"left",
-                                      "offset":80.0
-                                    },
-                                    "dest":{
-                                      "state":"ca6a5dfd-cd38-4d48-9a3a-a7b28526ffb8",
-                                      "side":"right",
-                                      "offset":10.0
-                                    },
-                                    "text-block":{
-                                      "x":1020.0,
-                                      "y":1200.0,
-                                      "w":100.0,
-                                      "h":30.0
-                                    },
-                                    "vertices":[
-                                    ],
-                                    "guards":[
-                                    ],
-                                    "actions":[
-                                    ]
-                                  }
-                                ]
-                              },
-                              {
-                                "id":"ca6a5dfd-cd38-4d48-9a3a-a7b28526ffb8",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":980.0,
-                                "y":1240.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
                                 ],
                                 "transitions":[
                                 ]
@@ -6848,6 +6404,11 @@
                                             "id":"eb1c666d-28a9-4e20-8c3e-f660a0d1225e",
                                             "kind":0,
                                             "action-id":"eb62532c-1d98-4433-b42a-0cf1c187996b"
+                                          },
+                                          {
+                                            "id":"8f634c79-7d60-4110-b221-e589aa0f8032",
+                                            "kind":1,
+                                            "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004"
                                           }
                                         ],
                                         "exits":[
@@ -6855,32 +6416,6 @@
                                         "region":[
                                         ],
                                         "transitions":[
-                                          {
-                                            "id":"5b7610b3-f03b-4e64-84db-a948c4cf47f2",
-                                            "trigger-kind":2,
-                                            "source":{
-                                              "state":"767f8114-1e73-412e-9095-5cd374264ef9",
-                                              "side":"right",
-                                              "offset":90.0
-                                            },
-                                            "dest":{
-                                              "state":"b0f428cd-3c49-48fe-adea-066773b44b5b",
-                                              "side":"left",
-                                              "offset":10.0
-                                            },
-                                            "text-block":{
-                                              "x":1970.0,
-                                              "y":960.0,
-                                              "w":100.0,
-                                              "h":30.0
-                                            },
-                                            "vertices":[
-                                            ],
-                                            "guards":[
-                                            ],
-                                            "actions":[
-                                            ]
-                                          }
                                         ]
                                       },
                                       {
@@ -6926,71 +6461,9 @@
                                             ]
                                           }
                                         ]
-                                      },
-                                      {
-                                        "id":"b0f428cd-3c49-48fe-adea-066773b44b5b",
-                                        "name":"Final",
-                                        "kind":"final",
-                                        "width":20.0,
-                                        "height":20.0,
-                                        "x":2100.0,
-                                        "y":1010.0,
-                                        "orientation":0,
-                                        "entries":[
-                                        ],
-                                        "exits":[
-                                        ],
-                                        "region":[
-                                        ],
-                                        "transitions":[
-                                        ]
                                       }
                                     ]
                                   }
-                                ],
-                                "transitions":[
-                                  {
-                                    "id":"f150b8a1-6f04-48cd-884b-1c6359946922",
-                                    "trigger-kind":3,
-                                    "source":{
-                                      "state":"2a794203-d3f4-4565-ad12-56f3eba78369",
-                                      "side":"left",
-                                      "offset":70.0
-                                    },
-                                    "dest":{
-                                      "state":"09af323d-2f25-47f7-a679-ace1ddc8f9ee",
-                                      "side":"right",
-                                      "offset":10.0
-                                    },
-                                    "text-block":{
-                                      "x":1020.0,
-                                      "y":1020.0,
-                                      "w":100.0,
-                                      "h":30.0
-                                    },
-                                    "vertices":[
-                                    ],
-                                    "guards":[
-                                    ],
-                                    "actions":[
-                                    ]
-                                  }
-                                ]
-                              },
-                              {
-                                "id":"09af323d-2f25-47f7-a679-ace1ddc8f9ee",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":980.0,
-                                "y":1060.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
                                 ],
                                 "transitions":[
                                 ]
@@ -7168,51 +6641,12 @@
                                             "id":"73dbc3bf-eee2-4574-bbd1-16d9a6f20c5f",
                                             "kind":0,
                                             "action-id":"70b325f8-a29d-443f-92df-64c40038cf80"
-                                          }
-                                        ],
-                                        "exits":[
-                                        ],
-                                        "region":[
-                                        ],
-                                        "transitions":[
+                                          },
                                           {
-                                            "id":"a3f23af9-b16a-4453-8d0e-d37fa79af1ba",
-                                            "trigger-kind":2,
-                                            "source":{
-                                              "state":"307667c1-00e1-4879-915d-4586b0999874",
-                                              "side":"right",
-                                              "offset":110.0
-                                            },
-                                            "dest":{
-                                              "state":"6f0d0ff4-38ba-4514-9300-b26f9ace9fdc",
-                                              "side":"left",
-                                              "offset":10.0
-                                            },
-                                            "text-block":{
-                                              "x":2030.0,
-                                              "y":930.0,
-                                              "w":100.0,
-                                              "h":30.0
-                                            },
-                                            "vertices":[
-                                            ],
-                                            "guards":[
-                                            ],
-                                            "actions":[
-                                            ]
+                                            "id":"2b8db4ef-638c-4b5c-9484-ac1e1863329d",
+                                            "kind":1,
+                                            "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004"
                                           }
-                                        ]
-                                      },
-                                      {
-                                        "id":"6f0d0ff4-38ba-4514-9300-b26f9ace9fdc",
-                                        "name":"Final",
-                                        "kind":"final",
-                                        "width":20.0,
-                                        "height":20.0,
-                                        "x":2160.0,
-                                        "y":970.0,
-                                        "orientation":0,
-                                        "entries":[
                                         ],
                                         "exits":[
                                         ],
@@ -7223,50 +6657,6 @@
                                       }
                                     ]
                                   }
-                                ],
-                                "transitions":[
-                                  {
-                                    "id":"05e8757c-71d8-4075-8d1c-7b91b570333c",
-                                    "trigger-kind":3,
-                                    "source":{
-                                      "state":"1d869ae7-d6c4-43dd-996a-9db1b4fae539",
-                                      "side":"left",
-                                      "offset":70.0
-                                    },
-                                    "dest":{
-                                      "state":"f95d20e7-75b4-4095-9ab7-3227b61e7400",
-                                      "side":"right",
-                                      "offset":10.0
-                                    },
-                                    "text-block":{
-                                      "x":1020.0,
-                                      "y":850.0,
-                                      "w":100.0,
-                                      "h":30.0
-                                    },
-                                    "vertices":[
-                                    ],
-                                    "guards":[
-                                    ],
-                                    "actions":[
-                                    ]
-                                  }
-                                ]
-                              },
-                              {
-                                "id":"f95d20e7-75b4-4095-9ab7-3227b61e7400",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":980.0,
-                                "y":890.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
                                 ],
                                 "transitions":[
                                 ]
@@ -7395,24 +6785,6 @@
                                         ]
                                       },
                                       {
-                                        "id":"2686e442-01ff-48fc-addc-381fc0d14295",
-                                        "name":"Final",
-                                        "kind":"final",
-                                        "width":20.0,
-                                        "height":20.0,
-                                        "x":2280.0,
-                                        "y":1020.0,
-                                        "orientation":0,
-                                        "entries":[
-                                        ],
-                                        "exits":[
-                                        ],
-                                        "region":[
-                                        ],
-                                        "transitions":[
-                                        ]
-                                      },
-                                      {
                                         "id":"e143b7e6-7379-4523-9997-a94c5e3b8a52",
                                         "name":"Move vertice",
                                         "kind":"state",
@@ -7514,9 +6886,9 @@
                                               "offset":170.0
                                             },
                                             "dest":{
-                                              "state":"2686e442-01ff-48fc-addc-381fc0d14295",
+                                              "state":"a622b817-371c-4ea2-b605-767e79f25303",
                                               "side":"left",
-                                              "offset":10.0
+                                              "offset":70.0
                                             },
                                             "text-block":{
                                               "x":2060.0,
@@ -7541,9 +6913,9 @@
                                               "offset":260.0
                                             },
                                             "dest":{
-                                              "state":"6a0002b1-1e87-4c03-ab35-873b73746206",
+                                              "state":"a622b817-371c-4ea2-b605-767e79f25303",
                                               "side":"left",
-                                              "offset":10.0
+                                              "offset":160.0
                                             },
                                             "text-block":{
                                               "x":2000.0,
@@ -7566,15 +6938,20 @@
                                         ]
                                       },
                                       {
-                                        "id":"6a0002b1-1e87-4c03-ab35-873b73746206",
-                                        "name":"Final",
-                                        "kind":"final",
-                                        "width":20.0,
-                                        "height":20.0,
-                                        "x":2280.0,
-                                        "y":1110.0,
+                                        "id":"a622b817-371c-4ea2-b605-767e79f25303",
+                                        "name":"Done",
+                                        "kind":"state",
+                                        "width":160.0,
+                                        "height":190.0,
+                                        "x":2390.0,
+                                        "y":960.0,
                                         "orientation":0,
                                         "entries":[
+                                          {
+                                            "id":"d4020831-35e8-44d0-a173-61665dca6fd8",
+                                            "kind":1,
+                                            "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004"
+                                          }
                                         ],
                                         "exits":[
                                         ],
@@ -7585,50 +6962,6 @@
                                       }
                                     ]
                                   }
-                                ],
-                                "transitions":[
-                                  {
-                                    "id":"f7233e83-1702-4496-9faf-d7ae9c30278f",
-                                    "trigger-kind":3,
-                                    "source":{
-                                      "state":"5e2aef63-2a1e-4034-a46d-0f542399cc2a",
-                                      "side":"left",
-                                      "offset":80.0
-                                    },
-                                    "dest":{
-                                      "state":"b55d05d3-fded-44ea-9c15-134fe37487c2",
-                                      "side":"right",
-                                      "offset":10.0
-                                    },
-                                    "text-block":{
-                                      "x":1020.0,
-                                      "y":650.0,
-                                      "w":100.0,
-                                      "h":30.0
-                                    },
-                                    "vertices":[
-                                    ],
-                                    "guards":[
-                                    ],
-                                    "actions":[
-                                    ]
-                                  }
-                                ]
-                              },
-                              {
-                                "id":"b55d05d3-fded-44ea-9c15-134fe37487c2",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":980.0,
-                                "y":690.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
                                 ],
                                 "transitions":[
                                 ]
@@ -7907,9 +7240,9 @@
                                               "offset":150.0
                                             },
                                             "dest":{
-                                              "state":"648690c0-bf7d-45d4-a920-1af608133ea3",
+                                              "state":"a49af157-f578-4a0e-aacf-4ff37b7fb631",
                                               "side":"top",
-                                              "offset":10.0
+                                              "offset":100.0
                                             },
                                             "text-block":{
                                               "x":730.0,
@@ -7927,15 +7260,20 @@
                                         ]
                                       },
                                       {
-                                        "id":"648690c0-bf7d-45d4-a920-1af608133ea3",
-                                        "name":"Final",
-                                        "kind":"final",
-                                        "width":20.0,
-                                        "height":20.0,
-                                        "x":710.0,
-                                        "y":1020.0,
+                                        "id":"a49af157-f578-4a0e-aacf-4ff37b7fb631",
+                                        "name":"Done",
+                                        "kind":"state",
+                                        "width":200.0,
+                                        "height":110.0,
+                                        "x":620.0,
+                                        "y":1080.0,
                                         "orientation":0,
                                         "entries":[
+                                          {
+                                            "id":"00725b82-63f7-4427-953f-ae1b3e45d6d1",
+                                            "kind":1,
+                                            "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004"
+                                          }
                                         ],
                                         "exits":[
                                         ],
@@ -7948,50 +7286,6 @@
                                   }
                                 ],
                                 "transitions":[
-                                  {
-                                    "id":"aa64506a-0c71-41ca-9044-b2c9308eb749",
-                                    "trigger-kind":3,
-                                    "source":{
-                                      "state":"314c3161-057b-4385-a329-0b42916552f7",
-                                      "side":"right",
-                                      "offset":80.0
-                                    },
-                                    "dest":{
-                                      "state":"7eed0f4e-43cf-4afb-8400-2ce7c91fe24b",
-                                      "side":"left",
-                                      "offset":10.0
-                                    },
-                                    "text-block":{
-                                      "x":2220.0,
-                                      "y":1730.0,
-                                      "w":100.0,
-                                      "h":30.0
-                                    },
-                                    "vertices":[
-                                    ],
-                                    "guards":[
-                                    ],
-                                    "actions":[
-                                    ]
-                                  }
-                                ]
-                              },
-                              {
-                                "id":"7eed0f4e-43cf-4afb-8400-2ce7c91fe24b",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":2350.0,
-                                "y":1770.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
                                 ]
                               }
                             ]
@@ -8000,7 +7294,8 @@
                         "transitions":[
                           {
                             "id":"5e8ad22e-5060-4fe7-adc8-dfa18aeffaac",
-                            "trigger-kind":3,
+                            "trigger":"170063f2-da67-4cba-8425-4a2d0142b004",
+                            "trigger-kind":1,
                             "source":{
                               "state":"36c58958-3a41-4b90-b455-9258ad6400ab",
                               "side":"left",
@@ -8052,60 +7347,6 @@
                             "height":40,
                             "states":[
                               {
-                                "id":"4f8688ed-1d77-4105-a8c3-32d2a01b4323",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1900.0,
-                                "y":990.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"8962e8ae-4db8-4d87-b944-36c1e883fc43",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1900.0,
-                                "y":920.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"57bf38bf-9f31-452c-ae58-04890f81958a",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1900.0,
-                                "y":860.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
                                 "id":"9dcc0d0a-9027-433a-98a9-6484ee801210",
                                 "name":"Edit",
                                 "kind":"state",
@@ -8130,9 +7371,9 @@
                                       "offset":20.0
                                     },
                                     "dest":{
-                                      "state":"57bf38bf-9f31-452c-ae58-04890f81958a",
+                                      "state":"2822bdc9-4100-48ac-9e3b-939971ab7f58",
                                       "side":"left",
-                                      "offset":0.0
+                                      "offset":20.0
                                     },
                                     "text-block":{
                                       "x":1470.0,
@@ -8167,9 +7408,9 @@
                                       "offset":80.0
                                     },
                                     "dest":{
-                                      "state":"8962e8ae-4db8-4d87-b944-36c1e883fc43",
+                                      "state":"2822bdc9-4100-48ac-9e3b-939971ab7f58",
                                       "side":"left",
-                                      "offset":0.0
+                                      "offset":80.0
                                     },
                                     "text-block":{
                                       "x":1470.0,
@@ -8205,9 +7446,9 @@
                                       "offset":150.0
                                     },
                                     "dest":{
-                                      "state":"4f8688ed-1d77-4105-a8c3-32d2a01b4323",
+                                      "state":"2822bdc9-4100-48ac-9e3b-939971ab7f58",
                                       "side":"left",
-                                      "offset":20.0
+                                      "offset":150.0
                                     },
                                     "text-block":{
                                       "x":1470.0,
@@ -8243,9 +7484,9 @@
                                       "offset":290.0
                                     },
                                     "dest":{
-                                      "state":"c390bbe5-375d-4f96-80fb-1014da2717d4",
+                                      "state":"2822bdc9-4100-48ac-9e3b-939971ab7f58",
                                       "side":"left",
-                                      "offset":10.0
+                                      "offset":290.0
                                     },
                                     "text-block":{
                                       "x":1470.0,
@@ -8281,9 +7522,9 @@
                                       "offset":360.0
                                     },
                                     "dest":{
-                                      "state":"a25385c1-d89d-4486-aa6f-744d06527d1b",
+                                      "state":"2822bdc9-4100-48ac-9e3b-939971ab7f58",
                                       "side":"left",
-                                      "offset":10.0
+                                      "offset":360.0
                                     },
                                     "text-block":{
                                       "x":1480.0,
@@ -8319,9 +7560,9 @@
                                       "offset":210.0
                                     },
                                     "dest":{
-                                      "state":"b8dad906-f19b-4ee2-83c9-653593b8c5ec",
+                                      "state":"2822bdc9-4100-48ac-9e3b-939971ab7f58",
                                       "side":"left",
-                                      "offset":10.0
+                                      "offset":210.0
                                     },
                                     "text-block":{
                                       "x":1470.0,
@@ -8357,9 +7598,9 @@
                                       "offset":420.0
                                     },
                                     "dest":{
-                                      "state":"78c6d973-748a-449f-b308-5c479973bc33",
+                                      "state":"2822bdc9-4100-48ac-9e3b-939971ab7f58",
                                       "side":"left",
-                                      "offset":20.0
+                                      "offset":420.0
                                     },
                                     "text-block":{
                                       "x":1470.0,
@@ -8385,24 +7626,6 @@
                                       }
                                     ]
                                   }
-                                ]
-                              },
-                              {
-                                "id":"c390bbe5-375d-4f96-80fb-1014da2717d4",
-                                "name":"FinalTrigger",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1900.0,
-                                "y":1130.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
                                 ]
                               },
                               {
@@ -8450,51 +7673,20 @@
                                 ]
                               },
                               {
-                                "id":"a25385c1-d89d-4486-aa6f-744d06527d1b",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1900.0,
-                                "y":1200.0,
+                                "id":"2822bdc9-4100-48ac-9e3b-939971ab7f58",
+                                "name":"Done",
+                                "kind":"state",
+                                "width":150.0,
+                                "height":570.0,
+                                "x":2010.0,
+                                "y":850.0,
                                 "orientation":0,
                                 "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"b8dad906-f19b-4ee2-83c9-653593b8c5ec",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1900.0,
-                                "y":1050.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"78c6d973-748a-449f-b308-5c479973bc33",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1900.0,
-                                "y":1260.0,
-                                "orientation":0,
-                                "entries":[
+                                  {
+                                    "id":"3b68a06d-f273-4f04-b585-9c6779a12c31",
+                                    "kind":1,
+                                    "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004"
+                                  }
                                 ],
                                 "exits":[
                                 ],
@@ -8509,7 +7701,8 @@
                         "transitions":[
                           {
                             "id":"64dc0251-8f38-42ac-abc9-ee7d88ccb16a",
-                            "trigger-kind":3,
+                            "trigger":"170063f2-da67-4cba-8425-4a2d0142b004",
+                            "trigger-kind":1,
                             "source":{
                               "state":"2bd8f391-b996-4788-bc5a-87a94104aecf",
                               "side":"left",
@@ -8566,60 +7759,6 @@
                             "height":50,
                             "states":[
                               {
-                                "id":"4fa41c00-4c8a-427b-aab9-084185816cf2",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1250.0,
-                                "y":280.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"a4974753-4d25-4df5-b50d-c2c54682884a",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1250.0,
-                                "y":360.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"5eb13eb8-b839-4876-9195-15171db9d107",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1250.0,
-                                "y":430.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
                                 "id":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                 "name":"Delete",
                                 "kind":"state",
@@ -8644,15 +7783,15 @@
                                       "offset":20.0
                                     },
                                     "dest":{
-                                      "state":"4fa41c00-4c8a-427b-aab9-084185816cf2",
+                                      "state":"deaddb22-f48b-438d-bc80-9484d6ff7a9f",
                                       "side":"left",
-                                      "offset":10.0
+                                      "offset":20.0
                                     },
                                     "text-block":{
                                       "x":990.0,
-                                      "y":210.0,
-                                      "w":330.0,
-                                      "h":60.0
+                                      "y":230.0,
+                                      "w":540.0,
+                                      "h":30.0
                                     },
                                     "vertices":[
                                     ],
@@ -8681,15 +7820,15 @@
                                       "offset":100.0
                                     },
                                     "dest":{
-                                      "state":"a4974753-4d25-4df5-b50d-c2c54682884a",
+                                      "state":"deaddb22-f48b-438d-bc80-9484d6ff7a9f",
                                       "side":"left",
-                                      "offset":10.0
+                                      "offset":100.0
                                     },
                                     "text-block":{
                                       "x":990.0,
-                                      "y":290.0,
-                                      "w":320.0,
-                                      "h":50.0
+                                      "y":310.0,
+                                      "w":540.0,
+                                      "h":30.0
                                     },
                                     "vertices":[
                                     ],
@@ -8718,14 +7857,14 @@
                                       "offset":170.0
                                     },
                                     "dest":{
-                                      "state":"5eb13eb8-b839-4876-9195-15171db9d107",
+                                      "state":"deaddb22-f48b-438d-bc80-9484d6ff7a9f",
                                       "side":"left",
-                                      "offset":10.0
+                                      "offset":170.0
                                     },
                                     "text-block":{
                                       "x":1000.0,
-                                      "y":370.0,
-                                      "w":280.0,
+                                      "y":380.0,
+                                      "w":500.0,
                                       "h":30.0
                                     },
                                     "vertices":[
@@ -8755,15 +7894,15 @@
                                       "offset":230.0
                                     },
                                     "dest":{
-                                      "state":"8b33ef70-24eb-48db-ab67-8f0aefac3f67",
+                                      "state":"deaddb22-f48b-438d-bc80-9484d6ff7a9f",
                                       "side":"left",
-                                      "offset":10.0
+                                      "offset":230.0
                                     },
                                     "text-block":{
-                                      "x":990.0,
-                                      "y":430.0,
-                                      "w":340.0,
-                                      "h":40.0
+                                      "x":1000.0,
+                                      "y":450.0,
+                                      "w":550.0,
+                                      "h":30.0
                                     },
                                     "vertices":[
                                     ],
@@ -8792,15 +7931,15 @@
                                       "offset":410.0
                                     },
                                     "dest":{
-                                      "state":"ca1c6893-c831-4314-b8fe-dcfde2c24a25",
+                                      "state":"deaddb22-f48b-438d-bc80-9484d6ff7a9f",
                                       "side":"left",
-                                      "offset":10.0
+                                      "offset":410.0
                                     },
                                     "text-block":{
                                       "x":1000.0,
-                                      "y":610.0,
-                                      "w":300.0,
-                                      "h":50.0
+                                      "y":630.0,
+                                      "w":550.0,
+                                      "h":30.0
                                     },
                                     "vertices":[
                                     ],
@@ -8829,15 +7968,15 @@
                                       "offset":350.0
                                     },
                                     "dest":{
-                                      "state":"2f8c4059-7592-47c7-97e9-a20463906416",
+                                      "state":"deaddb22-f48b-438d-bc80-9484d6ff7a9f",
                                       "side":"left",
-                                      "offset":10.0
+                                      "offset":350.0
                                     },
                                     "text-block":{
-                                      "x":990.0,
-                                      "y":540.0,
-                                      "w":300.0,
-                                      "h":50.0
+                                      "x":1000.0,
+                                      "y":570.0,
+                                      "w":540.0,
+                                      "h":30.0
                                     },
                                     "vertices":[
                                     ],
@@ -8866,15 +8005,15 @@
                                       "offset":290.0
                                     },
                                     "dest":{
-                                      "state":"13b647f6-56cb-4562-8e86-35f81911845b",
+                                      "state":"deaddb22-f48b-438d-bc80-9484d6ff7a9f",
                                       "side":"left",
-                                      "offset":10.0
+                                      "offset":290.0
                                     },
                                     "text-block":{
-                                      "x":990.0,
-                                      "y":480.0,
-                                      "w":300.0,
-                                      "h":50.0
+                                      "x":1000.0,
+                                      "y":510.0,
+                                      "w":530.0,
+                                      "h":30.0
                                     },
                                     "vertices":[
                                     ],
@@ -8903,15 +8042,15 @@
                                       "offset":480.0
                                     },
                                     "dest":{
-                                      "state":"9c0dfddd-d0c2-4c85-997b-9e023ca3504c",
+                                      "state":"deaddb22-f48b-438d-bc80-9484d6ff7a9f",
                                       "side":"left",
-                                      "offset":10.0
+                                      "offset":480.0
                                     },
                                     "text-block":{
-                                      "x":990.0,
-                                      "y":670.0,
-                                      "w":410.0,
-                                      "h":50.0
+                                      "x":1000.0,
+                                      "y":700.0,
+                                      "w":710.0,
+                                      "h":30.0
                                     },
                                     "vertices":[
                                     ],
@@ -8978,96 +8117,6 @@
                                 ]
                               },
                               {
-                                "id":"8b33ef70-24eb-48db-ab67-8f0aefac3f67",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1250.0,
-                                "y":490.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"2f8c4059-7592-47c7-97e9-a20463906416",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1250.0,
-                                "y":610.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"ca1c6893-c831-4314-b8fe-dcfde2c24a25",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1250.0,
-                                "y":670.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"13b647f6-56cb-4562-8e86-35f81911845b",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1250.0,
-                                "y":550.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
-                                "id":"9c0dfddd-d0c2-4c85-997b-9e023ca3504c",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":1250.0,
-                                "y":740.0,
-                                "orientation":0,
-                                "entries":[
-                                ],
-                                "exits":[
-                                ],
-                                "region":[
-                                ],
-                                "transitions":[
-                                ]
-                              },
-                              {
                                 "id":"f9a634b4-5563-4787-8d52-d0f236ad15c6",
                                 "name":"Delete selection",
                                 "kind":"state",
@@ -9124,17 +8173,25 @@
                                       "offset":100.0
                                     },
                                     "dest":{
-                                      "state":"eee3e909-18b3-4a16-8bc8-d23ffc4818fd",
-                                      "side":"top",
-                                      "offset":10.0
+                                      "state":"f9a634b4-5563-4787-8d52-d0f236ad15c6",
+                                      "side":"bottom",
+                                      "offset":70.0
                                     },
                                     "text-block":{
-                                      "x":440.0,
-                                      "y":550.0,
-                                      "w":330.0,
-                                      "h":50.0
+                                      "x":290.0,
+                                      "y":510.0,
+                                      "w":350.0,
+                                      "h":60.0
                                     },
                                     "vertices":[
+                                      {
+                                        "x":420.0,
+                                        "y":500.0
+                                      },
+                                      {
+                                        "x":390.0,
+                                        "y":500.0
+                                      }
                                     ],
                                     "guards":[
                                       {
@@ -9149,21 +8206,31 @@
                                         "action-id":"036dd5e5-f94f-4e23-a4fc-d0581556c966",
                                         "kind":0,
                                         "id":"9a546a1f-d69e-4d99-b9db-a0bab35a0d7f"
+                                      },
+                                      {
+                                        "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004",
+                                        "kind":1,
+                                        "id":"ec3e8e57-ee18-49e4-a498-009a8d590d59"
                                       }
                                     ]
                                   }
                                 ]
                               },
                               {
-                                "id":"eee3e909-18b3-4a16-8bc8-d23ffc4818fd",
-                                "name":"Final",
-                                "kind":"final",
-                                "width":20.0,
-                                "height":20.0,
-                                "x":410.0,
-                                "y":710.0,
+                                "id":"deaddb22-f48b-438d-bc80-9484d6ff7a9f",
+                                "name":"Done",
+                                "kind":"state",
+                                "width":160.0,
+                                "height":510.0,
+                                "x":1690.0,
+                                "y":270.0,
                                 "orientation":0,
                                 "entries":[
+                                  {
+                                    "id":"9a8e20f8-0c3c-4b9f-b23f-fac07f5eaf50",
+                                    "kind":1,
+                                    "signal-id":"170063f2-da67-4cba-8425-4a2d0142b004"
+                                  }
                                 ],
                                 "exits":[
                                 ],
@@ -9178,7 +8245,8 @@
                         "transitions":[
                           {
                             "id":"2686bfb3-8f9a-4bac-8e0a-708630356e3b",
-                            "trigger-kind":3,
+                            "trigger":"170063f2-da67-4cba-8425-4a2d0142b004",
+                            "trigger-kind":1,
                             "source":{
                               "state":"87bfb8b8-e7a4-4d82-9c4d-4891f7780e13",
                               "side":"left",

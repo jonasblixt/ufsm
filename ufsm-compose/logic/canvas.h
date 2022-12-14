@@ -47,6 +47,7 @@
 #define eKey_o_down 45
 
 /* Signals */
+#define sToolDone 10
 
 /* Guard prototypes */
 int canvas_region_selected(void *user);
