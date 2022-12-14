@@ -64,6 +64,7 @@ process_more:
             m->wsv[22] = 40;
             m->wsv[15] = 38;
             m->wsv[19] = 32;
+            m->wsv[16] = 26;
             m->wsv[17] = 27;
             m->wsv[14] = 23;
             m->wsv[9] = 16;
@@ -131,6 +132,9 @@ process_more:
             }
             if ((m->wsv[15] == 31) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
                 canvas_transition_select_source(m->user);
+            }
+            if ((m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
+                canvas_state_select_start_begin(m->user);
             }
             if ((m->wsv[16] == 26) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
                 canvas_new_state_set_start(m->user);
@@ -578,6 +582,10 @@ process_more:
                         m->wsv[19] = 32; // New transition = Select source state
                         canvas_transition_select_source(m->user);
                     }
+                    if ((m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[16] = 26; // New state = Select start
+                        canvas_state_select_start_begin(m->user);
+                    }
                     if ((m->wsv[16] == 26) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
                         m->wsv[17] = 27; // New region = Start inner
                         canvas_new_state_set_start(m->user);
@@ -698,6 +706,10 @@ process_more:
                     if ((m->wsv[15] == 31) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
                         m->wsv[19] = 32; // New transition = Select source state
                         canvas_transition_select_source(m->user);
+                    }
+                    if ((m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                        m->wsv[16] = 26; // New state = Select start
+                        canvas_state_select_start_begin(m->user);
                     }
                     if ((m->wsv[16] == 26) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
                         m->wsv[17] = 27; // New region = Start inner
@@ -1329,6 +1341,10 @@ process_more:
                     m->wsv[19] = 32; // New transition = Select source state
                     canvas_transition_select_source(m->user);
                 }
+                if ((m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[16] = 26; // New state = Select start
+                    canvas_state_select_start_begin(m->user);
+                }
                 if ((m->wsv[16] == 26) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
                     m->wsv[17] = 27; // New region = Start inner
                     canvas_new_state_set_start(m->user);
@@ -1524,6 +1540,10 @@ process_more:
                         m->wsv[19] = 32; // New transition = Select source state
                         canvas_transition_select_source(m->user);
                     }
+                    if ((m->wsv[15] == 25) && (m->wsv[14] == 24)) {
+                        m->wsv[16] = 26; // New state = Select start
+                        canvas_state_select_start_begin(m->user);
+                    }
                     if ((m->wsv[16] == 26) && (m->wsv[15] == 25) && (m->wsv[14] == 24)) {
                         m->wsv[17] = 27; // New region = Start inner
                         canvas_new_state_set_start(m->user);
@@ -1600,6 +1620,10 @@ process_more:
                 /* Entry actions */
                 m->wsv[15] = 25; // Add actions = New state
                 canvas_create_state_begin(m->user);
+                if ((m->wsv[15] == 25)) {
+                    m->wsv[16] = 26; // New state = Select start
+                    canvas_state_select_start_begin(m->user);
+                }
                 if ((m->wsv[16] == 26) && (m->wsv[15] == 25)) {
                     m->wsv[17] = 27; // New region = Start inner
                     canvas_new_state_set_start(m->user);
@@ -1899,6 +1923,10 @@ process_more:
                 if ((m->wsv[15] == 31) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
                     m->wsv[19] = 32; // New transition = Select source state
                     canvas_transition_select_source(m->user);
+                }
+                if ((m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
+                    m->wsv[16] = 26; // New state = Select start
+                    canvas_state_select_start_begin(m->user);
                 }
                 if ((m->wsv[16] == 26) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22)) {
                     m->wsv[17] = 27; // New region = Start inner

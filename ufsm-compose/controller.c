@@ -196,7 +196,9 @@ static void add_transition_ref(struct transition_refs *list,
 int canvas_state_selected(void *context)
 {
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
-    return ((priv->selection == UFSMM_SELECTION_STATE) &&
+    return ((priv->selection == UFSMM_SELECTION_STATE ||
+             priv->selection == UFSMM_SELECTION_EXIT ||
+             priv->selection == UFSMM_SELECTION_ENTRY) &&
            (priv->selected_state != NULL));
 }
 
