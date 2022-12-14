@@ -2799,6 +2799,7 @@ void canvas_create_state_begin(void *context)
 
 void canvas_create_state_end(void *context)
 {
+    L_DEBUG(__func__);
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct state_op *op = (struct state_op *) priv->command_data;
 
@@ -2996,6 +2997,7 @@ struct transition_op {
 
 void canvas_create_transition_begin(void *context)
 {
+    L_DEBUG(__func__);
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
 
     priv->command_data = malloc(sizeof(struct transition_op));
@@ -3010,6 +3012,7 @@ void canvas_create_transition_begin(void *context)
 
 void canvas_create_transition_end(void *context)
 {
+    L_DEBUG(__func__);
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     struct transition_op *op = (struct transition_op *) priv->command_data;
 
@@ -4275,6 +4278,7 @@ void canvas_state_select_end_end(void *context)
 
 void canvas_state_select_start_begin(void *context)
 {
+    L_DEBUG(__func__);
     struct ufsmm_canvas *priv = (struct ufsmm_canvas *) context;
     uc_status_push2("SELECT START", UFSMM_COLOR_YELLOW1);
     priv->redraw = true;

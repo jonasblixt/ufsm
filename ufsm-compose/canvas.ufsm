@@ -3526,50 +3526,6 @@
                                         ]
                                       },
                                       {
-                                        "id":"64f365ee-925e-4768-88ac-e6f611727a77",
-                                        "name":"Init",
-                                        "kind":"init",
-                                        "width":20.0,
-                                        "height":20.0,
-                                        "x":880.0,
-                                        "y":1010.0,
-                                        "orientation":0,
-                                        "entries":[
-                                        ],
-                                        "exits":[
-                                        ],
-                                        "region":[
-                                        ],
-                                        "transitions":[
-                                          {
-                                            "id":"4759f1ab-3791-46b0-b32d-396c8890baa6",
-                                            "trigger-kind":0,
-                                            "source":{
-                                              "state":"64f365ee-925e-4768-88ac-e6f611727a77",
-                                              "side":"right",
-                                              "offset":10.0
-                                            },
-                                            "dest":{
-                                              "state":"579a57b9-4811-47b4-bcb3-e29e3d5bfbd0",
-                                              "side":"left",
-                                              "offset":80.0
-                                            },
-                                            "text-block":{
-                                              "x":940.0,
-                                              "y":970.0,
-                                              "w":100.0,
-                                              "h":30.0
-                                            },
-                                            "vertices":[
-                                            ],
-                                            "guards":[
-                                            ],
-                                            "actions":[
-                                            ]
-                                          }
-                                        ]
-                                      },
-                                      {
                                         "id":"06d35e3e-c671-4fb3-a1ce-14ad638af1e2",
                                         "name":"Select start",
                                         "kind":"state",
@@ -3812,6 +3768,24 @@
                                               }
                                             ]
                                           }
+                                        ],
+                                        "transitions":[
+                                        ]
+                                      },
+                                      {
+                                        "id":"6c8d1e72-7243-4d83-8dae-160e532d4784",
+                                        "name":"Init",
+                                        "kind":"init",
+                                        "width":20.0,
+                                        "height":20.0,
+                                        "x":880.0,
+                                        "y":1020.0,
+                                        "orientation":0,
+                                        "entries":[
+                                        ],
+                                        "exits":[
+                                        ],
+                                        "region":[
                                         ],
                                         "transitions":[
                                         ]
@@ -8149,7 +8123,7 @@
                                 "transitions":[
                                   {
                                     "id":"5eab8cc6-a546-4d54-8ce1-17ae54205b61",
-                                    "trigger-kind":0,
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"9dcc0d0a-9027-433a-98a9-6484ee801210",
                                       "side":"right",
@@ -8186,7 +8160,7 @@
                                   },
                                   {
                                     "id":"920a29b7-5375-466c-ac35-9c3a6735d0da",
-                                    "trigger-kind":0,
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"9dcc0d0a-9027-433a-98a9-6484ee801210",
                                       "side":"right",
@@ -8663,7 +8637,7 @@
                                 "transitions":[
                                   {
                                     "id":"2213c167-5061-41b8-a38c-85537f9410db",
-                                    "trigger-kind":0,
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8700,7 +8674,7 @@
                                   },
                                   {
                                     "id":"caab11b2-f47c-42b7-a525-d3a227fe5db1",
-                                    "trigger-kind":0,
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8737,7 +8711,7 @@
                                   },
                                   {
                                     "id":"7843fc2c-6b48-447c-84b1-84c2c97fbd0e",
-                                    "trigger-kind":0,
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8774,7 +8748,7 @@
                                   },
                                   {
                                     "id":"902d5b73-59cf-468c-ab9d-231e52960d38",
-                                    "trigger-kind":0,
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8811,7 +8785,7 @@
                                   },
                                   {
                                     "id":"48303ade-8f71-4c56-af0a-3e0cde447c08",
-                                    "trigger-kind":0,
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8848,7 +8822,7 @@
                                   },
                                   {
                                     "id":"e4e87702-65b8-4aa8-9901-dd40d19d2e53",
-                                    "trigger-kind":0,
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8885,7 +8859,7 @@
                                   },
                                   {
                                     "id":"bdda3eae-47ce-4224-9930-9578041beb6c",
-                                    "trigger-kind":0,
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -8922,7 +8896,7 @@
                                   },
                                   {
                                     "id":"27b43bb0-16a8-42ab-b1af-fce3185d2f70",
-                                    "trigger-kind":0,
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"a2a6cb0d-06ba-4737-8da9-15e5abf19fe2",
                                       "side":"right",
@@ -9111,7 +9085,7 @@
                                 "transitions":[
                                   {
                                     "id":"08aa6cfe-cdb9-44c3-8ef8-a013a6dc374e",
-                                    "trigger-kind":0,
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"f9a634b4-5563-4787-8d52-d0f236ad15c6",
                                       "side":"right",
@@ -9143,7 +9117,7 @@
                                   },
                                   {
                                     "id":"5b5adda7-9aba-44d6-8c0c-c44e3be35068",
-                                    "trigger-kind":0,
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"f9a634b4-5563-4787-8d52-d0f236ad15c6",
                                       "side":"bottom",
@@ -9735,6 +9709,11 @@
                     "vertices":[
                     ],
                     "guards":[
+                      {
+                        "state-id":"960d3c90-38ca-4b40-ba58-3fa52185d2c2",
+                        "kind":7,
+                        "id":"46f74751-2d15-4073-bbba-4c5880cb1196"
+                      }
                     ],
                     "actions":[
                     ]
@@ -9930,7 +9909,7 @@
                                   },
                                   {
                                     "id":"ad1f4d53-682f-4c7a-9f89-8b66d6a5ac4a",
-                                    "trigger-kind":0,
+                                    "trigger-kind":2,
                                     "source":{
                                       "state":"71b9383e-a54c-4c13-94a9-75f5674af90f",
                                       "side":"bottom",
@@ -11788,7 +11767,7 @@
                         "id":"84c9c375-971a-47f4-b4b7-dfa4c6a9250c",
                         "name":"Single Select",
                         "kind":"state",
-                        "width":250.0,
+                        "width":240.0,
                         "height":480.0,
                         "x":1370.0,
                         "y":680.0,
