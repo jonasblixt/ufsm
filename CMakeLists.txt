@@ -13,4 +13,7 @@ set(CMAKE_C_STANDARD 99)
 option(UFSM_BUILD_TESTS "Build test cases" OFF)
 
 add_subdirectory("compose")
-add_subdirectory("tests")
+
+if (UFSM_BUILD_TESTS)
+    add_subdirectory("tests")
+endif()

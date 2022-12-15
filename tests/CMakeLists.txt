@@ -1,12 +1,3 @@
-add_compile_options(
-        -fsanitize=address
-)
-
-add_link_options(-fsanitize=address)
-
-set(C_TESTS_COMMON
-    C/test_helper.c
-)
 
 set(TESTS
     test_final
@@ -33,8 +24,8 @@ foreach(c_test IN LISTS TESTS)
         COMMENT "Generating code for ${c_test}"
     )
 
-    add_executable(${c_test} C/${c_test}.c ${GEN_OUTPUT}/${c_test}.c ${C_TESTS_COMMON})
+    add_executable(${c_test} C/test_helper.c C/${c_test}.c ${GEN_OUTPUT}/${c_test}.c)
     target_compile_options(${c_test} PRIVATE -I${CMAKE_BINARY_DIR})
-    add_test(${c_test} ${c_test})
+    add_test(c_${c_test} ${c_test})
 endforeach()
 
