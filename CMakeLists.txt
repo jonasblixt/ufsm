@@ -64,3 +64,4 @@ add_executable(${PROJECT_NAME} ${SRC_FILES})
 target_link_libraries(${PROJECT_NAME} ${LDFLAGS})
 target_compile_options(${PROJECT_NAME} PRIVATE ${CFLAGS})
 
+add_subdirectory("test/c_generator")
