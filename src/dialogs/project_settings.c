@@ -12,6 +12,7 @@ enum {
 static void fixed_toggled(GtkCellRendererToggle *cell, gchar *path_str,
                             gpointer data)
 {
+  (void) cell;
   GtkTreeModel *model = (GtkTreeModel *)data;
   GtkTreeIter  iter;
   GtkTreePath *path = gtk_tree_path_new_from_string(path_str);
@@ -34,6 +35,7 @@ static void fixed_toggled(GtkCellRendererToggle *cell, gchar *path_str,
 static void cell_edited(GtkCellRendererText *cell, const gchar *path_string,
                             const gchar *new_text, gpointer data)
 {
+    (void) cell;
     GtkTreeModel *model = (GtkTreeModel *)data;
     GtkTreePath *path = gtk_tree_path_new_from_string(path_string);
     GtkTreeIter iter;

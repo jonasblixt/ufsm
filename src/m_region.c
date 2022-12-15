@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
-#include <ufsm/model.h>
 #include <json.h>
 
+#include "model.h"
 
 int ufsmm_add_region(struct ufsmm_state *state, bool off_page,
                      struct ufsmm_region **out)

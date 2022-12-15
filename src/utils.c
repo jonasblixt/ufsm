@@ -1,6 +1,5 @@
 #include <math.h>
-#include <ufsm/model.h>
-
+#include "model.h"
 #include "utils.h"
 
 bool ufsmm_region_is_root_or_offpage(struct ufsmm_region *r)
@@ -380,29 +379,9 @@ double ufsmm_canvas_nearest_grid_point(double in)
     return (int)(round(in / 10)) * 10;
 }
 
-bool ufsmm_has_parent_state(struct ufsmm_state *state,
-                            struct ufsmm_state *possible_parent)
-{
-    struct ufsmm_state *s;
-    struct ufsmm_region *pr;
-
-    pr = state->parent_region;
-
-    while (pr) {
-        s = pr->parent_state;
-        if (s) {
-            if (s == state)
-                return true;
-            pr = s->parent_region;
-        }
-    }
-
-    return false;
-}
-
 int ufsmm_paper_size(enum ufsmm_paper_size paper_size, int *x, int *y)
 {
-int rc = 0;
+    int rc = 0;
 
     switch (paper_size) {
         case UFSMM_PAPER_SIZE_A4:

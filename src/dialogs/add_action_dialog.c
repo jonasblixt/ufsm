@@ -1,5 +1,4 @@
 #include <gtk/gtk.h>
-#include <ufsm/model.h>
 #include "add_action_dialog.h"
 
 enum
@@ -12,7 +11,7 @@ enum
 };
 
 static struct ufsmm_action *selected_action;
-static struct ufsmm_trigger *selected_signal;
+static struct ufsmm_signal *selected_signal;
 
 static void input_changed(GtkEntry *entry, gpointer user_data)
 {
@@ -71,6 +70,7 @@ static void cell_data_func (GtkTreeViewColumn *col,
                             GtkTreeIter       *iter,
                             gpointer           user_data)
 {
+    (void) col;
     gchar *label;
     gchar *markuptxt;
 
@@ -102,6 +102,8 @@ static gboolean view_selection_func(GtkTreeSelection *selection,
                                gboolean          path_currently_selected,
                                gpointer          userdata)
 {
+    (void) selection;
+    (void) userdata;
     GtkTreeIter iter;
 
     if (gtk_tree_model_get_iter(model, &iter, path)) {
@@ -127,6 +129,7 @@ static void list_row_activated_cb(GtkTreeView        *treeview,
                                    GtkTreeViewColumn  *col,
                                    gpointer            userdata)
 {
+    (void) col;
     GtkTreeModel *model;
     GtkTreeIter   iter;
 
@@ -324,7 +327,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
 
         if (action_name[0] == '^') {
             rc = ufsmm_model_add_signal(model, &action_name[1],
-                                                &selected_signal);
+                                               &selected_signal);
             selected_action = NULL;
         } else {
             rc = ufsmm_model_get_action_by_name(model, action_name, kind,
@@ -397,7 +400,7 @@ static int add_action(GtkWindow *parent, struct ufsmm_model *model,
         uuid_t id;
         uuid_generate_random(id);
 
-        ufsmm_model_add_trigger(model, &action_name[1], &selected_signal);
+        ufsmm_model_add_signal(model, &action_name[1], &selected_signal);
         rc = 0;
 
         switch (kind) {

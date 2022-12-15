@@ -1,5 +1,5 @@
 #include <string.h>
-#include <ufsm/model.h>
+#include "model.h"
 #include "undo.h"
 #include "status.h"
 

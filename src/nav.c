@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <ufsm/ufsm.h>
 #include "nav.h"
 #include "controller.h"
 #include "render.h"
@@ -333,6 +332,7 @@ void ufsmm_nav_render(struct ufsmm_canvas *canvas, int width, int height)
 
 void ufsmm_nav_reset_selection(struct ufsmm_canvas *canvas)
 {
+    (void) canvas;
     g_selected_region = NULL;
     g_selected_state = NULL;
 }

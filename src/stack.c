@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <ufsm/model.h>
+#include "model.h"
 
 #define UFSMM_STACK_DEFAULT_SZ 128
 

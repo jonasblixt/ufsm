@@ -1,5 +1,4 @@
 #include <gtk/gtk.h>
-#include <ufsm/model.h>
 #include "edit_string_dialog.h"
 
 static gboolean input_key_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)

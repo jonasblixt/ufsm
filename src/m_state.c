@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
-#include <ufsm/model.h>
 #include <json.h>
 
+#include "model.h"
 
 struct ufsmm_state *ufsmm_state_new(enum ufsmm_state_kind kind)
 {
@@ -555,15 +555,14 @@ int ufsmm_state_delete_transition(struct ufsmm_transition *transition)
     return ufsmm_transition_free_one(transition);
 }
 
-int ufsmm_state_move_to_region(struct ufsmm_model *model,
-                               struct ufsmm_state *state,
+int ufsmm_state_move_to_region(struct ufsmm_state *state,
                                struct ufsmm_region *new_region)
 {
     /* Same as current pr, ignore */
     if (state->parent_region == new_region)
         return -UFSMM_ERROR;
     /* Ignore if target region is a decendant */
-    if (ufsmm_state_contains_region(model, state, new_region))
+    if (ufsmm_state_contains_region(state, new_region))
         return -UFSMM_ERROR;
 
     /* Unlink from source region */
@@ -577,8 +576,7 @@ int ufsmm_state_move_to_region(struct ufsmm_model *model,
     return UFSMM_OK;
 }
 
-bool ufsmm_state_contains_region(struct ufsmm_model *model,
-                                 struct ufsmm_state *state,
+bool ufsmm_state_contains_region(struct ufsmm_state *state,
                                  struct ufsmm_region *region)
 {
     static struct ufsmm_stack *stack;
@@ -610,8 +608,7 @@ bool ufsmm_state_contains_region(struct ufsmm_model *model,
     return result;
 }
 
-bool ufsmm_region_contains_state(struct ufsmm_model *model,
-                                 struct ufsmm_region *region,
+bool ufsmm_region_contains_state(struct ufsmm_region *region,
                                  struct ufsmm_state *state)
 {
     static struct ufsmm_stack *stack;

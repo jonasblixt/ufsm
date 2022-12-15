@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <string.h>
-#include <ufsm/model.h>
 #include <json.h>
+
+#include "model.h"
 
 static int push_jr_s_pair(struct ufsmm_stack *stack,
                           json_object *jr,
@@ -1181,7 +1182,7 @@ int ufsmm_model_add_trigger(struct ufsmm_model *model, const char *name,
 }
 
 int ufsmm_model_add_signal(struct ufsmm_model *model, const char *name,
-                           struct ufsmm_signal**out)
+                           struct ufsmm_signal **out)
 {
     int rc = UFSMM_OK;
     struct ufsmm_signal *signal;
@@ -1364,165 +1365,6 @@ int ufsmm_model_deserialize_coords(json_object *j_coords,
     return UFSMM_OK;
 }
 
-int ufsmm_model_calculate_max_orthogonal_regions(struct ufsmm_model *model)
-{
-    int rc;
-    struct ufsmm_region *r, *r2;
-    struct ufsmm_state *s;
-    static struct ufsmm_stack *stack;
-    unsigned int max_orth_count = 1;
-
-    rc = ufsmm_stack_init(&stack);
-
-    if (rc != UFSMM_OK) {
-        L_ERR("Could not init stack");
-        return -UFSMM_ERROR;
-    }
-
-    rc = ufsmm_stack_push(stack, (void *) model->root);
-
-    while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
-        TAILQ_FOREACH(s, &r->states, tailq) {
-            unsigned int r_count = 0;
-            TAILQ_FOREACH(r2, &s->regions, tailq) {
-                r_count++;
-                ufsmm_stack_push(stack, (void *) r2);
-            }
-            if (r_count > max_orth_count)
-                max_orth_count = r_count;
-        }
-    }
-
-    ufsmm_stack_free(stack);
-
-    if (rc != UFSMM_OK)
-        return -UFSMM_ERROR;
-    else
-        return max_orth_count;
-}
-
-int ufsmm_model_calculate_nested_region_depth(struct ufsmm_model *model)
-{
-    int rc;
-    struct ufsmm_region *r, *r2;
-    struct ufsmm_state *s;
-    static struct ufsmm_stack *stack;
-    unsigned int nested_r_depth = 1;
-
-    rc = ufsmm_stack_init(&stack);
-
-    if (rc != UFSMM_OK) {
-        L_ERR("Could not init stack");
-        return -UFSMM_ERROR;
-    }
-    rc = ufsmm_stack_push(stack, (void *) model->root);
-
-    while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
-        TAILQ_FOREACH(s, &r->states, tailq) {
-            TAILQ_FOREACH(r2, &s->regions, tailq) {
-                if (r2->depth > nested_r_depth)
-                    nested_r_depth = r2->depth + 1;
-
-                ufsmm_stack_push(stack, (void *) r2);
-            }
-        }
-    }
-
-    ufsmm_stack_free(stack);
-
-    if (rc != UFSMM_OK)
-        return -UFSMM_ERROR;
-    else
-        return nested_r_depth;
-}
-
-/**
- * Find the state with the maximum amount of outbound transitions
- *
- * Returns count of outbound transitions
- */
-int ufsmm_model_calculate_max_transitions(struct ufsmm_model *model)
-{
-    int rc;
-    struct ufsmm_region *r, *r2;
-    struct ufsmm_state *s;
-    static struct ufsmm_stack *stack;
-    unsigned int max_source_transitions = 1;
-
-    rc = ufsmm_stack_init(&stack);
-
-    if (rc != UFSMM_OK) {
-        L_ERR("Could not init stack");
-        return -UFSMM_ERROR;
-    }
-    rc = ufsmm_stack_push(stack, (void *) model->root);
-
-    while (ufsmm_stack_pop(stack, (void *) &r) == UFSMM_OK) {
-        TAILQ_FOREACH(s, &r->states, tailq) {
-            unsigned int t_count = 0;
-
-            struct ufsmm_transition *t;
-            TAILQ_FOREACH(t, &s->transitions, tailq) {
-                t_count += 1;
-            }
-
-            if (t_count > max_source_transitions)
-                max_source_transitions = t_count;
-
-            TAILQ_FOREACH(r2, &s->regions, tailq) {
-                ufsmm_stack_push(stack, (void *) r2);
-            }
-        }
-    }
-
-    ufsmm_stack_free(stack);
-
-    if (rc != UFSMM_OK)
-        return -UFSMM_ERROR;
-    else
-        return max_source_transitions;
-}
-
-/**
- * Calculate 'worst case' of states that can be concurrently active in
- *  the model.
- *
- */
-
-static int cc_state(struct ufsmm_state *state);
-
-static int cc_region(struct ufsmm_region *region)
-{
-    int max_count = 1;
-    int count = 1;
-    struct ufsmm_state *s;
-
-    TAILQ_FOREACH(s, &region->states, tailq) {
-        count = cc_state(s);
-        if (count > max_count)
-            max_count = count;
-    }
-
-    return max_count;
-}
-
-static int cc_state(struct ufsmm_state *state)
-{
-    int count = 1;
-    struct ufsmm_region *r;
-
-    TAILQ_FOREACH(r, &state->regions, tailq) {
-        count += cc_region(r);
-    }
-
-    return count;
-}
-
-int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model)
-{
-    int max_concurrent_states = cc_region(model->root);
-    return max_concurrent_states;
-}
 
 static int internal_delete(struct ufsmm_model *model,
                            struct ufsmm_region *region,

@@ -1,6 +1,5 @@
 #include <gtk/gtk.h>
 #include <string.h>
-#include <ufsm/model.h>
 #include "set_trigger_dialog.h"
 
 enum
@@ -86,6 +85,7 @@ static void cell_data_func (GtkTreeViewColumn *col,
                             GtkTreeIter       *iter,
                             gpointer           user_data)
 {
+    (void) col;
     gchar *label;
     gchar *markuptxt;
 
@@ -143,6 +143,8 @@ static gboolean view_selection_func(GtkTreeSelection *selection,
                                gboolean          path_currently_selected,
                                gpointer          userdata)
 {
+    (void) userdata;
+    (void) selection;
     GtkTreeIter iter;
 
     if (gtk_tree_model_get_iter(model, &iter, path)) {
@@ -172,6 +174,7 @@ static void list_row_activated_cb(GtkTreeView        *treeview,
                                    GtkTreeViewColumn  *col,
                                    gpointer            userdata)
 {
+    (void) col;
     GtkTreeModel *model;
     GtkTreeIter   iter;
 
@@ -324,10 +327,10 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
         L_DEBUG("Setting new trigger to %i", selected_trigger_kind);
 
         if (selected_trigger_kind == UFSMM_TRIGGER_SIGNAL) {
-            rc = ufsmm_transition_set_signal_trigger(model, transition,
+            rc = ufsmm_transition_set_signal_trigger(transition,
                                                 selected_signal);
         } else {
-            rc = ufsmm_transition_set_trigger(model, transition,
+            rc = ufsmm_transition_set_trigger(transition,
                                                 selected_trigger,
                                                 selected_trigger_kind);
         }
@@ -342,7 +345,7 @@ int ufsm_set_trigger_dialog(GtkWindow *parent, struct ufsmm_model *model,
         if (rc != UFSMM_OK)
             goto err_out;
 
-        rc = ufsmm_transition_set_trigger(model, transition,
+        rc = ufsmm_transition_set_trigger(transition,
                                             selected_trigger,
                                             UFSMM_TRIGGER_EVENT);
     } else {

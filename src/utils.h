@@ -1,7 +1,7 @@
 #ifndef UFSMM_UTILS_H
 #define UFSMM_UTILS_H
 
-#include <ufsm/model.h>
+#include "model.h"
 #include "controller.h"
 
 
@@ -59,9 +59,6 @@ int transition_calc_begin_end_point(struct ufsmm_state *s,
                                     double *y);
 
 double ufsmm_canvas_nearest_grid_point(double in);
-
-bool ufsmm_has_parent_state(struct ufsmm_state *state,
-                            struct ufsmm_state *possible_parent);
 
 int ufsmm_paper_size(enum ufsmm_paper_size paper_size, int *x, int *y);
 

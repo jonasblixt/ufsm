@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <ufsm/ufsm.h>
 #include "menu.h"
 #include "controller.h"
 #include "render.h"
@@ -11,7 +10,7 @@
 struct menu_item;
 
 typedef void (*menu_rfunc)(struct menu *menu, struct menu_item *item);
-typedef void (*menu_afunc)(struct ufsm_machine *m);
+typedef void (*menu_afunc)(struct canvas_machine *m);
 
 struct menu_item {
     double x, y;
@@ -52,11 +51,11 @@ static void r_add_state(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_add_state(struct ufsm_machine *m)
+static void a_add_state(struct canvas_machine *m)
 {
     L_DEBUG("Action add state");
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_s_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_s_down);
 }
 
 static void r_add_region(struct menu *menu, struct menu_item *item)
@@ -87,11 +86,11 @@ static void r_add_region(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_add_region(struct ufsm_machine *m)
+static void a_add_region(struct canvas_machine *m)
 {
     L_DEBUG("Action add region");
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_r_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_r_down);
 }
 
 static void r_add_transition(struct menu *menu, struct menu_item *item)
@@ -142,11 +141,11 @@ static void r_add_transition(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_add_transition(struct ufsm_machine *m)
+static void a_add_transition(struct canvas_machine *m)
 {
     L_DEBUG("Action add transition");
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_t_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_t_down);
 }
 
 static void r_func_name(struct menu *menu, struct menu_item *item,
@@ -180,10 +179,10 @@ static void r_add_action(struct menu *menu, struct menu_item *item)
     r_func_name(menu, item, "a()", enabled);
 }
 
-static void a_add_action(struct ufsm_machine *m)
+static void a_add_action(struct canvas_machine *m)
 {
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_a_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_a_down);
 }
 
 static void r_add_guard(struct menu *menu, struct menu_item *item)
@@ -192,10 +191,10 @@ static void r_add_guard(struct menu *menu, struct menu_item *item)
     r_func_name(menu, item, "g()", enabled);
 }
 
-static void a_add_guard(struct ufsm_machine *m)
+static void a_add_guard(struct canvas_machine *m)
 {
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_g_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_g_down);
 }
 
 static void r_add_entry(struct menu *menu, struct menu_item *item)
@@ -204,10 +203,10 @@ static void r_add_entry(struct menu *menu, struct menu_item *item)
     r_func_name(menu, item, "e()", enabled);
 }
 
-static void a_add_entry(struct ufsm_machine *m)
+static void a_add_entry(struct canvas_machine *m)
 {
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_e_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_e_down);
 }
 
 static void r_add_exit(struct menu *menu, struct menu_item *item)
@@ -216,10 +215,10 @@ static void r_add_exit(struct menu *menu, struct menu_item *item)
     r_func_name(menu, item, "x()", enabled);
 }
 
-static void a_add_exit(struct ufsm_machine *m)
+static void a_add_exit(struct canvas_machine *m)
 {
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_x_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_x_down);
 }
 
 static void r_add_vertice(struct menu *menu, struct menu_item *item)
@@ -248,10 +247,10 @@ static void r_add_vertice(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_add_vertice(struct ufsm_machine *m)
+static void a_add_vertice(struct canvas_machine *m)
 {
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_v_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_v_down);
 }
 
 static void r_add_fork(struct menu *menu, struct menu_item *item)
@@ -276,10 +275,10 @@ static void r_add_fork(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_add_fork(struct ufsm_machine *m)
+static void a_add_fork(struct canvas_machine *m)
 {
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_F_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_F_down);
 }
 
 static void r_add_join(struct menu *menu, struct menu_item *item)
@@ -304,10 +303,10 @@ static void r_add_join(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_add_join(struct ufsm_machine *m)
+static void a_add_join(struct canvas_machine *m)
 {
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_j_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_j_down);
 }
 
 static void r_add_init(struct menu *menu, struct menu_item *item)
@@ -326,10 +325,10 @@ static void r_add_init(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_add_init(struct ufsm_machine *m)
+static void a_add_init(struct canvas_machine *m)
 {
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_i_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_i_down);
 }
 
 static void r_add_final(struct menu *menu, struct menu_item *item)
@@ -350,10 +349,10 @@ static void r_add_final(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_add_final(struct ufsm_machine *m)
+static void a_add_final(struct canvas_machine *m)
 {
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_f_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_f_down);
 }
 
 static void r_add_terminate(struct menu *menu, struct menu_item *item)
@@ -376,10 +375,10 @@ static void r_add_terminate(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_add_terminate(struct ufsm_machine *m)
+static void a_add_terminate(struct canvas_machine *m)
 {
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_T_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_T_down);
 }
 
 static void r_add_history(struct menu *menu, struct menu_item *item)
@@ -402,10 +401,10 @@ static void r_add_history(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_add_history(struct ufsm_machine *m)
+static void a_add_history(struct canvas_machine *m)
 {
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_h_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_h_down);
 }
 
 static void r_add_deep_history(struct menu *menu, struct menu_item *item)
@@ -428,10 +427,10 @@ static void r_add_deep_history(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_add_deep_history(struct ufsm_machine *m)
+static void a_add_deep_history(struct canvas_machine *m)
 {
-    ufsm_process(m, eKey_a_down);
-    ufsm_process(m, eKey_H_down);
+    canvas_process(m, eKey_a_down);
+    canvas_process(m, eKey_H_down);
 }
 
 static void r_delete(struct menu *menu, struct menu_item *item)
@@ -460,10 +459,10 @@ static void r_delete(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_delete(struct ufsm_machine *m)
+static void a_delete(struct canvas_machine *m)
 {
     L_DEBUG("Action delete");
-    ufsm_process(m, eKey_delete_down);
+    canvas_process(m, eKey_delete_down);
 }
 
 static void r_paste(struct menu *menu, struct menu_item *item)
@@ -488,12 +487,12 @@ static void r_paste(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_paste(struct ufsm_machine *m)
+static void a_paste(struct canvas_machine *m)
 {
     L_DEBUG("Action paste");
-    ufsm_process(m, eKey_ctrl_down);
-    ufsm_process(m, eKey_v_down);
-    ufsm_process(m, eKey_ctrl_up);
+    canvas_process(m, eKey_ctrl_down);
+    canvas_process(m, eKey_v_down);
+    canvas_process(m, eKey_ctrl_up);
 }
 
 static void r_copy(struct menu *menu, struct menu_item *item)
@@ -514,12 +513,12 @@ static void r_copy(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_copy(struct ufsm_machine *m)
+static void a_copy(struct canvas_machine *m)
 {
     L_DEBUG("Action copy");
-    ufsm_process(m, eKey_ctrl_down);
-    ufsm_process(m, eKey_c_down);
-    ufsm_process(m, eKey_ctrl_up);
+    canvas_process(m, eKey_ctrl_down);
+    canvas_process(m, eKey_c_down);
+    canvas_process(m, eKey_ctrl_up);
 }
 
 static void r_cut(struct menu *menu, struct menu_item *item)
@@ -546,12 +545,12 @@ static void r_cut(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_cut(struct ufsm_machine *m)
+static void a_cut(struct canvas_machine *m)
 {
     L_DEBUG("Action cut");
-    ufsm_process(m, eKey_ctrl_down);
-    ufsm_process(m, eKey_x_down);
-    ufsm_process(m, eKey_ctrl_up);
+    canvas_process(m, eKey_ctrl_down);
+    canvas_process(m, eKey_x_down);
+    canvas_process(m, eKey_ctrl_up);
 }
 
 static void r_save(struct menu *menu, struct menu_item *item)
@@ -573,9 +572,9 @@ static void r_save(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_save(struct ufsm_machine *m)
+static void a_save(struct canvas_machine *m)
 {
-    ufsm_process(m, eKey_s_down);
+    canvas_process(m, eKey_s_down);
 }
 
 static void r_saveas(struct menu *menu, struct menu_item *item)
@@ -605,9 +604,9 @@ static void r_saveas(struct menu *menu, struct menu_item *item)
     cairo_restore(menu->cr);
 }
 
-static void a_saveas(struct ufsm_machine *m)
+static void a_saveas(struct canvas_machine *m)
 {
-    ufsm_process(m, eKey_S_down);
+    canvas_process(m, eKey_S_down);
 }
 
 static struct menu_item hmenu[] =

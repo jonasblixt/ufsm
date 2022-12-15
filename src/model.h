@@ -337,11 +337,6 @@ int ufsmm_model_add_signal(struct ufsmm_model *model, const char *name,
 int ufsmm_model_deserialize_coords(json_object *j_coords,
                                   struct ufsmm_coords *coords);
 
-int ufsmm_model_calculate_max_orthogonal_regions(struct ufsmm_model *model);
-int ufsmm_model_calculate_nested_region_depth(struct ufsmm_model *model);
-int ufsmm_model_calculate_max_transitions(struct ufsmm_model *model);
-int ufsmm_model_calculate_max_concurrent_states(struct ufsmm_model *model);
-
 struct ufsmm_state *ufsmm_model_get_state_from_uuid(struct ufsmm_model *model,
                                                   uuid_t id);
 
@@ -433,12 +428,10 @@ int ufsmm_state_set_xy(struct ufsmm_state *s, double x, double y);
 int ufsmm_state_get_size(struct ufsmm_state *s, double *x, double *y);
 int ufsmm_state_get_xy(struct ufsmm_state *s, double *x, double *y);
 
-bool ufsmm_state_contains_region(struct ufsmm_model *model,
-                                 struct ufsmm_state *state,
+bool ufsmm_state_contains_region(struct ufsmm_state *state,
                                  struct ufsmm_region *region);
 
-int ufsmm_state_move_to_region(struct ufsmm_model *model,
-                               struct ufsmm_state *state,
+int ufsmm_state_move_to_region(struct ufsmm_state *state,
                                struct ufsmm_region *new_region);
 
 bool ufsmm_state_is_descendant(struct ufsmm_state *state,
@@ -454,14 +447,12 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
 int ufsmm_transitions_serialize(struct ufsmm_state *state,
                               json_object *j_output);
 
-int ufsmm_transition_set_trigger(struct ufsmm_model *model,
-                                struct ufsmm_transition *transition,
+int ufsmm_transition_set_trigger(struct ufsmm_transition *transition,
                                 struct ufsmm_trigger *trigger,
                                 enum ufsmm_trigger_kind kind);
 
-int ufsmm_transition_set_signal_trigger(struct ufsmm_model *model,
-                                struct ufsmm_transition *transition,
-                                struct ufsmm_signal *trigger);
+int ufsmm_transition_set_signal_trigger(struct ufsmm_transition *transition,
+                                        struct ufsmm_signal *trigger);
 
 int ufsmm_transition_add_guard(struct ufsmm_model *model,
                               struct ufsmm_transition *transition,
@@ -493,8 +484,7 @@ int ufsmm_transition_change_src_state(struct ufsmm_transition *transition,
                                       struct ufsmm_state *new_state);
 int ufsmm_transition_free_list(struct ufsmm_transitions *transitions);
 
-bool ufsmm_region_contains_state(struct ufsmm_model *model,
-                                 struct ufsmm_region *region,
+bool ufsmm_region_contains_state(struct ufsmm_region *region,
                                  struct ufsmm_state *state);
 
 /* Misc model library stuff */

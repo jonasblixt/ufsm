@@ -4,7 +4,6 @@
 #include <cairo/cairo.h>
 #include <sys/queue.h>
 #include <stdbool.h>
-#include <ufsm/ufsm.h>
 #include "logic/canvas.h"
 #include "colors.h"
 #include "common.h"

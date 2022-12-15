@@ -2,9 +2,9 @@
 #define CANVAS_VIEW_H_
 
 #include <stdint.h>
-#include <ufsm/model.h>
 #include <cairo/cairo.h>
 #include "controller.h"
+#include "model.h"
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846

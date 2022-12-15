@@ -1,5 +1,4 @@
 #include <gtk/gtk.h>
-#include <ufsm/model.h>
 
 #include "add_guard_dialog.h"
 
@@ -78,6 +77,7 @@ static void cell_data_func (GtkTreeViewColumn *col,
                             GtkTreeIter       *iter,
                             gpointer           user_data)
 {
+    (void) col;
     gchar *label;
     gchar *markuptxt;
 
@@ -109,6 +109,8 @@ static gboolean view_selection_func(GtkTreeSelection *selection,
                                gboolean          path_currently_selected,
                                gpointer          userdata)
 {
+    (void) userdata;
+    (void) selection;
     GtkTreeIter iter;
 
     selected_action = NULL;
@@ -135,6 +137,9 @@ static gboolean sc_selection_func(GtkTreeSelection *selection,
                                gboolean          path_currently_selected,
                                gpointer          userdata)
 {
+    (void) selection;
+    (void) userdata;
+    (void) path_currently_selected;
     GtkTreeIter iter;
     bool is_state;
 
@@ -165,6 +170,7 @@ static void list_row_activated_cb(GtkTreeView        *treeview,
                                    GtkTreeViewColumn  *col,
                                    gpointer            userdata)
 {
+    (void) col;
     GtkTreeModel *model;
     GtkTreeIter   iter;
 
@@ -190,6 +196,7 @@ static void sc_row_activated_cb(GtkTreeView        *treeview,
                                    GtkTreeViewColumn  *col,
                                    gpointer            userdata)
 {
+    (void) col;
     GtkTreeModel *model;
     GtkTreeIter   iter;
     bool is_state;

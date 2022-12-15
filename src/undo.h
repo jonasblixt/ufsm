@@ -1,7 +1,7 @@
 #ifndef UFSMM_UNDO_H
 #define UFSMM_UNDO_H
 
-#include <ufsm/model.h>
+#include "model.h"
 
 enum ufsmm_undo_op_kind {
     UFSMM_UNDO_RENAME_STATE,

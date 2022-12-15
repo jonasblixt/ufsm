@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <string.h>
-#include <ufsm/model.h>
 #include <json.h>
+
+#include "model.h"
 
 static int deserialize_vertices(json_object *j_vertices,
                                 struct ufsmm_transition *t)
@@ -121,7 +122,7 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
     json_object *j_vertices;
     json_object *j_guards;
     json_object *j_actions;
-    struct ufsmm_transition *transition;
+    struct ufsmm_transition *transition = NULL;
     uuid_t trigger_uu;
     enum ufsmm_trigger_kind trigger_kind = UFSMM_TRIGGER_EVENT;
 
@@ -130,7 +131,6 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
     if (n_entries == 0)
         return UFSMM_OK;
 
-        L_DEBUG("A");
     L_DEBUG("Parsing transitions in state '%s'", state->name);
 
     for (unsigned int n = 0; n < n_entries; n++) {
@@ -340,7 +340,9 @@ int ufsmm_transition_deserialize(struct ufsmm_model *model,
 
     return rc;
 err_out:
-    free(transition);
+    if (transition != NULL) {
+        free(transition);
+    }
     return rc;
 }
 
@@ -598,10 +600,9 @@ int ufsmm_transition_free_one(struct ufsmm_transition *transition)
     return UFSMM_OK;
 }
 
-int ufsmm_transition_set_trigger(struct ufsmm_model *model,
-                                struct ufsmm_transition *transition,
-                                struct ufsmm_trigger *trigger,
-                                enum ufsmm_trigger_kind kind)
+int ufsmm_transition_set_trigger(struct ufsmm_transition *transition,
+                                 struct ufsmm_trigger *trigger,
+                                 enum ufsmm_trigger_kind kind)
 {
     transition->trigger = NULL;
     transition->signal = NULL;
@@ -614,9 +615,8 @@ int ufsmm_transition_set_trigger(struct ufsmm_model *model,
 }
 
 
-int ufsmm_transition_set_signal_trigger(struct ufsmm_model *model,
-                                struct ufsmm_transition *transition,
-                                struct ufsmm_signal *trigger)
+int ufsmm_transition_set_signal_trigger(struct ufsmm_transition *transition,
+                                        struct ufsmm_signal *trigger)
 {
     transition->trigger = NULL;
     transition->signal = trigger;

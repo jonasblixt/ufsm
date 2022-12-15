@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <math.h>
-#include <ufsm/model.h>
 
+#include "model.h"
 #include "render.h"
 #include "utils.h"
 
@@ -743,7 +743,7 @@ static int render_normal_state(struct ufsmm_canvas *canvas,
 int ufsmm_canvas_render_state(struct ufsmm_canvas *canvas,
                               struct ufsmm_state *state)
 {
-    int rc;
+    int rc = -1;
 
     switch (state->kind) {
         case UFSMM_STATE_NORMAL:
@@ -768,6 +768,8 @@ int ufsmm_canvas_render_state(struct ufsmm_canvas *canvas,
         case UFSMM_STATE_TERMINATE:
             rc = render_terminate_state(canvas, state);
         break;
+        default:
+            rc = -1;
     }
 
     return rc;

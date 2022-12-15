@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include <ufsm/ufsm.h>
 #include <gtk/gtk.h>
 #include <math.h>
 #include "controller.h"
@@ -70,6 +69,7 @@ static void snap_y(struct ufsmm_canvas *canvas, double threshold)
 static void reset_state_dg(struct ufsmm_canvas *canvas,
                            struct ufsmm_region *current_region)
 {
+    (void) canvas;
     struct ufsmm_stack *stack;
     struct ufsmm_region *r, *r2;
     struct ufsmm_state *s;
@@ -1494,6 +1494,7 @@ void canvas_focus_exit(void *context)
 
 void canvas_check_text_block(void *context)
 {
+    (void) context;
 }
 
 int canvas_guard_selected(void *context)
@@ -1523,6 +1524,7 @@ int canvas_textblock_resize_selected(void *context)
 /* Action function prototypes */
 void canvas_select_root_region(void *context)
 {
+    (void) context;
 }
 
 void canvas_move_state_begin(void *context)
@@ -1697,7 +1699,7 @@ void canvas_move_state(void *context)
 
     if (rc == UFSMM_OK && (s->parent_region != new_pr)) {
         L_DEBUG("***** Re-parent '%s' to region: %s", s->name, new_pr->name);
-        ufsmm_state_move_to_region(priv->model, s, new_pr);
+        ufsmm_state_move_to_region(s, new_pr);
     }
 
     /* Check for self transitions */
@@ -1950,9 +1952,7 @@ static void unlink_region(struct ufsmm_canvas *canvas,
     while (ufsmm_stack_pop(stack, (void **) &r) == UFSMM_OK) {
         TAILQ_FOREACH(s, &r->states, tailq) {
             TAILQ_FOREACH(t, &s->transitions, tailq) {
-                if (ufsmm_region_contains_state(canvas->model,
-                                                region,
-                                                t->dest.state)) {
+                if (ufsmm_region_contains_state(region, t->dest.state)) {
                     ufsmm_undo_delete_transition(undo_ops, t);
                     TAILQ_REMOVE(&t->source.state->transitions, t, tailq);
                 }
@@ -2041,6 +2041,7 @@ void canvas_resize_region_end(void *context)
 
 void canvas_move_text_block_begin(void *context)
 {
+    (void) context;
 }
 
 void canvas_move_text_block_end(void *context)
@@ -2350,6 +2351,7 @@ void canvas_reorder_exit_func(void *context)
 
 void canvas_resize_text_block_begin(void *context)
 {
+    (void) context;
 }
 
 void canvas_resize_text_block_end(void *context)
@@ -2644,10 +2646,12 @@ void canvas_add_guard(void *context)
 
 void canvas_edit_state_entry(void *context)
 {
+    (void) context;
 }
 
 void canvas_edit_state_exit(void *context)
 {
+    (void) context;
 }
 
 void canvas_delete_region(void *context)
@@ -3608,11 +3612,13 @@ int canvas_transition_tvertice_selected(void *context)
 
 void canvas_add_vertice_begin(void *context)
 {
+    (void) context;
     uc_status_push2("VERTICE", UFSMM_COLOR_YELLOW1);
 }
 
 void canvas_add_vertice_end(void *context)
 {
+    (void) context;
 }
 
 void canvas_add_vertice_cancel(void *context)
@@ -4007,7 +4013,7 @@ static void mselect_move_end(void *context, bool undo)
         if (rc == UFSMM_OK) {
             if (r != s->parent_region) {
                 L_DEBUG("State '%s' new pr = '%s'", s->name, r->name);
-                ufsmm_state_move_to_region(priv->model, s, r);
+                ufsmm_state_move_to_region(s, r);
             }
         }
         if (undo) {
@@ -4245,22 +4251,27 @@ void canvas_nav_toggle(void *context)
 
 void canvas_create_annotation_begin(void *context)
 {
+    (void) context;
 }
 
 void canvas_create_annotation_end(void *context)
 {
+    (void) context;
 }
 
 void canvas_show_annotation_dialog(void *context)
 {
+    (void) context;
 }
 
 void canvas_annotation_select_start(void *context)
 {
+    (void) context;
 }
 
 void canvas_annotation_select_end(void *context)
 {
+    (void) context;
 }
 
 void canvas_state_select_end_begin(void *context)
@@ -4458,6 +4469,7 @@ void canvas_open(void *context)
 
 static gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
+    (void) data;
     struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
@@ -4525,6 +4537,7 @@ static gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data
 
 static gboolean keyrelease_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
+    (void) data;
     struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
@@ -4626,6 +4639,7 @@ static gboolean motion_notify_event_cb(GtkWidget      *widget,
                                        GdkEventMotion *event,
                                        gpointer        data)
 {
+    (void) data;
     double px;
     double py;
     struct ufsmm_canvas *priv =
@@ -4665,6 +4679,7 @@ static gboolean motion_notify_event_cb(GtkWidget      *widget,
 
 static void draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
+    (void) data;
     struct ufsmm_canvas *priv =
                     g_object_get_data(G_OBJECT(widget), "canvas private");
 
@@ -4701,6 +4716,7 @@ static void destroy_event_cb(GtkWidget *widget)
 
 GtkWidget* ufsmm_canvas_new(GtkWidget *parent, int verbosity)
 {
+    (void) verbosity;
     GtkWidget *widget = NULL;
     struct ufsmm_canvas *priv = NULL;
 

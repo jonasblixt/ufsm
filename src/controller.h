@@ -2,11 +2,10 @@
 #define CANVAS_CONTROLLER_H_
 
 #include <gtk/gtk.h>
-#include <ufsm/model.h>
-#include <ufsm/ufsm.h>
 #include "logic/canvas.h"
 #include "undo.h"
 #include "menu.h"
+#include "model.h"
 #include "colors.h"
 #include "common.h"
 

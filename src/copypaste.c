@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include <ufsm/ufsm.h>
-#include <ufsm/model.h>
+#include "model.h"
 #include "logic/canvas.h"
 #include "render.h"
 
