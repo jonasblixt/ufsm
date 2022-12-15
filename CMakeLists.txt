@@ -46,10 +46,10 @@ SET(SRC_FILES
     src/status.c
     src/undo.c
     src/utils.c
-    src/m_model.c
-    src/m_region.c
-    src/m_state.c
-    src/m_transition.c
+    src/model/model.c
+    src/model/region.c
+    src/model/state.c
+    src/model/transition.c
     src/dialogs/add_action_dialog.c
     src/dialogs/add_guard_dialog.c
     src/dialogs/edit_state_dialog.c

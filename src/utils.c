@@ -1,5 +1,5 @@
 #include <math.h>
-#include "model.h"
+#include "model/model.h"
 #include "utils.h"
 
 bool ufsmm_region_is_root_or_offpage(struct ufsmm_region *r)

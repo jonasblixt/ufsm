@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <cairo/cairo.h>
 #include "controller.h"
-#include "model.h"
+#include "model/model.h"
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846

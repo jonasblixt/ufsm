@@ -1,5 +1,5 @@
 #include <gtk/gtk.h>
-#include "../model.h"
+#include "../model/model.h"
 
 int ufsm_add_entry_action_dialog(GtkWindow *parent, struct ufsmm_model *model,
                                 struct ufsmm_state *state);

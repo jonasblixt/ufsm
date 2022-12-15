@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include "model.h"
+#include "model/model.h"
 #include "logic/canvas.h"
 #include "render.h"
 

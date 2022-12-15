@@ -7,7 +7,7 @@
 #include <cairo.h>
 
 #include "controller.h"
-#include "model.h"
+#include "model/model.h"
 #include "render.h"
 #include "menu.h"
 #include "nav.h"

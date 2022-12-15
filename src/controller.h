@@ -5,7 +5,7 @@
 #include "logic/canvas.h"
 #include "undo.h"
 #include "menu.h"
-#include "model.h"
+#include "model/model.h"
 #include "colors.h"
 #include "common.h"
 

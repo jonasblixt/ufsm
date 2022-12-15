@@ -1,7 +1,7 @@
 #ifndef UFSMM_UTILS_H
 #define UFSMM_UTILS_H
 
-#include "model.h"
+#include "model/model.h"
 #include "controller.h"
 
 

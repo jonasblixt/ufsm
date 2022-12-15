@@ -1,5 +1,5 @@
 #include <string.h>
-#include "model.h"
+#include "model/model.h"
 #include "undo.h"
 #include "status.h"
 

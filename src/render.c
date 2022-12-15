@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "model.h"
+#include "model/model.h"
 #include "render.h"
 #include "utils.h"
 
