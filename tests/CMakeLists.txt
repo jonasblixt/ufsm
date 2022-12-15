@@ -5,10 +5,10 @@ add_compile_options(
 add_link_options(-fsanitize=address)
 
 set(C_TESTS_COMMON
-    test_helper.c
+    C/test_helper.c
 )
 
-set(C_TESTS
+set(TESTS
     test_final
     test_chained_signals
     test_fork_join
@@ -25,15 +25,15 @@ set(GEN_OUTPUT ${CMAKE_BINARY_DIR}/gen/)
 
 file(MAKE_DIRECTORY ${GEN_OUTPUT})
 
-foreach(c_test IN LISTS C_TESTS)
+foreach(c_test IN LISTS TESTS)
     add_custom_command(
-        COMMAND ufsm-generate c ${CMAKE_SOURCE_DIR}/test/c_generator/${c_test}.ufsm ${GEN_OUTPUT}
+        COMMAND ufsm-generate c ${CMAKE_SOURCE_DIR}/tests/${c_test}.ufsm ${GEN_OUTPUT}
         DEPENDS ${c_test}.ufsm
         OUTPUT ${GEN_OUTPUT}/${c_test}.c ${GEN_OUTPUT}/${c_test}.h
         COMMENT "Generating code for ${c_test}"
     )
 
-    add_executable(${c_test} ${c_test}.c ${GEN_OUTPUT}/${c_test}.c ${C_TESTS_COMMON})
+    add_executable(${c_test} C/${c_test}.c ${GEN_OUTPUT}/${c_test}.c ${C_TESTS_COMMON})
     target_compile_options(${c_test} PRIVATE -I${CMAKE_BINARY_DIR})
     add_test(${c_test} ${c_test})
 endforeach()
