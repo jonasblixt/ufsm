@@ -7,26 +7,89 @@ from .model_utils import *
 
 logger = logging.getLogger(__name__)
 
+
+def _initial_state_vector_inner(hmodel: Model, region: Region, isv: InitialVector,
+                                explicit_targets):
+    logger.debug(f"Checking region {region}")
+    # TODO: Check for auto-transitions
+    # First check if we've reached a region that hold any of the
+    #  explicit target states
+    explicit_target = None
+    for s in explicit_targets:
+        if s.parent == region:
+            explicit_target = s
+            break
+
+    if explicit_target is not None:
+        explicit_targets.remove(explicit_target)
+        logger.debug(f"Explicit enter state {s}")
+        for ea in s.entries:
+            isv.actions.append(ea)
+        for r in s.regions:
+            _initial_state_vector_inner(hmodel, r, isv, explicit_targets)
+        return
+
+    t = find_init_transition_in_region(region)
+
+    assert t is not None
+
+    logger.debug(f"Found init transition {t}")
+    isv.actions += t.actions
+
+    if t.dest.parent == region:
+        # The easy path, destination state is in the same region,
+        # Enter state and recurse over regions
+
+        logger.debug(f"Normal enter state {t.dest}")
+        for ea in t.dest.entries:
+            isv.actions.append(ea)
+        for r in t.dest.regions:
+            _initial_state_vector_inner(hmodel, r, isv, explicit_targets)
+    else:
+        # We've reached a region with an init transition where the destitation
+        # state is not in the same region as the init state
+
+        # Find the parent states between the current region and the target state
+        parent_states = find_parent_states(t.dest, region)
+
+        # Add parent states and destination state to the explicit target states,
+        # except the parent state that's in this region,
+        explicit_targets += parent_states[1:]
+        explicit_targets.append(t.dest)
+
+        logger.debug(f"Top state enter state {parent_states[0]}")
+        # Enter the "top state" and recurse over regions
+        for ea in parent_states[0].entries:
+            isv.actions.append(ea)
+        for r in parent_states[0].regions:
+            _initial_state_vector_inner(hmodel, r, isv, explicit_targets)
+
 def _initial_state_vector(hmodel: Model):
-    isv = []
-    logger.debug("Entry rules:")
+    """
+        The init vector is generated in two steps
+
+        1) Iterate over all Init and History states to preset the state
+            vector
+
+        2) Recursivly resolve all init transitions from the root to generate
+            all action/entry calls
+
+    """
+    isv = InitialVector()
+    logger.debug("Building initial state vector")
     for s_id, s in hmodel.states.items():
         if isinstance(s, Init) or isinstance(s, ShallowHistory):
             t = s.transitions[0]
+            nca = nearest_common_ancestor(t.source, t.dest)
+            parent_states = find_parent_states(t.dest, nca)
+            # TODO: This will produce redundant assignments, states could possibly
+            # be a set
+            isv.states += parent_states
+            isv.states.append(t.dest)
 
-            parent_states = find_parent_states(t.dest)
+    _initial_state_vector_inner(hmodel, hmodel.root, isv, [])
 
-            rule = Rule()
-            rule.wsv_states = parent_states.copy()
-
-            entry_rule = EntryRule(rule)
-            entry_rule.targets.append(t.dest)
-            entry_rule.actions = t.actions.copy()
-            logger.debug(f"{entry_rule}")
-
-            isv.append(entry_rule)
-
-    isv.reverse()
+    logger.debug("Initial state vector done")
     return isv
 
 
@@ -266,7 +329,7 @@ def _compute_completion_event(hmodel: Model, fmodel: FlatModel, t: Transition):
             if it does, we continue with 'ct'
         3) If '2' is satisfied the 'ct' is executed
             3a) Exit(ct.source, exit_exclution_list)
-            3b) Run 
+            3b) Run
             3c) Append 'ct.source' on the 'exit_exclusion_list'
         4) If ct.dest is another Final state: source = ct.source,
             goto 1

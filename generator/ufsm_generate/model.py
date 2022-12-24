@@ -133,7 +133,8 @@ class Transition:
     trigger: Any = None  # Can be either Event or Signal
     guards: List[GuardBase] = field(default_factory=list)
     actions: List[ActionBase] = field(default_factory=list)
-
+    def __str__(self):
+        return f"{self.source} -> {self.dest} / " + ",".join(str(a) for a in self.actions)
 
 @dataclass
 class Region:

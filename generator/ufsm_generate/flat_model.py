@@ -97,11 +97,15 @@ class FlatTransition:
 
         return result
 
+@dataclass
+class InitialVector:
+    states: List[State] = field(default_factory=list)
+    actions: List[Any] = field(default_factory=list)
 
 @dataclass
 class FlatModel:
     exit_rules: Dict[UUID, ExitRule] = field(default_factory=dict)
     entry_rules: Dict[UUID, EntryRule] = field(default_factory=dict)
     history_rules: Dict[UUID, List[EntryRule]] = field(default_factory=dict)
-    isv: List[FlatTransition] = field(default_factory=list)
+    isv: InitialVector = None
     transition_schedule: List[FlatTransition] = field(default_factory=list)

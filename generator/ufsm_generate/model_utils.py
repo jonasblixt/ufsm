@@ -51,12 +51,16 @@ def find_completion_transition_from_final(state: State) -> [Transition]:
             return t
     return None
 
-def find_parent_states(state: State) -> [State]:
-    """Find all parent states of state 'state'"""
+def find_parent_states(state: State, nca = None) -> [State]:
+    """Find all parent states of state 'state' up until optional region 'nca'"""
     result = []
     s = state
+    if state.parent == nca:
+        return []
     while s != None:
         pr = s.parent
+        if pr == nca:
+            break
         s = pr.parent
 
         if s != None:

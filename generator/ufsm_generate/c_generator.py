@@ -224,27 +224,28 @@ def _gen_transition_inner(hmodel, fmodel, f, ft, rules, indent):
     _emit(f, indent, "}")
 
 def _gen_reset_vector(hmodel, fmodel, f):
+    for s in fmodel.isv.states:
+        _emit(f, 3, f"m->wsv[{s.parent.index}] = {s.index}; // {s.parent} = {s}")
+    for a in fmodel.isv.actions:
+        _emit(f, 3, f"{a.action.name}(m->user);")
+    return
     for r in fmodel.isv:
-        s = r.targets[0]
-        _emit(f, 3, f"m->wsv[{s.parent.index}] = {s.index};")
+        for s in r.targets:
+            indent = 3
 
-    for r in fmodel.isv:
-        s = r.targets[0]
-        indent = 3
+            if len(r.rule) > 0:
+                _emit(f, indent, f"if ({_sc_expr_helper(r.rule)}) {{")
+                indent += 1
 
-        if len(r.rule) > 0:
-            _emit(f, indent, f"if ({_sc_expr_helper(r.rule)}) {{")
-            indent += 1
+            # TODO: Signals
+            for a in r.actions:
+                _emit(f, indent, f"{a.action.name}(m->user);")
+            for entry in s.entries:
+                _emit(f, indent, f"{entry.action.name}(m->user);")
 
-        # TODO: Signals
-        for a in r.actions:
-            _emit(f, indent, f"{a.action.name}(m->user);")
-        for entry in s.entries:
-            _emit(f, indent, f"{entry.action.name}(m->user);")
-
-        if len(r.rule) > 0:
-            indent -= 1
-            _emit(f, indent, "}")
+            if len(r.rule) > 0:
+                indent -= 1
+                _emit(f, indent, "}")
 
 
 def _gen_transition(hmodel, fmodel, f, ft, indent):

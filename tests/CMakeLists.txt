@@ -10,6 +10,7 @@ set(TESTS
     test_nested_states
     test_nested_states3
     test_nested_states4
+    test_init_to_nested
 )
 
 set(GEN_OUTPUT ${CMAKE_BINARY_DIR}/gen/)
