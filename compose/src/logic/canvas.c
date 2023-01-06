@@ -43,130 +43,44 @@ process_more:
 
     switch(event) {
         case UFSM_RESET:
-            m->wsv[0] = 1;
-            m->wsv[13] = 22;
-            m->wsv[48] = 115;
-            m->wsv[45] = 109;
-            m->wsv[39] = 92;
-            m->wsv[38] = 125;
-            m->wsv[37] = 87;
-            m->wsv[36] = 83;
-            m->wsv[35] = 80;
-            m->wsv[34] = 76;
-            m->wsv[33] = 71;
-            m->wsv[31] = 66;
-            m->wsv[30] = 63;
-            m->wsv[29] = 60;
-            m->wsv[28] = 57;
-            m->wsv[27] = 53;
-            m->wsv[26] = 50;
-            m->wsv[24] = 45;
-            m->wsv[22] = 40;
-            m->wsv[15] = 38;
-            m->wsv[19] = 32;
-            m->wsv[16] = 26;
-            m->wsv[17] = 27;
-            m->wsv[14] = 23;
-            m->wsv[9] = 16;
-            m->wsv[11] = 19;
-            m->wsv[10] = 17;
-            m->wsv[6] = 11;
-            m->wsv[8] = 14;
-            m->wsv[7] = 12;
-            m->wsv[5] = 10;
-            m->wsv[4] = 8;
-            m->wsv[2] = 4;
-            m->wsv[3] = 6;
-            m->wsv[1] = 2;
-            if ((m->wsv[0] == 1)) {
-                canvas_select_root_region(m->user);
-            }
-            if ((m->wsv[38] == 112) && (m->wsv[13] == 90) && (m->wsv[0] == 1)) {
-                canvas_check_sresize_boxes(m->user);
-                canvas_check_action_func(m->user);
-            }
-            if ((m->wsv[38] == 106) && (m->wsv[13] == 90) && (m->wsv[0] == 1)) {
-                canvas_check_rresize_boxes(m->user);
-            }
-            if ((m->wsv[38] == 91) && (m->wsv[13] == 90) && (m->wsv[0] == 1)) {
-                canvas_check_text_block(m->user);
-            }
-            if ((m->wsv[13] == 90) && (m->wsv[0] == 1)) {
-            }
-            if ((m->wsv[14] == 86) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-            }
-            if ((m->wsv[14] == 82) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-            }
-            if ((m->wsv[14] == 78) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-            }
-            if ((m->wsv[14] == 75) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-            }
-            if ((m->wsv[15] == 70) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_show_annotation_dialog(m->user);
-            }
-            if ((m->wsv[15] == 65) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_add_vertice(m->user);
-            }
-            if ((m->wsv[15] == 62) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_update_final_preview(m->user);
-            }
-            if ((m->wsv[15] == 59) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_update_init_preview(m->user);
-            }
-            if ((m->wsv[15] == 56) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_dhistory_update_preview(m->user);
-            }
-            if ((m->wsv[15] == 52) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_history_update_preview(m->user);
-            }
-            if ((m->wsv[15] == 49) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_terminate_update_preview(m->user);
-            }
-            if ((m->wsv[15] == 44) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_update_fork_start(m->user);
-            }
-            if ((m->wsv[15] == 39) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_update_join_start(m->user);
-            }
-            if ((m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-            }
-            if ((m->wsv[15] == 31) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_transition_select_source(m->user);
-            }
-            if ((m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_state_select_start_begin(m->user);
-            }
-            if ((m->wsv[16] == 26) && (m->wsv[15] == 25) && (m->wsv[14] == 24) && (m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_new_state_set_start(m->user);
-            }
-            if ((m->wsv[13] == 22) && (m->wsv[0] == 1)) {
-                canvas_tools_begin(m->user);
-            }
-            if ((m->wsv[0] == 1)) {
-            }
-            if ((m->wsv[9] == 16) && (m->wsv[0] == 1)) {
-            }
-            if ((m->wsv[9] == 16) && (m->wsv[0] == 1)) {
-            }
-            if ((m->wsv[0] == 1)) {
-            }
-            if ((m->wsv[6] == 11) && (m->wsv[0] == 1)) {
-                canvas_snap_enable_global(m->user);
-            }
-            if ((m->wsv[6] == 11) && (m->wsv[0] == 1)) {
-            }
-            if ((m->wsv[4] == 9) && (m->wsv[1] == 7) && (m->wsv[0] == 1)) {
-                canvas_mselect_move(m->user);
-            }
-            if ((m->wsv[1] == 7) && (m->wsv[0] == 1)) {
-            }
-            if ((m->wsv[1] == 3) && (m->wsv[0] == 1)) {
-            }
-            if ((m->wsv[2] == 5) && (m->wsv[1] == 3) && (m->wsv[0] == 1)) {
-                canvas_mselect_move(m->user);
-            }
-            if ((m->wsv[0] == 1)) {
-            }
+            m->wsv[1] = 2; // Copy/Paste = Idle
+            m->wsv[3] = 6; // New region = Move
+            m->wsv[2] = 4; // New region = Idle
+            m->wsv[4] = 8; // New region = Idle
+            m->wsv[5] = 10; // New region = Move
+            m->wsv[7] = 12; // New region = Shift inactive
+            m->wsv[8] = 14; // New region = Ctrl Inactive
+            m->wsv[6] = 11; // Keyboard modifiers = Keyboard modifiers
+            m->wsv[10] = 17; // New region = Idle
+            m->wsv[11] = 19; // New region = Idle
+            m->wsv[9] = 16; // Pan and zoom = Pan zoom idle
+            m->wsv[14] = 23; // Tool controller = Tools
+            m->wsv[17] = 27; // New region = Start inner
+            m->wsv[16] = 26; // New state = Select start
+            m->wsv[19] = 32; // New transition = Select source state
+            m->wsv[15] = 38; // Add actions = Add
+            m->wsv[22] = 40; // New join = New Join start
+            m->wsv[24] = 45; // New fork = New Fork start
+            m->wsv[26] = 50; // New terminate = New Terminate Start
+            m->wsv[27] = 53; // New history = New history start
+            m->wsv[28] = 57; // New deep history = New dhistory start
+            m->wsv[29] = 60; // New init = New init start
+            m->wsv[30] = 63; // New final = New final start
+            m->wsv[31] = 66; // New vertice = Add vertice
+            m->wsv[33] = 71; // New annotation = Input text
+            m->wsv[34] = 76; // Edit actions = Edit
+            m->wsv[35] = 80; // Delete actions = Delete selection
+            m->wsv[36] = 83; // Zoom = Zoom
+            m->wsv[37] = 87; // Jump = Jump
+            m->wsv[38] = 125; // Object Selection = Prepare
+            m->wsv[39] = 92; // Transition selection = Transition
+            m->wsv[45] = 109; // Region selection = Region
+            m->wsv[48] = 115; // State selection = State
+            m->wsv[13] = 22; // Main = Tool Mode
+            m->wsv[0] = 1; // Root = uFSM Compose
+            canvas_select_root_region(m->user);
+            canvas_tools_begin(m->user);
+            canvas_snap_enable_global(m->user);
         break;
         case eLMBDown:
             /* Paste -> Idle */

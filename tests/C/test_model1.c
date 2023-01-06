@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     {
         printf("-> e2\n");
         ufsm_test_reset();
-        const char *exp[] = {"xC2", "xA", "eB", "eE1", "eD1", "eD12", "eE11", NULL};
+        const char *exp[] = {"xC2", "xA", "eB", "eD1", "eE1", "eE11", "eD12", NULL};
         test_model1_process(&m, e2);
         assert (ufsm_test_check(exp));
     }
@@ -83,10 +83,10 @@ int main(int argc, char **argv)
         printf("-> e1\n");
         ufsm_test_reset();
         test_model1_process(&m, e1);
-        const char *exp[] = { "xD12",
-                                "xE12",
-                                "xD1",
+        const char *exp[] = { "xE12",
+                                "xD12",
                                 "xE1",
+                                "xD1",
                                 "xB",
                                 "o1",
                                 "eA",
@@ -97,10 +97,10 @@ int main(int argc, char **argv)
                                 "xA",
                                 "o2",
                                 "eB",
-                                "eE1",
                                 "eD1",
-                                "eD11",
+                                "eE1",
                                 "eE11",
+                                "eD11",
                                 NULL};
 
         assert (ufsm_test_check(exp));

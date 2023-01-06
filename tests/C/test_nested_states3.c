@@ -28,7 +28,7 @@ int main(void)
     {
         printf("-> eStart\n");
         ufsm_test_reset();
-        const char *exp[] = {"eB", "eB20", "eB1", "eB11", "eB2", NULL};
+        const char *exp[] = {"eB", "eB1", "eB20", "eB2", "eB11", NULL};
         test_nested_states3_process(&m, eStart);
         assert (ufsm_test_check(exp) && "eStart");
     }
@@ -36,7 +36,7 @@ int main(void)
     {
         printf("-> eStop\n");
         ufsm_test_reset();
-        const char *exp[] = {"xB11", "xB2", "xB1", "xB", NULL};
+        const char *exp[] = {"xB2", "xB11", "xB1", "xB", NULL};
         test_nested_states3_process(&m, eStop);
         assert (ufsm_test_check(exp) && "eStop");
     }

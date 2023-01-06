@@ -7,6 +7,7 @@ from .model_utils import *
 
 logger = logging.getLogger(__name__)
 
+
 def _merge_rules(t: FlatTransition):
     logger.debug(f"{t}")
     entries_to_check = copy.copy(t.entries)
@@ -21,8 +22,10 @@ def _merge_rules(t: FlatTransition):
             if e.rule == e1.rule:
                 logger.debug(f"Merge {e} {e1}")
 
+
 def _reduce_entry_conditions(t: FlatTransition):
     pass
+
 
 def _simple_reduce_exits(t: FlatTransition):
     logger.debug(f"simple_reduce: {t}")
@@ -42,13 +45,14 @@ def _simple_reduce_exits(t: FlatTransition):
 
     logger.debug(f"result: {t}")
 
+
 def optimizer(fmodel: FlatModel) -> FlatModel:
     logger.debug("Optimizing...")
 
-    #for t in fmodel.transition_schedule:
+    # for t in fmodel.transition_schedule:
     #    _reduce_entry_conditions(t)
 
-    #_merge_rules(fmodel.transitions_schedule[0])
+    # _merge_rules(fmodel.transitions_schedule[0])
     _simple_reduce_exits(fmodel.transition_schedule[0])
 
     return fmodel

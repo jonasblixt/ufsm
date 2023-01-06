@@ -27,8 +27,10 @@ class Rule:
             result += "{" + "^".join(s.name for s in self.wsv_states) + "}"
 
         return result
+
     def __len__(self):
         return len(self.wsv_states) + len(self.csv_states)
+
 
 @dataclass
 class EntryRule:
@@ -97,10 +99,12 @@ class FlatTransition:
 
         return result
 
+
 @dataclass
 class InitialVector:
     states: List[State] = field(default_factory=list)
     actions: List[Any] = field(default_factory=list)
+
 
 @dataclass
 class FlatModel:

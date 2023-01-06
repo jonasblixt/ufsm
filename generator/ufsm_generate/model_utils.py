@@ -1,6 +1,7 @@
 import uuid
 from .model import *
 
+
 def find_orth_finals(state: State):
     """Find other final states in orthogonal regions to 'state'"""
     result = []
@@ -34,6 +35,7 @@ def find_orth_regions(state: State):
         result.append(r)
     return result
 
+
 def find_completion_transition_from_final(state: State) -> [Transition]:
     if not isinstance(state, Final):
         return None
@@ -51,7 +53,8 @@ def find_completion_transition_from_final(state: State) -> [Transition]:
             return t
     return None
 
-def find_parent_states(state: State, nca = None) -> [State]:
+
+def find_parent_states(state: State, nca=None) -> [State]:
     """Find all parent states of state 'state' up until optional region 'nca'"""
     result = []
     s = state

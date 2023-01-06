@@ -1,17 +1,20 @@
 import sys
 import argparse
 import logging
+import importlib.metadata
 from pathlib import Path
-from .version import __version__
 from . import backend
 from .flattener import flatten_model
 from .parser import ufsm_parse_model
 from .optimizer import optimizer
-from .c_generator import c_generator
+from .c_generator import c_generator, c_generator_argparser
+
+__version__ = importlib.metadata.version("ufsm-generate")
+
 
 def main():
     parser = argparse.ArgumentParser(description="uFSM generator")
-    parser.add_argument("backend", help="Code generator backend")
+    backend_parser = parser.add_subparsers(help="Code generator backend")
     parser.add_argument("model", help="Input model")
     parser.add_argument("output_dir", help="Output directory")
     parser.add_argument(
@@ -33,6 +36,8 @@ def main():
         help="Print version information and exit.",
     )
 
+    c_generator_argparser(backend_parser)
+
     args = parser.parse_args()
 
     levels = [logging.CRITICAL, logging.WARNING, logging.DEBUG]
@@ -51,17 +56,19 @@ def main():
         logging.error(f"Could not open output directory {args.output_dir}")
         return -1
 
-    backend = args.backend
     model_fn = args.model
     output_dir = args.output_dir
     verbosity = args.verbose
 
     hmodel = ufsm_parse_model(model_fn)
     fmodel = flatten_model(hmodel)
-    #fmodel_optimized = optimizer(fmodel)
+    # fmodel_optimized = optimizer(fmodel)
 
-    c_generator(fmodel, hmodel,
-            f"{args.output_dir}/{hmodel.name}.c",
-            f"{args.output_dir}/{hmodel.name}.h",
+    c_generator(
+        fmodel,
+        hmodel,
+        f"{args.output_dir}/{hmodel.name}.c",
+        f"{args.output_dir}/{hmodel.name}.h",
+        args,
     )
     return 0

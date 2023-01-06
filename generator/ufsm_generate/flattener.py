@@ -8,8 +8,9 @@ from .model_utils import *
 logger = logging.getLogger(__name__)
 
 
-def _initial_state_vector_inner(hmodel: Model, region: Region, isv: InitialVector,
-                                explicit_targets):
+def _initial_state_vector_inner(
+    hmodel: Model, region: Region, isv: InitialVector, explicit_targets
+):
     logger.debug(f"Checking region {region}")
     # TODO: Check for auto-transitions
     # First check if we've reached a region that hold any of the
@@ -64,15 +65,16 @@ def _initial_state_vector_inner(hmodel: Model, region: Region, isv: InitialVecto
         for r in parent_states[0].regions:
             _initial_state_vector_inner(hmodel, r, isv, explicit_targets)
 
+
 def _initial_state_vector(hmodel: Model):
     """
-        The init vector is generated in two steps
+    The init vector is generated in two steps
 
-        1) Iterate over all Init and History states to preset the state
-            vector
+    1) Iterate over all Init and History states to preset the state
+        vector
 
-        2) Recursivly resolve all init transitions from the root to generate
-            all action/entry calls
+    2) Recursivly resolve all init transitions from the root to generate
+        all action/entry calls
 
     """
     isv = InitialVector()
@@ -177,7 +179,7 @@ def _build_history_rules(hmodel: Model, fmodel: FlatModel):
                 logger.debug(f"{s}")
                 rule = copy.deepcopy(fmodel.entry_rules[s.id])
                 rule.rule.history = True
-                #rule.rule.states.insert(0, s)
+                # rule.rule.states.insert(0, s)
                 rules.append(rule)
             history_rules[history_state.id] = rules
 
@@ -221,12 +223,16 @@ def _transition_enter(
                 if init_trans is not None:
                     if isinstance(init_trans.source, Init):
                         logging.debug(f"Normal init for region: {r} {init_trans.dest}")
-                        entry_rule = copy.deepcopy(fmodel.entry_rules[init_trans.dest.id])
+                        entry_rule = copy.deepcopy(
+                            fmodel.entry_rules[init_trans.dest.id]
+                        )
                         entry_rule.actions = init_trans.actions + entry_rule.actions
                         result.append(entry_rule)
                     elif isinstance(init_trans.source, ShallowHistory):
                         logging.debug(f"History init for region: {r}")
-                        result += copy.deepcopy(fmodel.history_rules[init_trans.source.id])
+                        result += copy.deepcopy(
+                            fmodel.history_rules[init_trans.source.id]
+                        )
                 else:
                     logger.debug(f"WARNING found no initalizer in region {r}")
 
@@ -306,37 +312,36 @@ def _build_join(hmodel: Model, fmodel: FlatModel, t: Transition):
 
     ft.exits = exit_rules
     top_state_to_enter = find_ancestor_state(t.dest, nca)
-    entry_rules = _transition_enter(
-        hmodel, fmodel, top_state_to_enter, t.dest, nca
-    )
+    entry_rules = _transition_enter(hmodel, fmodel, top_state_to_enter, t.dest, nca)
 
     ft.entries = entry_rules
 
     ft.actions = t.actions
     return ft
 
+
 def _compute_completion_event(hmodel: Model, fmodel: FlatModel, t: Transition):
-    """ Completion-event algorithm:
+    """Completion-event algorithm:
 
-        't'                     Transition
-        'ct'                    Completion transition
-        'exit_exclution_list'   List of states that must be excluded when
-                                computing the exit scope of a state
+    't'                     Transition
+    'ct'                    Completion transition
+    'exit_exclution_list'   List of states that must be excluded when
+                            computing the exit scope of a state
 
-        0) source = t.source, append t.source to the 'exit_exclusion_list'
-        1) We transition into a final state 'Final'
-        2) Check if the parent state to 'Final' has a 'completion-event' transition.
-            if it does, we continue with 'ct'
-        3) If '2' is satisfied the 'ct' is executed
-            3a) Exit(ct.source, exit_exclution_list)
-            3b) Run
-            3c) Append 'ct.source' on the 'exit_exclusion_list'
-        4) If ct.dest is another Final state: source = ct.source,
-            goto 1
+    0) source = t.source, append t.source to the 'exit_exclusion_list'
+    1) We transition into a final state 'Final'
+    2) Check if the parent state to 'Final' has a 'completion-event' transition.
+        if it does, we continue with 'ct'
+    3) If '2' is satisfied the 'ct' is executed
+        3a) Exit(ct.source, exit_exclution_list)
+        3b) Run
+        3c) Append 'ct.source' on the 'exit_exclusion_list'
+    4) If ct.dest is another Final state: source = ct.source,
+        goto 1
     """
 
-    source = t.source # Source state that triggered a 'completion' transition
-    dest = t.dest     # Current destination state
+    source = t.source  # Source state that triggered a 'completion' transition
+    dest = t.dest  # Current destination state
     exit_exclusion_list = [source.id]
     exit_rules = []
     entry_rules = []
@@ -350,8 +355,10 @@ def _compute_completion_event(hmodel: Model, fmodel: FlatModel, t: Transition):
 
         nca = nearest_common_ancestor(source, ct.dest)
         top_state_to_exit = find_ancestor_state(source, nca)
-        orth_finals = find_orth_finals(source)         # Final states in orthogonal regions
-        orth_regions = [s.parent for s in orth_finals] # List of parent regions of final states
+        orth_finals = find_orth_finals(source)  # Final states in orthogonal regions
+        orth_regions = [
+            s.parent for s in orth_finals
+        ]  # List of parent regions of final states
 
         logger.debug(f"Found {len(orth_finals)} orthogonal final's")
 
@@ -388,7 +395,10 @@ def _compute_completion_event(hmodel: Model, fmodel: FlatModel, t: Transition):
 
     return exit_rules, entry_rules
 
-def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, input_transition: Transition):
+
+def _build_one_transition_schedule(
+    hmodel: Model, fmodel: FlatModel, input_transition: Transition
+):
     t = input_transition
     logging.debug(f"Transition {t.trigger} {t.source} -> {t.dest}")
     ft = FlatTransition(t.trigger, t.source, t.dest)
@@ -404,7 +414,7 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, input_trans
     else:
         logger.error("Don't know what to do")
         return
-        #raise Exception()
+        # raise Exception()
 
     if isinstance(t.source, Join):
         return _build_join(hmodel, fmodel, t)
@@ -479,7 +489,9 @@ def _build_one_transition_schedule(hmodel: Model, fmodel: FlatModel, input_trans
     # If the destination state is a 'Final' state we shall try to statically
     #  compute 'completion-events'
     if isinstance(t.dest, Final):
-        completion_exits, completion_entries = _compute_completion_event(hmodel, fmodel, t)
+        completion_exits, completion_entries = _compute_completion_event(
+            hmodel, fmodel, t
+        )
 
         ft.entries += completion_entries
         ft.exits += completion_exits

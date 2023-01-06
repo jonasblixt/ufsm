@@ -20,6 +20,7 @@ UFSMM_GUARD_LTE = 6
 UFSMM_GUARD_PSTATE = 7
 UFSMM_GUARD_NSTATE = 8
 
+
 @dataclass
 class Event:
     """Model wide event object.
@@ -34,15 +35,18 @@ class Event:
     def __str__(self):
         return f"<{self.name}>"
 
+
 @dataclass
 class AutoTransitionTrigger:
     def __str__(self):
         return "<auto-transition>"
 
+
 @dataclass
 class CompletionTrigger:
     def __str__(self):
         return "<completion-event>"
+
 
 @dataclass
 class Signal:
@@ -75,8 +79,10 @@ class Guard:
 
     id: UUID
     name: str
+
     def __str__(self):
         return f"{self.name}()"
+
 
 # TODO: ActionBase, ActionFunction and ActionSignal
 # These objects represents the 'instance' when, for example, an action fuction
@@ -88,6 +94,7 @@ class Guard:
 # ActionCall?
 # ActionEmitSignal?
 #
+
 
 @dataclass
 class ActionBase:
@@ -133,8 +140,12 @@ class Transition:
     trigger: Any = None  # Can be either Event or Signal
     guards: List[GuardBase] = field(default_factory=list)
     actions: List[ActionBase] = field(default_factory=list)
+
     def __str__(self):
-        return f"{self.source} -> {self.dest} / " + ",".join(str(a) for a in self.actions)
+        return f"{self.source} -> {self.dest} / " + ",".join(
+            str(a) for a in self.actions
+        )
+
 
 @dataclass
 class Region:
@@ -158,8 +169,10 @@ class StateBase:
 
     def __str__(self):
         return self.name
+
     def __eq__(self, other):
-        return (self.id == other.id)
+        return self.id == other.id
+
 
 @dataclass
 class State(StateBase):

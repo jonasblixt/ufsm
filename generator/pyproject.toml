@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "ufsm_generate"
-version = "0.0.1"
+version = "0.5.0"
 authors = [
   { name="Jonas Blixt", email="jonpe960@gmail.com" },
 ]

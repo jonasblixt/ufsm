@@ -13,10 +13,24 @@
       "id":"defca602-857d-4aad-a8b8-a586e0c66c5f"
     }
   ],
+  "signals":[
+  ],
   "actions":[
     {
       "name":"eMode2",
       "id":"3e65f479-387d-4379-8640-c9a8a9f671e5"
+    },
+    {
+      "name":"eMode1",
+      "id":"a66dde4a-bde3-4fd6-9f77-027e80edad88"
+    },
+    {
+      "name":"xMode1",
+      "id":"c2a79b51-5a42-497b-8a05-eb01930dc5b2"
+    },
+    {
+      "name":"xMode2",
+      "id":"c107557b-5b64-4b19-a38a-ff1987813f20"
     }
   ],
   "guards":[
@@ -43,7 +57,7 @@
         "region":[
           {
             "id":"619fb9c7-6d1d-452b-b1a0-d41ddb1b7024",
-            "name":"New region",
+            "name":"r2",
             "off_page":false,
             "height":350,
             "states":[
@@ -57,8 +71,18 @@
                 "y":520.0,
                 "orientation":0,
                 "entries":[
+                  {
+                    "id":"fc86fcd5-be96-47fb-8dd8-bb08e2a58a4b",
+                    "kind":0,
+                    "action-id":"a66dde4a-bde3-4fd6-9f77-027e80edad88"
+                  }
                 ],
                 "exits":[
+                  {
+                    "id":"2f1cceec-582e-4aa1-9ab0-5f21b3d07479",
+                    "kind":0,
+                    "action-id":"c2a79b51-5a42-497b-8a05-eb01930dc5b2"
+                  }
                 ],
                 "region":[
                 ],
@@ -66,6 +90,7 @@
                   {
                     "id":"8841adf7-4738-47ed-9a4f-f96b9766868f",
                     "trigger":"defca602-857d-4aad-a8b8-a586e0c66c5f",
+                    "trigger-kind":0,
                     "source":{
                       "state":"af29b0fc-d701-4037-9272-ab596e76640b",
                       "side":"right",
@@ -114,6 +139,7 @@
                 "transitions":[
                   {
                     "id":"cba1ab6a-4758-4a98-b0d9-1b01d77af2d1",
+                    "trigger-kind":0,
                     "source":{
                       "state":"200a8544-fbfa-44df-b611-4f6e89ed67e1",
                       "side":"bottom",
@@ -156,6 +182,11 @@
                   }
                 ],
                 "exits":[
+                  {
+                    "id":"dfb205af-10e2-4894-b71c-b66367ba499b",
+                    "kind":0,
+                    "action-id":"c107557b-5b64-4b19-a38a-ff1987813f20"
+                  }
                 ],
                 "region":[
                 ],
@@ -163,6 +194,7 @@
                   {
                     "id":"7f7f1719-ded0-4220-bd72-14750922cab6",
                     "trigger":"defca602-857d-4aad-a8b8-a586e0c66c5f",
+                    "trigger-kind":0,
                     "source":{
                       "state":"5346ca93-ffe0-4e13-b79e-664db7571984",
                       "side":"left",
@@ -192,7 +224,7 @@
           },
           {
             "id":"14786298-9e1b-431d-9a9b-30314ff2a6c8",
-            "name":"New region",
+            "name":"r1",
             "off_page":false,
             "height":250,
             "states":[
@@ -215,6 +247,7 @@
                   {
                     "id":"4cab3bff-499d-429d-9c5b-c322b1bdaa85",
                     "trigger":"b7e5f18c-84fa-4055-a504-0b8250bbddcd",
+                    "trigger-kind":0,
                     "source":{
                       "state":"463d38ec-485b-49a5-9d95-d151233c8391",
                       "side":"left",
@@ -259,6 +292,7 @@
                   {
                     "id":"62a3e177-4501-4ea1-904a-82da48d6bcb1",
                     "trigger":"b7e5f18c-84fa-4055-a504-0b8250bbddcd",
+                    "trigger-kind":0,
                     "source":{
                       "state":"114c5136-4ff3-498d-adf8-e252bf242d57",
                       "side":"right",
@@ -302,6 +336,7 @@
                 "transitions":[
                   {
                     "id":"3cdc2505-c898-4e9e-91dc-bde686041b31",
+                    "trigger-kind":0,
                     "source":{
                       "state":"bdbece38-d494-45e1-9ede-e0f5b6649967",
                       "side":"bottom",
@@ -351,6 +386,7 @@
         "transitions":[
           {
             "id":"b0381232-0af9-4f04-a833-55ee7e65d4bf",
+            "trigger-kind":0,
             "source":{
               "state":"4ddc9c27-8772-4a0f-b61f-4e61d9ec3de5",
               "side":"bottom",

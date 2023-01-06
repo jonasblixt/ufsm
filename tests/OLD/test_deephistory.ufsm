@@ -1,634 +1,509 @@
 {
-  "kind":"uFSM Model",
-  "version":0,
-  "name":"test_deep_history",
-  "triggers":[
-    {
-      "name":"EV_A",
-      "id":"79feb1d8-0791-4a74-a27c-19219b5284a5"
-    },
-    {
-      "name":"EV_B",
-      "id":"78cee9c4-3457-44bd-9728-50ed63dc2503"
-    },
-    {
-      "name":"EV_1",
-      "id":"139462fd-5839-4f17-ba2a-66fa220679a2"
-    },
-    {
-      "name":"EV_EXIT",
-      "id":"52271e61-4c2a-4048-854f-3c7be1fff292"
-    }
-  ],
-  "actions":[
-    {
-      "name":"final",
-      "id":"ff557a93-2b4f-456a-8ddf-88c8075fc4eb"
-    },
-    {
-      "name":"eB",
-      "id":"4dcdbc85-8809-4009-b04e-8651b7328124"
-    },
-    {
-      "name":"eA",
-      "id":"a83648a7-a511-4e3f-8920-e356df195461"
-    },
-    {
-      "name":"eA1",
-      "id":"9188fff0-e88c-4d2b-a214-0fd30c919758"
-    },
-    {
-      "name":"eA2",
-      "id":"d7a1c1e4-00e2-40b5-b5db-2e0f90f26e9b"
-    },
-    {
-      "name":"eC",
-      "id":"2415f8a2-17cc-4548-a32e-3307b693ad7d"
-    },
-    {
-      "name":"eD",
-      "id":"18b58ab9-ec76-4cc1-a5df-04a9760b4b60"
-    },
-    {
-      "name":"eE",
-      "id":"ac8cb299-3cd1-4b0f-989b-06c2389c5301"
-    },
-    {
-      "name":"xA",
-      "id":"3a5b270f-27c6-4fd9-a4a6-7a0878403cad"
-    },
-    {
-      "name":"xA1",
-      "id":"3f9336fe-74c4-44e2-843d-31740cb48030"
-    },
-    {
-      "name":"xA2",
-      "id":"bc50400c-6012-49bd-922b-0073222e5319"
-    },
-    {
-      "name":"xC",
-      "id":"84b82533-2ed6-4281-b2a0-c2b809addc2a"
-    },
-    {
-      "name":"xD",
-      "id":"49606b6b-94ff-4283-a2e0-3f423893a45b"
-    },
-    {
-      "name":"xE",
-      "id":"7a32fb67-fb8f-46da-a01f-b10d8d3acd46"
-    }
-  ],
-  "entries":null,
-  "exits":null,
-  "guards":[
-  ],
-  "region":{
-    "id":"1b5e0881-f6a0-4dc4-b226-45d61bcc6ab6",
-    "name":"Root region",
-    "off_page":false,
-    "height":-1,
-    "states":[
-      {
-        "id":"ba544765-eb77-4783-954d-6f5ce80fccde",
-        "name":"B",
-        "kind":"state",
-        "width":160.0,
-        "height":90.0,
-        "x":470.0,
-        "y":200.0,
-        "orientation":0,
-        "entries":[
-          {
-            "id":"be265a03-88aa-4646-8382-62a97f983350",
-            "kind":0,
-            "action-id":"4dcdbc85-8809-4009-b04e-8651b7328124"
-          }
-        ],
-        "exits":[
-        ],
-        "region":[
-        ],
-        "transitions":[
-          {
-            "id":"5a83fda9-97e4-4dd6-96ad-b5b06c288497",
-            "trigger":"79feb1d8-0791-4a74-a27c-19219b5284a5",
-            "source":{
-              "state":"ba544765-eb77-4783-954d-6f5ce80fccde",
-              "side":"bottom",
-              "offset":20.0
+    "kind": "uFSM Model",
+    "version": 0,
+    "name": "test_deep_history",
+    "triggers": [
+        {"name": "EV_A", "id": "79feb1d8-0791-4a74-a27c-19219b5284a5"},
+        {"name": "EV_B", "id": "78cee9c4-3457-44bd-9728-50ed63dc2503"},
+        {"name": "EV_1", "id": "139462fd-5839-4f17-ba2a-66fa220679a2"},
+        {"name": "EV_EXIT", "id": "52271e61-4c2a-4048-854f-3c7be1fff292"},
+    ],
+    "actions": [
+        {"name": "final", "id": "ff557a93-2b4f-456a-8ddf-88c8075fc4eb"},
+        {"name": "eB", "id": "4dcdbc85-8809-4009-b04e-8651b7328124"},
+        {"name": "eA", "id": "a83648a7-a511-4e3f-8920-e356df195461"},
+        {"name": "eA1", "id": "9188fff0-e88c-4d2b-a214-0fd30c919758"},
+        {"name": "eA2", "id": "d7a1c1e4-00e2-40b5-b5db-2e0f90f26e9b"},
+        {"name": "eC", "id": "2415f8a2-17cc-4548-a32e-3307b693ad7d"},
+        {"name": "eD", "id": "18b58ab9-ec76-4cc1-a5df-04a9760b4b60"},
+        {"name": "eE", "id": "ac8cb299-3cd1-4b0f-989b-06c2389c5301"},
+        {"name": "xA", "id": "3a5b270f-27c6-4fd9-a4a6-7a0878403cad"},
+        {"name": "xA1", "id": "3f9336fe-74c4-44e2-843d-31740cb48030"},
+        {"name": "xA2", "id": "bc50400c-6012-49bd-922b-0073222e5319"},
+        {"name": "xC", "id": "84b82533-2ed6-4281-b2a0-c2b809addc2a"},
+        {"name": "xD", "id": "49606b6b-94ff-4283-a2e0-3f423893a45b"},
+        {"name": "xE", "id": "7a32fb67-fb8f-46da-a01f-b10d8d3acd46"},
+    ],
+    "entries": null,
+    "exits": null,
+    "guards": [],
+    "region": {
+        "id": "1b5e0881-f6a0-4dc4-b226-45d61bcc6ab6",
+        "name": "Root region",
+        "off_page": false,
+        "height": -1,
+        "states": [
+            {
+                "id": "ba544765-eb77-4783-954d-6f5ce80fccde",
+                "name": "B",
+                "kind": "state",
+                "width": 160.0,
+                "height": 90.0,
+                "x": 470.0,
+                "y": 200.0,
+                "orientation": 0,
+                "entries": [
+                    {
+                        "id": "be265a03-88aa-4646-8382-62a97f983350",
+                        "kind": 0,
+                        "action-id": "4dcdbc85-8809-4009-b04e-8651b7328124",
+                    }
+                ],
+                "exits": [],
+                "region": [],
+                "transitions": [
+                    {
+                        "id": "5a83fda9-97e4-4dd6-96ad-b5b06c288497",
+                        "trigger": "79feb1d8-0791-4a74-a27c-19219b5284a5",
+                        "source": {
+                            "state": "ba544765-eb77-4783-954d-6f5ce80fccde",
+                            "side": "bottom",
+                            "offset": 20.0,
+                        },
+                        "dest": {
+                            "state": "eee30303-1e4c-4522-b23b-1ac41e97f556",
+                            "side": "top",
+                            "offset": 70.0,
+                        },
+                        "text-block": {"x": 400.0, "y": 290.0, "w": 70.0, "h": 30.0},
+                        "vertices": [],
+                        "guards": [],
+                        "actions": [],
+                    }
+                ],
             },
-            "dest":{
-              "state":"eee30303-1e4c-4522-b23b-1ac41e97f556",
-              "side":"top",
-              "offset":70.0
+            {
+                "id": "035e8762-693b-41c9-bb19-482e9549b187",
+                "name": "Init",
+                "kind": "init",
+                "width": 20.0,
+                "height": 20.0,
+                "x": 540.0,
+                "y": 140.0,
+                "orientation": 0,
+                "entries": [],
+                "exits": [],
+                "region": [],
+                "transitions": [
+                    {
+                        "id": "e8f347ba-9dc2-4b71-9146-81b4ebf08884",
+                        "source": {
+                            "state": "035e8762-693b-41c9-bb19-482e9549b187",
+                            "side": "bottom",
+                            "offset": 6.014906939338232,
+                        },
+                        "dest": {
+                            "state": "ba544765-eb77-4783-954d-6f5ce80fccde",
+                            "side": "top",
+                            "offset": 80.0,
+                        },
+                        "text-block": {"x": 580.0, "y": 140.0, "w": 100.0, "h": 30.0},
+                        "vertices": [],
+                        "guards": [],
+                        "actions": [],
+                    }
+                ],
             },
-            "text-block":{
-              "x":400.0,
-              "y":290.0,
-              "w":70.0,
-              "h":30.0
-            },
-            "vertices":[
-            ],
-            "guards":[
-            ],
-            "actions":[
-            ]
-          }
-        ]
-      },
-      {
-        "id":"035e8762-693b-41c9-bb19-482e9549b187",
-        "name":"Init",
-        "kind":"init",
-        "width":20.0,
-        "height":20.0,
-        "x":540.0,
-        "y":140.0,
-        "orientation":0,
-        "entries":[
-        ],
-        "exits":[
-        ],
-        "region":[
-        ],
-        "transitions":[
-          {
-            "id":"e8f347ba-9dc2-4b71-9146-81b4ebf08884",
-            "source":{
-              "state":"035e8762-693b-41c9-bb19-482e9549b187",
-              "side":"bottom",
-              "offset":6.014906939338232
-            },
-            "dest":{
-              "state":"ba544765-eb77-4783-954d-6f5ce80fccde",
-              "side":"top",
-              "offset":80.0
-            },
-            "text-block":{
-              "x":580.0,
-              "y":140.0,
-              "w":100.0,
-              "h":30.0
-            },
-            "vertices":[
-            ],
-            "guards":[
-            ],
-            "actions":[
-            ]
-          }
-        ]
-      },
-      {
-        "id":"eee30303-1e4c-4522-b23b-1ac41e97f556",
-        "name":"A",
-        "kind":"state",
-        "width":840.0,
-        "height":700.0,
-        "x":420.0,
-        "y":370.0,
-        "orientation":0,
-        "entries":[
-          {
-            "id":"4e9818f0-b242-4825-9c61-4a64fea5dd35",
-            "kind":0,
-            "action-id":"a83648a7-a511-4e3f-8920-e356df195461"
-          }
-        ],
-        "exits":[
-          {
-            "id":"beffc4d1-fd88-4e4f-b10d-a0768a249fb6",
-            "kind":0,
-            "action-id":"3a5b270f-27c6-4fd9-a4a6-7a0878403cad"
-          }
-        ],
-        "region":[
-          {
-            "id":"a7ff3296-f60c-452d-a9e4-12a59ed3df89",
-            "name":"New region",
-            "off_page":false,
-            "height":-1,
-            "states":[
-              {
-                "id":"c8262d7f-466d-438e-8d69-95b389ffbb3f",
-                "name":"A2",
-                "kind":"state",
-                "width":120.0,
-                "height":100.0,
-                "x":520.0,
-                "y":800.0,
-                "orientation":0,
-                "entries":[
-                  {
-                    "id":"76514c1f-202a-4171-af67-32da18c8629f",
-                    "kind":0,
-                    "action-id":"d7a1c1e4-00e2-40b5-b5db-2e0f90f26e9b"
-                  }
+            {
+                "id": "eee30303-1e4c-4522-b23b-1ac41e97f556",
+                "name": "A",
+                "kind": "state",
+                "width": 840.0,
+                "height": 700.0,
+                "x": 420.0,
+                "y": 370.0,
+                "orientation": 0,
+                "entries": [
+                    {
+                        "id": "4e9818f0-b242-4825-9c61-4a64fea5dd35",
+                        "kind": 0,
+                        "action-id": "a83648a7-a511-4e3f-8920-e356df195461",
+                    }
                 ],
-                "exits":[
-                  {
-                    "id":"e5970866-4102-4655-b105-6c735e509951",
-                    "kind":0,
-                    "action-id":"bc50400c-6012-49bd-922b-0073222e5319"
-                  }
+                "exits": [
+                    {
+                        "id": "beffc4d1-fd88-4e4f-b10d-a0768a249fb6",
+                        "kind": 0,
+                        "action-id": "3a5b270f-27c6-4fd9-a4a6-7a0878403cad",
+                    }
                 ],
-                "region":[
-                ],
-                "transitions":[
-                  {
-                    "id":"99eaaa1e-e01c-4f09-8ead-99958f07e6ac",
-                    "trigger":"139462fd-5839-4f17-ba2a-66fa220679a2",
-                    "source":{
-                      "state":"c8262d7f-466d-438e-8d69-95b389ffbb3f",
-                      "side":"right",
-                      "offset":55.727661132813182
-                    },
-                    "dest":{
-                      "state":"d8e11459-e12b-4556-bb71-6e900ca81681",
-                      "side":"left",
-                      "offset":63.445312500000796
-                    },
-                    "text-block":{
-                      "x":680.0,
-                      "y":790.0,
-                      "w":50.0,
-                      "h":30.0
-                    },
-                    "vertices":[
-                    ],
-                    "guards":[
-                    ],
-                    "actions":[
-                    ]
-                  },
-                  {
-                    "id":"6c9253c5-b6f1-46c7-bf42-5b59dffa43f9",
-                    "trigger":"52271e61-4c2a-4048-854f-3c7be1fff292",
-                    "source":{
-                      "state":"c8262d7f-466d-438e-8d69-95b389ffbb3f",
-                      "side":"bottom",
-                      "offset":52.161310369318244
-                    },
-                    "dest":{
-                      "state":"23a7b935-ad91-499c-9813-424878df5e24",
-                      "side":"top",
-                      "offset":9.6395596590909918
-                    },
-                    "text-block":{
-                      "x":590.0,
-                      "y":890.0,
-                      "w":50.0,
-                      "h":30.0
-                    },
-                    "vertices":[
-                    ],
-                    "guards":[
-                    ],
-                    "actions":[
-                    ]
-                  }
-                ]
-              },
-              {
-                "id":"23a7b935-ad91-499c-9813-424878df5e24",
-                "name":"Final",
-                "kind":"final",
-                "width":20.0,
-                "height":20.0,
-                "x":560.0,
-                "y":950.0,
-                "orientation":0,
-                "entries":[
-                ],
-                "exits":[
-                ],
-                "region":[
-                ],
-                "transitions":[
-                ]
-              },
-              {
-                "id":"8b5f78fa-4555-4c87-9fe2-8c7b41cc2ccd",
-                "name":"C",
-                "kind":"state",
-                "width":480.0,
-                "height":560.0,
-                "x":750.0,
-                "y":480.0,
-                "orientation":0,
-                "entries":[
-                  {
-                    "id":"c5217c23-0ec4-48c4-842d-b6f70678658c",
-                    "kind":0,
-                    "action-id":"2415f8a2-17cc-4548-a32e-3307b693ad7d"
-                  }
-                ],
-                "exits":[
-                  {
-                    "id":"a704143b-a058-4f70-954e-502b544fe090",
-                    "kind":0,
-                    "action-id":"84b82533-2ed6-4281-b2a0-c2b809addc2a"
-                  }
-                ],
-                "region":[
-                  {
-                    "id":"13c7807c-1fb7-44e5-9335-739de3f9431a",
-                    "name":"New region",
-                    "off_page":false,
-                    "height":-1,
-                    "states":[
-                      {
-                        "id":"6ffb7e0c-75e8-477a-b6db-9d8c78482394",
-                        "name":"D",
-                        "kind":"state",
-                        "width":200.0,
-                        "height":130.0,
-                        "x":930.0,
-                        "y":590.0,
-                        "orientation":0,
-                        "entries":[
-                          {
-                            "id":"2ae487bf-2361-4eac-9524-c7380bad37b8",
-                            "kind":0,
-                            "action-id":"18b58ab9-ec76-4cc1-a5df-04a9760b4b60"
-                          }
-                        ],
-                        "exits":[
-                          {
-                            "id":"1b1c8f5a-42a1-4c1d-bf08-78e63e353957",
-                            "kind":0,
-                            "action-id":"49606b6b-94ff-4283-a2e0-3f423893a45b"
-                          }
-                        ],
-                        "region":[
-                        ],
-                        "transitions":[
-                          {
-                            "id":"7484ab8f-7480-4668-8015-6706b22af69a",
-                            "trigger":"139462fd-5839-4f17-ba2a-66fa220679a2",
-                            "source":{
-                              "state":"6ffb7e0c-75e8-477a-b6db-9d8c78482394",
-                              "side":"left",
-                              "offset":71.716918945313182
+                "region": [
+                    {
+                        "id": "a7ff3296-f60c-452d-a9e4-12a59ed3df89",
+                        "name": "New region",
+                        "off_page": false,
+                        "height": -1,
+                        "states": [
+                            {
+                                "id": "c8262d7f-466d-438e-8d69-95b389ffbb3f",
+                                "name": "A2",
+                                "kind": "state",
+                                "width": 120.0,
+                                "height": 100.0,
+                                "x": 520.0,
+                                "y": 800.0,
+                                "orientation": 0,
+                                "entries": [
+                                    {
+                                        "id": "76514c1f-202a-4171-af67-32da18c8629f",
+                                        "kind": 0,
+                                        "action-id": "d7a1c1e4-00e2-40b5-b5db-2e0f90f26e9b",
+                                    }
+                                ],
+                                "exits": [
+                                    {
+                                        "id": "e5970866-4102-4655-b105-6c735e509951",
+                                        "kind": 0,
+                                        "action-id": "bc50400c-6012-49bd-922b-0073222e5319",
+                                    }
+                                ],
+                                "region": [],
+                                "transitions": [
+                                    {
+                                        "id": "99eaaa1e-e01c-4f09-8ead-99958f07e6ac",
+                                        "trigger": "139462fd-5839-4f17-ba2a-66fa220679a2",
+                                        "source": {
+                                            "state": "c8262d7f-466d-438e-8d69-95b389ffbb3f",
+                                            "side": "right",
+                                            "offset": 55.727661132813182,
+                                        },
+                                        "dest": {
+                                            "state": "d8e11459-e12b-4556-bb71-6e900ca81681",
+                                            "side": "left",
+                                            "offset": 63.445312500000796,
+                                        },
+                                        "text-block": {
+                                            "x": 680.0,
+                                            "y": 790.0,
+                                            "w": 50.0,
+                                            "h": 30.0,
+                                        },
+                                        "vertices": [],
+                                        "guards": [],
+                                        "actions": [],
+                                    },
+                                    {
+                                        "id": "6c9253c5-b6f1-46c7-bf42-5b59dffa43f9",
+                                        "trigger": "52271e61-4c2a-4048-854f-3c7be1fff292",
+                                        "source": {
+                                            "state": "c8262d7f-466d-438e-8d69-95b389ffbb3f",
+                                            "side": "bottom",
+                                            "offset": 52.161310369318244,
+                                        },
+                                        "dest": {
+                                            "state": "23a7b935-ad91-499c-9813-424878df5e24",
+                                            "side": "top",
+                                            "offset": 9.6395596590909918,
+                                        },
+                                        "text-block": {
+                                            "x": 590.0,
+                                            "y": 890.0,
+                                            "w": 50.0,
+                                            "h": 30.0,
+                                        },
+                                        "vertices": [],
+                                        "guards": [],
+                                        "actions": [],
+                                    },
+                                ],
                             },
-                            "dest":{
-                              "state":"dea3fc55-0cae-4708-a77b-733a7b4e46ee",
-                              "side":"right",
-                              "offset":61.258544921875625
+                            {
+                                "id": "23a7b935-ad91-499c-9813-424878df5e24",
+                                "name": "Final",
+                                "kind": "final",
+                                "width": 20.0,
+                                "height": 20.0,
+                                "x": 560.0,
+                                "y": 950.0,
+                                "orientation": 0,
+                                "entries": [],
+                                "exits": [],
+                                "region": [],
+                                "transitions": [],
                             },
-                            "text-block":{
-                              "x":680.0,
-                              "y":610.0,
-                              "w":50.0,
-                              "h":30.0
+                            {
+                                "id": "8b5f78fa-4555-4c87-9fe2-8c7b41cc2ccd",
+                                "name": "C",
+                                "kind": "state",
+                                "width": 480.0,
+                                "height": 560.0,
+                                "x": 750.0,
+                                "y": 480.0,
+                                "orientation": 0,
+                                "entries": [
+                                    {
+                                        "id": "c5217c23-0ec4-48c4-842d-b6f70678658c",
+                                        "kind": 0,
+                                        "action-id": "2415f8a2-17cc-4548-a32e-3307b693ad7d",
+                                    }
+                                ],
+                                "exits": [
+                                    {
+                                        "id": "a704143b-a058-4f70-954e-502b544fe090",
+                                        "kind": 0,
+                                        "action-id": "84b82533-2ed6-4281-b2a0-c2b809addc2a",
+                                    }
+                                ],
+                                "region": [
+                                    {
+                                        "id": "13c7807c-1fb7-44e5-9335-739de3f9431a",
+                                        "name": "New region",
+                                        "off_page": false,
+                                        "height": -1,
+                                        "states": [
+                                            {
+                                                "id": "6ffb7e0c-75e8-477a-b6db-9d8c78482394",
+                                                "name": "D",
+                                                "kind": "state",
+                                                "width": 200.0,
+                                                "height": 130.0,
+                                                "x": 930.0,
+                                                "y": 590.0,
+                                                "orientation": 0,
+                                                "entries": [
+                                                    {
+                                                        "id": "2ae487bf-2361-4eac-9524-c7380bad37b8",
+                                                        "kind": 0,
+                                                        "action-id": "18b58ab9-ec76-4cc1-a5df-04a9760b4b60",
+                                                    }
+                                                ],
+                                                "exits": [
+                                                    {
+                                                        "id": "1b1c8f5a-42a1-4c1d-bf08-78e63e353957",
+                                                        "kind": 0,
+                                                        "action-id": "49606b6b-94ff-4283-a2e0-3f423893a45b",
+                                                    }
+                                                ],
+                                                "region": [],
+                                                "transitions": [
+                                                    {
+                                                        "id": "7484ab8f-7480-4668-8015-6706b22af69a",
+                                                        "trigger": "139462fd-5839-4f17-ba2a-66fa220679a2",
+                                                        "source": {
+                                                            "state": "6ffb7e0c-75e8-477a-b6db-9d8c78482394",
+                                                            "side": "left",
+                                                            "offset": 71.716918945313182,
+                                                        },
+                                                        "dest": {
+                                                            "state": "dea3fc55-0cae-4708-a77b-733a7b4e46ee",
+                                                            "side": "right",
+                                                            "offset": 61.258544921875625,
+                                                        },
+                                                        "text-block": {
+                                                            "x": 680.0,
+                                                            "y": 610.0,
+                                                            "w": 50.0,
+                                                            "h": 30.0,
+                                                        },
+                                                        "vertices": [],
+                                                        "guards": [],
+                                                        "actions": [],
+                                                    }
+                                                ],
+                                            },
+                                            {
+                                                "id": "d8e11459-e12b-4556-bb71-6e900ca81681",
+                                                "name": "E",
+                                                "kind": "state",
+                                                "width": 190.0,
+                                                "height": 120.0,
+                                                "x": 940.0,
+                                                "y": 800.0,
+                                                "orientation": 0,
+                                                "entries": [
+                                                    {
+                                                        "id": "cb489fbd-2216-41de-b395-10635f2c4bd2",
+                                                        "kind": 0,
+                                                        "action-id": "ac8cb299-3cd1-4b0f-989b-06c2389c5301",
+                                                    }
+                                                ],
+                                                "exits": [
+                                                    {
+                                                        "id": "1d1d0ef6-517b-452d-9ddd-6ece6760eb0e",
+                                                        "kind": 0,
+                                                        "action-id": "7a32fb67-fb8f-46da-a01f-b10d8d3acd46",
+                                                    }
+                                                ],
+                                                "region": [],
+                                                "transitions": [
+                                                    {
+                                                        "id": "81ffd0be-f329-42f8-ab1e-e7e2f696fc0c",
+                                                        "trigger": "139462fd-5839-4f17-ba2a-66fa220679a2",
+                                                        "source": {
+                                                            "state": "d8e11459-e12b-4556-bb71-6e900ca81681",
+                                                            "side": "top",
+                                                            "offset": 110.0,
+                                                        },
+                                                        "dest": {
+                                                            "state": "6ffb7e0c-75e8-477a-b6db-9d8c78482394",
+                                                            "side": "bottom",
+                                                            "offset": 120.0,
+                                                        },
+                                                        "text-block": {
+                                                            "x": 1070.0,
+                                                            "y": 720.0,
+                                                            "w": 50.0,
+                                                            "h": 30.0,
+                                                        },
+                                                        "vertices": [],
+                                                        "guards": [],
+                                                        "actions": [],
+                                                    }
+                                                ],
+                                            },
+                                        ],
+                                    }
+                                ],
+                                "transitions": [],
                             },
-                            "vertices":[
-                            ],
-                            "guards":[
-                            ],
-                            "actions":[
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "id":"d8e11459-e12b-4556-bb71-6e900ca81681",
-                        "name":"E",
-                        "kind":"state",
-                        "width":190.0,
-                        "height":120.0,
-                        "x":940.0,
-                        "y":800.0,
-                        "orientation":0,
-                        "entries":[
-                          {
-                            "id":"cb489fbd-2216-41de-b395-10635f2c4bd2",
-                            "kind":0,
-                            "action-id":"ac8cb299-3cd1-4b0f-989b-06c2389c5301"
-                          }
+                            {
+                                "id": "dea3fc55-0cae-4708-a77b-733a7b4e46ee",
+                                "name": "A1",
+                                "kind": "state",
+                                "width": 130.0,
+                                "height": 90.0,
+                                "x": 510.0,
+                                "y": 600.0,
+                                "orientation": 0,
+                                "entries": [
+                                    {
+                                        "id": "7fd20d81-0529-4b63-9ef6-6e5a21f9371a",
+                                        "kind": 0,
+                                        "action-id": "9188fff0-e88c-4d2b-a214-0fd30c919758",
+                                    }
+                                ],
+                                "exits": [
+                                    {
+                                        "id": "06780d07-d96e-4671-8d0a-5dc4acbef707",
+                                        "kind": 0,
+                                        "action-id": "3f9336fe-74c4-44e2-843d-31740cb48030",
+                                    }
+                                ],
+                                "region": [],
+                                "transitions": [
+                                    {
+                                        "id": "75d2895d-ffde-4220-a73d-21f599343fcc",
+                                        "trigger": "139462fd-5839-4f17-ba2a-66fa220679a2",
+                                        "source": {
+                                            "state": "dea3fc55-0cae-4708-a77b-733a7b4e46ee",
+                                            "side": "bottom",
+                                            "offset": 60.036078559027942,
+                                        },
+                                        "dest": {
+                                            "state": "c8262d7f-466d-438e-8d69-95b389ffbb3f",
+                                            "side": "top",
+                                            "offset": 50.273437500000114,
+                                        },
+                                        "text-block": {
+                                            "x": 590.0,
+                                            "y": 710.0,
+                                            "w": 50.0,
+                                            "h": 30.0,
+                                        },
+                                        "vertices": [],
+                                        "guards": [],
+                                        "actions": [],
+                                    }
+                                ],
+                            },
+                            {
+                                "id": "54aa27a5-1691-48d4-b4ff-0da2ad54ecc1",
+                                "name": "Deep History",
+                                "kind": "deep-history",
+                                "width": 20.0,
+                                "height": 20.0,
+                                "x": 550.0,
+                                "y": 510.0,
+                                "orientation": 0,
+                                "entries": [],
+                                "exits": [],
+                                "region": [],
+                                "transitions": [
+                                    {
+                                        "id": "db66eed5-ac18-49bd-935e-410830bd3c5e",
+                                        "source": {
+                                            "state": "54aa27a5-1691-48d4-b4ff-0da2ad54ecc1",
+                                            "side": "bottom",
+                                            "offset": 8.1475151909721717,
+                                        },
+                                        "dest": {
+                                            "state": "dea3fc55-0cae-4708-a77b-733a7b4e46ee",
+                                            "side": "top",
+                                            "offset": 48.56092664930577,
+                                        },
+                                        "text-block": {
+                                            "x": 570.0,
+                                            "y": 530.0,
+                                            "w": 80.0,
+                                            "h": 30.0,
+                                        },
+                                        "vertices": [],
+                                        "guards": [],
+                                        "actions": [],
+                                    }
+                                ],
+                            },
                         ],
-                        "exits":[
-                          {
-                            "id":"1d1d0ef6-517b-452d-9ddd-6ece6760eb0e",
-                            "kind":0,
-                            "action-id":"7a32fb67-fb8f-46da-a01f-b10d8d3acd46"
-                          }
+                    }
+                ],
+                "transitions": [
+                    {
+                        "id": "25827ccb-fb48-4ecb-9cfe-bafd706ece99",
+                        "source": {
+                            "state": "eee30303-1e4c-4522-b23b-1ac41e97f556",
+                            "side": "top",
+                            "offset": 510.0,
+                        },
+                        "dest": {
+                            "state": "b6d34d58-9176-47ae-b735-f77c548ab64a",
+                            "side": "bottom",
+                            "offset": 20.0,
+                        },
+                        "text-block": {"x": 950.0, "y": 300.0, "w": 160.0, "h": 30.0},
+                        "vertices": [],
+                        "guards": [],
+                        "actions": [
+                            {
+                                "action-id": "ff557a93-2b4f-456a-8ddf-88c8075fc4eb",
+                                "kind": 0,
+                                "id": "75244d45-8259-49fa-9388-728f7a0d9447",
+                            }
                         ],
-                        "region":[
-                        ],
-                        "transitions":[
-                          {
-                            "id":"81ffd0be-f329-42f8-ab1e-e7e2f696fc0c",
-                            "trigger":"139462fd-5839-4f17-ba2a-66fa220679a2",
-                            "source":{
-                              "state":"d8e11459-e12b-4556-bb71-6e900ca81681",
-                              "side":"top",
-                              "offset":110.0
-                            },
-                            "dest":{
-                              "state":"6ffb7e0c-75e8-477a-b6db-9d8c78482394",
-                              "side":"bottom",
-                              "offset":120.0
-                            },
-                            "text-block":{
-                              "x":1070.0,
-                              "y":720.0,
-                              "w":50.0,
-                              "h":30.0
-                            },
-                            "vertices":[
-                            ],
-                            "guards":[
-                            ],
-                            "actions":[
-                            ]
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ],
-                "transitions":[
-                ]
-              },
-              {
-                "id":"dea3fc55-0cae-4708-a77b-733a7b4e46ee",
-                "name":"A1",
-                "kind":"state",
-                "width":130.0,
-                "height":90.0,
-                "x":510.0,
-                "y":600.0,
-                "orientation":0,
-                "entries":[
-                  {
-                    "id":"7fd20d81-0529-4b63-9ef6-6e5a21f9371a",
-                    "kind":0,
-                    "action-id":"9188fff0-e88c-4d2b-a214-0fd30c919758"
-                  }
-                ],
-                "exits":[
-                  {
-                    "id":"06780d07-d96e-4671-8d0a-5dc4acbef707",
-                    "kind":0,
-                    "action-id":"3f9336fe-74c4-44e2-843d-31740cb48030"
-                  }
-                ],
-                "region":[
-                ],
-                "transitions":[
-                  {
-                    "id":"75d2895d-ffde-4220-a73d-21f599343fcc",
-                    "trigger":"139462fd-5839-4f17-ba2a-66fa220679a2",
-                    "source":{
-                      "state":"dea3fc55-0cae-4708-a77b-733a7b4e46ee",
-                      "side":"bottom",
-                      "offset":60.036078559027942
                     },
-                    "dest":{
-                      "state":"c8262d7f-466d-438e-8d69-95b389ffbb3f",
-                      "side":"top",
-                      "offset":50.273437500000114
+                    {
+                        "id": "2241f038-872a-49e6-a90a-2b0bed3c34b1",
+                        "trigger": "78cee9c4-3457-44bd-9728-50ed63dc2503",
+                        "source": {
+                            "state": "eee30303-1e4c-4522-b23b-1ac41e97f556",
+                            "side": "top",
+                            "offset": 190.0,
+                        },
+                        "dest": {
+                            "state": "ba544765-eb77-4783-954d-6f5ce80fccde",
+                            "side": "bottom",
+                            "offset": 140.0,
+                        },
+                        "text-block": {"x": 630.0, "y": 290.0, "w": 50.0, "h": 30.0},
+                        "vertices": [],
+                        "guards": [],
+                        "actions": [],
                     },
-                    "text-block":{
-                      "x":590.0,
-                      "y":710.0,
-                      "w":50.0,
-                      "h":30.0
-                    },
-                    "vertices":[
-                    ],
-                    "guards":[
-                    ],
-                    "actions":[
-                    ]
-                  }
-                ]
-              },
-              {
-                "id":"54aa27a5-1691-48d4-b4ff-0da2ad54ecc1",
-                "name":"Deep History",
-                "kind":"deep-history",
-                "width":20.0,
-                "height":20.0,
-                "x":550.0,
-                "y":510.0,
-                "orientation":0,
-                "entries":[
                 ],
-                "exits":[
-                ],
-                "region":[
-                ],
-                "transitions":[
-                  {
-                    "id":"db66eed5-ac18-49bd-935e-410830bd3c5e",
-                    "source":{
-                      "state":"54aa27a5-1691-48d4-b4ff-0da2ad54ecc1",
-                      "side":"bottom",
-                      "offset":8.1475151909721717
-                    },
-                    "dest":{
-                      "state":"dea3fc55-0cae-4708-a77b-733a7b4e46ee",
-                      "side":"top",
-                      "offset":48.56092664930577
-                    },
-                    "text-block":{
-                      "x":570.0,
-                      "y":530.0,
-                      "w":80.0,
-                      "h":30.0
-                    },
-                    "vertices":[
-                    ],
-                    "guards":[
-                    ],
-                    "actions":[
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
+            },
+            {
+                "id": "b6d34d58-9176-47ae-b735-f77c548ab64a",
+                "name": "Final",
+                "kind": "final",
+                "width": 20.0,
+                "height": 20.0,
+                "x": 920.0,
+                "y": 280.0,
+                "orientation": 0,
+                "entries": [],
+                "exits": [],
+                "region": [],
+                "transitions": [],
+            },
         ],
-        "transitions":[
-          {
-            "id":"25827ccb-fb48-4ecb-9cfe-bafd706ece99",
-            "source":{
-              "state":"eee30303-1e4c-4522-b23b-1ac41e97f556",
-              "side":"top",
-              "offset":510.0
-            },
-            "dest":{
-              "state":"b6d34d58-9176-47ae-b735-f77c548ab64a",
-              "side":"bottom",
-              "offset":20.0
-            },
-            "text-block":{
-              "x":950.0,
-              "y":300.0,
-              "w":160.0,
-              "h":30.0
-            },
-            "vertices":[
-            ],
-            "guards":[
-            ],
-            "actions":[
-              {
-                "action-id":"ff557a93-2b4f-456a-8ddf-88c8075fc4eb",
-                "kind":0,
-                "id":"75244d45-8259-49fa-9388-728f7a0d9447"
-              }
-            ]
-          },
-          {
-            "id":"2241f038-872a-49e6-a90a-2b0bed3c34b1",
-            "trigger":"78cee9c4-3457-44bd-9728-50ed63dc2503",
-            "source":{
-              "state":"eee30303-1e4c-4522-b23b-1ac41e97f556",
-              "side":"top",
-              "offset":190.0
-            },
-            "dest":{
-              "state":"ba544765-eb77-4783-954d-6f5ce80fccde",
-              "side":"bottom",
-              "offset":140.0
-            },
-            "text-block":{
-              "x":630.0,
-              "y":290.0,
-              "w":50.0,
-              "h":30.0
-            },
-            "vertices":[
-            ],
-            "guards":[
-            ],
-            "actions":[
-            ]
-          }
-        ]
-      },
-      {
-        "id":"b6d34d58-9176-47ae-b735-f77c548ab64a",
-        "name":"Final",
-        "kind":"final",
-        "width":20.0,
-        "height":20.0,
-        "x":920.0,
-        "y":280.0,
-        "orientation":0,
-        "entries":[
-        ],
-        "exits":[
-        ],
-        "region":[
-        ],
-        "transitions":[
-        ]
-      }
-    ]
-  }
+    },
 }

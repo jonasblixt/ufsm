@@ -14,6 +14,6 @@ int main(void)
 {
     struct test_init_to_nested_machine m = {0};
 
-    UFSM_TEST(test_init_to_nested, UFSM_RESET, "eA", "eB");
+    UFSM_TEST(test_init_to_nested, UFSM_RESET, "B1Init", "eA", "eB1", "B2Init", "eB2");
     return 0;
 }

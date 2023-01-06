@@ -672,20 +672,20 @@ static struct menu_item hmenu[] =
         .action = a_add_final,
     },
     /* Add Terminate */
-    {
+/*    {
         .render = r_add_terminate,
         .action = a_add_terminate,
-    },
+    },*/
     /* Add History */
     {
         .render = r_add_history,
         .action = a_add_history,
     },
     /* Add Deep history */
-    {
+    /*{
         .render = r_add_deep_history,
         .action = a_add_deep_history,
-    },
+    },*/
     /* List terminator */
     {
         .render = NULL,

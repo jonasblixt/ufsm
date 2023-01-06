@@ -38,7 +38,7 @@ int main(void)
     {
         printf("-> eBegin\n");
         ufsm_test_reset();
-        const char *exp[] = {"xStart", "eB", "eB2", "eB1", NULL};
+        const char *exp[] = {"xStart", "eB", "eB1", "eB2", NULL};
         test_fork_join_process(&m, eBegin);
         assert (ufsm_test_check(exp) && "eBegin");
     }
@@ -62,7 +62,7 @@ int main(void)
     {
         printf("-> eEvent2\n");
         ufsm_test_reset();
-        const char *exp[] = {"xB11", "xB2", "xB", "eEnd", NULL};
+        const char *exp[] = {"xB2", "xB11", "xB", "eEnd", NULL};
         test_fork_join_process(&m, eEvent2);
         assert (ufsm_test_check(exp) && "eEvent2");
     }

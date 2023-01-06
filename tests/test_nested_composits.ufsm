@@ -2,6 +2,7 @@
   "kind":"uFSM Model",
   "version":0,
   "name":"test_nested_composits",
+  "paper-size":1,
   "triggers":[
     {
       "name":"EV3",
@@ -19,6 +20,8 @@
       "name":"EV_B",
       "id":"a92ab17e-ab69-4ff6-ac0f-b9780fd6e9ea"
     }
+  ],
+  "signals":[
   ],
   "actions":[
     {
@@ -86,8 +89,6 @@
       "id":"e5acfa89-5de2-4598-8c6d-e012c4992575"
     }
   ],
-  "entries":null,
-  "exits":null,
   "guards":[
   ],
   "region":{
@@ -145,6 +146,7 @@
                   {
                     "id":"1269c5e9-4050-4eed-b825-324e7c015d81",
                     "trigger":"0945f205-5ef0-4e88-ad53-bc72e99c636c",
+                    "trigger-kind":0,
                     "source":{
                       "state":"83916024-b7cd-4de3-b838-6b97fa143345",
                       "side":"right",
@@ -199,6 +201,7 @@
                   {
                     "id":"f5f77ebb-6fc9-4bbf-a614-b34863927881",
                     "trigger":"0945f205-5ef0-4e88-ad53-bc72e99c636c",
+                    "trigger-kind":0,
                     "source":{
                       "state":"f06c3d3d-65e4-4357-80ee-9afa5544e865",
                       "side":"left",
@@ -242,6 +245,7 @@
                 "transitions":[
                   {
                     "id":"ae0ba5fd-c13c-49d8-aa9e-c1eb04ec0aba",
+                    "trigger-kind":0,
                     "source":{
                       "state":"d8e77800-34df-49db-811c-639aa4964e09",
                       "side":"bottom",
@@ -316,6 +320,7 @@
                 "transitions":[
                   {
                     "id":"be16123e-fc99-4007-a2fa-90184b25b538",
+                    "trigger-kind":2,
                     "source":{
                       "state":"c065a49b-dd8f-49ba-ae38-a0b91db3ff43",
                       "side":"top",
@@ -379,6 +384,7 @@
                         "transitions":[
                           {
                             "id":"0d16ef12-1c57-4116-a192-5cc3c64ff772",
+                            "trigger-kind":0,
                             "source":{
                               "state":"b04a15d6-2039-4f65-9892-96bf5cea3a04",
                               "side":"right",
@@ -432,6 +438,7 @@
                         "transitions":[
                           {
                             "id":"dd22379c-2d42-43cd-8d3c-e540ff6d2560",
+                            "trigger-kind":0,
                             "source":{
                               "state":"e394969a-9ce0-404f-b39a-8135126aa65f",
                               "side":"right",
@@ -498,6 +505,7 @@
                           {
                             "id":"40406d0b-875f-4dc6-8a06-d60fc70b73bc",
                             "trigger":"b10cb59c-fef8-4b04-897e-cd2a6db192d4",
+                            "trigger-kind":0,
                             "source":{
                               "state":"71f3dac4-ac49-4264-a097-062bfc2e5208",
                               "side":"right",
@@ -551,6 +559,7 @@
                         "transitions":[
                           {
                             "id":"a8b65a8a-9ca4-4fc1-9cdb-fa4863076a41",
+                            "trigger-kind":0,
                             "source":{
                               "state":"70f413d6-49c4-414a-aba8-045c72f8e6d6",
                               "side":"right",
@@ -598,6 +607,7 @@
                         "transitions":[
                           {
                             "id":"8480b55c-3ba4-4f7f-930d-938aab40d21e",
+                            "trigger-kind":0,
                             "source":{
                               "state":"79e33651-22d4-4ca5-a026-bd0c1981d66e",
                               "side":"bottom",
@@ -659,6 +669,7 @@
                         "transitions":[
                           {
                             "id":"89ced931-a60d-40d3-8e66-daf20b0e29bd",
+                            "trigger-kind":0,
                             "source":{
                               "state":"19879790-85ac-4a45-97c5-f91d074bf049",
                               "side":"right",
@@ -706,6 +717,7 @@
                         "transitions":[
                           {
                             "id":"99d22d4c-e213-437c-9aba-b1814a6825d3",
+                            "trigger-kind":0,
                             "source":{
                               "state":"f97dde7f-dd50-4952-941d-0f6fedf0c060",
                               "side":"bottom",
@@ -766,6 +778,7 @@
                   {
                     "id":"d4ae86ef-d8c2-4077-84b4-85754e9e380e",
                     "trigger":"29cf8b16-5321-4ae5-a56c-e4468f4b19fa",
+                    "trigger-kind":0,
                     "source":{
                       "state":"52f12bad-ad7d-4376-adbd-9a9709f71446",
                       "side":"right",
@@ -809,6 +822,7 @@
                 "transitions":[
                   {
                     "id":"39cc2c8e-e004-4842-b480-b29480804ea3",
+                    "trigger-kind":0,
                     "source":{
                       "state":"b6311411-2b95-4be5-8ba4-bba613ddec8b",
                       "side":"bottom",
@@ -841,6 +855,7 @@
           {
             "id":"54bd0ab4-6ee5-46ea-bec8-aa248711bbb3",
             "trigger":"a92ab17e-ab69-4ff6-ac0f-b9780fd6e9ea",
+            "trigger-kind":0,
             "source":{
               "state":"f65d58f6-c60c-4706-b9fc-59b83f9e2e73",
               "side":"right",
@@ -884,6 +899,7 @@
         "transitions":[
           {
             "id":"b7d9dee2-e7b4-4cde-a4e2-e7b16de56f1e",
+            "trigger-kind":0,
             "source":{
               "state":"06826156-2345-4ed0-8f7d-f78a437e2a1d",
               "side":"right",

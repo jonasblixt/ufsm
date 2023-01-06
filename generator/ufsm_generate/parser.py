@@ -5,9 +5,10 @@ from .model import *
 
 logger = logging.getLogger(__name__)
 
+
 def _parse_triggers(model, data):
     logger.debug(f"Parsing triggers")
-    index = 10 # 0 - 9 are reserved
+    index = 10  # 0 - 9 are reserved
     for t in data["triggers"]:
         t_name = t["name"]
         t_id = t["id"]
@@ -19,7 +20,7 @@ def _parse_triggers(model, data):
 
 def _parse_signals(model, data):
     logger.debug(f"Parsing signals")
-    index = 10 # 0 - 9 Are reserved
+    index = 10  # 0 - 9 Are reserved
     for s in data["signals"]:
         s_name = s["name"]
         s_id = s["id"]
@@ -64,7 +65,7 @@ def _parse_region(model, region_data, parent_state):
         if parent_state == None:
             model.root = region
         else:
-            parent_state.regions.append(region)
+            parent_state.regions.insert(0, region)
 
         if len(region_data_elm["states"]) > 0:
             _parse_state(model, region_data_elm["states"], region)
@@ -215,6 +216,7 @@ def _parse_one_transition(model, transition_data):
             guard = GuardFunction(g_id, g, g_val, kind)
         t.guards.append(guard)
     model.transitions.append(t)
+
 
 def _parse_transition_state(model, state_data):
     for transition_data in state_data["transitions"]:
