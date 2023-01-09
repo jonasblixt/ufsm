@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=ufsm-compose
+Comment=uFSM statechart tool
+Icon=ufsm-compose
+Exec=ufsm-compose
+Terminal=false
+Categories=Development
+X-AppImage-Version=a7b4c69

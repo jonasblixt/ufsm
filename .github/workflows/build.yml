@@ -11,11 +11,19 @@ jobs:
       run: |
           sudo apt-get update
           sudo apt-get install libjson-c-dev lcov libgtk-3-0 libgtk-3-dev libcairo2 libcairo2-dev uuid-dev cmake
+    - name: Download appimage tools
+      run: |
+          curl -L -O "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+          chmod a+x linuxdeploy*.AppImage
     - name: Install ufsm-generate
       run: cd generator && pip install .
     - name: configure
-      run: mkdir build && cd build && cmake .. -DUFSM_BUILD_TEST=1
+      run: mkdir build && cd build && cmake .. -DUFSM_BUILD_TESTS=1 -DCMAKE_INSTALL_PREFIX=/usr
     - name: build
       run: cd build && make -j
     - name: test
       run: cd build && make test
+    - name: Dist install
+      run: cd build && make install DESTDIR=../dist/ufsm-compose.AppDir/
+    - name: Build appimage
+      run: ./linuxdeploy*.AppImage --appdir dist/ufsm-compose.AppDir --output appimage
