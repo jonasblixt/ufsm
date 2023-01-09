@@ -10,7 +10,7 @@ jobs:
     - name: Install deps
       run: |
           sudo apt-get update
-          sudo apt-get install libjson-c-dev lcov libgtk-3-0 libgtk-3-dev libcairo2 libcairo2-dev uuid-dev cmake
+          sudo apt-get install libjson-c-dev lcov libgtk-3-0 libgtk-3-dev libcairo2 libcairo2-dev uuid-dev cmake libfuse2
     - name: Download appimage tools
       run: |
           curl -L -O "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
