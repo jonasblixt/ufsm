@@ -27,3 +27,9 @@ jobs:
       run: cd build && make install DESTDIR=../dist/ufsm-compose.AppDir/
     - name: Build appimage
       run: ./linuxdeploy*.AppImage --appdir dist/ufsm-compose.AppDir --output appimage
+    - name: Upload release
+      uses: actions/upload-artifact@v2
+      #if: startsWith(github.ref, 'refs/tags/')
+      with:
+        name: ufsm-compose
+        path: ufsm-compose*.AppImage
