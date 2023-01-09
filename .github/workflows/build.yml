@@ -10,12 +10,12 @@ jobs:
     - name: Install deps
       run: |
           sudo apt-get update
-          sudo apt-get install autoconf-archive libjson-c-dev lcov libgtk-3-0 libgtk-3-dev libcairo2 libcairo2-dev uuid-dev
+          sudo apt-get install libjson-c-dev lcov libgtk-3-0 libgtk-3-dev libcairo2 libcairo2-dev uuid-dev cmake
+    - name: Install ufsm-generate
+      run: cd generator && pip install .
     - name: configure
-      run: mkdir build && autoreconf -fi && cd build && ../configure --enable-code-coverage CFLAGS="-O0"
+      run: mkdir build && cd build && cmake .. -DUFSM_BUILD_TEST=1
     - name: build
-      run: cd build && make -j $(nproc)
+      run: cd build && make -j
     - name: test
-      run: cd build && make check
-    - name: codecov
-      run: cd build/libufsm-core && bash <(curl -s https://codecov.io/bash)
+      run: cd build && make test

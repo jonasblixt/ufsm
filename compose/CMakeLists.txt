@@ -49,3 +49,7 @@ SET(SRC_FILES
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 target_link_libraries(${PROJECT_NAME} ${LDFLAGS})
 target_compile_options(${PROJECT_NAME} PRIVATE ${CFLAGS})
+
+install(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
