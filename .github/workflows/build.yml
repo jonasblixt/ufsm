@@ -4,9 +4,7 @@ on: [push]
 
 jobs:
   build-ubuntu:
-    runs-on: ubuntu-20.04
-    container:
-      image: ubuntu:20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
     - name: Install deps
