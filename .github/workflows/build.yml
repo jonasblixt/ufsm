@@ -27,7 +27,7 @@ jobs:
           curl -L -O "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
           chmod a+x linuxdeploy*.AppImage
     - name: Install ufsm-generate
-      run: cd generator && pip install .
+      run: cd generator && python3 -m pip install .
     - name: configure
       run: mkdir build && cd build && cmake .. -DUFSM_BUILD_TESTS=1 -DCMAKE_INSTALL_PREFIX=/usr
     - name: build
