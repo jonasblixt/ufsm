@@ -20,7 +20,8 @@ jobs:
                          libcairo2-dev \
                          uuid-dev \
                          cmake \
-                         libfuse2
+                         libfuse2 \
+                         python3-pip
     - name: Download appimage tools
       run: |
           curl -L -O "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
