@@ -39,10 +39,10 @@ jobs:
     - name: Build compose appimage
       run: ./linuxdeploy*.AppImage --appdir dist/ufsm-compose --output appimage
     - name: Buld generator appimage
-      run: python-appimage build app generator
+      run: python-appimage build app generator && mv generator-x86_64.AppImage ufsm-generate-x86_64.AppImage
     - name: Upload release
       uses: actions/upload-artifact@v2
       #if: startsWith(github.ref, 'refs/tags/')
       with:
         name: ufsm
-        path: "*.AppImage"
+        path: "ufsm*.AppImage"
