@@ -10,8 +10,8 @@ if the destination is the same state.
 
 .. image:: ../ufsm_transition.gif
 
-A transition has a trigger event or is 'trigger-less'. Transitions can optionally
-have guards which are evaluated (and all must equate to 'true') before the
+A transition has a trigger event or has the special 'auto-transition' trigger set.
+Transitions can optionally have guards which are evaluated (and all must equate to 'true') before the
 transition can execute.
 
 Transition guards
@@ -33,8 +33,8 @@ In the transition between states A and B the transition has a guard '<D>'.
 This is a state condition guard which only allows the transition to execute
 if the state machine is also in the state 'D'.
 
-Trigger less transitions
-------------------------
+Auto-transition trigger
+-----------------------
 
 Sometimes it's desired to execute a transition when all entry and exit actions of a state has
 executed. The simplest example is transitions from initial states, which is 

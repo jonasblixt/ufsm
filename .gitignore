@@ -8,3 +8,7 @@ configure
 m4/
 doc/_build
 doc/latex
+*.egg-info
+__pycache__
+.ccls-cache
+*.AppImage

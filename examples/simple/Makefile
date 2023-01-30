@@ -1,9 +1,7 @@
 UFSMGENERATE ?= ufsm-generate
 
 CC ?= gcc
-
-CFLAGS = -Wall -O2 -I ../../ -I .
-LDFLAGS = $(shell pkg-config --cflags --libs ufsm-core)
+CFLAGS = -Wall -O2 -I .
 
 UFSM_MODEL = led.ufsm
 UFSM_MODEL_OBJS = $(UFSM_MODEL:.ufsm=.ufsmo)
@@ -15,7 +13,7 @@ all: simple
 
 %.ufsmo : %.ufsm
 	@echo UFSMGEN $< 
-	@$(UFSMGENERATE) --input $< --output $(patsubst %.ufsm, %, $(<))
+	@$(UFSMGENERATE) -v2 c $< .
 	@$(CC) $(CFLAGS) -c $(patsubst %.ufsm, %.c, $(<)) -o $@
 
 %.o : %.c
@@ -24,7 +22,7 @@ all: simple
 
 simple: $(UFSM_MODEL_OBJS) $(C_OBJS)
 	@echo LINK $@
-	@$(CC) $(UFSM_MODEL_OBJS) $(C_OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+	@$(CC) $(UFSM_MODEL_OBJS) $(C_OBJS) $(CFLAGS) -o $@
 
 
 clean:

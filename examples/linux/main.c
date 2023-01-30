@@ -1,11 +1,11 @@
 #include <stdio.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <sys/timerfd.h>
-#include <ufsm/ufsm.h>
 
-#include "emit.h"
+#include "linux_async.h"
 #include "queue.h"
 #include "timer.h"
 
@@ -18,58 +18,70 @@ struct private_ctx {
     bool run;
 };
 
+void enter_inactive(void *context)
+{
+    printf("%s\n", __func__);
+}
+
+void enter_active(void *context)
+{
+    printf("%s\n", __func__);
+}
+
 void do_cleanup(void *context)
 {
+    printf("%s\n", __func__);
 }
 
 void do_work(void *context)
 {
+    printf("%s\n", __func__);
 }
 
 void enter_idle(void *context)
 {
+    printf("%s\n", __func__);
 }
 
 void exit_program(void *context)
 {
     struct private_ctx *priv = (struct private_ctx *) context;
     priv->run = false;
+    printf("%s\n", __func__);
 }
 
 void start_exit_timer(void *context)
 {
     struct private_ctx *priv = (struct private_ctx *) context;
     ufsm_timer_start(&priv->tmr_exit);
+    printf("%s\n", __func__);
 }
 
 void cancel_exit_timer(void *context)
 {
     struct private_ctx *priv = (struct private_ctx *) context;
     ufsm_timer_cancel(&priv->tmr_exit);
+    printf("%s\n", __func__);
 }
 
 void start_init_delay_timer(void *context)
 {
     struct private_ctx *priv = (struct private_ctx *) context;
     ufsm_timer_start(&priv->tmr);
+    printf("%s\n", __func__);
 }
 
 void cancel_init_delay_timer(void *context)
 {
     struct private_ctx *priv = (struct private_ctx *) context;
     ufsm_timer_cancel(&priv->tmr);
-}
-
-void emit_handler(void *context, int signal)
-{
-    struct private_ctx *priv = (struct private_ctx *) context;
-    ufsm_queue_push(priv->q, signal);
+    printf("%s\n", __func__);
 }
 
 int main(int argc, char **argv)
 {
     struct epoll_event events[MAX_EVENTS];
-    struct emit_machine m;
+    struct linux_async_machine m;
     struct private_ctx priv;
     struct ufsm_queue *q;
     int rc = 0;
@@ -87,12 +99,11 @@ int main(int argc, char **argv)
     q = ufsm_queue_init(priv.epoll_fd, 128);
     priv.q = q;
 
-    ufsm_debug_machine(&m.machine);
-    ufsm_configure_emit_handler(&m.machine, emit_handler);
     ufsm_timer_init(&priv.tmr, priv.epoll_fd, q, 1500, eEnable);
     ufsm_timer_init(&priv.tmr_exit, priv.epoll_fd, q, 5000, eExitTimerExpired);
 
-    emit_machine_initialize(&m, &priv);
+    linux_async_init(&m, &priv);
+    linux_async_process(&m, UFSM_RESET);
 
     for (;;) {
         int no_of_fds = epoll_wait(priv.epoll_fd, events, MAX_EVENTS, -1);
@@ -121,7 +132,7 @@ int main(int argc, char **argv)
                 }
 
                 for (int i = 0; i < no_of_queue_events; i++) {
-                    emit_machine_process(&m, ufsm_queue_pop(q));
+                    assert(linux_async_process(&m, ufsm_queue_pop(q)) == 0);
                 }
             }
         }

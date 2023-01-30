@@ -62,12 +62,8 @@ author = u'Jonas Blixt'
 # built documents.
 #
 # The name of the branch/tag on github
-import re
-with open("../configure.ac") as f:
-    r = re.compile(".+\[([0-9\.]+)\]", re.DOTALL)
-    configure_ac_text = f.read()
-    m = r.match(configure_ac_text)
-    version = m.group(1)
+with open("../version.txt") as f:
+    version = f.read().strip()
 
 # The full version, including alpha/beta/rc tags.
 release = version

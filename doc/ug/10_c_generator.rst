@@ -7,20 +7,17 @@ C code generator
 The c code generator is invoked by running 'ufsm-generate'::
 
     $ ufsm-generate --help
-    ufsm-generate 0.4.0
+    usage: ufsm-generate [-h] [-v {0,1,2}] [--version] {c} ... model output_dir
 
-    Usage:
-        ufsmimport [options]
+    uFSM generator
 
-    Options:
-            -i, --input <input filename>            - Input filename
-            -o, --output <output filename>          - Output filename
-            -v, --verbose                           - Verbose
-            -s, --strip=<level>                     - Strip output
+    positional arguments:
+      {c}                   Code generator backend
+      model                 Input model
+      output_dir            Output directory
 
-    Strip levels:
-        0 - Nothing is stripped
-        1 - UUID references stripped, this is the default
-        2 - Strip UUID's and text labels
-
-By adding --strip the output size can be reduced for memory constrained devices.
+    options:
+      -h, --help            show this help message and exit
+      -v {0,1,2}, --verbose {0,1,2}
+                            Control the verbosity; disable(0), warning(1) and debug(2) (default: 1).
+      --version             Print version information and exit.

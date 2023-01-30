@@ -1,9 +1,7 @@
 UFSMGENERATE ?= ufsm-generate
 
 CC ?= gcc
-
-CFLAGS = -Wall -O2 -I ../../ -I .
-LDFLAGS = $(shell pkg-config --cflags --libs ufsm-core)
+CFLAGS = -Wall -O2 -I .
 
 UFSM_MODEL = dimmer.ufsm
 UFSM_MODEL_OBJS = $(UFSM_MODEL:.ufsm=.ufsmo)
@@ -11,20 +9,20 @@ UFSM_MODEL_OBJS = $(UFSM_MODEL:.ufsm=.ufsmo)
 C_SRCS  = main.c
 C_OBJS = $(C_SRCS:.c=.o)
 
-all: main
+all: dimmer
 
 %.ufsmo : %.ufsm
 	@echo UFSMGEN $< 
-	@$(UFSMGENERATE) --input $< --output $(patsubst %.ufsm, %, $(<))
+	@$(UFSMGENERATE) -v2 c $< .
 	@$(CC) $(CFLAGS) -c $(patsubst %.ufsm, %.c, $(<)) -o $@
 
 %.o : %.c
 	@echo CC $<
 	@$(CC) $(CFLAGS) -c $< -o $@
 
-main: $(UFSM_MODEL_OBJS) $(C_OBJS)
+dimmer: $(UFSM_MODEL_OBJS) $(C_OBJS)
 	@echo LINK $@
-	@$(CC) $(UFSM_MODEL_OBJS) $(C_OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+	@$(CC) $(UFSM_MODEL_OBJS) $(C_OBJS) $(CFLAGS) -o $@
 
 
 clean:

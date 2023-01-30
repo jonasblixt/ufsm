@@ -8,7 +8,7 @@ Async linux demo
 
 This example showcases a number of different things:
 
- * Emitting signals with the '^' event prefix
+ * Emitting signals
  * Using a state condition guard
  * De-coupling the state machine with a thread safe queue
  * Timer events using linux's timerfd
@@ -32,12 +32,11 @@ Main loop::
     q = ufsm_queue_init(priv.epoll_fd, 128);
     priv.q = q;
 
-    ufsm_debug_machine(&m.machine);
-    ufsm_configure_emit_handler(&m.machine, emit_handler);
     ufsm_timer_init(&priv.tmr, priv.epoll_fd, q, 1500, eEnable);
     ufsm_timer_init(&priv.tmr_exit, priv.epoll_fd, q, 5000, eExitTimerExpired);
 
-    emit_machine_initialize(&m, &priv);
+    linux_async_init(&m, &priv);
+    linux_async_process(&m, UFSM_RESET);
 
     for (;;) {
         int no_of_fds = epoll_wait(priv.epoll_fd, events, MAX_EVENTS, -1);
@@ -66,10 +65,17 @@ Main loop::
                 }
 
                 for (int i = 0; i < no_of_queue_events; i++) {
-                    emit_machine_process(&m, ufsm_queue_pop(q));
+                    assert(linux_async_process(&m, ufsm_queue_pop(q)) == 0);
                 }
             }
         }
+
+        if (!priv.run) {
+            printf("Exiting...\n");
+            break;
+        }
+    }
+
 
 The queue, timers and the state machine are initialized. The 'tmr' timer is used
 to send the event 'eEnable' after 1500 ms.
