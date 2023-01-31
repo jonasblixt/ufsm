@@ -39,7 +39,7 @@ jobs:
     - name: Build compose appimage
       run: ./linuxdeploy*.AppImage --appdir dist/ufsm-compose --output appimage
     - name: Buld generator appimage
-      run: readlink -f generator > dist/ufsm-generate/requirements.txt && python-appimage build app generator
+      run: readlink -f generator > dist/ufsm-generate/requirements.txt && python-appimage build app dist/ufsm-generate
     - name: Upload release
       uses: actions/upload-artifact@v2
       if: startsWith(github.ref, 'refs/tags/')
