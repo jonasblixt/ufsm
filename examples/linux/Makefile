@@ -13,7 +13,7 @@ all: linux_async
 
 %.ufsmo : %.ufsm
 	@echo UFSMGEN $< 
-	@$(UFSMGENERATE) -v2 c -l 8 $< .
+	@$(UFSMGENERATE) -v2 c -l 1 $< .
 	@$(CC) $(CFLAGS) -c $(patsubst %.ufsm, %.c, $(<)) -o $@
 
 %.o : %.c
