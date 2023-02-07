@@ -80,8 +80,9 @@ def _gen_machine_struct(hmodel, sq_length, f):
     _emit(f, 0, f"struct {hmodel.name}_machine {{")
     _emit(f, 1, f"unsigned int csv[{no_of_regions}];")
     _emit(f, 1, f"unsigned int wsv[{no_of_regions}];")
-    _emit(f, 1, f"unsigned int sq[{sq_length}];")
-    _emit(f, 1, f"unsigned int sq_count;")
+    if sq_length > 0:
+        _emit(f, 1, f"unsigned int sq[{sq_length}];")
+        _emit(f, 1, f"unsigned int sq_count;")
     _emit(f, 1, "void *user;")
     _emit(f, 0, "};")
 
@@ -254,8 +255,9 @@ def _gen_process_func(hmodel, fmodel, sq_length, f):
     _emit(f, 2, "m->wsv[i] = 0;")
     _emit(f, 2, "m->csv[i] = 0;")
     _emit(f, 1, "}")
-    _emit(f, 1, "m->sq_count = 0;")
-    _emit(f, 1, "m->user = user;")
+    if sq_length > 0:
+        _emit(f, 1, "m->sq_count = 0;")
+        _emit(f, 1, "m->user = user;")
     _emit(f, 1, "return 0;")
     _emit(f, 0, "}")
     _nl(f)
