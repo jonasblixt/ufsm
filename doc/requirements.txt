@@ -1,4 +1,0 @@
-breathe
-sphinx_rtd_theme
-semver
-ecdsa

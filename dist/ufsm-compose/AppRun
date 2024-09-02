@@ -1,2 +1,0 @@
-#!/bin/sh
-$APPDIR/usr/bin/ufsm-compose "$@"
