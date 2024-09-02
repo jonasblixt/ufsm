@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ufsm"
+version = "0.1.0"
+authors = [
+  { name="Jonas Blixt", email="jonpe960@gmail.com" },
+]
+description = "uFSM statechart tool"
+readme = "README.rst"
+requires-python = ">=3.9"
+dependencies = [
+    "pyside6>=6.7",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD3 License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/jonasblixt/ufsm"
+"Bug Tracker" = "https://github.com/jonasblixt/ufsm/issues"
+
+[project.scripts]
+ufsm-compose = "ufsm.__main__:main"
+
+[tool.setuptools]
+packages = ["ufsm"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+# See: https://docs.astral.sh/ruff/rules/ for details
+select = ["D", "N", "F", "W", "E", "I", "SIM", "PTH", "PERF"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.mypy]
+warn_return_any = true
+exclude = [
+    "^build.*",
+]
