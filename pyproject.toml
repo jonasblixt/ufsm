@@ -25,7 +25,7 @@ classifiers = [
 "Bug Tracker" = "https://github.com/jonasblixt/ufsm/issues"
 
 [project.scripts]
-ufsm-compose = "ufsm.__main__:main"
+ufsm = "ufsm.__main__:main"
 
 [tool.setuptools]
 packages = ["ufsm"]

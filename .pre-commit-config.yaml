@@ -19,6 +19,7 @@ repos:
   - id: mypy
     additional_dependencies:
       - "setuptools>=69,<70"
+      - "pyside6-stubs>6.4"
     pass_filenames: false # This and the args, argument are needed to make mypy read pyproject.toml
     args: ["."]
 
