@@ -1,57 +1,46 @@
 """Main module."""
 
+from __future__ import annotations
+
 import sys
 
+from PySide6.QtCore import QRectF, Qt
+from PySide6.QtGui import QBrush, QFont, QKeyEvent, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import (
     QApplication,
-    QMainWindow,
-    QPushButton,
-    QComboBox,
-    QGraphicsScene,
-    QGraphicsView,
     QGraphicsItem,
-    QGroupBox,
-    QLabel,
-    QLineEdit,
-    QFormLayout,
-    QHBoxLayout,
-    QGraphicsSimpleTextItem
+    QGraphicsScene,
+    QGraphicsSceneMouseEvent,
+    QGraphicsSimpleTextItem,
+    QGraphicsView,
+    QMainWindow,
+    QStyleOptionGraphicsItem,
+    QWidget,
 )
-from PySide6.QtCore import QRectF, QPointF, Qt
-from PySide6.QtGui import QTransform, QPainter, QPainterPath, QBrush, QPen, QFont
 
-
-class MainWindow(QMainWindow):
-    def __init__(self) -> None:
-        super().__init__()
-        self.setWindowTitle("Hello World")
-        l = QLabel("My simple app.")
-        l.setMargin(10)
-        self.setCentralWidget(l)
-        self.show()
 
 class CenterText(QGraphicsItem):
-    def __init__(self, text='', parent=None):
+    def __init__(self, text: str = "", parent: QGraphicsItem | None = None):
         super().__init__(parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIgnoresTransformations | QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.textItem = QGraphicsSimpleTextItem(text, self)
         self.textItem.setPos(self.textItem.boundingRect().center())
 
-    def setText(self, text):
+    def setText(self, text: str) -> None:
         self.textItem.setText(text)
         self.textItem.setPos(self.textItem.boundingRect().center())
 
-    def boundingRect(self):
+    def boundingRect(self) -> QRectF:
         return self.childrenBoundingRect()
 
-    def paint(self, *args):
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = None) -> None:
         pass
 
 class StateItem(QGraphicsItem):
     font = QFont()
     pen = QPen(Qt.GlobalColor.red, 2)
-    def __init__(self, name="State"):
-        super(StateItem, self).__init__()
+    def __init__(self, name: str = "State"):
+        super().__init__()
         self.setFlag(
             QGraphicsItem.GraphicsItemFlag.ItemIsMovable
             | QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
@@ -61,11 +50,11 @@ class StateItem(QGraphicsItem):
         self.height = 100
         label = CenterText(name, self)
 
-    def boundingRect(self):
+    def boundingRect(self) ->  QRectF:
         return QRectF(0, 0, self.width, self.height)
 
-    def mouseReleaseEvent(self, event):
-        super(StateItem, self).mouseReleaseEvent(event)
+    def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent) -> None:
+        super().mouseReleaseEvent(event)
         last_pos = event.lastScenePos()
         scene = self.scene()
 
@@ -87,13 +76,18 @@ class StateItem(QGraphicsItem):
         new_pos -= event.pos()
         self.setPos(new_pos)
 
-    def paint(self, painter, option, widget):
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
+        super().mousePressEvent(event)
+        last_pos = event.lastScenePos()
+        print(f"StateItem: lmb {last_pos}")
+
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = None) -> None:
         if self.isSelected():
             color = Qt.GlobalColor.green
         else:
             color = Qt.GlobalColor.gray
         path = QPainterPath()
-        path.addRoundedRect(QRectF(0, 0, self.width, self.height), 5, 5);
+        path.addRoundedRect(QRectF(0, 0, self.width, self.height), 5, 5)
         painter.fillPath(path, QBrush(color))
         painter.setPen(self.pen)
         painter.drawPath(path)
@@ -101,18 +95,37 @@ class StateItem(QGraphicsItem):
 class TransitionItem(QGraphicsItem):
     source: StateItem
     dest: StateItem
-    def __init__(self, source: StateItem, dest: StateItem):
-        super(TransitionItem, self).__init__()
+    def __init__(self, source: StateItem, dest: StateItem) -> None:
+        super().__init__()
         self.source = source
         self.dest = dest
-    def paint(self, painter, option, widget):
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = None) -> None:
         path = QPainterPath()
 
-class UfsmView(QGraphicsView):
-    def __init__(self, parent):
-        super(UfsmView, self).__init__(parent)
+class UfsmScene(QGraphicsScene):
+    def __init__(self) -> None:
+        super().__init__()
+    # Here we can capture mouse press/release and key press/release events
+    # and feed into a small state machine for drawing control. We can choose
+    # to not send the events further down to "Items" by not calling the
+    # super class.
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
+        last_pos = event.lastScenePos()
+        print(f"UfsmScene lmb {last_pos}")
+        super().mousePressEvent(event)
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        super().keyPressEvent(event)
+        print(f"UfsmScene key {event}")
+        if Qt.Key_A == event.key():
+            print("A!")
+        if Qt.Key_Escape == event.key():
+            print("Esc")
 
-        scene = QGraphicsScene()
+class UfsmView(QGraphicsView):
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+
+        scene = UfsmScene()
 
         a = StateItem("a")
         scene.addItem(a)
@@ -126,8 +139,8 @@ class UfsmView(QGraphicsView):
         self.setScene(scene)
 
 class MainWindow3(QMainWindow):
-    def __init__(self):
-        super(MainWindow3, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
         self.setWindowTitle("--- UFSM ---")
 
 

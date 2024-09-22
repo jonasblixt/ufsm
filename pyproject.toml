@@ -12,6 +12,7 @@ description = "uFSM statechart tool"
 readme = "README.rst"
 requires-python = ">=3.9"
 dependencies = [
+    "typing-extensions",
     "pyside6>=6.7",
 ]
 classifiers = [
@@ -36,7 +37,19 @@ target-version = "py39"
 
 [tool.ruff.lint]
 # See: https://docs.astral.sh/ruff/rules/ for details
-select = ["D", "N", "F", "W", "E", "I", "SIM", "PTH", "PERF"]
+select = ["ALL"]
+ignore = [
+    "COM812",   # Conflicts with the formatter
+    "ISC001",   # Conflicts with the formatter
+    "ANN101",   # "missing-type-self"
+    "PLE0605",  # ruff does not handle += in __all__
+    "FBT",      # don't care for these at the moment
+    "PT001",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
+    "PT004",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
+    "PT005",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
+    "PT023",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
+    "N802",     # For pyside6 compability
+]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -48,6 +61,7 @@ line-ending = "auto"
 convention = "pep257"
 
 [tool.mypy]
+disallow_untyped_defs = true
 warn_return_any = true
 exclude = [
     "^build.*",
