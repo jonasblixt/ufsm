@@ -39,11 +39,13 @@ class CenterText(QGraphicsItem):
 class StateItem(QGraphicsItem):
     font = QFont()
     pen = QPen(Qt.GlobalColor.red, 2)
-    def __init__(self, name: str = "State"):
-        super().__init__()
+    def __init__(self, name: str = "State", parent: QWidget | None = None) -> None:
+        super().__init__(parent)
         self.setFlag(
             QGraphicsItem.GraphicsItemFlag.ItemIsMovable
             | QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
+            #| QGraphicsItem.GraphicsItemFlag.ItemClipsChildrenToShape
+            | QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges
         )
         self.name = name
         self.width = 100
@@ -67,6 +69,9 @@ class StateItem(QGraphicsItem):
             # not work.
             scene.removeItem(self)
             scene.addItem(self)
+            new_pos = last_pos
+            new_pos -= event.pos()
+            self.setPos(new_pos)
             return
 
         # TODO: Check if it's the same parent, then bail early.
@@ -79,7 +84,7 @@ class StateItem(QGraphicsItem):
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         super().mousePressEvent(event)
         last_pos = event.lastScenePos()
-        print(f"StateItem: lmb {last_pos}")
+        #print(f"StateItem: lmb {last_pos}")
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = None) -> None:
         if self.isSelected():
@@ -111,7 +116,7 @@ class UfsmScene(QGraphicsScene):
     # super class.
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         last_pos = event.lastScenePos()
-        print(f"UfsmScene lmb {last_pos}")
+        #print(f"UfsmScene lmb {last_pos}")
         super().mousePressEvent(event)
     def keyPressEvent(self, event: QKeyEvent) -> None:
         super().keyPressEvent(event)
@@ -127,13 +132,13 @@ class UfsmView(QGraphicsView):
 
         scene = UfsmScene()
 
-        a = StateItem("a")
+        a = StateItem("a", None)
         scene.addItem(a)
 
-        b = StateItem("b")
+        b = StateItem("b", None)
         b.setParentItem(a)
 
-        c = StateItem("c")
+        c = StateItem("c", None)
         scene.addItem(c)
 
         self.setScene(scene)
