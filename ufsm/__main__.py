@@ -44,8 +44,7 @@ class StateItem(QGraphicsItem):
         self.setFlag(
             QGraphicsItem.GraphicsItemFlag.ItemIsMovable
             | QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
-            #| QGraphicsItem.GraphicsItemFlag.ItemClipsChildrenToShape
-            | QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges
+            # | QGraphicsItem.GraphicsItemFlag.ItemClipsChildrenToShape
         )
         self.name = name
         self.width = 100
@@ -61,7 +60,7 @@ class StateItem(QGraphicsItem):
         scene = self.scene()
 
         # TODO: What does 'deciveTransform' mean...
-        items = scene.items(last_pos, deviceTransform=self.sceneTransform())
+        items = scene.items(last_pos, order=Qt.AscendingOrder, deviceTransform=self.sceneTransform())
         items.remove(self)
 
         if len(items) == 0:
@@ -76,6 +75,7 @@ class StateItem(QGraphicsItem):
 
         # TODO: Check if it's the same parent, then bail early.
         item = items.pop() # Get the top most item that's not 'self'
+        print(f"New parent {item.name}")
         self.setParentItem(item)
         new_pos = item.mapFromScene(last_pos)
         new_pos -= event.pos()
