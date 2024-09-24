@@ -60,7 +60,8 @@ class StateItem(QGraphicsItem):
         scene = self.scene()
 
         # TODO: What does 'deciveTransform' mean...
-        items = scene.items(last_pos, order=Qt.AscendingOrder, deviceTransform=self.sceneTransform())
+        items = scene.items(last_pos, order=Qt.AscendingOrder,
+                            deviceTransform=self.sceneTransform())
         items.remove(self)
 
         if len(items) == 0:
@@ -126,35 +127,25 @@ class UfsmScene(QGraphicsScene):
         if Qt.Key_Escape == event.key():
             print("Esc")
 
-class UfsmView(QGraphicsView):
-    def __init__(self, parent: QWidget | None = None) -> None:
-        super().__init__(parent)
-
-        scene = UfsmScene()
-
-        a = StateItem("a", None)
-        scene.addItem(a)
-
-        b = StateItem("b", None)
-        b.setParentItem(a)
-
-        c = StateItem("c", None)
-        scene.addItem(c)
-
-        self.setScene(scene)
-
-class MainWindow3(QMainWindow):
-    def __init__(self) -> None:
-        super().__init__()
-        self.setWindowTitle("--- UFSM ---")
-
 
 def main() -> None:
     app = QApplication(sys.argv)
-    w = MainWindow3()
+    w = QMainWindow()
+    w.setWindowTitle("--- UFSM ---")
     w.resize(800, 600)
-    view = UfsmView(w)
+
+    scene = UfsmScene()
+    a = StateItem("a", None)
+    scene.addItem(a)
+    b = StateItem("b", None)
+    b.setParentItem(a)
+    c = StateItem("c", None)
+    scene.addItem(c)
+
+    view = QGraphicsView(w)
     view.resize(800, 600)
+    view.setScene(scene)
+
     w.show()
 
     app.exec()
