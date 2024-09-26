@@ -18,13 +18,15 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+UFSM_GRID_SNAP = 10
 
 class CenterText(QGraphicsItem):
     def __init__(self, text: str = "", parent: QGraphicsItem | None = None):
         super().__init__(parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIgnoresTransformations | QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.textItem = QGraphicsSimpleTextItem(text, self)
-        self.textItem.setPos(self.textItem.boundingRect().center())
+        self.textItem.setPos(parent.boundingRect().center())
+        print(f"text, parent rect: {parent.boundingRect()}")
 
     def setText(self, text: str) -> None:
         self.textItem.setText(text)
@@ -39,17 +41,31 @@ class CenterText(QGraphicsItem):
 class StateItem(QGraphicsItem):
     font = QFont()
     pen = QPen(Qt.GlobalColor.red, 2)
+    _snap = True
+    _snapSize = 10
     def __init__(self, name: str = "State", parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setFlag(
             QGraphicsItem.GraphicsItemFlag.ItemIsMovable
             | QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
             # | QGraphicsItem.GraphicsItemFlag.ItemClipsChildrenToShape
+            | QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges
         )
         self.name = name
         self.width = 100
         self.height = 100
-        label = CenterText(name, self)
+        #label = CenterText(name, self)
+
+        textItem = QGraphicsSimpleTextItem("A State", self)
+        print(f"textItem: {textItem.boundingRect()}")
+        textItem.setPos(self.boundingRect().center() - textItem.boundingRect().center())
+
+    def itemChange(self, change, value):
+        print(change)
+        if change == QGraphicsItem.ItemPositionChange and self._snap:
+            value.setX(round(value.x() / self._snapSize) * self._snapSize)
+            value.setY(round(value.y() / self._snapSize) * self._snapSize)
+        return super().itemChange(change, value)
 
     def boundingRect(self) ->  QRectF:
         return QRectF(0, 0, self.width, self.height)
@@ -62,7 +78,13 @@ class StateItem(QGraphicsItem):
         # TODO: What does 'deciveTransform' mean...
         items = scene.items(last_pos, order=Qt.AscendingOrder,
                             deviceTransform=self.sceneTransform())
-        items.remove(self)
+
+        items = [x for x in items if isinstance(x, StateItem)]
+        try:
+            items.remove(self)
+        except ValueError:
+            print("Something bad happened")
+            items = []
 
         if len(items) == 0:
             # Seems a bit hackis but just updating with setParentItem does
@@ -76,16 +98,12 @@ class StateItem(QGraphicsItem):
 
         # TODO: Check if it's the same parent, then bail early.
         item = items.pop() # Get the top most item that's not 'self'
-        print(f"New parent {item.name}")
+        # TODO: Sometimes it drop on the "label"... We should
+        # filter out compatible objects
         self.setParentItem(item)
         new_pos = item.mapFromScene(last_pos)
         new_pos -= event.pos()
         self.setPos(new_pos)
-
-    def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
-        super().mousePressEvent(event)
-        last_pos = event.lastScenePos()
-        #print(f"StateItem: lmb {last_pos}")
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = None) -> None:
         if self.isSelected():
@@ -98,17 +116,8 @@ class StateItem(QGraphicsItem):
         painter.setPen(self.pen)
         painter.drawPath(path)
 
-class TransitionItem(QGraphicsItem):
-    source: StateItem
-    dest: StateItem
-    def __init__(self, source: StateItem, dest: StateItem) -> None:
-        super().__init__()
-        self.source = source
-        self.dest = dest
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = None) -> None:
-        path = QPainterPath()
-
 class UfsmScene(QGraphicsScene):
+    grid_pen = QPen(Qt.lightGray)
     def __init__(self) -> None:
         super().__init__()
     # Here we can capture mouse press/release and key press/release events
@@ -126,7 +135,26 @@ class UfsmScene(QGraphicsScene):
             print("A!")
         if Qt.Key_Escape == event.key():
             print("Esc")
+    def drawBackground(self, qp, rect):
+        qp.translate(.5, .5)
+        qp.setPen(self.grid_pen)
 
+        x, y, right, bottom = rect.toRect().getCoords()
+        top = y
+        left = x
+        step = UFSM_GRID_SNAP
+
+        yrest = y % step
+        if yrest:
+            y += step - yrest
+        for y in range(y, bottom, step):
+            qp.drawLine(left, y, right, y)
+
+        xrest = x % step
+        if xrest:
+            x += step - xrest
+        for x in range(x, right, step):
+            qp.drawLine(x, top, x, bottom)
 
 def main() -> None:
     app = QApplication(sys.argv)
@@ -135,11 +163,11 @@ def main() -> None:
     w.resize(800, 600)
 
     scene = UfsmScene()
-    a = StateItem("a", None)
+    a = StateItem("A State", None)
     scene.addItem(a)
-    b = StateItem("b", None)
-    b.setParentItem(a)
-    c = StateItem("c", None)
+    b = StateItem("B State", None)
+    scene.addItem(b)
+    c = StateItem("C State", None)
     scene.addItem(c)
 
     view = QGraphicsView(w)
