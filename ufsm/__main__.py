@@ -3,22 +3,25 @@
 from __future__ import annotations
 
 import sys
-
-from PySide6.QtCore import QRectF, Qt
-from PySide6.QtGui import QBrush, QFont, QKeyEvent, QPainter, QPainterPath, QPen
+from PySide6.QtCore import QRectF, Qt, QMimeData
+from PySide6.QtGui import QBrush, QFont, QKeyEvent, QPainter, QPainterPath, QPen, QDrag
 from PySide6.QtWidgets import (
     QApplication,
     QGraphicsItem,
+    QGraphicsObject,
     QGraphicsScene,
     QGraphicsSceneMouseEvent,
+    QGraphicsSceneDragDropEvent,
     QGraphicsSimpleTextItem,
     QGraphicsView,
     QMainWindow,
     QStyleOptionGraphicsItem,
     QWidget,
+    QFrame,
 )
 
 UFSM_GRID_SNAP = 10
+SCALE_FACTOR = 1.25
 
 class CenterText(QGraphicsItem):
     def __init__(self, text: str = "", parent: QGraphicsItem | None = None):
@@ -61,7 +64,7 @@ class StateItem(QGraphicsItem):
         textItem.setPos(self.boundingRect().center() - textItem.boundingRect().center())
 
     def itemChange(self, change, value):
-        print(change)
+        #print(change)
         if change == QGraphicsItem.ItemPositionChange and self._snap:
             value.setX(round(value.x() / self._snapSize) * self._snapSize)
             value.setY(round(value.y() / self._snapSize) * self._snapSize)
@@ -69,7 +72,6 @@ class StateItem(QGraphicsItem):
 
     def boundingRect(self) ->  QRectF:
         return QRectF(0, 0, self.width, self.height)
-
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         super().mouseReleaseEvent(event)
         last_pos = event.lastScenePos()
@@ -79,10 +81,13 @@ class StateItem(QGraphicsItem):
         items = scene.items(last_pos, order=Qt.AscendingOrder,
                             deviceTransform=self.sceneTransform())
 
+        # Filter out items we can actually have as a parent
         items = [x for x in items if isinstance(x, StateItem)]
+
         try:
             items.remove(self)
         except ValueError:
+            # TODO: We should not get here, what should we do?
             print("Something bad happened")
             items = []
 
@@ -120,6 +125,7 @@ class UfsmScene(QGraphicsScene):
     grid_pen = QPen(Qt.lightGray)
     def __init__(self) -> None:
         super().__init__()
+        #self.setSceneRect(QRectF(0, 0, 1000, 1000))
     # Here we can capture mouse press/release and key press/release events
     # and feed into a small state machine for drawing control. We can choose
     # to not send the events further down to "Items" by not calling the
@@ -156,6 +162,39 @@ class UfsmScene(QGraphicsScene):
         for x in range(x, right, step):
             qp.drawLine(x, top, x, bottom)
 
+class UfsmView(QGraphicsView):
+    _zoom = 0
+    def __init__(self, parent: QWidget):
+        super().__init__(parent)
+        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setFrameShape(QFrame.Shape.NoFrame)
+        self.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+
+        print(self.sceneRect())
+    def zoom(self, step):
+        zoom = max(0, self._zoom + (step := round(step)))
+        if zoom != self._zoom:
+            self._zoom = zoom
+            if self._zoom > 0:
+                if step > 0:
+                    factor = SCALE_FACTOR ** step
+                else:
+                    factor = 1 / SCALE_FACTOR ** abs(step)
+                self.scale(factor, factor)
+                print(factor)
+            else:
+                self._zoom = 0
+                self.scale(1/SCALE_FACTOR, 1/SCALE_FACTOR)
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._zoom = 0
+    def wheelEvent(self, event):
+        delta = event.angleDelta().y()
+        self.zoom(delta and delta // abs(delta))
+
 def main() -> None:
     app = QApplication(sys.argv)
     w = QMainWindow()
@@ -170,7 +209,7 @@ def main() -> None:
     c = StateItem("C State", None)
     scene.addItem(c)
 
-    view = QGraphicsView(w)
+    view = UfsmView(w)
     view.resize(800, 600)
     view.setScene(scene)
 
