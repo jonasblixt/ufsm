@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import sys
-from PySide6.QtCore import QRectF, Qt, QMimeData, QPoint
+from PySide6.QtCore import QRectF, Qt, QMimeData, QPoint, QPointF, Signal, Slot
 from PySide6.QtGui import QBrush, QFont, QKeyEvent, QWheelEvent, QPainter, QPainterPath, QPen, QDrag
 from PySide6.QtWidgets import (
     QApplication,
@@ -41,6 +41,36 @@ class CenterText(QGraphicsItem):
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = None) -> None:
         pass
 
+class Resizer(QGraphicsObject):
+
+    resizeSignal = Signal(QPointF)
+
+    def __init__(self, rect=QRectF(0, 0, 10, 10), parent=None):
+        super().__init__(parent)
+
+        self.setFlag(QGraphicsItem.ItemIsMovable, True)
+        self.setFlag(QGraphicsItem.ItemIsSelectable, True)
+        self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
+        self.rect = rect
+
+    def boundingRect(self):
+        return self.rect
+
+    def paint(self, painter, option, widget=None):
+        if self.isSelected():
+            pen = QPen()
+            pen.setStyle(Qt.DotLine)
+            painter.setPen(pen)
+        painter.drawRect(self.rect)
+
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemPositionChange:
+            value.setX(round(value.x() / 10) * 10)
+            value.setY(round(value.y() / 10) * 10)
+            if self.isSelected():
+                self.resizeSignal.emit(value - self.pos())
+        return value
+
 class StateItem(QGraphicsItem):
     font = QFont()
     pen = QPen(Qt.GlobalColor.red, 2)
@@ -62,11 +92,18 @@ class StateItem(QGraphicsItem):
         textItem = QGraphicsSimpleTextItem(name, self)
         textItem.setPos(self.boundingRect().center() - textItem.boundingRect().center())
 
+        print(f"bottom: {self.boundingRect().bottomRight()}")
+        self.r = Resizer(parent=self)
+        self.r.setPos(self.boundingRect().bottomRight())
+        self.r.resizeSignal.connect(self.resize)
+
     def itemChange(self, change, value):
-        #print(change)
         if change == QGraphicsItem.ItemPositionChange and self._snap:
             value.setX(round(value.x() / self._snapSize) * self._snapSize)
             value.setY(round(value.y() / self._snapSize) * self._snapSize)
+            # HACK: If we don't call update on the scene here we get rendering
+            # artifacts when the view is scaled.
+            self.scene().update()
         return super().itemChange(change, value)
 
     def boundingRect(self) ->  QRectF:
@@ -121,6 +158,15 @@ class StateItem(QGraphicsItem):
         painter.setPen(self.pen)
         painter.drawPath(path)
 
+    @Slot()
+    def resize(self, change):
+        self.width += change.x()
+        self.height += change.y()
+        self.prepareGeometryChange()
+        self.scene().update()
+
+
+
 class UfsmScene(QGraphicsScene):
     grid_pen = QPen(Qt.lightGray)
     def __init__(self) -> None:
@@ -171,15 +217,13 @@ class UfsmView(QGraphicsView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setFrameShape(QFrame.Shape.NoFrame)
-        #self.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
         self.setSceneRect(-32000, -32000, 64000, 64000)
 
-        print(self.sceneRect())
-
     def wheelEvent(self, event: QWheelEvent):
-        factor = 1.25
+        factor = SCALE_FACTOR
         if event.angleDelta().y() < 0:
-            factor = 0.8
+            factor = 1/SCALE_FACTOR
 
         view_pos = QPoint(event.position().x(), event.position().y())
         scene_pos = self.mapToScene(view_pos)
