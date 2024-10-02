@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import sys
-from PySide6.QtCore import QRectF, Qt, QMimeData
+from PySide6.QtCore import QRectF, Qt, QMimeData, QPoint
 from PySide6.QtGui import QBrush, QFont, QKeyEvent, QPainter, QPainterPath, QPen, QDrag
 from PySide6.QtWidgets import (
     QApplication,
@@ -59,8 +59,7 @@ class StateItem(QGraphicsItem):
         self.height = 100
         #label = CenterText(name, self)
 
-        textItem = QGraphicsSimpleTextItem("A State", self)
-        print(f"textItem: {textItem.boundingRect()}")
+        textItem = QGraphicsSimpleTextItem(name, self)
         textItem.setPos(self.boundingRect().center() - textItem.boundingRect().center())
 
     def itemChange(self, change, value):
@@ -72,6 +71,7 @@ class StateItem(QGraphicsItem):
 
     def boundingRect(self) ->  QRectF:
         return QRectF(0, 0, self.width, self.height)
+
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         super().mouseReleaseEvent(event)
         last_pos = event.lastScenePos()
@@ -163,37 +163,68 @@ class UfsmScene(QGraphicsScene):
             qp.drawLine(x, top, x, bottom)
 
 class UfsmView(QGraphicsView):
-    _zoom = 0
+    _isScrolling = False
     def __init__(self, parent: QWidget):
         super().__init__(parent)
-        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
-        self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        #self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.NoAnchor)
+        #self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setFrameShape(QFrame.Shape.NoFrame)
-        self.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        #self.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.setSceneRect(-32000, -32000, 64000, 64000)
 
         print(self.sceneRect())
-    def zoom(self, step):
-        zoom = max(0, self._zoom + (step := round(step)))
-        if zoom != self._zoom:
-            self._zoom = zoom
-            if self._zoom > 0:
-                if step > 0:
-                    factor = SCALE_FACTOR ** step
-                else:
-                    factor = 1 / SCALE_FACTOR ** abs(step)
-                self.scale(factor, factor)
-                print(factor)
-            else:
-                self._zoom = 0
-                self.scale(1/SCALE_FACTOR, 1/SCALE_FACTOR)
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self._zoom = 0
+
     def wheelEvent(self, event):
-        delta = event.angleDelta().y()
-        self.zoom(delta and delta // abs(delta))
+        factor = 1.25
+        if event.angleDelta().y() < 0:
+            factor = 0.8
+        # Get the cursor position (In the window)
+        view_pos = QPoint(event.position().x(), event.position().x())
+        # Translate cursor position in the window to the position in the scene
+        print(f"mouse {view_pos.x()}, {view_pos.y()}")
+        scene_pos = self.mapToScene(view_pos)
+        print(f"scene {scene_pos.x()}, {scene_pos.y()}")
+
+        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+
+        self.centerOn(scene_pos)
+        self.scale(factor, factor)
+        print(self.mapToScene(self.viewport().rect().center()))
+        delta = self.mapToScene(view_pos) - self.mapToScene(self.viewport().rect().center())
+        print(f"delta {delta.x()} {delta.y()}")
+        self.centerOn(scene_pos - delta)
+
+        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.NoAnchor)
+        self.setResizeAnchor(QGraphicsView.ViewportAnchor.NoAnchor)
+        #self.centerOn(0, 0)
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.RightButton:
+            self._isScrolling = True
+            self.viewport().setCursor(Qt.CursorShape.ClosedHandCursor)
+            self.scrollPos = event.position()
+        else:
+            super().mousePressEvent(event)
+    def mouseReleaseEvent(self, event):
+        if self._isScrolling:
+            self._isScrolling = False
+            self.viewport().unsetCursor()
+        super().mouseReleaseEvent(event)
+    def mouseMoveEvent(self, event):
+        if self._isScrolling:
+            newPos = event.position()
+            delta = newPos - self.scrollPos
+            t = self.transform()
+            self.translate(delta.x() / t.m11(), delta.y() / t.m22())
+            self.scrollPos = newPos
+        else:
+            super().mouseMoveEvent(event)
 
 def main() -> None:
     app = QApplication(sys.argv)
