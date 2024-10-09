@@ -3,21 +3,30 @@
 from __future__ import annotations
 
 import sys
-from PySide6.QtCore import QRectF, Qt, QMimeData, QPoint, QPointF, Signal, Slot
-from PySide6.QtGui import QBrush, QFont, QKeyEvent, QWheelEvent, QPainter, QPainterPath, QPen, QDrag
+
+from PySide6.QtCore import QPoint, QPointF, QRectF, Qt, Signal, Slot
+from PySide6.QtGui import (
+    QBrush,
+    QColor,
+    QFont,
+    QKeyEvent,
+    QPainter,
+    QPainterPath,
+    QPen,
+    QWheelEvent,
+)
 from PySide6.QtWidgets import (
     QApplication,
+    QFrame,
     QGraphicsItem,
     QGraphicsObject,
     QGraphicsScene,
     QGraphicsSceneMouseEvent,
-    QGraphicsSceneDragDropEvent,
     QGraphicsSimpleTextItem,
     QGraphicsView,
     QMainWindow,
     QStyleOptionGraphicsItem,
     QWidget,
-    QFrame,
 )
 
 UFSM_GRID_SNAP = 10
@@ -43,25 +52,24 @@ class CenterText(QGraphicsItem):
 
 class Resizer(QGraphicsObject):
 
+    clr = QBrush(QColor(0xd6, 0x5d, 0x0e))
     resizeSignal = Signal(QPointF)
 
-    def __init__(self, rect=QRectF(0, 0, 10, 10), parent=None):
+    def __init__(self, rect=QRectF(0, 0, 7, 7), parent=None):
         super().__init__(parent)
 
         self.setFlag(QGraphicsItem.ItemIsMovable, True)
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
         self.rect = rect
+        self.parent = parent
 
     def boundingRect(self):
         return self.rect
 
     def paint(self, painter, option, widget=None):
-        if self.isSelected():
-            pen = QPen()
-            pen.setStyle(Qt.DotLine)
-            painter.setPen(pen)
-        painter.drawRect(self.rect)
+        if self.parent.isSelected() or self.isSelected():
+            painter.fillRect(self.rect, self.clr)
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange:
@@ -97,6 +105,9 @@ class StateItem(QGraphicsItem):
         self.r.setPos(self.boundingRect().bottomRight())
         self.r.resizeSignal.connect(self.resize)
 
+        self.r2 = Resizer(parent=self)
+        self.r2.setPos(self.boundingRect().topRight() - QPointF(0, 7))
+        self.r2.resizeSignal.connect(self.resize2)
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange and self._snap:
             value.setX(round(value.x() / self._snapSize) * self._snapSize)
@@ -148,10 +159,7 @@ class StateItem(QGraphicsItem):
         self.setPos(new_pos)
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = None) -> None:
-        if self.isSelected():
-            color = Qt.GlobalColor.green
-        else:
-            color = Qt.GlobalColor.gray
+        color = Qt.GlobalColor.green if self.isSelected() else Qt.GlobalColor.gray
         path = QPainterPath()
         path.addRoundedRect(QRectF(0, 0, self.width, self.height), 5, 5)
         painter.fillPath(path, QBrush(color))
@@ -165,12 +173,21 @@ class StateItem(QGraphicsItem):
         self.prepareGeometryChange()
         self.scene().update()
 
+    @Slot()
+    def resize2(self, change):
+        self.width += change.x()
+        self.height -= change.y()
+        self.setPos(self.pos() + QPointF(0, change.y()))
+        self.prepareGeometryChange()
+        self.scene().update()
 
 
 class UfsmScene(QGraphicsScene):
-    grid_pen = QPen(Qt.lightGray)
+    grid_pen = QPen(QColor(0x3c, 0x38, 0x36))
     def __init__(self) -> None:
         super().__init__()
+        bg = QColor(0x28, 0x28, 0x28)
+        self.bg_brush = QBrush(bg)
         #self.setSceneRect(QRectF(0, 0, 1000, 1000))
     # Here we can capture mouse press/release and key press/release events
     # and feed into a small state machine for drawing control. We can choose
@@ -188,6 +205,7 @@ class UfsmScene(QGraphicsScene):
         if Qt.Key_Escape == event.key():
             print("Esc")
     def drawBackground(self, qp, rect):
+        qp.fillRect(rect, self.bg_brush)
         qp.translate(.5, .5)
         qp.setPen(self.grid_pen)
 
