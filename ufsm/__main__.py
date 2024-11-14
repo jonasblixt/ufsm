@@ -32,10 +32,14 @@ from PySide6.QtWidgets import (
 UFSM_GRID_SNAP = 10
 SCALE_FACTOR = 1.25
 
+
 class CenterText(QGraphicsItem):
     def __init__(self, text: str = "", parent: QGraphicsItem | None = None):
         super().__init__(parent)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIgnoresTransformations | QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+        self.setFlag(
+            QGraphicsItem.GraphicsItemFlag.ItemIgnoresTransformations
+            | QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
+        )
         self.textItem = QGraphicsSimpleTextItem(text, self)
         self.textItem.setPos(parent.boundingRect().center())
         print(f"text, parent rect: {parent.boundingRect()}")
@@ -47,15 +51,17 @@ class CenterText(QGraphicsItem):
     def boundingRect(self) -> QRectF:
         return self.childrenBoundingRect()
 
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = None) -> None:
+    def paint(
+        self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = None
+    ) -> None:
         pass
 
-class Resizer(QGraphicsObject):
 
-    clr = QBrush(QColor(0xd6, 0x5d, 0x0e))
+class Resizer(QGraphicsObject):
+    clr = QBrush(QColor(0xD6, 0x5D, 0x0E))
     resizeSignal = Signal(QPointF)
 
-    def __init__(self, rect=QRectF(0, 0, 7, 7), parent=None):
+    def __init__(self, rect=QRectF(0, 0, 10, 10), parent: StateItem = None):
         super().__init__(parent)
 
         self.setFlag(QGraphicsItem.ItemIsMovable, True)
@@ -69,21 +75,27 @@ class Resizer(QGraphicsObject):
 
     def paint(self, painter, option, widget=None):
         if self.parent.isSelected() or self.isSelected():
+            print(f"resizer: {self.rect}")
             painter.fillRect(self.rect, self.clr)
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange:
             value.setX(round(value.x() / 10) * 10)
             value.setY(round(value.y() / 10) * 10)
-            if self.isSelected():
-                self.resizeSignal.emit(value - self.pos())
+            # if self.isSelected():
+            #    self.resizeSignal.emit(value - self.pos())
+        elif change == QGraphicsItem.ItemPositionHasChanged:
+            self.parent.boundingRect().setTop(value.y())
         return value
+
 
 class StateItem(QGraphicsItem):
     font = QFont()
     pen = QPen(Qt.GlobalColor.red, 2)
+    resize_clr = QBrush(QColor(0xD6, 0x5D, 0x0E))
     _snap = True
     _snapSize = 10
+
     def __init__(self, name: str = "State", parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setFlag(
@@ -95,19 +107,19 @@ class StateItem(QGraphicsItem):
         self.name = name
         self.width = 100
         self.height = 100
-        #label = CenterText(name, self)
+        # label = CenterText(name, self)
 
         textItem = QGraphicsSimpleTextItem(name, self)
-        textItem.setPos(self.boundingRect().center() - textItem.boundingRect().center())
-
+        textItem.setPos(self.boundingRect().center() -
+                        textItem.boundingRect().center())
         print(f"bottom: {self.boundingRect().bottomRight()}")
         self.r = Resizer(parent=self)
         self.r.setPos(self.boundingRect().bottomRight())
         self.r.resizeSignal.connect(self.resize)
-
         self.r2 = Resizer(parent=self)
         self.r2.setPos(self.boundingRect().topRight() - QPointF(0, 7))
         self.r2.resizeSignal.connect(self.resize2)
+
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange and self._snap:
             value.setX(round(value.x() / self._snapSize) * self._snapSize)
@@ -117,8 +129,8 @@ class StateItem(QGraphicsItem):
             self.scene().update()
         return super().itemChange(change, value)
 
-    def boundingRect(self) ->  QRectF:
-        return QRectF(0, 0, self.width, self.height)
+    def boundingRect(self) -> QRectF:
+        return QRectF(0, 0, 100, 100)
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         super().mouseReleaseEvent(event)
@@ -126,8 +138,9 @@ class StateItem(QGraphicsItem):
         scene = self.scene()
 
         # TODO: What does 'deciveTransform' mean...
-        items = scene.items(last_pos, order=Qt.AscendingOrder,
-                            deviceTransform=self.sceneTransform())
+        items = scene.items(
+            last_pos, order=Qt.AscendingOrder, deviceTransform=self.sceneTransform()
+        )
 
         # Filter out items we can actually have as a parent
         items = [x for x in items if isinstance(x, StateItem)]
@@ -150,7 +163,7 @@ class StateItem(QGraphicsItem):
             return
 
         # TODO: Check if it's the same parent, then bail early.
-        item = items.pop() # Get the top most item that's not 'self'
+        item = items.pop()  # Get the top most item that's not 'self'
         # TODO: Sometimes it drop on the "label"... We should
         # filter out compatible objects
         self.setParentItem(item)
@@ -158,7 +171,9 @@ class StateItem(QGraphicsItem):
         new_pos -= event.pos()
         self.setPos(new_pos)
 
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = None) -> None:
+    def paint(
+        self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = None
+    ) -> None:
         color = Qt.GlobalColor.green if self.isSelected() else Qt.GlobalColor.gray
         path = QPainterPath()
         path.addRoundedRect(QRectF(0, 0, self.width, self.height), 5, 5)
@@ -167,36 +182,58 @@ class StateItem(QGraphicsItem):
         painter.drawPath(path)
 
     @Slot()
-    def resize(self, change):
+    def resize(self, change) -> None:
+        self.r.setFlag(QGraphicsItem.ItemSendsGeometryChanges, False)
+        self.r2.setFlag(QGraphicsItem.ItemSendsGeometryChanges, False)
         self.width += change.x()
         self.height += change.y()
         self.prepareGeometryChange()
         self.scene().update()
 
+        self.r.setPos(self.boundingRect().bottomRight())
+        self.r2.setPos(self.boundingRect().topRight() - QPointF(0, 7))
+        self.r.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
+        self.r2.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
+
     @Slot()
     def resize2(self, change):
+        self.r.setFlag(QGraphicsItem.ItemSendsGeometryChanges, False)
+        self.r2.setFlag(QGraphicsItem.ItemSendsGeometryChanges, False)
         self.width += change.x()
         self.height -= change.y()
         self.setPos(self.pos() + QPointF(0, change.y()))
+
+        print(self.boundingRect())
+        print(f"1!! r2 pos {self.r2.pos()} {self.height} {self.pos()}")
+        self.r.setPos(self.boundingRect().bottomRight())
+        self.r2.setPos(self.pos() - QPointF(0, 7))
+        print(f"2!! r2 pos {self.r2.pos()}")
+
+        self.r.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
+        self.r2.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
+        self.r2.prepareGeometryChange()
         self.prepareGeometryChange()
         self.scene().update()
 
 
 class UfsmScene(QGraphicsScene):
-    grid_pen = QPen(QColor(0x3c, 0x38, 0x36))
+    grid_pen = QPen(QColor(0x3C, 0x38, 0x36))
+
     def __init__(self) -> None:
         super().__init__()
         bg = QColor(0x28, 0x28, 0x28)
         self.bg_brush = QBrush(bg)
-        #self.setSceneRect(QRectF(0, 0, 1000, 1000))
+        # self.setSceneRect(QRectF(0, 0, 1000, 1000))
+
     # Here we can capture mouse press/release and key press/release events
     # and feed into a small state machine for drawing control. We can choose
     # to not send the events further down to "Items" by not calling the
     # super class.
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         last_pos = event.lastScenePos()
-        #print(f"UfsmScene lmb {last_pos}")
+        # print(f"UfsmScene lmb {last_pos}")
         super().mousePressEvent(event)
+
     def keyPressEvent(self, event: QKeyEvent) -> None:
         super().keyPressEvent(event)
         print(f"UfsmScene key {event}")
@@ -204,9 +241,10 @@ class UfsmScene(QGraphicsScene):
             print("A!")
         if Qt.Key_Escape == event.key():
             print("Esc")
+
     def drawBackground(self, qp, rect):
         qp.fillRect(rect, self.bg_brush)
-        qp.translate(.5, .5)
+        qp.translate(0.5, 0.5)
         qp.setPen(self.grid_pen)
 
         x, y, right, bottom = rect.toRect().getCoords()
@@ -226,30 +264,36 @@ class UfsmScene(QGraphicsScene):
         for x in range(x, right, step):
             qp.drawLine(x, top, x, bottom)
 
+
 class UfsmView(QGraphicsView):
     _isScrolling = False
+
     def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.NoAnchor)
         self.setResizeAnchor(QGraphicsView.ViewportAnchor.NoAnchor)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setFrameShape(QFrame.Shape.NoFrame)
-        self.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
+        self.setRenderHints(QPainter.Antialiasing |
+                            QPainter.SmoothPixmapTransform)
         self.setSceneRect(-32000, -32000, 64000, 64000)
 
     def wheelEvent(self, event: QWheelEvent):
         factor = SCALE_FACTOR
         if event.angleDelta().y() < 0:
-            factor = 1/SCALE_FACTOR
+            factor = 1 / SCALE_FACTOR
 
         view_pos = QPoint(event.position().x(), event.position().y())
         scene_pos = self.mapToScene(view_pos)
         self.scale(factor, factor)
         self.centerOn(scene_pos)
-        delta = self.mapToScene(view_pos) - self.mapToScene(self.viewport().rect().center())
+        delta = self.mapToScene(
+            view_pos) - self.mapToScene(self.viewport().rect().center())
         self.centerOn(scene_pos - delta)
         event.accept()
+
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.RightButton:
             self._isScrolling = True
@@ -257,11 +301,13 @@ class UfsmView(QGraphicsView):
             self.scrollPos = event.position()
         else:
             super().mousePressEvent(event)
+
     def mouseReleaseEvent(self, event):
         if self._isScrolling:
             self._isScrolling = False
             self.viewport().unsetCursor()
         super().mouseReleaseEvent(event)
+
     def mouseMoveEvent(self, event):
         if self._isScrolling:
             newPos = event.position()
@@ -271,6 +317,7 @@ class UfsmView(QGraphicsView):
             self.scrollPos = newPos
         else:
             super().mouseMoveEvent(event)
+
 
 def main() -> None:
     app = QApplication(sys.argv)
@@ -293,6 +340,3 @@ def main() -> None:
     w.show()
 
     app.exec()
-
-if __name__ == "__main__":
-    main()
