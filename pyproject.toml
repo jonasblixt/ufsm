@@ -1,68 +1,190 @@
 [build-system]
-requires = ["setuptools >= 61.0"]
+requires = ["setuptools>=68", "setuptools_scm[toml]>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ufsm"
-version = "0.1.0"
 authors = [
-  { name="Jonas Blixt", email="jonpe960@gmail.com" },
+    {name = "Jonas Blixt", email = "jonas@blxt.se"},
 ]
-description = "uFSM statechart tool"
+description = "uFSM Statechart tool"
 readme = "README.rst"
-requires-python = ">=3.9"
+urls.Homepage = "https://github.com/jonasblixt/ufsm"
+requires-python = ">=3.10"
+dynamic = ["version"]
 dependencies = [
-    "typing-extensions",
-    "pyside6>=6.7",
+    "importlib-metadata",
+    "PySide6 ~= 6.8.0.2",
+    "platformdirs ~= 4.3.6",
 ]
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: BSD3 License",
-    "Operating System :: OS Independent",
-]
-
-[project.urls]
-"Homepage" = "https://github.com/jonasblixt/ufsm"
-"Bug Tracker" = "https://github.com/jonasblixt/ufsm/issues"
 
 [project.scripts]
 ufsm = "ufsm.__main__:main"
 
-[tool.setuptools]
-packages = ["ufsm"]
+[project.optional-dependencies]
+dev = [
+    "ufsm[tox]",
+    "ufsm[lint]",
+    "ufsm[test]",
+    "ufsm[doc]",
+    "ufsm[build]",
+]
+lint = [
+    "ufsm[lint-template]",
+    # Add additional linting dependencies here
+]
+test = [
+    "ufsm[test-template]",
+    # Add additional testing dependencies here
+]
+doc = [
+    "ufsm[doc-template]",
+    # Add additional documentation dependencies below this line
+]
+build = [
+    "ufsm[build-template]",
+    # Add additional build dependencies below this line
+]
+
+###########################################################
+# The following dependencies are managed via the template.#
+# Do not modify them manually to prevent conflicts during #
+# template updates.                                       #
+###########################################################
+
+tox = [
+    "tox==4.15.1",
+]
+lint-template = [
+    "mypy==1.10.0",
+    "pytest==8.2.2",
+    "types-docutils",
+    "types-setuptools",
+    "jinja2==3.1.4",
+    "ruff==0.4.9",
+]
+test-template = [
+    "pytest==8.2.2",
+    "pytest-randomly==3.15.0",
+    "pytest-cov==5.0.0",
+    "coverage[toml]==7.5.3",
+]
+doc-template = [
+    "sphinx==7.3.7",
+    "sphinx_rtd_theme==2.0.0",
+    "sphinx-autodoc-typehints==2.1.0",
+    "pip-licenses==4.4.0",
+    "jinja2==3.1.4",
+]
+build-template = [
+    "build[virtualenv]==1.2.1",
+]
+
+########################################
+# End of template-managed dependencies #
+########################################
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
+
+# Enables the usage of setuptools_scm
+[tool.setuptools_scm]
+
+
+[tool.pyright]
+exclude = ["build/**"]
 
 [tool.ruff]
-line-length = 100
-target-version = "py39"
+line-length = 120
+src = ["src"]
+extend-exclude = [
+    "conf.py",
+]
+target-version = "py310"
 
 [tool.ruff.lint]
-# See: https://docs.astral.sh/ruff/rules/ for details
 select = ["ALL"]
 ignore = [
     "COM812",   # Conflicts with the formatter
     "ISC001",   # Conflicts with the formatter
+    "D",
     "ANN101",   # "missing-type-self"
-    "PLE0605",  # ruff does not handle += in __all__
-    "FBT",      # don't care for these at the moment
     "PT001",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
     "PT004",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
     "PT005",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
     "PT023",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
-    "N802",     # For pyside6 compability
 ]
 
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "S101", # Use of `assert` detected
+    "D103", # Missing docstring in public function
+]
+"**/__init__.py" = [
+    "F401", # Imported but unused
+    "F403", # Wildcard imports
+]
+"docs/**" = [
+    "INP001",   # Requires __init__.py but docs folder is not a package.
+]
+
+[tool.ruff.lint.pyupgrade]
+# Preserve types, even if a file imports `from __future__ import annotations`(https://github.com/astral-sh/ruff/issues/5434)
+keep-runtime-typing = true
 
 [tool.ruff.lint.pydocstyle]
-convention = "pep257"
+convention = "google"
 
 [tool.mypy]
+# Functions need to be annotated
 disallow_untyped_defs = true
-warn_return_any = true
+warn_unused_ignores = true
 exclude = [
-    "^build.*",
-]
+    "ufsm-\\d+", # Ignore temporary folder created by setuptools when building an sdist
+    "venv.*/",
+    "log/",
+    "build/",
+    "dist/"
+    ]
+
+[tool.pytest.ini_options]
+addopts = """
+    -vv
+    --doctest-modules
+    --import-mode=append
+    --ignore-glob=ufsm-[0-9]*
+    --ignore="docs/_scripts"
+    --cov=ufsm
+    --cov-config=pyproject.toml
+    --cov-report=
+    """
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.paths]
+# Maps coverage measured in site-packages to source files in src
+source = ["src/", ".tox/*/lib/python*/site-packages/"]
+
+[tool.coverage.report]
+exclude_also = [
+    "\\.\\.\\.",
+    "if TYPE_CHECKING:"
+    ]
+partial_branches = [
+    "pragma: no branch",
+    "if not TYPE_CHECKING:"
+    ]
+
+[tool.coverage.html]
+directory = "reports/coverage_html"
+
+[tool.coverage.xml]
+output = "reports/coverage.xml"
+
+[[tool.mypy.overrides]]
+module = [
+    # Ignore packages that do not provide type hints here
+    # For example, add "dash.*" to ignore all imports from Dash
+    ]
+ignore_missing_imports = true

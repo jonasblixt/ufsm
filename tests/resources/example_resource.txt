@@ -1,0 +1,1 @@
+This is an example resource to show how to use the resource_dir fixture.

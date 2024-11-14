@@ -34,7 +34,7 @@ SCALE_FACTOR = 1.25
 
 
 class CenterText(QGraphicsItem):
-    def __init__(self, text: str = "", parent: QGraphicsItem | None = None):
+    def __init__(self, text: str = "", parent: QGraphicsItem | None = None) -> None:
         super().__init__(parent)
         self.setFlag(
             QGraphicsItem.GraphicsItemFlag.ItemIgnoresTransformations

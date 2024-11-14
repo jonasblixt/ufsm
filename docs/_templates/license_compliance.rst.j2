@@ -1,0 +1,38 @@
+===================================================
+Open Source Software License Compliance Information
+===================================================
+
+The following software may be included in this product.
+
+{% for license in licenses %}
+
+{{ license.Name }}
+==================================================================================
+
+**Version:** {{ license.Version }}
+
+**Author:** {{ license.Author }}
+
+**License:** {{ license.License }}
+
+{% if license.URL != 'UNKNOWN' %}
+**URL:** {{ license.URL }}
+{% endif %}
+
+{% if license.LicenseFile is not none %}
+This software contains the following license:
+
+.. literalinclude:: {{ license.LicenseFile }}
+    :language: none
+
+{% endif %}
+
+{% if license.NoticeFile is not none %}
+This software contains the following notice:
+
+.. literalinclude:: {{ license.NoticeFile }}
+    :language: none
+
+{% endif %}
+
+{% endfor %}
