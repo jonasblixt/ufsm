@@ -85,7 +85,7 @@ build-template = [
 ########################################
 
 [tool.setuptools.package-data]
-"*" = ["py.typed"]
+"*" = ["py.typed", "gui/assets/icon.png"]
 
 # Enables the usage of setuptools_scm
 [tool.setuptools_scm]
