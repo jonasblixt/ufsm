@@ -108,11 +108,13 @@ ignore = [
     "COM812",   # Conflicts with the formatter
     "ISC001",   # Conflicts with the formatter
     "D",
+    "N802",     # Because of pyside6
     "ANN101",   # "missing-type-self"
     "PT001",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
     "PT004",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
     "PT005",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
     "PT023",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
+    "PLR0913",  # Pyside6
 ]
 
 [tool.ruff.lint.per-file-ignores]

@@ -23,8 +23,8 @@ class MainWindow(QMainWindow):
         # Create a QWidget for the central widget
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
-
         # Set up the layout and add the QGraphicsView to the layout
         layout = QVBoxLayout(central_widget)
+        layout.setContentsMargins(0,0,0,0)
         layout.addWidget(self.view)
 
