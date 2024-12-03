@@ -10,7 +10,7 @@ authors = [
 description = "uFSM Statechart tool"
 readme = "README.rst"
 urls.Homepage = "https://github.com/jonasblixt/ufsm"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 dynamic = ["version"]
 dependencies = [
     "importlib-metadata",
