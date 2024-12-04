@@ -169,12 +169,11 @@ class StateItem(QGraphicsRectItem):
         # Filter out items we can actually have as a parent
         items = [x for x in items if isinstance(x, StateItem)]
 
-        try:
-            items.remove(self)
-        except ValueError:
-            # TODO: We should not get here, what should we do?
-            LOGGER.exception("Something bad happened")
-            items = []
+        if self not in items:
+            print("Self not in list..")
+            return
+        items.remove(self)
+
 
         if len(items) == 0:
             # Seems a bit hackis but just updating with setParentItem does not work.
