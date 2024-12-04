@@ -18,7 +18,6 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import (
     QFrame,
     QGraphicsItem,
-    QGraphicsObject,
     QGraphicsRectItem,
     QGraphicsScene,
     QGraphicsSceneHoverEvent,
@@ -105,6 +104,7 @@ class StateItem(QGraphicsRectItem):
                 # ensure that the width is *always* positive, otherwise limit
                 # both the delta position and width, based on the border size
                 diff = min(mouse_delta.x() - self.offset.x(), rect.width() - border)
+                diff = self.snap(diff)
                 if rect.x() < 0:
                     offset = diff / 2
                     self.offset.setX(self.offset.x() + offset)
@@ -116,16 +116,18 @@ class StateItem(QGraphicsRectItem):
             elif self.selected_edge & Qt.Edge.RightEdge:
                 if rect.x() < 0:
                     diff = max(mouse_delta.x() - self.offset.x(), border - rect.width())
+                    diff = self.snap(diff)
                     offset = diff / 2
                     self.offset.setX(self.offset.x() + offset)
                     pos_delta.setX(offset)
                     rect.adjust(-offset, 0, offset, 0)
                 else:
-                    rect.setWidth(max(border, event.pos().x() - rect.x()))
+                    rect.setWidth(self.snap(max(border, event.pos().x() - rect.x())))
 
             if self.selected_edge & Qt.Edge.TopEdge:
                 # similarly to what done for LeftEdge, but for the height
                 diff = min(mouse_delta.y() - self.offset.y(), rect.height() - border)
+                diff = self.snap(diff)
                 if rect.y() < 0:
                     offset = diff / 2
                     self.offset.setY(self.offset.y() + offset)
@@ -137,12 +139,13 @@ class StateItem(QGraphicsRectItem):
             elif self.selected_edge & Qt.Edge.BottomEdge:
                 if rect.y() < 0:
                     diff = max(mouse_delta.y() - self.offset.y(), border - rect.height())
+                    diff = self.snap(diff)
                     offset = diff / 2
                     self.offset.setY(self.offset.y() + offset)
                     pos_delta.setY(offset)
                     rect.adjust(0, -offset, 0, offset)
                 else:
-                    rect.setHeight(max(border, event.pos().y() - rect.y()))
+                    rect.setHeight(self.snap(max(border, event.pos().y() - rect.y())))
 
             if rect != self.rect():
                 self.prepareGeometryChange()
