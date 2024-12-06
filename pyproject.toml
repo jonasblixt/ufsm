@@ -114,6 +114,9 @@ ignore = [
     "PT004",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
     "PT005",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
     "PT023",    # https://github.com/astral-sh/ruff/issues/8796#issuecomment-1825907715
+    "TD002",
+    "TD003",
+    "FIX002",
     "PLR0913",  # Pyside6
 ]
 

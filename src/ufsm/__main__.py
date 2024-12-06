@@ -1,11 +1,19 @@
 """Main module."""
 
+import logging
 import sys
 
 from PySide6.QtWidgets import QApplication
 
 from .gui.main_window import MainWindow
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s: %(name)s: %(message)s",
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
 
 def main() -> None:
     # Initialize the QApplication

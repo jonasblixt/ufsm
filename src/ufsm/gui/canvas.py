@@ -231,7 +231,7 @@ class UfsmScene(QGraphicsScene):
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         super().keyPressEvent(event)
-        LOGGER.debug(f"UfsmScene key {event}")
+        LOGGER.debug("UfsmScene key: %i", event.key())
         if Qt.Key.Key_A == event.key():
             LOGGER.debug("A!")
         if Qt.Key.Key_Escape == event.key():
