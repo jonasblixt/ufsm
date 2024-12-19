@@ -3,6 +3,8 @@ from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget
 
 from .canvas import StateItem, UfsmScene, UfsmView
 
+# IDEA: One scene per off page region
+# IDEA: Offpage region to scene mapping
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:

@@ -28,6 +28,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+# TODO: Adjust grid depending on zoom level
+# TODO: Clamp zoom levels to a min/max
+
 LOGGER = logging.getLogger(__name__)
 UFSM_GRID_SNAP = 10
 SCALE_FACTOR = 1.25
@@ -36,6 +39,7 @@ class StateItem(QGraphicsRectItem):
     font = QFont()
     selected_edge = None
     snap_size: int = 10
+    is_moving: bool = False
 
     def __init__(self, name: str = "State", parent: QGraphicsItem | None = None) -> None:
         super().__init__(0, 0, 100, 100, parent)
@@ -45,7 +49,7 @@ class StateItem(QGraphicsRectItem):
             | QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges
         )
         self.setAcceptHoverEvents(True)
-        self.setPen(QPen(QBrush(Qt.GlobalColor.red), 5))
+        self.setPen(QPen(QBrush(Qt.GlobalColor.red), 3))
         self.name = name
 
         text_item = QGraphicsSimpleTextItem(name, self)
@@ -63,7 +67,7 @@ class StateItem(QGraphicsRectItem):
         # as default value.
         edges = Qt.Edges() # type: ignore  # noqa: PGH003
         rect = self.rect()
-        border = self.pen().width() / 2
+        border = self.pen().width() / 2 + 5
 
         if pos.x() < rect.x() + border:
             edges |= Qt.Edge.LeftEdge
@@ -94,6 +98,14 @@ class StateItem(QGraphicsRectItem):
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent) -> None:  # noqa: C901, PLR0912
+        if self.isSelected() and not self.is_moving:
+            self.is_moving = True
+            # Make sure we draw object's that are being moved in the foreground.
+            self.saved_z_value = self.zValue()
+            self.setZValue(self.saved_z_value + 1000.0)
+            LOGGER.debug(f"Moving {self.name}, Z={self.saved_z_value + 1000.0}")
+            #LOGGER.debug("Moving selected item")
+
         if self.selected_edge:
             mouse_delta = event.pos() - event.buttonDownPos(Qt.MouseButton.LeftButton)
             rect = self.rect()
@@ -158,6 +170,10 @@ class StateItem(QGraphicsRectItem):
 
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent) -> None:
+        if self.isSelected() and self.is_moving:
+            self.is_moving = False
+            self.setZValue(self.saved_z_value)
+            LOGGER.debug(f"Moving done {self.name}, restoring Z={self.saved_z_value}")
         self.selected_edge = Qt.Edges() # type: ignore  # noqa: PGH003
         super().mouseReleaseEvent(event)
         last_pos = event.lastScenePos()
