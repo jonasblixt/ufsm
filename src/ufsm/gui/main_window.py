@@ -1,7 +1,8 @@
-from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget
 
-from .canvas import StateItem, UfsmScene, UfsmView
+from .scene import UfsmScene
+from .state import StateItem
+from .view import UfsmView
 
 # IDEA: One scene per off page region
 # IDEA: Offpage region to scene mapping

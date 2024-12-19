@@ -3,27 +3,20 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from PySide6.QtCore import QObject, QPoint, QPointF, QRect, QRectF, Qt
+from PySide6.QtCore import QPointF, Qt
 from PySide6.QtGui import (
     QBrush,
-    QColor,
     QFont,
-    QKeyEvent,
-    QMouseEvent,
     QPainter,
     QPainterPath,
     QPen,
-    QWheelEvent,
 )
 from PySide6.QtWidgets import (
-    QFrame,
     QGraphicsItem,
     QGraphicsRectItem,
-    QGraphicsScene,
     QGraphicsSceneHoverEvent,
     QGraphicsSceneMouseEvent,
     QGraphicsSimpleTextItem,
-    QGraphicsView,
     QStyleOptionGraphicsItem,
     QWidget,
 )
@@ -32,8 +25,6 @@ from PySide6.QtWidgets import (
 # TODO: Clamp zoom levels to a min/max
 
 LOGGER = logging.getLogger(__name__)
-UFSM_GRID_SNAP = 10
-SCALE_FACTOR = 1.25
 
 class StateItem(QGraphicsRectItem):
     font = QFont()
@@ -97,14 +88,12 @@ class StateItem(QGraphicsRectItem):
             self.selected_edge = Qt.Edges() # type: ignore  # noqa: PGH003
         super().mousePressEvent(event)
 
-    def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent) -> None:  # noqa: C901, PLR0912
+    def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent) -> None:  # noqa: C901, PLR0912, PLR0915
         if self.isSelected() and not self.is_moving:
             self.is_moving = True
             # Make sure we draw object's that are being moved in the foreground.
             self.saved_z_value = self.zValue()
             self.setZValue(self.saved_z_value + 1000.0)
-            LOGGER.debug(f"Moving {self.name}, Z={self.saved_z_value + 1000.0}")
-            #LOGGER.debug("Moving selected item")
 
         if self.selected_edge:
             mouse_delta = event.pos() - event.buttonDownPos(Qt.MouseButton.LeftButton)
@@ -173,7 +162,6 @@ class StateItem(QGraphicsRectItem):
         if self.isSelected() and self.is_moving:
             self.is_moving = False
             self.setZValue(self.saved_z_value)
-            LOGGER.debug(f"Moving done {self.name}, restoring Z={self.saved_z_value}")
         self.selected_edge = Qt.Edges() # type: ignore  # noqa: PGH003
         super().mouseReleaseEvent(event)
         last_pos = event.lastScenePos()
@@ -186,7 +174,7 @@ class StateItem(QGraphicsRectItem):
         items = [x for x in items if isinstance(x, StateItem)]
 
         if self not in items:
-            print("Self not in list..")
+            LOGGER.debug("Self not in list..")
             return
         items.remove(self)
 
@@ -229,101 +217,3 @@ class StateItem(QGraphicsRectItem):
         painter.fillPath(path, QBrush(color))
         painter.setPen(self.pen())
         painter.drawPath(path)
-
-class UfsmScene(QGraphicsScene):
-    grid_pen = QPen(QColor(0x3C, 0x38, 0x36))
-
-    def __init__(self, parent: QObject) -> None:
-        super().__init__(parent)
-        bg = QColor(0x28, 0x28, 0x28)
-        self.bg_brush = QBrush(bg)
-
-    # Here we can capture mouse press/release and key press/release events
-    # and feed into a small state machine for drawing control. We can choose
-    # to not send the events further down to "Items" by not calling the
-    # super class.
-    def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
-        super().mousePressEvent(event)
-
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        super().keyPressEvent(event)
-        LOGGER.debug("UfsmScene key: %i", event.key())
-        if Qt.Key.Key_A == event.key():
-            LOGGER.debug("A!")
-        if Qt.Key.Key_Escape == event.key():
-            LOGGER.debug("Esc")
-
-    def drawBackground(self, painter: QPainter, rect: QRectF | QRect) -> None:
-        painter.fillRect(rect, self.bg_brush)
-        painter.translate(0.5, 0.5)
-        painter.setPen(self.grid_pen)
-
-        x, y, right, bottom = rect.toRect().getCoords() # type: ignore  # noqa: PGH003
-        top = y
-        left = x
-        step = UFSM_GRID_SNAP
-
-        yrest = y % step
-        if yrest:
-            y += step - yrest
-        for vline in range(y, bottom, step):
-            painter.drawLine(left, vline, right, vline)
-
-        xrest = x % step
-        if xrest:
-            x += step - xrest
-        for hline in range(x, right, step):
-            painter.drawLine(hline, top, hline, bottom)
-
-
-class UfsmView(QGraphicsView):
-    is_scrolling = False
-
-    def __init__(self, scene: QGraphicsScene, parent: QWidget) -> None:
-        super().__init__(parent)
-        self.setScene(scene)
-        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.NoAnchor)
-        self.setResizeAnchor(QGraphicsView.ViewportAnchor.NoAnchor)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setFrameShape(QFrame.Shape.NoFrame)
-        self.setRenderHints(QPainter.RenderHint.Antialiasing |
-                            QPainter.RenderHint.SmoothPixmapTransform)
-        self.setSceneRect(-32000, -32000, 64000, 64000)
-
-    def wheelEvent(self, event: QWheelEvent) -> None:
-        factor = SCALE_FACTOR
-        if event.angleDelta().y() < 0:
-            factor = 1 / SCALE_FACTOR
-
-        view_pos = QPoint(int(event.position().x()), int(event.position().y()))
-        scene_pos = self.mapToScene(view_pos)
-        self.scale(factor, factor)
-        self.centerOn(scene_pos)
-        delta = self.mapToScene(view_pos) - self.mapToScene(self.viewport().rect().center())
-        self.centerOn(scene_pos - delta)
-        event.accept()
-
-    def mousePressEvent(self, event: QMouseEvent) -> None:
-        if event.button() == Qt.MouseButton.RightButton:
-            self.is_scrolling = True
-            self.viewport().setCursor(Qt.CursorShape.ClosedHandCursor)
-            self.scrollPos = event.position()
-        else:
-            super().mousePressEvent(event)
-
-    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        if self.is_scrolling:
-            self.is_scrolling = False
-            self.viewport().unsetCursor()
-        super().mouseReleaseEvent(event)
-
-    def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        if self.is_scrolling:
-            new_pos = event.position()
-            delta = new_pos - self.scrollPos
-            t = self.transform()
-            self.translate(delta.x() / t.m11(), delta.y() / t.m22())
-            self.scrollPos = new_pos
-        else:
-            super().mouseMoveEvent(event)
