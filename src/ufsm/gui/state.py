@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from PySide6.QtCore import QPointF, Qt
+from PySide6.QtCore import QPoint, QPointF, Qt
 from PySide6.QtGui import (
     QBrush,
     QFont,
@@ -21,6 +21,14 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from . import const
+
+# TODO: Text clipping
+# TODO: Render entry, exit and "internal"/internal transition?
+#   e/enter()
+#   x/exit()
+#   -> eEvent / action1(), action2(), ...
+# TODO: Color theme management
 # TODO: Adjust grid depending on zoom level
 # TODO: Clamp zoom levels to a min/max
 
@@ -40,11 +48,17 @@ class StateItem(QGraphicsRectItem):
             | QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges
         )
         self.setAcceptHoverEvents(True)
-        self.setPen(QPen(QBrush(Qt.GlobalColor.red), 3))
+        self.setPen(QPen(QBrush(const.UFSM_COLOR_FG4), 2))
         self.name = name
 
-        text_item = QGraphicsSimpleTextItem(name, self)
-        text_item.setPos(self.boundingRect().center() - text_item.boundingRect().center())
+        self.text_item = QGraphicsSimpleTextItem(name, self)
+        self.text_item.setPen(QPen(QBrush(const.UFSM_COLOR_FG4), 0.5))
+        self.text_item.setBrush(const.UFSM_COLOR_FG4)
+        self.update_label_pos()
+
+    def update_label_pos(self) -> None:
+        x = (self.boundingRect().width() - self.text_item.boundingRect().width()) / 2
+        self.text_item.setPos(x, 3)
 
     def get_edges(self, pos: QPointF) -> Qt.Edge:
         # return a proper Qt.Edges flag that reflects the possible edge(s) at
@@ -87,6 +101,9 @@ class StateItem(QGraphicsRectItem):
         else:
             self.selected_edge = Qt.Edges() # type: ignore  # noqa: PGH003
         super().mousePressEvent(event)
+
+    def mouseDoubleClickEvent(self, event):
+        print(f"Dbl click: {self.name}")
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent) -> None:  # noqa: C901, PLR0912, PLR0915
         if self.isSelected() and not self.is_moving:
@@ -153,6 +170,8 @@ class StateItem(QGraphicsRectItem):
                 self.setRect(rect)
                 if pos_delta:
                     self.setPos(self.pos() + pos_delta)
+                self.update_label_pos()
+
         else:
             # use the default implementation for ItemIsMovable
             super().mouseMoveEvent(event)
@@ -211,9 +230,13 @@ class StateItem(QGraphicsRectItem):
             self.setCursor(Qt.CursorShape.SizeVerCursor)
 
     def paint( self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget | None = None) -> None:  # noqa: ARG002
-        color = Qt.GlobalColor.green if self.isSelected() else Qt.GlobalColor.gray
+        #color = Qt.GlobalColor.green if self.isSelected() else const.UFSM_COLOR_BG0
+        color = const.UFSM_COLOR_BG0
         path = QPainterPath()
-        path.addRoundedRect(self.rect(), 5, 5)
+        path.addRoundedRect(self.rect(), 10, 10)
         painter.fillPath(path, QBrush(color))
         painter.setPen(self.pen())
         painter.drawPath(path)
+        #painter.setPen(QPen(QBrush(const.UFSM_COLOR_FG4), 2))
+        # TODO: The width should be width() - perimeter Pen width
+        painter.drawLine(QPoint(0, 24), QPoint(self.boundingRect().width() - 2, 24))
