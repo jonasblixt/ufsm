@@ -46,6 +46,7 @@ class StateItem(QGraphicsRectItem):
             QGraphicsItem.GraphicsItemFlag.ItemIsMovable
             | QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
             | QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges
+            | QGraphicsItem.GraphicsItemFlag.ItemClipsChildrenToShape
         )
         self.setAcceptHoverEvents(True)
         self.setPen(QPen(QBrush(const.UFSM_COLOR_FG4), 2))
