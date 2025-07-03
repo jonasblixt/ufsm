@@ -42,11 +42,12 @@ class StateItem(QGraphicsRectItem):
 
     def __init__(self, name: str = "State", parent: QGraphicsItem | None = None) -> None:
         super().__init__(0, 0, 100, 100, parent)
+        # TODO: Setting 'ItemClipsChildrenToShape' causes child state not being able to 'reparent' or leave there current parent
         self.setFlag(
             QGraphicsItem.GraphicsItemFlag.ItemIsMovable
             | QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
             | QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges
-            | QGraphicsItem.GraphicsItemFlag.ItemClipsChildrenToShape
+            #| QGraphicsItem.GraphicsItemFlag.ItemClipsChildrenToShape
         )
         self.setAcceptHoverEvents(True)
         self.setPen(QPen(QBrush(const.UFSM_COLOR_FG4), 2))
