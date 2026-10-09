@@ -1,0 +1,12 @@
+{
+  "model": "../models/test_guard1.ufsm",
+  "doc": "From old/tests/C/test_guard1.c.",
+  "steps": [
+    { "reset": true, "expect": ["eA"] },
+    { "send": "e1", "expect": [] },
+    { "send": "e2", "expect": [] },
+    { "guards": { "g1": true }, "send": "e1", "expect": ["xA", "eB"] },
+    { "send": "e2", "expect": [] },
+    { "guards": { "g2": true }, "send": "e2", "expect": ["xB", "eA"] }
+  ]
+}

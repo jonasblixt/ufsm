@@ -1,0 +1,24 @@
+{
+  "model": "../models/test_internal.ufsm",
+  "doc": "Internal transitions (a state's `internal` list; visualSTATE: static reactions): no exit or entry, substates keep their configuration, selected and conflict-checked like a transition from the state to itself, after the state's outgoing transitions.",
+  "steps": [
+    { "reset": true, "expect": ["eP", "eA", "eB"] },
+    { "send": "eCount", "expect": ["count"], "active": ["P", "A", "B"], "doc": "No exit or entry actions." },
+    { "send": "eGuard", "expect": [] },
+    { "guards": { "g": true }, "send": "eGuard", "expect": ["guarded"] },
+    {
+      "send": "eBoth",
+      "expect": ["aBoth", "bBoth"],
+      "doc": "A's and B's internal transitions fire together (orthogonal regions); P's is dropped: a transition taken inside P beats P's own, as for any ancestor."
+    },
+    { "send": "eUp", "expect": ["aUp"], "active": ["A"], "inactive": ["Q"], "doc": "A's internal transition is taken first, so P -> Q, which would exit A, is dropped." },
+    { "send": "eEmit", "expect": ["bPing"], "doc": "An internal transition's signal is handled by another internal transition." },
+    { "send": "eMix", "expect": ["xA", "bMix", "eA2"], "active": ["A2", "B"], "doc": "A -> A2 and B's internal transition in one microstep: exit, actions, entry." },
+    { "send": "eCount", "expect": ["count"], "active": ["A2"], "inactive": ["A"], "doc": "P keeps its configuration: a transition from P to itself would re-enter A." },
+    { "send": "eBoth", "expect": ["bBoth"], "doc": "A2 has no eBoth; B's internal transition still beats P's." },
+    { "send": "eUp", "expect": ["xB", "xA2", "xP", "eQ"], "active": ["Q"], "inactive": ["P"], "doc": "Nothing inside P reacts, so P -> Q fires." },
+    { "send": "eBack", "expect": ["xQ", "eP", "eA", "eB"] },
+    { "send": "eOrder", "expect": ["stay"], "active": ["P"], "doc": "P -eOrder[go]-> Q is tried first; its guard fails, so P's internal transition fires." },
+    { "guards": { "go": true }, "send": "eOrder", "expect": ["xB", "xA", "xP", "toQ", "eQ"], "doc": "A state's outgoing transitions come before its internal ones." }
+  ]
+}

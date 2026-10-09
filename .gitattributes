@@ -1,0 +1,6 @@
+# Normalise line endings so Windows, macOS and Linux checkouts agree.
+* text=auto eol=lf
+
+*.png binary
+*.ico binary
+*.icns binary

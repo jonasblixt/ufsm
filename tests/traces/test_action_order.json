@@ -1,0 +1,40 @@
+{
+  "model": "../models/test_action_order.ufsm",
+  "doc": "Several entry/exit/transition actions, four levels of nesting and three regions. Entry in document order with each initializer's actions when its region is reached; exit in exact reverse.",
+  "steps": [
+    {
+      "reset": true,
+      "expect": ["i0", "eTop1", "eTop2", "i1", "eL1", "i11", "eL2", "eL3", "i1111", "eL4", "i2", "eM", "eN1a", "eN1b"],
+      "doc": "Region initializers run after their owner's entry and after the regions above, before the states in the region."
+    },
+    {
+      "send": "leave",
+      "expect": ["xN1", "xM", "xL4", "xL3", "xL2", "xL1", "xTop1", "xTop2", "aLeave1", "aLeave2", "eOut"]
+    },
+    {
+      "send": "back",
+      "expect": ["xOut", "eTop1", "eTop2", "i1", "eL1", "i11", "eL2", "eL3", "i1111", "eL4", "i2", "eM", "eN1a", "eN1b"]
+    },
+    {
+      "send": "leave",
+      "expect": ["xN1", "xM", "xL4", "xL3", "xL2", "xL1", "xTop1", "xTop2", "aLeave1", "aLeave2", "eOut"]
+    },
+    {
+      "send": "dive",
+      "expect": ["xOut", "eTop1", "eTop2", "eL1", "eL2", "eL3", "eL4", "i2", "eM", "eN1a", "eN1b"],
+      "active": ["L4", "M", "N1"],
+      "doc": "Explicit entry of L4: the regions on its path are not entered by default, so i1, i11 and i1111 do not run."
+    },
+    {
+      "send": "cross",
+      "expect": [
+        "xN1", "xM", "xL4", "xL3", "xL2", "xL1", "xTop1", "xTop2", "eTop1",
+        "eTop2", "i1", "eL1", "i11", "eL2", "eL3", "i1111", "eL4", "i2",
+        "eM"
+      ],
+      "active": ["N2", "L4", "M"],
+      "inactive": ["N1"],
+      "doc": "L4 and N2 lie in different regions of Top, so the domain is the root region: Top is left and re-entered."
+    }
+  ]
+}

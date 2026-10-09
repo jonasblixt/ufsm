@@ -1,0 +1,212 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "dhcpc",
+  "declarations": {
+    "events": [
+      { "id": "ev1", "name": "DHCPNAK" },
+      { "id": "ev2", "name": "DHCPOFFER" },
+      { "id": "ev3", "name": "SELECT" },
+      { "id": "ev4", "name": "READY" },
+      { "id": "ev5", "name": "DHCPACK" },
+      { "id": "ev6", "name": "T2" },
+      { "id": "ev7", "name": "T1" }
+    ],
+    "signals": [],
+    "actions": [
+      { "id": "act1", "name": "dhcp_disable_socket" },
+      { "id": "act2", "name": "dhcp_enable_broadcast" },
+      { "id": "act3", "name": "dhcp_disable_broadcast" },
+      { "id": "act4", "name": "dhcp_enable_socket" },
+      { "id": "act5", "name": "dhcp_stop_timers" },
+      { "id": "act6", "name": "dhcp_reset" },
+      { "id": "act7", "name": "dhcp_halt_network" },
+      { "id": "act8", "name": "dhcp_collect_reply" },
+      { "id": "act9", "name": "dhcp_bcast_request" },
+      { "id": "act10", "name": "dhcp_select_offer" },
+      { "id": "act11", "name": "dhcp_discard_offer" },
+      { "id": "act12", "name": "dhcp_send_decline" },
+      { "id": "act13", "name": "dhcp_set_timers" },
+      { "id": "act14", "name": "dhcp_display_result" },
+      { "id": "act15", "name": "dhcp_send_request" }
+    ],
+    "guards": [{ "id": "grd1", "name": "dhcp_check" }]
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "states": [
+        {
+          "id": "s1",
+          "kind": "state",
+          "name": "Broadcast Mode",
+          "entry": [{ "call": "act2" }],
+          "exit": [{ "call": "act3" }],
+          "regions": [
+            {
+              "id": "r1",
+              "name": "New region",
+              "states": [
+                { "id": "s2", "kind": "state", "name": "Init", "entry": [{ "call": "act6" }] },
+                { "id": "s3", "kind": "state", "name": "Rebind", "entry": [{ "call": "act9" }] },
+                { "id": "s4", "kind": "state", "name": "Selecting", "entry": [{ "call": "act9" }] },
+                {
+                  "id": "s5",
+                  "kind": "state",
+                  "name": "Requesting",
+                  "entry": [{ "call": "act10" }]
+                },
+                { "id": "s6", "kind": "initial" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s7",
+          "kind": "state",
+          "name": "Normal Mode",
+          "entry": [{ "call": "act4" }, { "call": "act13" }, { "call": "act14" }],
+          "exit": [{ "call": "act1" }, { "call": "act5" }],
+          "regions": [
+            {
+              "id": "r2",
+              "name": "New region",
+              "states": [
+                { "id": "s8", "kind": "state", "name": "Renewing", "entry": [{ "call": "act15" }] },
+                { "id": "s9", "kind": "state", "name": "Bound" },
+                { "id": "s10", "kind": "initial" }
+              ]
+            }
+          ]
+        },
+        { "id": "s11", "kind": "initial" }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s1", "to": "s7", "on": "ev5", "guard": [{ "call": "grd1" }] },
+      { "id": "t2", "from": "s2", "to": "s4", "on": "ev4" },
+      { "id": "t3", "from": "s3", "to": "s2", "on": "ev1", "do": [{ "call": "act7" }] },
+      { "id": "t4", "from": "s3", "to": "s7", "on": "ev5" },
+      { "id": "t5", "from": "s4", "to": "s4", "on": "ev2", "do": [{ "call": "act8" }] },
+      { "id": "t6", "from": "s4", "to": "s5", "on": "ev3" },
+      { "id": "t7", "from": "s5", "to": "s2", "on": "ev1", "do": [{ "call": "act11" }] },
+      {
+        "id": "t8",
+        "from": "s5",
+        "to": "s2",
+        "on": "ev5",
+        "guard": [{ "call": "grd1" }],
+        "do": [{ "call": "act12" }]
+      },
+      { "id": "t9", "from": "s6", "to": "s2" },
+      { "id": "t10", "from": "s7", "to": "s1", "on": "ev1" },
+      { "id": "t11", "from": "s7", "to": "s3", "on": "ev6" },
+      { "id": "t12", "from": "s8", "to": "s9", "on": "ev5" },
+      { "id": "t13", "from": "s9", "to": "s8", "on": "ev7" },
+      { "id": "t14", "from": "s9", "to": "s9", "on": "ev1" },
+      { "id": "t15", "from": "s10", "to": "s9" },
+      { "id": "t16", "from": "s11", "to": "s1" }
+    ]
+  },
+  "diagram": {
+    "paper": "A2",
+    "states": {
+      "s1": { "x": 650, "y": 290, "w": 1090, "h": 530 },
+      "s2": { "x": 170, "y": 160, "w": 730, "h": 90 },
+      "s3": { "x": 700, "y": 360, "w": 200, "h": 110 },
+      "s4": { "x": 440, "y": 360, "w": 190, "h": 110 },
+      "s5": { "x": 170, "y": 360, "w": 180, "h": 110 },
+      "s6": { "x": 520, "y": 110, "w": 20, "h": 20 },
+      "s7": { "x": 650, "y": 890, "w": 1090, "h": 630 },
+      "s8": { "x": 700, "y": 260, "w": 250, "h": 250 },
+      "s9": { "x": 260, "y": 260, "w": 250, "h": 250 },
+      "s10": { "x": 380, "y": 200, "w": 20, "h": 20 },
+      "s11": { "x": 1170, "y": 220, "w": 20, "h": 20 }
+    },
+    "regions": { "r1": { "h": 430 }, "r2": { "h": 470 } },
+    "transitions": {
+      "t1": {
+        "from": { "side": "bottom", "offset": 90 },
+        "to": { "side": "top", "offset": 90 },
+        "label": { "x": 750, "y": 810, "w": 140 }
+      },
+      "t2": {
+        "from": { "side": "bottom", "offset": 330 },
+        "to": { "side": "top", "offset": 60 },
+        "label": { "x": 510, "y": 250, "w": 60 }
+      },
+      "t3": {
+        "from": { "side": "top", "offset": 100 },
+        "to": { "side": "bottom", "offset": 630 },
+        "label": { "x": 830, "y": 240, "w": 180 }
+      },
+      "t4": {
+        "from": { "side": "bottom", "offset": 30 },
+        "to": { "side": "top", "offset": 730 },
+        "label": { "x": 1390, "y": 810, "w": 100 }
+      },
+      "t5": {
+        "from": { "side": "right", "offset": 20 },
+        "to": { "side": "top", "offset": 170 },
+        "via": [[660, 380], [660, 330], [610, 330]],
+        "label": { "x": 600, "y": 240, "w": 170 }
+      },
+      "t6": {
+        "from": { "side": "left", "offset": 60 },
+        "to": { "side": "right", "offset": 60 },
+        "label": { "x": 360, "y": 360, "w": 60 }
+      },
+      "t7": {
+        "from": { "side": "top", "offset": 30 },
+        "to": { "side": "bottom", "offset": 30 },
+        "label": { "x": 20, "y": 220, "w": 170 }
+      },
+      "t8": {
+        "from": { "side": "top", "offset": 110 },
+        "to": { "side": "bottom", "offset": 110 },
+        "label": { "x": 290, "y": 240, "w": 200 }
+      },
+      "t9": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 360 },
+        "label": { "x": 560, "y": 100, "w": 100 }
+      },
+      "t10": {
+        "from": { "side": "top", "offset": 1030 },
+        "to": { "side": "bottom", "offset": 1030 },
+        "label": { "x": 1690, "y": 820, "w": 100 }
+      },
+      "t11": {
+        "from": { "side": "top", "offset": 850 },
+        "to": { "side": "bottom", "offset": 150 },
+        "label": { "x": 1510, "y": 820, "w": 50 }
+      },
+      "t12": {
+        "from": { "side": "left", "offset": 70 },
+        "to": { "side": "right", "offset": 70 },
+        "label": { "x": 550, "y": 270, "w": 100 }
+      },
+      "t13": {
+        "from": { "side": "right", "offset": 210 },
+        "to": { "side": "left", "offset": 210 },
+        "label": { "x": 560, "y": 420, "w": 100 }
+      },
+      "t14": {
+        "from": { "side": "left", "offset": 70 },
+        "to": { "side": "left", "offset": 40 },
+        "via": [[220, 330], [220, 300]],
+        "label": { "x": 100, "y": 280, "w": 80 }
+      },
+      "t15": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 130 },
+        "label": { "x": 420, "y": 170, "w": 100 }
+      },
+      "t16": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 530 },
+        "label": { "x": 1230, "y": 210, "w": 100 }
+      }
+    }
+  }
+}

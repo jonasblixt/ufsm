@@ -1,0 +1,35 @@
+{
+  "model": "../models/test_eventless.ufsm",
+  "doc": "Auto and completion transitions are evaluated after every microstep and after every process() call, even one whose event fired nothing. A guarded auto fires as soon as its guard holds. Livelock limit lowered to 20 microsteps.",
+  "options": { "maxMicrosteps": 20 },
+  "steps": [
+    { "reset": true, "expect": ["eWait"] },
+    {
+      "guards": { "ready": true },
+      "send": "poke",
+      "expect": ["xWait", "aGo", "eRun"],
+      "doc": "poke is not handled in Wait, but the auto transition's guard now holds."
+    },
+    {
+      "send": "next",
+      "expect": ["xRun", "eC1", "xC1", "eC2"],
+      "active": ["C2"],
+      "doc": "Chain of autos stops at the guarded one."
+    },
+    { "guards": { "step": true }, "send": "poke", "expect": ["xC2", "eC3"] },
+    { "send": "comp", "expect": ["xC3", "eComp", "eK1"] },
+    {
+      "send": "end",
+      "expect": ["xK1", "xComp", "aNotOk", "eSimple", "xSimple", "eWait", "xWait", "aGo", "eRun"],
+      "active": ["Run"],
+      "doc": "Comp completes; its guarded completion transition fails, the next one fires. Simple has no regions, so it is complete at once."
+    },
+    { "send": "next", "expect": ["xRun", "eC1", "xC1", "eC2", "xC2", "eC3"] },
+    { "send": "comp", "expect": ["xC3", "eComp", "eK1"] },
+    { "guards": { "ok": true }, "send": "end", "expect": ["xK1", "xComp", "aOk", "eDone"], "active": ["Done"] },
+    { "guards": { "ready": false }, "send": "poke", "expect": ["xDone", "eWait"] },
+    { "guards": { "ready": true }, "send": "poke", "expect": ["xWait", "aGo", "eRun"] },
+    { "send": "spin", "error": "livelock", "doc": "L1 and L2 undo each other." },
+    { "reset": true, "guards": { "ready": false }, "expect": ["eWait"] }
+  ]
+}

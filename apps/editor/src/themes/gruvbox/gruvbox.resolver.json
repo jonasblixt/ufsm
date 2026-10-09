@@ -1,0 +1,31 @@
+{
+  "name": "Gruvbox",
+  "description": "Retro groove color scheme by Pavel Pertsev (https://github.com/morhetz/gruvbox, MIT/X11 licence), as in colors/gruvbox.vim: dark or light, each with hard, medium or soft contrast.",
+  "version": "2025.10",
+  "sets": {
+    "base": {
+      "description": "The editor's token names and the absolute gruvbox palette",
+      "sources": [{ "$ref": "../ui.tokens.json" }, { "$ref": "gruvbox.tokens.json" }]
+    }
+  },
+  "modifiers": {
+    "appearance": {
+      "description": "background=dark or background=light",
+      "contexts": {
+        "dark": [{ "$ref": "dark.tokens.json" }],
+        "light": [{ "$ref": "light.tokens.json" }]
+      },
+      "default": "dark"
+    },
+    "contrast": {
+      "description": "g:gruvbox_contrast_dark / g:gruvbox_contrast_light",
+      "contexts": {
+        "hard": [{ "$ref": "hard.tokens.json" }],
+        "medium": [{ "$ref": "medium.tokens.json" }],
+        "soft": [{ "$ref": "soft.tokens.json" }]
+      },
+      "default": "medium"
+    }
+  },
+  "resolutionOrder": [{ "$ref": "#/sets/base" }, { "$ref": "#/modifiers/appearance" }, { "$ref": "#/modifiers/contrast" }]
+}

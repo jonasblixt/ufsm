@@ -1,0 +1,39 @@
+{
+  "model": "../models/test_fork_join3.ufsm",
+  "doc": "A fork into all three regions of P, one target two levels down; a guarded join out of three regions into a state with regions (B8); a join source that prefers another transition blocks the join.",
+  "steps": [
+    { "reset": true, "expect": ["eIdle"] },
+    {
+      "send": "go",
+      "expect": ["xIdle", "aGo", "aFork1", "aFork2", "eP", "eA2", "eA22", "eB2", "eC2"],
+      "active": ["A22", "B2", "C2"],
+      "inactive": ["A1", "A21", "B1", "C1"],
+      "doc": "The transition into the fork runs its actions, then the fork's outgoing ones in file order; entry in document order."
+    },
+    { "send": "done", "expect": [], "doc": "Join guard ok is false." },
+    {
+      "guards": { "ok": true, "hold": true },
+      "send": "done",
+      "expect": ["xB2", "aHold", "eB1"],
+      "active": ["B1", "A22", "C2"],
+      "doc": "B2's first enabled transition for done is B2 -> B1, so the join is blocked."
+    },
+    { "guards": { "hold": false }, "send": "b", "expect": ["xB1", "eB2"] },
+    {
+      "send": "done",
+      "expect": ["xC2", "xB2", "xA22", "xA2", "xP", "aJoin1", "aJoin2", "aJoin", "eT", "eU", "eV"],
+      "active": ["T", "U", "V"],
+      "inactive": ["P"],
+      "doc": "Exit in reverse document order; actions of the transitions into the join in file order, then the join's own; T's regions entered by default."
+    },
+    { "reset": true, "expect": ["eIdle"] },
+    { "send": "start", "expect": ["xIdle", "eP", "eA1", "eB1", "eC1"] },
+    { "send": "done", "expect": [] },
+    { "send": "a", "expect": ["xA1", "eA2", "eA21"] },
+    { "send": "a2", "expect": ["xA21", "eA22"] },
+    { "send": "b", "expect": ["xB1", "eB2"] },
+    { "send": "done", "expect": [], "doc": "C1 is not a join source." },
+    { "send": "c", "expect": ["xC1", "eC2"] },
+    { "send": "done", "expect": ["xC2", "xB2", "xA22", "xA2", "xP", "aJoin1", "aJoin2", "aJoin", "eT", "eU", "eV"] }
+  ]
+}

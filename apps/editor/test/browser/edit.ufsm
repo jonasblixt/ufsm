@@ -1,0 +1,77 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "edit",
+  "declarations": {
+    "events": [{ "id": "ev1", "name": "e1" }],
+    "signals": [],
+    "actions": [],
+    "guards": []
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "states": [
+        { "id": "s1", "kind": "initial" },
+        {
+          "id": "s2",
+          "kind": "state",
+          "name": "P",
+          "regions": [
+            {
+              "id": "r1",
+              "states": [
+                { "id": "s3", "kind": "state", "name": "A" },
+                { "id": "s6", "kind": "state", "name": "D" }
+              ]
+            },
+            { "id": "r2", "states": [{ "id": "s4", "kind": "state", "name": "B" }] }
+          ]
+        },
+        { "id": "s5", "kind": "state", "name": "C" }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s1", "to": "s2" },
+      { "id": "t2", "from": "s3", "to": "s4", "on": "ev1" },
+      { "id": "t3", "from": "s4", "to": "s5", "on": "ev1" },
+      { "id": "t4", "from": "s3", "to": "s5", "on": "ev1" },
+      { "id": "t5", "from": "s2", "to": "s5", "on": "ev1" },
+      { "id": "t6", "from": "s3", "to": "s6", "on": "ev1" }
+    ]
+  },
+  "diagram": {
+    "paper": "A4",
+    "states": {
+      "s1": { "x": 40, "y": 40, "w": 20, "h": 20 },
+      "s2": { "x": 100, "y": 100, "w": 400, "h": 300 },
+      "s3": { "x": 20, "y": 50, "w": 100, "h": 60 },
+      "s6": { "x": 200, "y": 50, "w": 80, "h": 60 },
+      "s4": { "x": 200, "y": 190, "w": 100, "h": 60 },
+      "s5": { "x": 700, "y": 100, "w": 120, "h": 80 }
+    },
+    "regions": { "r1": { "h": 130 } },
+    "transitions": {
+      "t1": { "from": { "side": "right", "offset": 10 }, "to": { "side": "left", "offset": 20 } },
+      "t2": {
+        "from": { "side": "bottom", "offset": 50 },
+        "to": { "side": "left", "offset": 30 },
+        "via": [[170, 320]],
+        "label": { "x": 180, "y": 260, "w": 100 }
+      },
+      "t3": { "route": "s" },
+      "t4": { "route": "s", "jog": { "x": 600 } },
+      "t5": {
+        "from": { "side": "right", "offset": 50 },
+        "to": { "side": "left", "offset": 30 },
+        "via": [[600, 150], [600, 130]],
+        "label": { "x": 520, "y": 100, "w": 150 }
+      },
+      "t6": {
+        "from": { "side": "right", "offset": 30 },
+        "to": { "side": "left", "offset": 30 },
+        "via": [[150, 80]]
+      }
+    }
+  }
+}

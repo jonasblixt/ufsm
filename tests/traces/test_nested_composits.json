@@ -1,0 +1,25 @@
+{
+  "model": "../models/test_nested_composits.ufsm",
+  "doc": "From old/tests/C/test_nested_composits.c.",
+  "steps": [
+    { "reset": true, "expect": ["eInitA", "eA21"] },
+    { "send": "EV3", "expect": ["xA21", "eA22"] },
+    { "send": "EV", "expect": ["xInitA", "eA11", "eA12", "eA13"] },
+    {
+      "send": "EV_B",
+      "expect": ["xA22", "xA13", "xA12", "xA11", "eB"],
+      "doc": "Reverse document order: A's second region (A22) is exited before the first. v0.5 sorted by depth: xA13 xA12 xA11 xA22 eB."
+    },
+    { "reset": true, "expect": ["eInitA", "eA21"], "doc": "Reset restarts without exit actions." },
+    { "send": "EV3", "expect": ["xA21", "eA22"] },
+    { "send": "EV", "expect": ["xInitA", "eA11", "eA12", "eA13"] },
+    { "send": "EV2", "expect": ["xA12", "eA12dummy", "xA13", "xA12dummy", "xA11", "eAEnd"], "active": ["AEnd", "A22"] },
+    {
+      "send": "EV3",
+      "expect": ["xA22", "eA21"],
+      "doc": "Added for coverage (2026-10-09), not in the old C test: A22 -EV3-> A21 and leaving A after the join."
+    },
+    { "send": "EV3", "expect": ["xA21", "eA22"] },
+    { "send": "EV_B", "expect": ["xA22", "eB"], "active": ["B"], "inactive": ["A", "AEnd"] }
+  ]
+}

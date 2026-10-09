@@ -1,0 +1,24 @@
+{
+  "$description": "Solarized's accents and code colors, the same in both appearances (vim-colors-solarized: comments base01, constants cyan, statements green, preprocessor orange). The diagram is drawn in the body text color: the secondary monotone (base01/base1) is under 3:1 on the background.",
+  "palette": {
+    "$type": "color",
+    "red": { "$value": "{solarized.red}" },
+    "green": { "$value": "{solarized.green}" },
+    "yellow": { "$value": "{solarized.yellow}" },
+    "blue": { "$value": "{solarized.blue}" },
+    "purple": { "$value": "{solarized.violet}" },
+    "aqua": { "$value": "{solarized.cyan}" },
+    "orange": { "$value": "{solarized.orange}" }
+  },
+  "syntax": {
+    "$type": "color",
+    "string": { "$value": "{palette.aqua}" },
+    "number": { "$value": "{palette.aqua}" },
+    "keyword": { "$value": "{palette.green}" },
+    "preprocessor": { "$value": "{palette.orange}" }
+  },
+  "canvas": {
+    "$type": "color",
+    "ink": { "$value": "{palette.fg1}" }
+  }
+}

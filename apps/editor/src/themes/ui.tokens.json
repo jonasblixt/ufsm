@@ -1,0 +1,51 @@
+{
+  "$description": "What the uFSM editor paints, as aliases to palette roles a theme defines (format: Design Tokens 2025.10). A theme's resolver lists this file first and then defines every role referenced here: palette.bg0 (cards, the sheet, state fill), bgDeep (behind the sheet, fields, text on accents), bgGrid (sheet grid dots), bg1, bg2 (raised and hover backgrounds, borders), fg1 (text), fg4 (secondary text, diagram lines), gray, red, green, yellow, blue, purple, aqua, orange (accents), chrome (window background around the cards), edge (card edges) and shadow (menus). A theme may also override any token below. ui.* become CSS custom properties (ui.card-edge -> --card-edge, plus --card-edge-rgb as 'r g b' for alpha), syntax.* become --syntax-*, canvas.* are the diagram colors.",
+  "ui": {
+    "$type": "color",
+    "bg": { "$value": "{palette.bg0}", "$description": "Text on accent backgrounds" },
+    "bg0": { "$value": "{palette.bg0}" },
+    "bg1": { "$value": "{palette.bg1}" },
+    "bg2": { "$value": "{palette.bg2}" },
+    "bg-dark": { "$value": "{palette.bgDeep}", "$description": "Editor area, fields, active tab; text on accent backgrounds" },
+    "fg": { "$value": "{palette.fg1}" },
+    "fg4": { "$value": "{palette.fg4}" },
+    "gray": { "$value": "{palette.gray}" },
+    "red": { "$value": "{palette.red}" },
+    "green": { "$value": "{palette.green}" },
+    "yellow": { "$value": "{palette.yellow}" },
+    "blue": { "$value": "{palette.blue}" },
+    "purple": { "$value": "{palette.purple}" },
+    "aqua": { "$value": "{palette.aqua}" },
+    "orange": { "$value": "{palette.orange}" },
+    "chrome": { "$value": "{palette.chrome}", "$description": "Title bar, status bar and the gaps between the cards" },
+    "card": { "$value": "{palette.bg0}", "$description": "Explorer, editor and panel cards; menus" },
+    "card-edge": { "$value": "{palette.edge}" },
+    "shadow": { "$value": "{palette.shadow}" },
+    "close-hover": { "$value": { "colorSpace": "srgb", "components": [0.7686, 0.1686, 0.1098], "hex": "#c42b1c" }, "$description": "Window close button under the pointer (Windows convention)" },
+    "close-hover-fg": { "$value": { "colorSpace": "srgb", "components": [1, 1, 1], "hex": "#ffffff" } }
+  },
+  "syntax": {
+    "$type": "color",
+    "comment": { "$value": "{palette.gray}" },
+    "string": { "$value": "{palette.green}" },
+    "number": { "$value": "{palette.purple}" },
+    "keyword": { "$value": "{palette.red}" },
+    "preprocessor": { "$value": "{palette.aqua}" }
+  },
+  "canvas": {
+    "$type": "color",
+    "background": { "$value": "{palette.bgDeep}", "$description": "Around the sheet" },
+    "paper": { "$value": "{palette.bg0}", "$description": "The sheet" },
+    "grid": { "$value": "{palette.bgGrid}" },
+    "state-fill": { "$value": "{palette.bg0}" },
+    "ink": { "$value": "{palette.fg4}", "$description": "Lines, arrows and text of the diagram" },
+    "selection": { "$value": "{palette.orange}", "$description": "Selection, handles, tool previews, enclosing rubber band" },
+    "touching": { "$value": "{palette.blue}", "$description": "Rubber band that selects what it touches" },
+    "ok": { "$value": "{palette.green}", "$description": "A transition target that would be accepted" },
+    "refuse": { "$value": "{palette.red}", "$description": "A refused target; error badges" },
+    "warning": { "$value": "{palette.yellow}", "$description": "Warning badges" },
+    "badge-mark": { "$value": "{palette.bgDeep}", "$description": "The exclamation mark on a badge" },
+    "active": { "$value": "{palette.green}", "$description": "Simulator: active states (outline, a faint fill for the innermost) and the last step's transitions" },
+    "would": { "$value": "{palette.aqua}", "$description": "Simulator: transitions the hovered event would take" }
+  }
+}

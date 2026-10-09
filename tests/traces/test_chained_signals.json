@@ -1,0 +1,13 @@
+{
+  "model": "../models/test_chained_signals.ufsm",
+  "doc": "From old/tests/C/test_chained_signals.c. Signals queue up and run after eventless transitions.",
+  "steps": [
+    { "reset": true, "expect": ["eA"] },
+    { "send": "e1", "expect": ["xA", "eB", "xB", "eC", "xC", "eD", "xD", "eC"], "active": ["C"] },
+    {
+      "send": "e1",
+      "expect": [],
+      "doc": "Bug B2 regression: v0.5 replayed the old signals here (xC eD xD eC) because the queue was never drained."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "lib": ["ES2023", "DOM"]
+  },
+  "include": ["../src/history.ts", "../src/sim.ts", "../src/code.ts", "../src/untitled.ts", "../src/tokens.ts", "../src/theme.ts", "../src/settings.ts", "."]
+}

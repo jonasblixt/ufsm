@@ -1,0 +1,15 @@
+{
+  "model": "../models/test_guard_terms.ufsm",
+  "doc": "Every guard term form on a guard function: {call} holds when the guard returns true, {call, not} when it returns false, and a transition's terms are ANDed. Every guard starts false. Hit returns to Idle by an auto transition.",
+  "steps": [
+    { "reset": true, "expect": ["eIdle"] },
+    { "send": "truthy", "expect": [], "doc": "g() is false until a step sets it." },
+    { "send": "not", "expect": ["xIdle", "aNot", "eHit", "xHit", "eIdle"] },
+    { "guards": { "g": true }, "send": "truthy", "expect": ["xIdle", "aTruthy", "eHit", "xHit", "eIdle"] },
+    { "send": "not", "expect": [] },
+    { "send": "all", "expect": ["xIdle", "aAll", "eHit", "xHit", "eIdle"], "doc": "g() and not h()." },
+    { "guards": { "h": true }, "send": "all", "expect": [] },
+    { "guards": { "g": false, "h": false }, "send": "all", "expect": [] },
+    { "guards": { "g": true }, "send": "all", "expect": ["xIdle", "aAll", "eHit", "xHit", "eIdle"], "active": ["Idle"] }
+  ]
+}

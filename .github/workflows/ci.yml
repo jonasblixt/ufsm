@@ -1,0 +1,72 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
+
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: Typecheck and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - name: Type checker for the generated Python
+        run: npm install --global pyright@1.1.414
+      - name: Rust for the generated Rust (rustc, clippy, rustfmt)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - run: npm test
+        env:
+          # fail instead of skipping the generated-code tests if gcc, Python, pyright or Rust is missing
+          UFSM_REQUIRE_CC: 1
+          UFSM_REQUIRE_PYTHON: 1
+          UFSM_REQUIRE_PYRIGHT: 1
+          UFSM_REQUIRE_RUST: 1
+
+  editor:
+    name: Editor (${{ matrix.os }})
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Linux system libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev patchelf
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: apps/editor/src-tauri
+      - run: npm ci
+      - name: Build installers
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ufsm-editor-${{ runner.os }}
+          path: |
+            apps/editor/src-tauri/target/release/bundle/**/*.msi
+            apps/editor/src-tauri/target/release/bundle/**/*.exe
+            apps/editor/src-tauri/target/release/bundle/**/*.dmg
+            apps/editor/src-tauri/target/release/bundle/**/*.AppImage
+            apps/editor/src-tauri/target/release/bundle/**/*.deb
+          if-no-files-found: ignore

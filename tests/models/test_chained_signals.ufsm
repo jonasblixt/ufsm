@@ -1,0 +1,112 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "test_chained_signals",
+  "declarations": {
+    "events": [{ "id": "ev1", "name": "e1" }],
+    "signals": [
+      { "id": "sig1", "name": "s1" },
+      { "id": "sig2", "name": "s2" },
+      { "id": "sig3", "name": "s3" }
+    ],
+    "actions": [
+      { "id": "act1", "name": "eA" },
+      { "id": "act2", "name": "xA" },
+      { "id": "act3", "name": "eB" },
+      { "id": "act4", "name": "xB" },
+      { "id": "act5", "name": "eC" },
+      { "id": "act6", "name": "xC" },
+      { "id": "act7", "name": "eD" },
+      { "id": "act8", "name": "xD" }
+    ],
+    "guards": []
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        {
+          "id": "s1",
+          "kind": "state",
+          "name": "A",
+          "entry": [{ "call": "act1" }],
+          "exit": [{ "call": "act2" }]
+        },
+        {
+          "id": "s2",
+          "kind": "state",
+          "name": "B",
+          "entry": [{ "call": "act3" }],
+          "exit": [{ "call": "act4" }]
+        },
+        {
+          "id": "s3",
+          "kind": "state",
+          "name": "C",
+          "entry": [{ "call": "act5" }],
+          "exit": [{ "call": "act6" }]
+        },
+        {
+          "id": "s4",
+          "kind": "state",
+          "name": "D",
+          "entry": [{ "call": "act7" }],
+          "exit": [{ "call": "act8" }]
+        },
+        { "id": "s5", "kind": "initial" }
+      ]
+    },
+    "transitions": [
+      {
+        "id": "t1",
+        "from": "s1",
+        "to": "s2",
+        "on": "ev1",
+        "do": [{ "emit": "sig1" }, { "emit": "sig2" }]
+      },
+      { "id": "t2", "from": "s2", "to": "s3", "auto": true, "do": [{ "emit": "sig3" }] },
+      { "id": "t3", "from": "s3", "to": "s4", "on": "sig1" },
+      { "id": "t4", "from": "s4", "to": "s3", "on": "sig3" },
+      { "id": "t5", "from": "s5", "to": "s1" }
+    ]
+  },
+  "diagram": {
+    "paper": "A4",
+    "states": {
+      "s1": { "x": 260, "y": 560, "w": 170, "h": 150 },
+      "s2": { "x": 600, "y": 560, "w": 170, "h": 150 },
+      "s3": { "x": 970, "y": 560, "w": 170, "h": 150 },
+      "s4": { "x": 1270, "y": 560, "w": 170, "h": 150 },
+      "s5": { "x": 330, "y": 480, "w": 20, "h": 20 }
+    },
+    "regions": {},
+    "transitions": {
+      "t1": {
+        "from": { "side": "right", "offset": 80 },
+        "to": { "side": "left", "offset": 80 },
+        "label": { "x": 450, "y": 590, "w": 140 }
+      },
+      "t2": {
+        "from": { "side": "right", "offset": 80 },
+        "to": { "side": "left", "offset": 80 },
+        "label": { "x": 790, "y": 590, "w": 170 }
+      },
+      "t3": {
+        "from": { "side": "right", "offset": 50 },
+        "to": { "side": "left", "offset": 50 },
+        "label": { "x": 1170, "y": 560, "w": 100 }
+      },
+      "t4": {
+        "from": { "side": "left", "offset": 120 },
+        "to": { "side": "right", "offset": 120 },
+        "label": { "x": 1170, "y": 630, "w": 100 }
+      },
+      "t5": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 80 },
+        "label": { "x": 340, "y": 500, "w": 100 }
+      }
+    }
+  }
+}

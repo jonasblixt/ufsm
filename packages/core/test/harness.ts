@@ -1,0 +1,259 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
+
+/**
+ * Differential testing: drive two engines with the same random inputs and
+ * compare what they do (action calls, configuration after each step,
+ * errors). Used for the flat tables, the IR and, later, generated code.
+ */
+import assert from "node:assert/strict";
+import {
+  Interpreter,
+  InterpreterError,
+  type InterpreterErrorCode,
+  type InterpreterHost,
+  type InterpreterOptions,
+  type MachineFactory,
+  type TraceMachine,
+  type UfsmDocument,
+} from "../src/index";
+import { rng } from "./random-model";
+
+export type Engine = (doc: UfsmDocument, host: InterpreterHost, options: InterpreterOptions) => TraceMachine;
+
+export const interpreterEngine: Engine = (doc, host, options) => new Interpreter(doc, host, options);
+
+/** One step of a scripted run: set guard values, then reset or send an event. */
+export interface ScriptStep {
+  guards?: Record<string, boolean>;
+  reset?: true;
+  send?: string;
+}
+
+/** Random script: a reset, then `steps` steps; guards get fresh random values before every step. */
+export function randomScript(doc: UfsmDocument, seed: number, steps: number): ScriptStep[] {
+  const r = rng(seed);
+  const script: ScriptStep[] = [{ reset: true }];
+  const events = doc.declarations.events.map((e) => e.name);
+  for (let i = 0; i < steps && events.length; i++) {
+    const guards: Record<string, boolean> = {};
+    for (const g of doc.declarations.guards) guards[g.name] = r() < 0.5;
+    const step: ScriptStep = doc.declarations.guards.length ? { guards } : {};
+    if (r() < 0.04) step.reset = true;
+    else step.send = events[Math.floor(r() * events.length)]!;
+    script.push(step);
+  }
+  return script;
+}
+
+/** Outcome of one reset/send step. */
+export interface StepResult {
+  calls: string[];
+  active: string[];
+  error?: string;
+}
+
+/** Log line of a step, as compared between engines. */
+export function logLine(step: ScriptStep, res: StepResult): string {
+  const what = step.reset ? "reset" : step.send!;
+  return res.error ? `${what}: ${res.calls.join(" ")} ERROR ${res.error}` : `${what}: ${res.calls.join(" ")} | ${res.active.join(",")}`;
+}
+
+/**
+ * Run a script. After an error the machine is reset (not logged); if that
+ * reset fails too, the machine is dead and the remaining steps are skipped.
+ */
+export function runScript(make: (host: InterpreterHost) => TraceMachine, script: ScriptStep[]): string[] {
+  const guards = new Map<string, boolean>();
+  const log: string[] = [];
+  let calls: string[] = [];
+  const m = make({ call: (n) => void calls.push(n), guard: (n) => guards.get(n) ?? false });
+  for (const step of script) {
+    for (const [k, v] of Object.entries(step.guards ?? {})) guards.set(k, v);
+    calls = [];
+    try {
+      if (step.reset) m.reset();
+      else m.process(step.send!);
+      log.push(logLine(step, { calls, active: m.activeIds() }));
+    } catch (e) {
+      if (!(e instanceof InterpreterError)) throw e;
+      log.push(logLine(step, { calls, active: [], error: e.code }));
+      try {
+        m.reset();
+      } catch {
+        break;
+      }
+    }
+  }
+  return log;
+}
+
+/**
+ * A TraceMachine that replays results recorded from generated code (C, Python, ...), so that
+ * runTrace can check them against a trace: every reset/send step consumes one result.
+ */
+export function replayResults(results: StepResult[], backend: string): MachineFactory {
+  return (_doc, host) => {
+    let i = 0;
+    let active: string[] = [];
+    const next = (): void => {
+      const r = results[i++];
+      if (!r) throw new Error(`${backend} produced fewer results than the trace has steps`);
+      for (const c of r.calls) host.call?.(c, c);
+      active = r.active;
+      if (r.error) throw new InterpreterError(r.error as InterpreterErrorCode, r.error);
+    };
+    return { reset: next, process: next, isActive: (id) => active.includes(id), activeIds: () => active };
+  };
+}
+
+/** One differential unit for generated code: the interpreter has an unbounded queue unless one is given. */
+export interface BackendDiff {
+  label: string;
+  doc: UfsmDocument;
+  script: ScriptStep[];
+  signalQueue?: number;
+}
+
+/** Assert that results recorded from generated code (one list per diff, autoReset on) equal the interpreter's. */
+export function assertMatchesInterpreter(diffs: BackendDiff[], results: StepResult[][], maxMicrosteps: number, backend: string): void {
+  diffs.forEach((d, k) => {
+    const expected = runScript((h) => new Interpreter(d.doc, h, { maxMicrosteps, signalQueue: d.signalQueue }), d.script);
+    const steps = d.script.filter((s) => s.reset || s.send !== undefined);
+    const actual = (results[k] ?? []).map((r, i) => logLine(steps[i]!, r));
+    const i = expected.findIndex((x, j) => x !== actual[j]);
+    assert.ok(i < 0 && expected.length === actual.length, `${d.label}, step ${i}:\n  interpreter: ${expected[i]}\n  ${`${backend}:`.padEnd(13)}${actual[i]}`);
+  });
+}
+
+/** Log of one random run (see randomScript and runScript). */
+export function drive(make: (host: InterpreterHost) => TraceMachine, doc: UfsmDocument, seed: number, steps: number): string[] {
+  return runScript(make, randomScript(doc, seed, steps));
+}
+
+/** Assert that `engine` behaves exactly like the reference interpreter on one random run. */
+export function compareWithInterpreter(engine: Engine, doc: UfsmDocument, seed: number, steps: number, options: InterpreterOptions = {}): void {
+  const opts = { maxMicrosteps: 300, ...options };
+  const a = drive((h) => new Interpreter(doc, h, opts), doc, seed, steps);
+  const b = drive((h) => engine(doc, h, opts), doc, seed, steps);
+  const i = a.findIndex((x, k) => x !== b[k]);
+  assert.ok(i < 0 && a.length === b.length, `${doc.name}, seed ${seed}, step ${i}:\n  interpreter: ${a[i]}\n  engine:      ${b[i]}`);
+}
+
+/**
+ * P has regions with A and B; joins J1 and J2 both lead out of {A, B} on e1.
+ * A lists J2 first, B lists J1 first: the sources disagree, nothing fires.
+ * With A's order swapped they agree on J1.
+ */
+export function joinAgreementModel(agree: boolean): UfsmDocument {
+  const doc: UfsmDocument = {
+    format: "ufsm",
+    version: 1,
+    name: "joins",
+    declarations: {
+      events: [{ id: "ev1", name: "e1" }],
+      signals: [],
+      actions: [{ id: "a1", name: "j1" }, { id: "a2", name: "j2" }],
+      guards: [],
+    },
+    machine: {
+      root: {
+        id: "r0",
+        states: [
+          { id: "i0", kind: "initial" },
+          {
+            id: "P",
+            kind: "state",
+            name: "P",
+            regions: [
+              { id: "r1", states: [{ id: "i1", kind: "initial" }, { id: "A", kind: "state", name: "A" }] },
+              { id: "r2", states: [{ id: "i2", kind: "initial" }, { id: "B", kind: "state", name: "B" }] },
+            ],
+          },
+          { id: "X", kind: "state", name: "X" },
+          { id: "J1", kind: "join" },
+          { id: "J2", kind: "join" },
+        ],
+      },
+      transitions: [
+        { id: "t0", from: "i0", to: "P" },
+        { id: "t1", from: "i1", to: "A" },
+        { id: "t2", from: "i2", to: "B" },
+        { id: "ta2", from: "A", to: "J2" },
+        { id: "ta1", from: "A", to: "J1" },
+        { id: "tb1", from: "B", to: "J1" },
+        { id: "tb2", from: "B", to: "J2" },
+        { id: "tj1", from: "J1", to: "X", on: "ev1", do: [{ call: "a1" }] },
+        { id: "tj2", from: "J2", to: "X", on: "ev1", do: [{ call: "a2" }] },
+      ],
+    },
+  };
+  if (agree) doc.machine.transitions.sort((x, y) => (x.id === "ta1" ? -1 : y.id === "ta1" ? 1 : 0));
+  return doc;
+}
+
+export function checkJoinAgreement(engine: Engine): void {
+  for (const agree of [false, true]) {
+    const doc = joinAgreementModel(agree);
+    const expected = agree ? ["j1"] : [];
+    for (const make of [interpreterEngine, engine]) {
+      const calls: string[] = [];
+      const m = make(doc, { call: (n) => void calls.push(n) }, {});
+      m.reset();
+      m.process("e1");
+      assert.deepEqual(calls, expected, agree ? "sources agree on J1" : "sources disagree");
+    }
+  }
+}
+
+/**
+ * Small model that needs every expression form a backend prints:
+ * completion of P = "r1 rests in F1 or F2" AND "r2 rests in F3" (an `||`
+ * inside `&&`), and a join J whose source A has an earlier candidate guarded
+ * by `!g1 && g2` (negated when the join checks A's first enabled transition).
+ */
+export function expressionModel(): UfsmDocument {
+  return {
+    format: "ufsm",
+    version: 1,
+    name: "expressions",
+    declarations: {
+      events: [{ id: "ev1", name: "e1" }, { id: "ev2", name: "e2" }, { id: "ev3", name: "e3" }],
+      signals: [],
+      actions: [{ id: "a1", name: "done" }, { id: "a2", name: "joined" }, { id: "a3", name: "early" }],
+      guards: [{ id: "g1", name: "g1" }, { id: "g2", name: "g2" }],
+    },
+    machine: {
+      root: {
+        id: "r0",
+        states: [
+          { id: "i0", kind: "initial" },
+          {
+            id: "P",
+            kind: "state",
+            name: "P",
+            regions: [
+              { id: "r1", states: [{ id: "i1", kind: "initial" }, { id: "A", kind: "state", name: "A" }, { id: "F1", kind: "final" }, { id: "F2", kind: "final" }] },
+              { id: "r2", states: [{ id: "i2", kind: "initial" }, { id: "B", kind: "state", name: "B" }, { id: "F3", kind: "final" }] },
+            ],
+          },
+          { id: "X", kind: "state", name: "X" },
+          { id: "J", kind: "join" },
+        ],
+      },
+      transitions: [
+        { id: "t0", from: "i0", to: "P" },
+        { id: "t1", from: "i1", to: "A" },
+        { id: "t2", from: "i2", to: "B" },
+        { id: "ta1", from: "A", to: "F1", on: "ev1", guard: [{ call: "g1", not: true }, { call: "g2" }], do: [{ call: "a3" }] },
+        { id: "ta2", from: "A", to: "F2", on: "ev2", guard: [{ call: "g1" }] },
+        { id: "ta3", from: "A", to: "J" },
+        { id: "tb1", from: "B", to: "J" },
+        { id: "tb2", from: "B", to: "F3", on: "ev2" },
+        { id: "tj", from: "J", to: "X", on: "ev1", do: [{ call: "a2" }] },
+        { id: "tp", from: "P", to: "X", completion: true, do: [{ call: "a1" }] },
+        { id: "tx", from: "X", to: "P", on: "ev3" },
+      ],
+    },
+  };
+}

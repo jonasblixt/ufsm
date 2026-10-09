@@ -1,0 +1,146 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "linux_async",
+  "declarations": {
+    "events": [
+      { "id": "ev1", "name": "eEnable" },
+      { "id": "ev2", "name": "eDisable" },
+      { "id": "ev3", "name": "eExitTimerExpired" }
+    ],
+    "signals": [{ "id": "sig1", "name": "sAppStateChanged" }],
+    "actions": [
+      { "id": "act1", "name": "enter_idle" },
+      { "id": "act2", "name": "do_work" },
+      { "id": "act3", "name": "do_cleanup" },
+      { "id": "act4", "name": "start_init_delay_timer" },
+      { "id": "act5", "name": "cancel_init_delay_timer" },
+      { "id": "act6", "name": "start_exit_timer" },
+      { "id": "act7", "name": "cancel_exit_timer" },
+      { "id": "act8", "name": "exit_program" },
+      { "id": "act9", "name": "enter_inactive" },
+      { "id": "act10", "name": "enter_active" }
+    ],
+    "guards": []
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        {
+          "id": "s1",
+          "kind": "state",
+          "name": "linux async demo",
+          "entry": [{ "call": "act4" }, { "call": "act6" }],
+          "exit": [{ "call": "act5" }, { "call": "act7" }],
+          "regions": [
+            {
+              "id": "r1",
+              "name": "Status",
+              "states": [
+                {
+                  "id": "s2",
+                  "kind": "state",
+                  "name": "Inactive",
+                  "entry": [{ "call": "act9" }, { "emit": "sig1" }]
+                },
+                {
+                  "id": "s3",
+                  "kind": "state",
+                  "name": "Active",
+                  "entry": [{ "call": "act10" }, { "emit": "sig1" }]
+                },
+                { "id": "s4", "kind": "initial" }
+              ]
+            },
+            {
+              "id": "r2",
+              "name": "Work",
+              "states": [
+                { "id": "s5", "kind": "state", "name": "Idle", "entry": [{ "call": "act1" }] },
+                { "id": "s6", "kind": "initial" },
+                {
+                  "id": "s7",
+                  "kind": "state",
+                  "name": "Do work",
+                  "entry": [{ "call": "act2" }],
+                  "exit": [{ "call": "act3" }]
+                }
+              ]
+            }
+          ]
+        },
+        { "id": "s8", "kind": "initial" },
+        { "id": "s9", "kind": "state", "name": "Stop", "entry": [{ "call": "act8" }] }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s1", "to": "s9", "on": "ev3" },
+      { "id": "t2", "from": "s2", "to": "s3", "on": "ev1" },
+      { "id": "t3", "from": "s3", "to": "s2", "on": "ev2" },
+      { "id": "t4", "from": "s4", "to": "s2" },
+      { "id": "t5", "from": "s5", "to": "s7", "on": "sig1", "guard": [{ "in": "s3" }] },
+      { "id": "t6", "from": "s6", "to": "s5" },
+      { "id": "t7", "from": "s7", "to": "s5", "on": "sig1", "guard": [{ "in": "s2" }] },
+      { "id": "t8", "from": "s8", "to": "s1" }
+    ]
+  },
+  "diagram": {
+    "paper": "A3",
+    "states": {
+      "s1": { "x": 320, "y": 160, "w": 1230, "h": 1410 },
+      "s2": { "x": 270, "y": 340, "w": 190, "h": 170 },
+      "s3": { "x": 750, "y": 340, "w": 190, "h": 170 },
+      "s4": { "x": 350, "y": 260, "w": 20, "h": 20 },
+      "s5": { "x": 270, "y": 900, "w": 190, "h": 170 },
+      "s6": { "x": 350, "y": 820, "w": 20, "h": 20 },
+      "s7": { "x": 750, "y": 820, "w": 380, "h": 510 },
+      "s8": { "x": 920, "y": 90, "w": 20, "h": 20 },
+      "s9": { "x": 1790, "y": 160, "w": 350, "h": 180 }
+    },
+    "regions": { "r1": { "h": 570 }, "r2": { "h": 700 } },
+    "transitions": {
+      "t1": {
+        "from": { "side": "right", "offset": 80 },
+        "to": { "side": "left", "offset": 80 },
+        "label": { "x": 1600, "y": 190, "w": 140 }
+      },
+      "t2": {
+        "from": { "side": "right", "offset": 50 },
+        "to": { "side": "left", "offset": 50 },
+        "label": { "x": 550, "y": 340, "w": 100 }
+      },
+      "t3": {
+        "from": { "side": "left", "offset": 130 },
+        "to": { "side": "right", "offset": 130 },
+        "label": { "x": 550, "y": 420, "w": 100 }
+      },
+      "t4": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 90 },
+        "label": { "x": 390, "y": 270, "w": 100 }
+      },
+      "t5": {
+        "from": { "side": "right", "offset": 50 },
+        "to": { "side": "left", "offset": 130 },
+        "label": { "x": 480, "y": 900, "w": 260 }
+      },
+      "t6": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 90 },
+        "label": { "x": 380, "y": 830, "w": 100 }
+      },
+      "t7": {
+        "from": { "side": "left", "offset": 220 },
+        "to": { "side": "right", "offset": 140 },
+        "label": { "x": 480, "y": 990, "w": 260 }
+      },
+      "t8": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 610 },
+        "label": { "x": 1000, "y": 80, "w": 100 }
+      }
+    }
+  }
+}

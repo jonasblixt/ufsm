@@ -1,0 +1,32 @@
+{
+  "name": "ufsm",
+  "version": "0.6.0",
+  "private": true,
+  "type": "module",
+  "description": "uFSM: hierarchical state machine editor and multi-language code generator",
+  "license": "GPL-3.0-or-later",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "dev": "npm run tauri -w @ufsm/editor -- dev",
+    "dev:web": "npm run dev -w @ufsm/editor",
+    "build": "npm run tauri -w @ufsm/editor -- build",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "ufsm": "npm run start -w @ufsm/cli --",
+    "gen:editor-fsm": "npm run ufsm -- generate ts apps/editor/src/fsm/editor.ufsm -o apps/editor/src/fsm"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^6.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

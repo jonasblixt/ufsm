@@ -1,0 +1,199 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "test_external_transitions",
+  "declarations": {
+    "events": [
+      { "id": "ev1", "name": "self" },
+      { "id": "ev2", "name": "go" },
+      { "id": "ev3", "name": "selfP" },
+      { "id": "ev4", "name": "down" },
+      { "id": "ev5", "name": "toD" },
+      { "id": "ev6", "name": "selfC" },
+      { "id": "ev7", "name": "upD" },
+      { "id": "ev8", "name": "up" },
+      { "id": "ev9", "name": "out" }
+    ],
+    "signals": [],
+    "actions": [
+      { "id": "act1", "name": "eIdle" },
+      { "id": "act2", "name": "xIdle" },
+      { "id": "act3", "name": "eP" },
+      { "id": "act4", "name": "xP" },
+      { "id": "act5", "name": "eC" },
+      { "id": "act6", "name": "xC" },
+      { "id": "act7", "name": "eD" },
+      { "id": "act8", "name": "xD" },
+      { "id": "act9", "name": "eD1" },
+      { "id": "act10", "name": "xD1" },
+      { "id": "act11", "name": "eD2" },
+      { "id": "act12", "name": "xD2" },
+      { "id": "act13", "name": "aP" }
+    ],
+    "guards": []
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        { "id": "s2", "kind": "initial" },
+        {
+          "id": "s1",
+          "kind": "state",
+          "name": "Idle",
+          "entry": [{ "call": "act1" }],
+          "exit": [{ "call": "act2" }]
+        },
+        {
+          "id": "s3",
+          "kind": "state",
+          "name": "P",
+          "entry": [{ "call": "act3" }],
+          "exit": [{ "call": "act4" }],
+          "regions": [
+            {
+              "id": "r1",
+              "states": [
+                { "id": "s5", "kind": "initial" },
+                {
+                  "id": "s4",
+                  "kind": "state",
+                  "name": "C",
+                  "entry": [{ "call": "act5" }],
+                  "exit": [{ "call": "act6" }]
+                },
+                {
+                  "id": "s6",
+                  "kind": "state",
+                  "name": "D",
+                  "entry": [{ "call": "act7" }],
+                  "exit": [{ "call": "act8" }],
+                  "regions": [
+                    {
+                      "id": "r2",
+                      "states": [
+                        { "id": "s8", "kind": "initial" },
+                        {
+                          "id": "s7",
+                          "kind": "state",
+                          "name": "D1",
+                          "entry": [{ "call": "act9" }],
+                          "exit": [{ "call": "act10" }]
+                        },
+                        {
+                          "id": "s9",
+                          "kind": "state",
+                          "name": "D2",
+                          "entry": [{ "call": "act11" }],
+                          "exit": [{ "call": "act12" }]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s2", "to": "s1" },
+      { "id": "t2", "from": "s5", "to": "s4" },
+      { "id": "t3", "from": "s8", "to": "s7" },
+      { "id": "t4", "from": "s1", "to": "s1", "on": "ev1" },
+      { "id": "t5", "from": "s1", "to": "s3", "on": "ev2" },
+      { "id": "t6", "from": "s3", "to": "s3", "on": "ev3", "do": [{ "call": "act13" }] },
+      { "id": "t7", "from": "s3", "to": "s9", "on": "ev4" },
+      { "id": "t8", "from": "s4", "to": "s6", "on": "ev5" },
+      { "id": "t9", "from": "s4", "to": "s4", "on": "ev6" },
+      { "id": "t10", "from": "s7", "to": "s6", "on": "ev7" },
+      { "id": "t11", "from": "s9", "to": "s3", "on": "ev8" },
+      { "id": "t12", "from": "s7", "to": "s1", "on": "ev9" }
+    ]
+  },
+  "diagram": {
+    "paper": "A4",
+    "states": {
+      "s2": { "x": 40, "y": 40, "w": 20, "h": 20 },
+      "s1": { "x": 150, "y": 70, "w": 180, "h": 140 },
+      "s3": { "x": 420, "y": 70, "w": 1100, "h": 540 },
+      "s5": { "x": 40, "y": 130, "w": 20, "h": 20 },
+      "s4": { "x": 150, "y": 160, "w": 180, "h": 140 },
+      "s6": { "x": 420, "y": 160, "w": 640, "h": 340 },
+      "s8": { "x": 40, "y": 130, "w": 20, "h": 20 },
+      "s7": { "x": 150, "y": 160, "w": 180, "h": 140 },
+      "s9": { "x": 420, "y": 160, "w": 180, "h": 140 }
+    },
+    "regions": { "r1": { "h": 450 }, "r2": { "h": 250 } },
+    "transitions": {
+      "t1": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 95, "y": 48, "w": 120 }
+      },
+      "t2": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 95, "y": 138, "w": 120 }
+      },
+      "t3": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 95, "y": 138, "w": 120 }
+      },
+      "t4": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "top", "offset": 165 },
+        "via": [[370, 40]],
+        "label": { "x": 360, "y": 18, "w": 120 }
+      },
+      "t5": {
+        "from": { "side": "right", "offset": 37 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 365, "y": 74, "w": 120 }
+      },
+      "t6": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "top", "offset": 1085 },
+        "via": [[1560, 40]],
+        "label": { "x": 1550, "y": 18, "w": 120 }
+      },
+      "t7": {
+        "from": { "side": "left", "offset": 37 },
+        "to": { "side": "left", "offset": 15 },
+        "via": [[390, 107], [390, 405]],
+        "label": { "x": 340, "y": 228, "w": 120 }
+      },
+      "t8": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 365, "y": 153, "w": 120 }
+      },
+      "t9": {
+        "from": { "side": "right", "offset": 37 },
+        "to": { "side": "top", "offset": 165 },
+        "via": [[370, 130]],
+        "label": { "x": 360, "y": 108, "w": 120 }
+      },
+      "t10": {
+        "from": { "side": "left", "offset": 37 },
+        "to": { "side": "left", "offset": 37 },
+        "via": [[390, 357], [390, 197]],
+        "label": { "x": 340, "y": 238, "w": 120 }
+      },
+      "t11": {
+        "from": { "side": "left", "offset": 37 },
+        "to": { "side": "left", "offset": 59 },
+        "via": [[390, 427], [390, 129]],
+        "label": { "x": 340, "y": 228, "w": 120 }
+      },
+      "t12": {
+        "from": { "side": "left", "offset": 59 },
+        "to": { "side": "right", "offset": 59 },
+        "label": { "x": 650, "y": 267, "w": 120 }
+      }
+    }
+  }
+}

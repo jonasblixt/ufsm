@@ -1,0 +1,19 @@
+{
+  "model": "../models/test_state_conditions.ufsm",
+  "doc": "From old/tests/C/test_state_conditions.c. Guard on another region's state.",
+  "steps": [
+    { "reset": true, "expect": ["eMode1"] },
+    { "send": "eSwitchMode", "expect": [] },
+    { "send": "eToggle", "expect": [] },
+    { "send": "eSwitchMode", "expect": ["xMode1", "eMode2"] },
+    {
+      "send": "eSwitchMode",
+      "expect": ["xMode2", "eMode1"],
+      "doc": "Added for coverage (2026-10-09), not in the old C test: the way back in both regions."
+    },
+    { "send": "eToggle", "expect": [], "active": ["OFF"], "inactive": ["ON"] },
+    { "send": "eSwitchMode", "expect": [], "active": ["Mode1"], "doc": "Guard in(ON) fails again." },
+    { "send": "eToggle", "expect": [], "active": ["ON"] },
+    { "send": "eSwitchMode", "expect": ["xMode1", "eMode2"] }
+  ]
+}

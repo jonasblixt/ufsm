@@ -1,0 +1,26 @@
+{
+  "$description": "Everforest's roles for ui.tokens.json, the same in both appearances: fg.* is the appearance's foreground palette (dark.tokens.json, light.tokens.json), bg.* the background ladder the contrast picks (hard/medium/soft.tokens.json). Code colors as everforest.vim: comments grey1, strings green, numbers and preprocessor purple, keywords red.",
+  "palette": {
+    "$type": "color",
+    "bg0": { "$value": "{bg.bg0}" },
+    "bgDeep": { "$value": "{bg.bg_dim}", "$description": "Around the sheet, fields, text on accents: everforest's dimmed background" },
+    "bgGrid": { "$value": "{bg.bg1}", "$description": "Grid dots: one step from bg0" },
+    "bg1": { "$value": "{bg.bg1}" },
+    "bg2": { "$value": "{bg.bg2}" },
+    "fg1": { "$value": "{fg.fg}" },
+    "fg4": { "$value": "{fg.grey2}", "$description": "Secondary text" },
+    "gray": { "$value": "{fg.grey1}" },
+    "red": { "$value": "{fg.red}" },
+    "green": { "$value": "{fg.green}" },
+    "yellow": { "$value": "{fg.yellow}" },
+    "blue": { "$value": "{fg.blue}" },
+    "purple": { "$value": "{fg.purple}" },
+    "aqua": { "$value": "{fg.aqua}" },
+    "orange": { "$value": "{fg.orange}" },
+    "chrome": { "$value": "{bg.bg_dim}", "$description": "Window background around the cards" }
+  },
+  "syntax": {
+    "$type": "color",
+    "preprocessor": { "$value": "{palette.purple}" }
+  }
+}

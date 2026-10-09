@@ -1,0 +1,194 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "test_join_agreement",
+  "declarations": {
+    "events": [{ "id": "ev1", "name": "e" }, { "id": "ev2", "name": "back" }],
+    "signals": [],
+    "actions": [
+      { "id": "act1", "name": "eP" },
+      { "id": "act2", "name": "xP" },
+      { "id": "act3", "name": "eA" },
+      { "id": "act4", "name": "xA" },
+      { "id": "act5", "name": "eB" },
+      { "id": "act6", "name": "xB" },
+      { "id": "act7", "name": "eC" },
+      { "id": "act8", "name": "xC" },
+      { "id": "act9", "name": "eX" },
+      { "id": "act10", "name": "xX" },
+      { "id": "act11", "name": "eY" },
+      { "id": "act12", "name": "xY" },
+      { "id": "act13", "name": "b1" },
+      { "id": "act14", "name": "a1" },
+      { "id": "act15", "name": "c1" },
+      { "id": "act16", "name": "j1" },
+      { "id": "act17", "name": "j2" }
+    ],
+    "guards": [{ "id": "grd1", "name": "g" }]
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "states": [
+        { "id": "s1", "kind": "initial" },
+        {
+          "id": "s2",
+          "kind": "state",
+          "name": "P",
+          "entry": [{ "call": "act1" }],
+          "exit": [{ "call": "act2" }],
+          "regions": [
+            {
+              "id": "r1",
+              "states": [
+                { "id": "s3", "kind": "initial" },
+                {
+                  "id": "s4",
+                  "kind": "state",
+                  "name": "A",
+                  "entry": [{ "call": "act3" }],
+                  "exit": [{ "call": "act4" }]
+                }
+              ]
+            },
+            {
+              "id": "r2",
+              "states": [
+                { "id": "s5", "kind": "initial" },
+                {
+                  "id": "s6",
+                  "kind": "state",
+                  "name": "B",
+                  "entry": [{ "call": "act5" }],
+                  "exit": [{ "call": "act6" }]
+                }
+              ]
+            },
+            {
+              "id": "r3",
+              "states": [
+                { "id": "s7", "kind": "initial" },
+                {
+                  "id": "s8",
+                  "kind": "state",
+                  "name": "C",
+                  "entry": [{ "call": "act7" }],
+                  "exit": [{ "call": "act8" }]
+                }
+              ]
+            }
+          ]
+        },
+        { "id": "s9", "kind": "join", "name": "J1" },
+        { "id": "s10", "kind": "join", "name": "J2" },
+        {
+          "id": "s11",
+          "kind": "state",
+          "name": "X",
+          "entry": [{ "call": "act9" }],
+          "exit": [{ "call": "act10" }]
+        },
+        {
+          "id": "s12",
+          "kind": "state",
+          "name": "Y",
+          "entry": [{ "call": "act11" }],
+          "exit": [{ "call": "act12" }]
+        }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s1", "to": "s2" },
+      { "id": "t2", "from": "s3", "to": "s4" },
+      { "id": "t3", "from": "s5", "to": "s6" },
+      { "id": "t4", "from": "s7", "to": "s8" },
+      { "id": "t5", "from": "s4", "to": "s10" },
+      { "id": "t6", "from": "s6", "to": "s9", "do": [{ "call": "act13" }] },
+      { "id": "t7", "from": "s4", "to": "s9", "do": [{ "call": "act14" }] },
+      { "id": "t8", "from": "s8", "to": "s10", "do": [{ "call": "act15" }] },
+      { "id": "t9", "from": "s9", "to": "s11", "on": "ev1", "do": [{ "call": "act16" }] },
+      {
+        "id": "t10",
+        "from": "s10",
+        "to": "s12",
+        "on": "ev1",
+        "guard": [{ "call": "grd1" }],
+        "do": [{ "call": "act17" }]
+      },
+      { "id": "t11", "from": "s11", "to": "s2", "on": "ev2" },
+      { "id": "t12", "from": "s12", "to": "s2", "on": "ev2" }
+    ]
+  },
+  "diagram": {
+    "paper": "A3",
+    "states": {
+      "s1": { "x": 210, "y": 140, "w": 20, "h": 20 },
+      "s2": { "x": 180, "y": 190, "w": 320, "h": 780 },
+      "s3": { "x": 40, "y": 130, "w": 20, "h": 20 },
+      "s4": { "x": 100, "y": 130, "w": 180, "h": 150 },
+      "s5": { "x": 40, "y": 360, "w": 20, "h": 20 },
+      "s6": { "x": 100, "y": 360, "w": 180, "h": 150 },
+      "s7": { "x": 40, "y": 590, "w": 20, "h": 20 },
+      "s8": { "x": 100, "y": 590, "w": 180, "h": 150 },
+      "s9": { "x": 840, "y": 520, "w": 10, "h": 100 },
+      "s10": { "x": 790, "y": 810, "w": 10, "h": 100 },
+      "s11": { "x": 1060, "y": 190, "w": 180, "h": 290 },
+      "s12": { "x": 1060, "y": 620, "w": 180, "h": 310 }
+    },
+    "regions": { "r1": { "h": 230 }, "r2": { "h": 230 }, "r3": { "h": 230 } },
+    "transitions": {
+      "t1": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 40 },
+        "label": { "x": 223, "y": 143, "w": 120 }
+      },
+      "t2": {
+        "from": { "side": "right", "offset": 10 },
+        "to": { "side": "left", "offset": 30 },
+        "label": { "x": 50, "y": 130, "w": 120 }
+      },
+      "t3": {
+        "from": { "side": "right", "offset": 10 },
+        "to": { "side": "left", "offset": 30 },
+        "label": { "x": 50, "y": 360, "w": 120 }
+      },
+      "t4": {
+        "from": { "side": "right", "offset": 10 },
+        "to": { "side": "left", "offset": 30 },
+        "label": { "x": 50, "y": 590, "w": 120 }
+      },
+      "t5": {
+        "route": "s",
+        "from": { "side": "right", "offset": 100 },
+        "to": { "side": "left", "offset": 80 }
+      },
+      "t6": {
+        "from": { "side": "right", "offset": 30 },
+        "to": { "side": "left", "offset": 60 },
+        "label": { "x": 550, "y": 547, "w": 120 }
+      },
+      "t7": { "route": "s", "to": { "side": "left", "offset": 20 }, "jog": { "x": 690 } },
+      "t8": {
+        "from": { "side": "right", "offset": 60 },
+        "to": { "side": "left", "offset": 30 },
+        "label": { "x": 581, "y": 774, "w": 120 }
+      },
+      "t9": { "route": "s" },
+      "t10": {
+        "from": { "side": "right", "offset": 30 },
+        "to": { "side": "left", "offset": 220 },
+        "label": { "x": 906, "y": 737, "w": 120 }
+      },
+      "t11": {
+        "from": { "side": "left", "offset": 60 },
+        "to": { "side": "right", "offset": 60 },
+        "label": { "x": 747, "y": 204, "w": 120 }
+      },
+      "t12": {
+        "from": { "side": "left", "offset": 50 },
+        "to": { "side": "right", "offset": 480 },
+        "label": { "x": 750, "y": 414, "w": 120 }
+      }
+    }
+  }
+}

@@ -1,0 +1,258 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "test_action_order",
+  "declarations": {
+    "events": [
+      { "id": "ev1", "name": "leave" },
+      { "id": "ev2", "name": "back" },
+      { "id": "ev3", "name": "dive" },
+      { "id": "ev4", "name": "cross" }
+    ],
+    "signals": [],
+    "actions": [
+      { "id": "act1", "name": "eTop1" },
+      { "id": "act2", "name": "eTop2" },
+      { "id": "act3", "name": "xTop1" },
+      { "id": "act4", "name": "xTop2" },
+      { "id": "act5", "name": "i0" },
+      { "id": "act6", "name": "eOut" },
+      { "id": "act7", "name": "xOut" },
+      { "id": "act8", "name": "eL1" },
+      { "id": "act9", "name": "xL1" },
+      { "id": "act10", "name": "i1" },
+      { "id": "act11", "name": "eL2" },
+      { "id": "act12", "name": "xL2" },
+      { "id": "act13", "name": "i11" },
+      { "id": "act14", "name": "eL3" },
+      { "id": "act15", "name": "xL3" },
+      { "id": "act16", "name": "eL4" },
+      { "id": "act17", "name": "xL4" },
+      { "id": "act18", "name": "i1111" },
+      { "id": "act19", "name": "eM" },
+      { "id": "act20", "name": "xM" },
+      { "id": "act21", "name": "i2" },
+      { "id": "act22", "name": "eN1a" },
+      { "id": "act23", "name": "eN1b" },
+      { "id": "act24", "name": "xN1" },
+      { "id": "act25", "name": "aLeave1" },
+      { "id": "act26", "name": "aLeave2" }
+    ],
+    "guards": []
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        { "id": "s2", "kind": "initial" },
+        {
+          "id": "s1",
+          "kind": "state",
+          "name": "Top",
+          "entry": [{ "call": "act1" }, { "call": "act2" }],
+          "exit": [{ "call": "act3" }, { "call": "act4" }],
+          "regions": [
+            {
+              "id": "r1",
+              "states": [
+                { "id": "s5", "kind": "initial" },
+                {
+                  "id": "s4",
+                  "kind": "state",
+                  "name": "L1",
+                  "entry": [{ "call": "act8" }],
+                  "exit": [{ "call": "act9" }],
+                  "regions": [
+                    {
+                      "id": "r2",
+                      "states": [
+                        { "id": "s7", "kind": "initial" },
+                        {
+                          "id": "s6",
+                          "kind": "state",
+                          "name": "L2",
+                          "entry": [{ "call": "act11" }],
+                          "exit": [{ "call": "act12" }],
+                          "regions": [
+                            {
+                              "id": "r3",
+                              "states": [
+                                { "id": "s9", "kind": "initial" },
+                                {
+                                  "id": "s8",
+                                  "kind": "state",
+                                  "name": "L3",
+                                  "entry": [{ "call": "act14" }],
+                                  "exit": [{ "call": "act15" }],
+                                  "regions": [
+                                    {
+                                      "id": "r4",
+                                      "states": [
+                                        { "id": "s11", "kind": "initial" },
+                                        {
+                                          "id": "s10",
+                                          "kind": "state",
+                                          "name": "L4",
+                                          "entry": [{ "call": "act16" }],
+                                          "exit": [{ "call": "act17" }]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "r5",
+              "states": [
+                { "id": "s13", "kind": "initial" },
+                {
+                  "id": "s12",
+                  "kind": "state",
+                  "name": "M",
+                  "entry": [{ "call": "act19" }],
+                  "exit": [{ "call": "act20" }]
+                }
+              ]
+            },
+            {
+              "id": "r6",
+              "states": [
+                { "id": "s15", "kind": "initial" },
+                {
+                  "id": "s14",
+                  "kind": "state",
+                  "name": "N1",
+                  "entry": [{ "call": "act22" }, { "call": "act23" }],
+                  "exit": [{ "call": "act24" }]
+                },
+                { "id": "s16", "kind": "state", "name": "N2" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "kind": "state",
+          "name": "Out",
+          "entry": [{ "call": "act6" }],
+          "exit": [{ "call": "act7" }]
+        }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s2", "to": "s1", "do": [{ "call": "act5" }] },
+      { "id": "t2", "from": "s5", "to": "s4", "do": [{ "call": "act10" }] },
+      { "id": "t3", "from": "s7", "to": "s6", "do": [{ "call": "act13" }] },
+      { "id": "t4", "from": "s9", "to": "s8" },
+      { "id": "t5", "from": "s11", "to": "s10", "do": [{ "call": "act18" }] },
+      { "id": "t6", "from": "s13", "to": "s12", "do": [{ "call": "act21" }] },
+      { "id": "t7", "from": "s15", "to": "s14" },
+      {
+        "id": "t8",
+        "from": "s1",
+        "to": "s3",
+        "on": "ev1",
+        "do": [{ "call": "act25" }, { "call": "act26" }]
+      },
+      { "id": "t9", "from": "s3", "to": "s1", "on": "ev2" },
+      { "id": "t10", "from": "s3", "to": "s10", "on": "ev3" },
+      { "id": "t11", "from": "s10", "to": "s16", "on": "ev4" }
+    ]
+  },
+  "diagram": {
+    "paper": "A3",
+    "states": {
+      "s2": { "x": 40, "y": 40, "w": 20, "h": 20 },
+      "s1": { "x": 150, "y": 70, "w": 940, "h": 1500 },
+      "s5": { "x": 40, "y": 170, "w": 20, "h": 20 },
+      "s4": { "x": 150, "y": 200, "w": 750, "h": 740 },
+      "s7": { "x": 40, "y": 130, "w": 20, "h": 20 },
+      "s6": { "x": 150, "y": 160, "w": 560, "h": 540 },
+      "s9": { "x": 40, "y": 130, "w": 20, "h": 20 },
+      "s8": { "x": 150, "y": 160, "w": 370, "h": 340 },
+      "s11": { "x": 40, "y": 130, "w": 20, "h": 20 },
+      "s10": { "x": 150, "y": 160, "w": 180, "h": 140 },
+      "s13": { "x": 40, "y": 1020, "w": 20, "h": 20 },
+      "s12": { "x": 150, "y": 1050, "w": 180, "h": 140 },
+      "s15": { "x": 40, "y": 1270, "w": 20, "h": 20 },
+      "s14": { "x": 150, "y": 1300, "w": 180, "h": 160 },
+      "s16": { "x": 420, "y": 1300, "w": 180, "h": 80 },
+      "s3": { "x": 1180, "y": 70, "w": 180, "h": 140 }
+    },
+    "regions": {
+      "r1": { "h": 850 },
+      "r2": { "h": 650 },
+      "r3": { "h": 450 },
+      "r4": { "h": 250 },
+      "r5": { "h": 250 },
+      "r6": { "h": 270 }
+    },
+    "transitions": {
+      "t1": {
+        "from": { "side": "bottom", "offset": 15 },
+        "to": { "side": "top", "offset": 15 },
+        "label": { "x": 100, "y": 43, "w": 120 }
+      },
+      "t2": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 95, "y": 178, "w": 120 }
+      },
+      "t3": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 95, "y": 138, "w": 120 }
+      },
+      "t4": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 95, "y": 138, "w": 120 }
+      },
+      "t5": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 95, "y": 138, "w": 120 }
+      },
+      "t6": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 95, "y": 1028, "w": 120 }
+      },
+      "t7": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 95, "y": 1278, "w": 120 }
+      },
+      "t8": {
+        "from": { "side": "top", "offset": 37 },
+        "to": { "side": "bottom", "offset": 15 },
+        "label": { "x": 681, "y": 118, "w": 120 }
+      },
+      "t9": {
+        "from": { "side": "bottom", "offset": 37 },
+        "to": { "side": "top", "offset": 59 },
+        "label": { "x": 703, "y": 118, "w": 120 }
+      },
+      "t10": {
+        "from": { "side": "bottom", "offset": 59 },
+        "to": { "side": "top", "offset": 15 },
+        "label": { "x": 992, "y": 458, "w": 120 }
+      },
+      "t11": {
+        "from": { "side": "bottom", "offset": 15 },
+        "to": { "side": "top", "offset": 15 },
+        "label": { "x": 665, "y": 1108, "w": 120 }
+      }
+    }
+  }
+}

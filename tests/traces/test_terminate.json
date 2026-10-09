@@ -1,0 +1,32 @@
+{
+  "model": "../models/test_terminate.ufsm",
+  "doc": "A transition to a terminate pseudo-state exits its exit set, runs its actions and enters nothing; at the end of that microstep the machine stops without further exit actions and drops queued signals.",
+  "steps": [
+    { "reset": true, "expect": ["eA"] },
+    { "send": "go", "expect": ["xA", "eP", "eB", "eX"] },
+    {
+      "send": "quit",
+      "expect": ["xB", "aQuit"],
+      "inactive": ["A", "P", "B", "C", "X", "X2"],
+      "doc": "The signal s1 emitted on the way is dropped (X -s1-> X2 must not fire); X and P are not exited."
+    },
+    { "send": "go", "expect": [], "inactive": ["A", "P"], "doc": "Events are ignored until reset()." },
+    { "reset": true, "expect": ["eA"], "active": ["A"] },
+    {
+      "send": "deep",
+      "expect": ["xA"],
+      "inactive": ["A", "P", "B"],
+      "doc": "The terminate vertex lies inside P, but P is not entered."
+    },
+    { "reset": true, "expect": ["eA"] },
+    { "send": "go", "expect": ["xA", "eP", "eB", "eX"] },
+    {
+      "send": "both",
+      "expect": ["xX", "xB", "eC"],
+      "inactive": ["P", "B", "C", "X"],
+      "doc": "B -both-> C and X -both-> T2 fire in one microstep; C is entered, then the machine stops."
+    },
+    { "send": "go", "expect": [] },
+    { "reset": true, "expect": ["eA"], "active": ["A"] }
+  ]
+}

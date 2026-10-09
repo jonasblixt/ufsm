@@ -1,0 +1,82 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "New model",
+  "declarations": {
+    "events": [{ "id": "ev1", "name": "eSomeEvent" }, { "id": "ev2", "name": "eToggle" }],
+    "signals": [],
+    "actions": [{ "id": "act1", "name": "action1" }, { "id": "act2", "name": "action2" }],
+    "guards": [{ "id": "grd1", "name": "guard1" }]
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        {
+          "id": "s1",
+          "kind": "state",
+          "name": "Transition demo",
+          "regions": [
+            {
+              "id": "r1",
+              "name": "New region",
+              "states": [
+                { "id": "s2", "kind": "state", "name": "A" },
+                { "id": "s3", "kind": "state", "name": "B" }
+              ]
+            },
+            {
+              "id": "r2",
+              "name": "New region",
+              "states": [
+                { "id": "s4", "kind": "state", "name": "C" },
+                { "id": "s5", "kind": "state", "name": "D" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "transitions": [
+      {
+        "id": "t1",
+        "from": "s2",
+        "to": "s3",
+        "on": "ev1",
+        "guard": [{ "call": "grd1" }, { "in": "s5" }],
+        "do": [{ "call": "act1" }, { "call": "act2" }]
+      },
+      { "id": "t2", "from": "s4", "to": "s5", "on": "ev2" },
+      { "id": "t3", "from": "s5", "to": "s4", "on": "ev2" }
+    ]
+  },
+  "diagram": {
+    "paper": "A4",
+    "states": {
+      "s1": { "x": 450, "y": 140, "w": 1130, "h": 460 },
+      "s2": { "x": 70, "y": 60, "w": 230, "h": 150 },
+      "s3": { "x": 780, "y": 60, "w": 230, "h": 150 },
+      "s4": { "x": 70, "y": 280, "w": 230, "h": 150 },
+      "s5": { "x": 780, "y": 280, "w": 230, "h": 150 }
+    },
+    "regions": { "r1": { "h": 220 }, "r2": { "h": 200 } },
+    "transitions": {
+      "t1": {
+        "from": { "side": "right", "offset": 70 },
+        "to": { "side": "left", "offset": 70 },
+        "label": { "x": 330, "y": 70, "w": 410 }
+      },
+      "t2": {
+        "from": { "side": "right", "offset": 40 },
+        "to": { "side": "left", "offset": 40 },
+        "label": { "x": 480, "y": 270, "w": 100 }
+      },
+      "t3": {
+        "from": { "side": "left", "offset": 120 },
+        "to": { "side": "right", "offset": 120 },
+        "label": { "x": 480, "y": 350, "w": 100 }
+      }
+    }
+  }
+}

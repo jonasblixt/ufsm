@@ -1,0 +1,44 @@
+{
+  "model": "../models/test_external_transitions.ufsm",
+  "doc": "Every transition is external: a self-transition, a transition from a composite to its own substate and one from a substate to its ancestor all leave and re-enter the state they start or end in.",
+  "steps": [
+    { "reset": true, "expect": ["eIdle"], "active": ["Idle"], "inactive": ["P"] },
+    { "send": "self", "expect": ["xIdle", "eIdle"], "doc": "Simple self-transition: exit and re-enter." },
+    { "send": "go", "expect": ["xIdle", "eP", "eC"] },
+    { "send": "selfC", "expect": ["xC", "eC"], "active": ["P", "C"], "doc": "Nested self-transition: P stays." },
+    {
+      "send": "selfP",
+      "expect": ["xC", "xP", "aP", "eP", "eC"],
+      "doc": "Composite self-transition: children exit first, then P; P is re-entered by default."
+    },
+    {
+      "send": "down",
+      "expect": ["xC", "xP", "eP", "eD", "eD2"],
+      "active": ["D2"],
+      "inactive": ["C", "D1"],
+      "doc": "P to its own grandchild D2: P is left and re-entered; the regions on the way to D2 are not entered by default."
+    },
+    { "send": "upD", "expect": [], "doc": "Only D1 handles upD." },
+    {
+      "send": "up",
+      "expect": ["xD2", "xD", "xP", "eP", "eC"],
+      "active": ["C"],
+      "inactive": ["D"],
+      "doc": "D2 to its ancestor P: everything up to and including P is left, P is re-entered by default."
+    },
+    { "send": "toD", "expect": ["xC", "eD", "eD1"] },
+    {
+      "send": "upD",
+      "expect": ["xD1", "xD", "eD", "eD1"],
+      "active": ["P", "D1"],
+      "doc": "D1 to its parent D: D is left and re-entered, P stays."
+    },
+    {
+      "send": "out",
+      "expect": ["xD1", "xD", "xP", "eIdle"],
+      "active": ["Idle"],
+      "inactive": ["P", "D", "D1"],
+      "doc": "Exits two levels at once, innermost first."
+    }
+  ]
+}

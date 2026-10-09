@@ -1,0 +1,25 @@
+{
+  "model": "../models/test_init_fork.ufsm",
+  "doc": "Region initializers whose initial transition leads into a fork: the root region's (into the regions of P) and a nested one (Q's region, into the regions of R). The initializer's actions are the initial transition's do followed by the fork's outgoing ones, and run when the region is reached.",
+  "steps": [
+    {
+      "reset": true,
+      "expect": ["i0", "f1", "f2", "eP", "eA2", "eB2", "iC", "eC1"],
+      "active": ["A2", "B2", "C1"],
+      "inactive": ["A1", "B1", "Idle"],
+      "doc": "P's first two regions are entered by the fork, so their own initializers (iA, iB) do not run; the third is entered by default."
+    },
+    { "send": "leave", "expect": ["xC1", "xB2", "xA2", "xP", "eIdle"] },
+    { "send": "goP", "expect": ["xIdle", "eP", "iA", "eA1", "iB", "eB1", "iC", "eC1"], "doc": "Entered from outside, P's regions all start by default." },
+    { "send": "leave", "expect": ["xC1", "xB1", "xA1", "xP", "eIdle"] },
+    {
+      "send": "goQ",
+      "expect": ["xIdle", "eQ", "iQ", "g1", "eR", "eR2", "eS2"],
+      "active": ["R2", "S2"],
+      "inactive": ["R1", "S1"],
+      "doc": "Q's region is entered by default through a fork: iQ and g1 run after Q's entry, before R."
+    },
+    { "send": "leave", "expect": ["xS2", "xR2", "xR", "xQ", "eIdle"] },
+    { "reset": true, "expect": ["i0", "f1", "f2", "eP", "eA2", "eB2", "iC", "eC1"], "inactive": ["Idle", "Q"] }
+  ]
+}

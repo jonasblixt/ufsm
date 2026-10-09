@@ -1,0 +1,12 @@
+{
+  "model": "../models/test_fork_join.ufsm",
+  "doc": "From old/tests/C/test_fork_join.c.",
+  "steps": [
+    { "reset": true, "expect": ["eStart"] },
+    { "send": "eEvent2", "expect": [] },
+    { "send": "eBegin", "expect": ["xStart", "eB", "eB1", "eB2"] },
+    { "send": "eEvent2", "expect": [], "doc": "The join needs B11 and B2; B1 is still active." },
+    { "send": "eEvent", "expect": ["xB1", "eB11"] },
+    { "send": "eEvent2", "expect": ["xB2", "xB11", "xB", "eEnd"], "active": ["End"] }
+  ]
+}

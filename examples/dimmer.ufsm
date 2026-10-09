@@ -1,0 +1,112 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "dimmer",
+  "declarations": {
+    "events": [{ "id": "ev1", "name": "eButton" }, { "id": "ev2", "name": "eOffButton" }],
+    "signals": [],
+    "actions": [
+      { "id": "act1", "name": "lamp_off" },
+      { "id": "act2", "name": "lamp_10_percent" },
+      { "id": "act3", "name": "lamp_30_percent" },
+      { "id": "act4", "name": "lamp_50_percent" },
+      { "id": "act5", "name": "lamp_100_percent" }
+    ],
+    "guards": []
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        { "id": "s1", "kind": "state", "name": "Off", "entry": [{ "call": "act1" }] },
+        { "id": "s2", "kind": "initial" },
+        {
+          "id": "s3",
+          "kind": "state",
+          "name": "On",
+          "regions": [
+            {
+              "id": "r1",
+              "name": "New region",
+              "states": [
+                { "id": "s4", "kind": "state", "name": "10%", "entry": [{ "call": "act2" }] },
+                { "id": "s5", "kind": "shallow-history" },
+                { "id": "s6", "kind": "state", "name": "30%", "entry": [{ "call": "act3" }] },
+                { "id": "s7", "kind": "state", "name": "50%", "entry": [{ "call": "act4" }] },
+                { "id": "s8", "kind": "state", "name": "100%", "entry": [{ "call": "act5" }] }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s1", "to": "s3", "on": "ev1" },
+      { "id": "t2", "from": "s2", "to": "s1" },
+      { "id": "t3", "from": "s3", "to": "s1", "on": "ev2" },
+      { "id": "t4", "from": "s4", "to": "s6", "on": "ev1" },
+      { "id": "t5", "from": "s5", "to": "s4" },
+      { "id": "t6", "from": "s6", "to": "s7", "on": "ev1" },
+      { "id": "t7", "from": "s7", "to": "s8", "on": "ev1" },
+      { "id": "t8", "from": "s8", "to": "s1", "on": "ev1" }
+    ]
+  },
+  "diagram": {
+    "paper": "A3",
+    "states": {
+      "s1": { "x": 340, "y": 370, "w": 290, "h": 220 },
+      "s2": { "x": 480, "y": 280, "w": 20, "h": 20 },
+      "s3": { "x": 900, "y": 370, "w": 420, "h": 970 },
+      "s4": { "x": 110, "y": 120, "w": 200, "h": 120 },
+      "s5": { "x": 200, "y": 60, "w": 20, "h": 20 },
+      "s6": { "x": 110, "y": 320, "w": 200, "h": 120 },
+      "s7": { "x": 110, "y": 510, "w": 200, "h": 120 },
+      "s8": { "x": 110, "y": 710, "w": 200, "h": 120 }
+    },
+    "regions": { "r1": { "h": 940 } },
+    "transitions": {
+      "t1": {
+        "from": { "side": "right", "offset": 70 },
+        "to": { "side": "left", "offset": 70 },
+        "label": { "x": 710, "y": 390, "w": 100 }
+      },
+      "t2": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 150 },
+        "label": { "x": 510, "y": 290, "w": 100 }
+      },
+      "t3": {
+        "from": { "side": "left", "offset": 190 },
+        "to": { "side": "right", "offset": 190 },
+        "label": { "x": 700, "y": 510, "w": 100 }
+      },
+      "t4": {
+        "from": { "side": "bottom", "offset": 100 },
+        "to": { "side": "top", "offset": 100 },
+        "label": { "x": 230, "y": 250, "w": 100 }
+      },
+      "t5": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 100 },
+        "label": { "x": 230, "y": 60, "w": 100 }
+      },
+      "t6": {
+        "from": { "side": "bottom", "offset": 100 },
+        "to": { "side": "top", "offset": 100 },
+        "label": { "x": 230, "y": 440, "w": 100 }
+      },
+      "t7": {
+        "from": { "side": "bottom", "offset": 100 },
+        "to": { "side": "top", "offset": 100 },
+        "label": { "x": 230, "y": 630, "w": 100 }
+      },
+      "t8": {
+        "from": { "side": "left", "offset": 70 },
+        "to": { "side": "bottom", "offset": 140 },
+        "via": [[480, 1150]],
+        "label": { "x": 610, "y": 1090, "w": 100 }
+      }
+    }
+  }
+}

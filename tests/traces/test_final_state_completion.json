@@ -1,0 +1,14 @@
+{
+  "model": "../models/test_final_state_completion.ufsm",
+  "doc": "No old C test. A -> B is a completion transition: it fires once both of A's regions rest in their final states, in whichever order they get there. The v0 draft used an event named 'completion-event' without a trigger-kind (B9); the committed model was fixed by hand to `completion: true`.",
+  "steps": [
+    { "reset": true, "expect": ["eA"], "active": ["A1", "A2"] },
+    { "send": "e1", "expect": [], "active": ["s4", "A2"], "inactive": ["B"], "doc": "Only Ar1 final: A is not complete." },
+    { "send": "e1", "expect": [], "active": ["s4", "A2"], "doc": "A final state handles nothing." },
+    { "send": "e2", "expect": ["xA", "eB"], "active": ["B"], "inactive": ["A", "s4", "s7"], "doc": "Both regions final: completion fires in the settle phase." },
+    { "send": "e1", "expect": [], "active": ["B"] },
+    { "reset": true, "expect": ["eA"] },
+    { "send": "e2", "expect": [], "active": ["A1", "s7"], "inactive": ["B"], "doc": "Other order: only Ar2 final." },
+    { "send": "e1", "expect": ["xA", "eB"], "active": ["B"], "inactive": ["A"] }
+  ]
+}

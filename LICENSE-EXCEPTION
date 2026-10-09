@@ -1,0 +1,27 @@
+uFSM output exception
+
+uFSM is free software: you can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version (see LICENSE). The following additional permission applies.
+
+As a special exception, the copyright holders of uFSM give you unlimited
+permission to copy, distribute, modify and use, under terms of your choice,
+the output of uFSM's code generators: the files written by `ufsm generate`,
+by the uFSM editor or by calling the generator functions of @ufsm/core (for
+example C, Python and TypeScript source code), including the parts of
+uFSM's own source code that the generators copy or adapt into that output.
+Such output is not covered by the GNU General Public License.
+
+Models (.ufsm files) and other input you give to uFSM remain yours; uFSM
+claims no rights in them or in what is generated from them.
+
+This exception does not apply to uFSM itself. uFSM's own source code,
+including the code generators, the editor and the libraries they are built
+from, and modified versions of it, remain under the GNU General Public
+License; in particular, a program that includes or links @ufsm/core (for
+example its interpreter) is covered by the GNU General Public License.
+
+If you modify uFSM, you may extend this exception to your version of uFSM,
+but you are not obliged to do so. If you do not wish to do so, delete this
+exception statement from your version.

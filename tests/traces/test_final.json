@@ -1,0 +1,10 @@
+{
+  "model": "../models/test_final.ufsm",
+  "doc": "From old/tests/C/test_final.c.",
+  "steps": [
+    { "reset": true, "expect": ["eA", "eA1", "eA2"] },
+    { "send": "e1", "expect": ["xA1"], "active": ["Final1", "A2"] },
+    { "send": "e1", "expect": [] },
+    { "send": "e2", "expect": ["xA2", "xA", "eB"], "active": ["B"] }
+  ]
+}

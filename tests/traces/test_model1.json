@@ -1,0 +1,42 @@
+{
+  "model": "../models/test_model1.ufsm",
+  "doc": "From old/tests/C/test_model1.c.",
+  "steps": [
+    { "reset": true, "expect": ["eA", "eC1", "eC11"] },
+    { "send": "e4", "expect": ["xC11", "xC1", "eC2"] },
+    {
+      "send": "e2",
+      "expect": ["xC2", "xA", "eB", "eD1", "eD12", "eE1", "eE11"],
+      "doc": "Fork into both regions of B. Entry in document order; v0.5 entered by depth: eB eD1 eE1 eE11 eD12."
+    },
+    { "send": "e1", "expect": [], "doc": "Guard !in(E11) fails." },
+    { "send": "e7", "expect": ["xE11", "eE12"] },
+    {
+      "send": "e1",
+      "expect": [
+        "xE12", "xE1", "xD12", "xD1", "xB", "o1", "eA", "eC1", "eC11",
+        "xC11", "xC1", "xA", "o2", "eB", "eD1", "eD11", "eE1", "eE11"
+      ],
+      "active": ["D1", "D11", "E1", "E11"],
+      "doc": "D1 -> C11 emits s1, which takes A -> B; B's first region resumes D1 through shallow history. Exit in reverse document order and entry in document order; v0.5 sorted by depth: xE12 xD12 xE1 xD1 xB ... eB eD1 eE1 eE11 eD11."
+    },
+    {
+      "send": "e6",
+      "expect": ["xD11", "eD12"],
+      "doc": "Added for coverage (2026-10-09), not in the old C test: the remaining transitions of B and A."
+    },
+    { "send": "e6", "expect": ["xD12", "eD11"] },
+    { "send": "e5", "expect": ["xD11", "xD1", "eD2"], "active": ["D2", "E11"] },
+    { "send": "e7", "expect": ["xE11", "eE12"] },
+    { "send": "e7", "expect": ["xE12", "eE11"] },
+    { "send": "e5", "expect": ["xD2", "eD1", "eD11"], "doc": "D1's region starts at D11 again." },
+    { "send": "e1", "expect": [], "doc": "Guard in(D12) fails." },
+    { "reset": true, "expect": ["eA", "eC1", "eC11"] },
+    { "send": "e5", "expect": [], "inactive": ["B"] },
+    { "send": "e3", "expect": ["xC11", "eC12"] },
+    { "send": "e3", "expect": ["xC12", "eC11"] },
+    { "send": "e3", "expect": ["xC11", "eC12"] },
+    { "send": "e4", "expect": ["xC12", "xC1", "eC2"] },
+    { "send": "e4", "expect": ["xC2", "eC1", "eC11"], "active": ["C11"] }
+  ]
+}
