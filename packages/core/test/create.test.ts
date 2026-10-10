@@ -260,6 +260,26 @@ describe("structure edits: adding", () => {
     roundTrips(doc);
   });
 
+  it("attach the ends where the source and the target were clicked", () => {
+    const doc = testDoc();
+    const pts = (id: string): Point[] => edgeGeometry(indexV1(doc), id)!.points;
+    // s3 is (120, 150) 100 x 60, s6 starts at (300, 150)
+    const s = addTransition(doc, "s3", "s6", { fromAt: { x: 143, y: 214 }, toAt: { x: 302, y: 187 } });
+    assert.deepEqual(doc.diagram!.transitions[s], {
+      route: "s",
+      from: { side: "bottom", offset: 20 },
+      to: { side: "left", offset: 40 },
+    }, "S: both ends pinned on the side nearest the click, snapped along it");
+    const straight = addTransition(doc, "s3", "s6", { route: "straight", fromAt: { x: 215, y: 160 }, toAt: { x: 350, y: 152 } });
+    assert.deepEqual(pts(straight), [{ x: 220, y: 160 }, { x: 350, y: 150 }], "straight: one line between the clicked ends");
+    const bent = addTransition(doc, "s3", "s6", { route: "straight", via: [{ x: 172, y: 248 }], fromAt: { x: 125, y: 200 }, toAt: { x: 302, y: 187 } });
+    assert.deepEqual([free(doc, bent).from, free(doc, bent).to], [{ side: "left", offset: 50 }, { side: "left", offset: 40 }], "the clicks win over the bend points");
+    const self = addTransition(doc, "s5", "s5", { route: "straight", fromAt: { x: 0, y: 0 }, toAt: { x: 0, y: 0 } });
+    assert.deepEqual(free(doc, self).via, [[850, 120], [850, 70], [800, 70]], "a self-transition keeps its loop");
+    assert.deepEqual(broken(doc), []);
+    roundTrips(doc);
+  });
+
   it("add a straight transition: one line along the line between the centres, ends on the grid", () => {
     const doc = testDoc();
     const pts = (id: string): Point[] => edgeGeometry(indexV1(doc), id)!.points;

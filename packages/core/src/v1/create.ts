@@ -11,7 +11,7 @@
  * still reports everything else (a transition without a trigger, a region without an initial state, ...).
  */
 import { ancestors, commonRegion, indexV1, type DocIndex } from "./doc-index";
-import { followTransitions, nearestEnd, regionLayoutOf, diagramOf, snap, MIN_BAR, MIN_STATE } from "./edit";
+import { endAt, followTransitions, nearestEnd,regionLayoutOf, diagramOf, snap, MIN_BAR, MIN_STATE } from "./edit";
 import { HEADER_H, actionBlockHeight, isOffPage, isSheet, regionBoxes, regionOrigin, stateLayout, vertexBox, edgeGeometry, edgeOrigin, type Box, type Point } from "./geometry";
 import { IdAllocator, ID_PREFIX } from "./ids";
 import { GRID, type EdgeEnd, type EdgeLayout, type GuardTerm, type Id, type Region, type State, type StateLayout, type Transition, type UfsmDocument, type Vertex } from "./model";
@@ -261,10 +261,17 @@ export type NewRoute = "s" | "straight";
  * Add a transition without trigger. Without `via` it is an S route with automatic ends (`route` "s", the default), or
  * with `route` "straight" a free route: one straight line between the boxes, along the line between their centres
  * (a self-transition gets a small free loop around the top-right corner). With bend points (absolute, snapped) it is
- * a free route whose ends attach where the first and last bend point are nearest. Every stored position is on the
- * grid. Returns its id. Check cannotConnect first.
+ * a free route whose ends attach where the first and last bend point are nearest. `fromAt`/`toAt` (absolute, where
+ * the user clicked the source and the target) attach those ends as close to the point as possible instead (pinned on
+ * an S route); self-transitions ignore them. Every stored position is on the grid. Returns its id. Check
+ * cannotConnect first.
  */
-export function addTransition(doc: UfsmDocument, from: Id, to: Id, opts: AddOptions & { via?: Point[]; route?: NewRoute } = {}): Id {
+export function addTransition(
+  doc: UfsmDocument,
+  from: Id,
+  to: Id,
+  opts: AddOptions & { via?: Point[]; route?: NewRoute; fromAt?: Point; toAt?: Point } = {},
+): Id {
   const index = indexV1(doc);
   const a = index.vertices.get(from)?.vertex, b = index.vertices.get(to)?.vertex;
   if (!a || !b) throw new Error(`unknown vertex ${a ? to : from}`);
@@ -285,6 +292,10 @@ export function addTransition(doc: UfsmDocument, from: Id, to: Id, opts: AddOpti
       to: nearestEnd(vertexBox(index, to), via[via.length - 1]!, isRoundKind(b.kind)),
       via: via.map((p): [number, number] => [Math.round(p.x - o.x), Math.round(p.y - o.y)]),
     };
+  }
+  if (from !== to) {
+    if (opts.fromAt) layout.from = endAt(index, from, opts.fromAt);
+    if (opts.toAt) layout.to = endAt(index, to, opts.toAt);
   }
   const t: Transition = { id, from, to };
   doc.machine.transitions.push(t);

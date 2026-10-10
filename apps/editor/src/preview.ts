@@ -27,10 +27,14 @@ export function drawGhost(ctx: CanvasRenderingContext2D, b: Box, round: boolean,
   outline(ctx, b, round, scale, C.selection, true);
 }
 
-/** The transition being drawn: source outlined, dashed line through the bend points to the pointer, target outlined. */
+/**
+ * The transition being drawn: source outlined, dashed line from `start` (on the source's outline) through the bend
+ * points to the pointer, target outlined.
+ */
 export function drawLink(
   ctx: CanvasRenderingContext2D,
   source: Box,
+  start: Point,
   bends: readonly Point[],
   to: Point,
   target: { box: Box; ok: boolean } | undefined,
@@ -38,7 +42,7 @@ export function drawLink(
 ): void {
   outline(ctx, source, false, scale, C.selection, false);
   if (target) outline(ctx, target.box, false, scale, target.ok ? C.ok : C.refuse, false);
-  const pts = [{ x: source.x + source.w / 2, y: source.y + source.h / 2 }, ...bends, to];
+  const pts = [start, ...bends, to];
   ctx.save();
   ctx.strokeStyle = C.selection;
   ctx.fillStyle = C.selection;

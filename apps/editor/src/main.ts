@@ -13,7 +13,9 @@ import {
   setOffPage,
   addTransition,
   addVertex,
+  attachPoint,
   autoSides,
+  endAt,
   cannotAdd,
   cannotConnect,
   checkV1,
@@ -51,6 +53,7 @@ import {
   vertexBox,
   type Diagnostic,
   type DocIndex,
+  type EdgeEnd,
   type Box,
   type CodeTarget,
   type EdgeTargets,
@@ -309,8 +312,8 @@ let horizontal = false;
 let ghost: { kind: ToolId; box: Box } | undefined;
 /** A vertex being placed (the press went down; the vertex is previewed in the document). */
 let placing: { kind: VertexKind | "region"; p0: Point; region: string; error: string | undefined; created: string | undefined } | undefined;
-/** A transition being drawn: its source, the bend points so far and the pointer. */
-let link: { source: string; bends: Point[]; to: Point } | undefined;
+/** A transition being drawn: its source and where it was clicked, the bend points so far and the pointer. */
+let link: { source: string; from: Point; bends: Point[]; to: Point } | undefined;
 /** Copied fragment and the machine it came from (state references outside it are kept only when pasting there). */
 let clipboard: { frag: Fragment; key: number } | undefined;
 /** A message for the status line that stays until the next key or button press. */
@@ -1597,23 +1600,29 @@ function drawOverlay(c: CanvasRenderingContext2D, scale: number): void {
     const target = v && { box: vertexBox(doc.index, v.id), ok };
     const source = vertexBox(doc.index, link.source);
     // Over a valid target: the route the click would draw, exactly. Elsewhere: an S towards the pointer, or the
-    // straight line through the bend points so far.
-    const route = ok ? linkRoute(doc, link.source, v.id, link.bends) : undefined;
+    // straight line through the bend points so far, both from the source end nearest to where it was clicked.
+    const route = ok ? linkRoute(doc, link.source, link.from, v.id, link.to, link.bends) : undefined;
+    const start = endAt(doc.index, link.source, link.from);
     if (route) drawLinkRoute(c, source, route, target, scale);
-    else if (tool === "transition") drawLinkRoute(c, source, sRouteTowards(source, link.to), target, scale);
-    else drawLink(c, source, link.bends, link.to, target, scale);
+    else if (tool === "transition") drawLinkRoute(c, source, sRouteTowards(doc.index, link.source, start, link.to), target, scale);
+    else drawLink(c, source, attachPoint(doc.index, link.source, start), link.bends, link.to, target, scale);
   } else if (ghost) drawGhost(c, ghost.box, isVertexTool(ghost.kind) && isRoundKind(ghost.kind), scale);
 }
 
 /** The route a click on `target` would give the transition being drawn (computed on a copy; cached per target). */
 let linkRouteCache: { key: string; index: DocIndex; points: Point[] | undefined } | undefined;
-function linkRoute(d: Doc, source: string, target: string, bends: readonly Point[]): Point[] | undefined {
-  const key = `${tool} ${source} ${target} ${bends.map((p) => `${p.x},${p.y}`).join(" ")}`;
+function linkRoute(d: Doc, source: string, from: Point, target: string, to: Point, bends: readonly Point[]): Point[] | undefined {
+  // the ends the click would get, not the raw points: the route only changes when one of them does
+  const end = (vid: string, p: Point): string => {
+    const e = endAt(d.index, vid, p);
+    return `${e.side}:${e.offset}`;
+  };
+  const key = `${tool} ${source} ${end(source, from)} ${target} ${end(target, to)} ${bends.map((p) => `${p.x},${p.y}`).join(" ")}`;
   if (linkRouteCache?.key === key && linkRouteCache.index === d.index) return linkRouteCache.points;
   const copy = structuredClone(d.history.current) as UfsmDocument;
   let points: Point[] | undefined;
   try {
-    const id = addTransition(copy, source, target, { via: [...bends], route: tool === "straight" ? "straight" : "s" });
+    const id = addTransition(copy, source, target, { via: [...bends], route: tool === "straight" ? "straight" : "s", fromAt: from, toAt: to });
     points = edgeGeometry(indexV1(copy), id)?.points;
   } catch {
     points = undefined;
@@ -1622,15 +1631,13 @@ function linkRoute(d: Doc, source: string, target: string, bends: readonly Point
   return points;
 }
 
-/** An S route from the side of `source` facing point `p` to `p` (the preview before a target is under the pointer). */
-function sRouteTowards(source: Box, p: Point): Point[] {
-  const inside = p.x > source.x && p.x < source.x + source.w && p.y > source.y && p.y < source.y + source.h;
+/** An S route from end `start` of `source` to point `p` (the preview before a target is under the pointer). */
+function sRouteTowards(index: DocIndex, source: string, start: EdgeEnd, p: Point): Point[] {
+  const b = vertexBox(index, source);
+  const inside = p.x > b.x && p.x < b.x + b.w && p.y > b.y && p.y < b.y + b.h;
   if (inside) return [];
-  const [side, into] = autoSides(source, { x: p.x, y: p.y, w: 0, h: 0 });
-  const mid = side === "left" || side === "right" ? source.y + source.h / 2 : source.x + source.w / 2;
-  const at = Math.round(mid / 10) * 10;
-  const start = side === "left" ? { x: source.x, y: at } : side === "right" ? { x: source.x + source.w, y: at } : side === "top" ? { x: at, y: source.y } : { x: at, y: source.y + source.h };
-  return sRoute(start, side, p, into).points;
+  const [, into] = autoSides(b, { x: p.x, y: p.y, w: 0, h: 0 });
+  return sRoute(attachPoint(index, source, start), start.side, p, into).points;
 }
 
 interface Drag {
@@ -1979,7 +1986,8 @@ api = attachInput(
     linkStart: () => {
       const v = vertexAt(worldAt(input.x, input.y));
       if (!v) return;
-      link = { source: v.id, bends: [], to: worldAt(input.x, input.y) };
+      const p = worldAt(input.x, input.y);
+      link = { source: v.id, from: p, bends: [], to: p };
       updateChrome();
       requestDraw();
     },
@@ -2011,10 +2019,12 @@ api = attachInput(
     linkFinish: () => {
       const l = link;
       link = undefined;
-      const v = vertexAt(worldAt(input.x, input.y));
+      const p = worldAt(input.x, input.y);
+      const v = vertexAt(p);
       if (!doc || !l || !v) return;
       let id = "";
-      edit((d) => void (id = addTransition(d, l.source, v.id, { via: l.bends, route: tool === "straight" ? "straight" : "s" })));
+      const route = tool === "straight" ? "straight" : "s";
+      edit((d) => void (id = addTransition(d, l.source, v.id, { via: l.bends, route, fromAt: l.from, toAt: p })));
       if (id) select([id]);
     },
     linkCancel: () => {

@@ -68,7 +68,7 @@ The editor exposes `window.ufsm` for automation: `load(text, name)`, `newModel()
 `simGuard(name, true|false)`, `sim()` (steps, active, fired, last calls, hovered event and its transitions, trace text),
 `simError()` (all act on the active tab; `load` opens a new one). `apps/editor/test/browser/check.mjs` bundles
 `apps/editor/src/main.ts` with esbuild (stubbing `@tauri-apps/*`), serves it and drives
-it with Playwright (345 checks; the page emulates a dark OS, mostly on `test/browser/edit.ufsm`: select, drag, resize,
+it with Playwright (346 checks; the page emulates a dark OS, mostly on `test/browser/edit.ufsm`: select, drag, resize,
 separators, transition handles, labels, undo/redo, pan/zoom, then menus, search field,
 panel keys, Properties/Project, sash, several machines in tabs, File › New, adding/deleting (tools,
 transitions, regions, bend points, Delete, copy/cut/paste) and properties (e/a keys, pickers,

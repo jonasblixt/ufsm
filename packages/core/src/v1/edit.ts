@@ -325,6 +325,12 @@ export function nearestEnd(b: Box, p: Point, centred = false): EdgeEnd {
 
 const ROUND = new Set(["initial", "final", "shallow-history", "deep-history", "terminate"]);
 
+/** The end on vertex `vertexId` nearest to point `p` (see nearestEnd; round pseudo states attach at the middle). */
+export function endAt(index: DocIndex, vertexId: Id, p: Point): EdgeEnd {
+  const kind = index.vertices.get(vertexId)?.vertex.kind;
+  return nearestEnd(vertexBox(index, vertexId), p, kind !== undefined && ROUND.has(kind));
+}
+
 /** Attach one end of a transition where `p` is (see nearestEnd). On an S route this pins the end. */
 export function setEdgeEnd(doc: UfsmDocument, transitionId: Id, which: EdgeEndName, p: Point): void {
   const index = indexV1(doc);
@@ -332,9 +338,8 @@ export function setEdgeEnd(doc: UfsmDocument, transitionId: Id, which: EdgeEndNa
   const e = doc.diagram?.transitions[transitionId];
   if (!t || !e) return;
   const vid = t[which];
-  const v = index.vertices.get(vid)?.vertex;
-  if (!v) return;
-  const end = nearestEnd(vertexBox(index, vid), p, ROUND.has(v.kind));
+  if (!index.vertices.has(vid)) return;
+  const end = endAt(index, vid, p);
   const cur = e[which];
   if (cur && cur.side === end.side && cur.offset === end.offset) return;
   e[which] = end;

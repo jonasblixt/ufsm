@@ -451,3 +451,8 @@ Measured over the 21 valid legacy models (864 KB):
   dispatched on canvas, explorer, sidebar, title bar, panel, status bar and body; a Project text field keeps it; with the
   old canvas-only listener the first fails). Run on Windows for the first time (Playwright + esbuild in the scratchpad via
   UFSM_NODE_TOOLS): 345 passed; editor typecheck clean.
+- 2026-10-10: Transition ends at the clicks. `addTransition` takes `fromAt`/`toAt` (absolute points where the source and
+  target were clicked) and attaches each end on the nearest side, snapped along it (`endAt` in edit.ts, shared with
+  `setEdgeEnd`); S routes get both ends pinned, straight ones use them instead of the centre line or the first/last bend
+  point; self-transitions ignore them. The editor passes the clicks; the previews start from the clicked source end.
+  Core test + browser check (346 checks, all passing on Windows); editor typecheck clean.

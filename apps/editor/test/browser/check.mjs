@@ -549,6 +549,18 @@ tl = (await J()).machine.transitions;
   check("without bend points it is one straight line between the states, ends on the grid", t.from === "s5" && t.to === s1 && e.route === undefined && e.via === undefined && pts.length === 2 && pts.every((p) => p.x % 10 === 0 && p.y % 10 === 0) && (await U("tool")) === "select", JSON.stringify([e, pts]));
   await page.keyboard.press("Control+z"); // the copy/paste checks below expect the transitions from before
 }
+{
+  // click just inside an edge: the end goes on that side, as close to the click as the grid allows
+  const a = await U("box", "s3"), b = await U("box", "s6");
+  await page.keyboard.press("a"); await page.keyboard.press("t");
+  await page.mouse.click(...(await w2s(a.x + 31, a.y + a.h - 2)));
+  await page.mouse.move(...(await w2s(b.x + 2, b.y + 19)));
+  if (shots) await page.screenshot({ path: `${shots}/s-clicked-ends.png` });
+  await page.mouse.click(...(await w2s(b.x + 2, b.y + 19)));
+  const t = (await J()).machine.transitions.at(-1), e = (await J()).diagram.transitions[t.id], pts = (await U("route", t.id)).points;
+  check("the ends attach where the source and the target were clicked (S: pinned)", t.from === "s3" && t.to === "s6" && e.route === "s" && JSON.stringify([e.from, e.to]) === JSON.stringify([{ side: "bottom", offset: 30 }, { side: "left", offset: 20 }]) && pts[0].x === a.x + 30 && pts[0].y === a.y + a.h && pts.at(-1).x === b.x && pts.at(-1).y === b.y + 20, JSON.stringify([e, pts]));
+  await page.keyboard.press("Control+z");
+}
 await page.keyboard.press("a"); await page.keyboard.press("t");
 await page.mouse.click(...(await center("s5")));
 await page.mouse.move(...(await w2s(560, 590)));
