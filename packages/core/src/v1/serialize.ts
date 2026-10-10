@@ -223,6 +223,11 @@ function pretty(v: Json, indent: number, prefixLen: number, suffixLen = 0): stri
   return `{\n${lines.join(",\n")}\n${end}}`;
 }
 
+/** Any JSON value in the same layout as model files (2-space indent, short arrays and objects on one line). */
+export function formatJson(value: unknown): string {
+  return pretty(value as Json, 0, 0) + "\n";
+}
+
 /** Serialize a document to its canonical text form (UTF-8, LF, trailing newline). */
 export function serializeV1(doc: UfsmDocument): string {
   return pretty(toCanonicalJson(doc), 0, 0) + "\n";

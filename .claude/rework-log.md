@@ -466,3 +466,10 @@ Measured over the 21 valid legacy models (864 KB):
   path. No static fs scope: the dialog plugin adds each picked file, and a picked folder with its direct children, for
   the rest of the run; capabilities grant only `fs:allow-read-text-file`/`fs:allow-write-text-file`. Settings keep their
   two commands (fixed path, atomic write). Browser check stub gained the plugin's names (347 checks).
+- 2026-10-10: Format v1 has one schema source: `core/src/v1/schema.ts` (TypeBox 1.3) replaces the hand-written
+  structural reader (`parse.ts`: format/version pre-checks, `Value.Check`, then one error picked from `Value.Errors`:
+  errors from union members the value is not meant to be (by `kind`/`route`/which keys) are dropped, messages follow
+  ajv-errors' `errorMessage`); `ufsm schema [-o]` / `npm run gen:schema` writes `schema/ufsm-v1.schema.json`
+  (schema.test checks it is fresh, pins 15 error messages, and that Ajv reading the published file agrees with the
+  reader); compile-time check that each `model.ts` interface and its schema definition have the same fields and types.
+  Error messages unchanged except absent fields ("missing"). Tests: core 485 + 1 skip, editor 67, browser check 347.

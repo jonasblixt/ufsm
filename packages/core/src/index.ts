@@ -27,6 +27,7 @@ export { UFSM_VERSION } from "./version";
 export { UfsmFormatError } from "./errors";
 export * from "./v1/model";
 export * from "./v1/parse";
+export * from "./v1/schema";
 export * from "./v1/serialize";
 export * from "./v1/doc-index";
 export * from "./v1/geometry";

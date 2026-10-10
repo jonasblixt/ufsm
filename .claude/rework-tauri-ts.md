@@ -219,6 +219,8 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [ ] fs-plugin follow-ups: Jonas to try open, save, Save As, File › Generate into a folder and Save trace in `npm run dev`;
       reopening files by path in a later run (recent files, restoring open machines) needs `tauri-plugin-persisted-scope`
       or a static scope, since dialog grants last only until the app exits
+- [x] One schema source for format v1: TypeBox definitions in `core/src/v1/schema.ts` drive the reader and generate
+      `schema/ufsm-v1.schema.json`; `model.ts` checked against them at compile time (2026-10-10)
 - [ ] Later: `"auto"` route via libavoid-js (trial on canvas.ufsm first; LGPL-2.1+, compatible with uFSM's GPL-3; keep its
       licence notice and source link)
 
@@ -241,6 +243,11 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
   the converter output, so it is not changed).
 - Traces without `options.signalQueue` must never have more than 16 signals waiting (the C default).
 - CSP is `null` (fine for local use, revisit before release). File access is limited to dialog-picked paths (fs plugin).
+- The published schema no longer requires declaration names to be identifiers (it did, the reader never did); the design
+  rule check reports them (`bad-name`), so such a file still opens.
+- `@ufsm/core` depends on TypeBox at run time: about +140 kB minified (+38 kB gzipped) in the editor bundle.
+- A `model.ts`/schema mismatch shows as `Type 'true' is not assignable to type 'false'` at the definition's row of
+  `agree` in `v1/schema.ts`; compare the two definitions named there.
 - `icon.ico` uses PNG entries for all sizes (works on modern Windows). Regenerate the set from `icons/icon.svg`
   (`npx tauri icon apps/editor/src-tauri/icons/icon.svg` resizes one render; the committed small sizes are rendered per size).
 - Tree view lists normal states only (pseudo-states omitted on purpose).

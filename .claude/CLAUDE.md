@@ -31,8 +31,9 @@ known issues) is imported below. Read these only when needed:
 
 ```
 packages/core/          @ufsm/core: model, v0 reader, v1 format, checks, semantics, interpreter, IR, backends
-  src/v1/               current file format (model, parse, serialize, doc-index, geometry, route, labels, check, migrate,
-                        load) and edit.ts (layout edits the editor's drags make: move, resize, region split, ends, jog,
+  src/v1/               current file format (model, schema (TypeBox: the reader's definition, the JSON Schema is
+                        generated from it, model.ts is checked against it at compile time), parse, serialize, doc-index,
+                        geometry, route, labels, check, migrate, load) and edit.ts (layout edits the editor's drags make: move, resize, region split, ends, jog,
                         bend points, labels, S/free conversion; diagram-only, snapped, children kept inside, free routes
                         follow); structure edits: ids.ts (id allocation), create.ts (add vertex/region/transition with
                         validity checks, delete with cascade), clipboard.ts (copy/paste fragments); props.ts (property
@@ -49,13 +50,13 @@ packages/core/          @ufsm/core: model, v0 reader, v1 format, checks, semanti
                         ts.ts (one typed, erasable-syntax TypeScript module), rust.ts (one no_std Rust module, no heap,
                         rustfmt/clippy-clean); generate.ts (generateFiles: model + targets options -> files, the one entry
                         point for the CLI and the editor's code preview)
-  schema/               ufsm-v1.schema.json (JSON Schema draft-07)
+  schema/               ufsm-v1.schema.json (JSON Schema draft-07, generated: `npm run gen:schema`; a test checks it)
   test/                 node:test suites (run with tsx); harness.ts (scripts, differential runs), random-model.ts,
                         c-harness.ts (links many generated C machines into one driver, needs a C compiler),
                         py-harness.ts (runs many generated Python modules in one process, needs Python 3.8+),
                         ts-harness.ts (imports generated TypeScript into the test process),
                         rust-harness.ts (all machines as modules of one crate + one driver binary, needs rustc)
-packages/cli/           @ufsm/cli: `ufsm` command (info, check, list, migrate, fmt, run, trace, flatten, ir, generate)
+packages/cli/           @ufsm/cli: `ufsm` command (info, check, list, migrate, fmt, run, trace, flatten, ir, generate, schema)
 apps/editor/            @ufsm/editor: Vite + TypeScript frontend laid out after VS Code (canvas, explorer, tabs,
                         panels, simulator, code preview, themes, settings); file map in .claude/rules/editor.md
 apps/editor/src-tauri/  Rust shell: window, dialog and fs plugins (fs reaches only dialog-picked paths), read/write settings.json
@@ -90,6 +91,7 @@ old/                    v0.5.x C/GTK editor, Python generator, C tests (referenc
 | `npm run ufsm -- generate c <model> -o <dir>` | Generate `<name>.h`/`<name>.c` (`--prefix`, `--signal-queue`, `--max-microsteps`) |
 | `npm run ufsm -- generate python <model> -o <dir>` | Generate `<name>.py` (`--class-name`, `--signal-queue`, `--max-microsteps`) |
 | `npm run ufsm -- generate ts <model> -o <dir>` | Generate `<name>.ts` (`--class-name`, `--signal-queue`, `--max-microsteps`) |
+| `npm run gen:schema` | Regenerate `packages/core/schema/ufsm-v1.schema.json` from `src/v1/schema.ts` |
 | `npm run ufsm -- generate rust <model> -o <dir>` | Generate `<name>.rs` (`--class-name` names the struct, `--signal-queue`, `--max-microsteps`) |
 
 Toolchain: Node 24 LTS (>= 22.18), Rust stable (MSVC on Windows, needs VS

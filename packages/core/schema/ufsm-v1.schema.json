@@ -5,251 +5,321 @@
   "description": "Hierarchical state machine with declarations, semantics (machine) and layout (diagram). See docs/format-v1.md.",
   "type": "object",
   "required": ["format", "version", "name", "declarations", "machine"],
-  "additionalProperties": false,
   "properties": {
     "$schema": { "type": "string" },
-    "format": { "const": "ufsm" },
-    "version": { "const": 1 },
+    "format": { "type": "string", "const": "ufsm" },
+    "version": { "type": "number", "const": 1 },
     "name": { "type": "string" },
     "doc": { "type": "string" },
+    "declarations": { "$ref": "#/definitions/declarations" },
+    "machine": { "$ref": "#/definitions/machine" },
+    "diagram": { "$ref": "#/definitions/diagram" },
+    "targets": {
+      "description": "Per code generator options, keyed by target name (c, python, ts, rust, ...).",
+      "type": "object",
+      "additionalProperties": { "type": "object", "additionalProperties": {} }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_.-]*$",
+      "errorMessage": "invalid id '${0}'"
+    },
+    "flag": {
+      "type": "boolean",
+      "const": true,
+      "errorMessage": "expected true (omit the field for false)"
+    },
+    "decl": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "$ref": "#/definitions/id" },
+        "name": { "type": "string" },
+        "doc": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
     "declarations": {
       "type": "object",
       "required": ["events", "signals", "actions", "guards"],
-      "additionalProperties": false,
       "properties": {
         "events": { "type": "array", "items": { "$ref": "#/definitions/decl" } },
         "signals": { "type": "array", "items": { "$ref": "#/definitions/decl" } },
         "actions": { "type": "array", "items": { "$ref": "#/definitions/decl" } },
         "guards": { "type": "array", "items": { "$ref": "#/definitions/decl" } }
-      }
-    },
-    "machine": {
-      "type": "object",
-      "required": ["root", "transitions"],
-      "additionalProperties": false,
-      "properties": {
-        "root": { "$ref": "#/definitions/region" },
-        "transitions": { "type": "array", "items": { "$ref": "#/definitions/transition" } }
-      }
-    },
-    "diagram": { "$ref": "#/definitions/diagram" },
-    "targets": {
-      "description": "Per code generator options, keyed by target name (c, python, ts, rust, ...).",
-      "type": "object",
-      "additionalProperties": { "type": "object" }
-    }
-  },
-  "definitions": {
-    "id": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_.-]*$" },
-    "identifier": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
-    "number": { "type": "number" },
-    "decl": {
-      "type": "object",
-      "required": ["id", "name"],
-      "additionalProperties": false,
-      "properties": {
-        "id": { "$ref": "#/definitions/id" },
-        "name": { "$ref": "#/definitions/identifier" },
-        "doc": { "type": "string" }
-      }
+      },
+      "additionalProperties": false
     },
     "action": {
       "description": "Call an action function or emit a signal.",
-      "oneOf": [
+      "anyOf": [
         {
           "type": "object",
           "required": ["call"],
-          "additionalProperties": false,
-          "properties": { "call": { "$ref": "#/definitions/id" } }
+          "properties": { "call": { "$ref": "#/definitions/id" } },
+          "additionalProperties": false
         },
         {
           "type": "object",
           "required": ["emit"],
-          "additionalProperties": false,
-          "properties": { "emit": { "$ref": "#/definitions/id" } }
+          "properties": { "emit": { "$ref": "#/definitions/id" } },
+          "additionalProperties": false
         }
-      ]
+      ],
+      "errorMessage": "expected exactly one of 'call' or 'emit'"
     },
     "guardTerm": {
-      "oneOf": [
+      "anyOf": [
         {
           "description": "guard() is true, or false with not",
           "type": "object",
           "required": ["call"],
-          "additionalProperties": false,
-          "properties": { "call": { "$ref": "#/definitions/id" }, "not": { "const": true } }
+          "properties": {
+            "call": { "$ref": "#/definitions/id" },
+            "not": { "$ref": "#/definitions/flag" }
+          },
+          "additionalProperties": false
         },
         {
           "description": "state is active, or not active with not",
           "type": "object",
           "required": ["in"],
-          "additionalProperties": false,
-          "properties": { "in": { "$ref": "#/definitions/id" }, "not": { "const": true } }
+          "properties": {
+            "in": { "$ref": "#/definitions/id" },
+            "not": { "$ref": "#/definitions/flag" }
+          },
+          "additionalProperties": false
         }
-      ]
+      ],
+      "errorMessage": "expected exactly one of 'call' or 'in'"
     },
     "region": {
       "type": "object",
       "required": ["id", "states"],
-      "additionalProperties": false,
       "properties": {
         "id": { "$ref": "#/definitions/id" },
         "name": { "type": "string" },
         "states": { "type": "array", "items": { "$ref": "#/definitions/vertex" } }
-      }
+      },
+      "additionalProperties": false
     },
-    "vertex": {
-      "oneOf": [
-        {
-          "type": "object",
-          "required": ["id", "kind", "name"],
-          "additionalProperties": false,
-          "properties": {
-            "id": { "$ref": "#/definitions/id" },
-            "kind": { "const": "state" },
-            "name": { "type": "string" },
-            "doc": { "type": "string" },
-            "entry": { "type": "array", "items": { "$ref": "#/definitions/action" } },
-            "exit": { "type": "array", "items": { "$ref": "#/definitions/action" } },
-            "internal": { "type": "array", "items": { "$ref": "#/definitions/internalTransition" } },
-            "regions": { "type": "array", "items": { "$ref": "#/definitions/region" } }
-          }
+    "vertex": { "anyOf": [{ "$ref": "#/definitions/state" }, { "$ref": "#/definitions/pseudo" }] },
+    "state": {
+      "type": "object",
+      "required": ["id", "kind", "name"],
+      "properties": {
+        "id": { "$ref": "#/definitions/id" },
+        "kind": { "type": "string", "const": "state" },
+        "name": { "type": "string" },
+        "doc": { "type": "string" },
+        "entry": { "type": "array", "items": { "$ref": "#/definitions/action" } },
+        "exit": { "type": "array", "items": { "$ref": "#/definitions/action" } },
+        "internal": { "type": "array", "items": { "$ref": "#/definitions/internalTransition" } },
+        "regions": { "type": "array", "items": { "$ref": "#/definitions/region" } }
+      },
+      "additionalProperties": false
+    },
+    "pseudo": {
+      "type": "object",
+      "required": ["id", "kind"],
+      "properties": {
+        "id": { "$ref": "#/definitions/id" },
+        "kind": {
+          "enum": [
+            "initial",
+            "final",
+            "shallow-history",
+            "deep-history",
+            "fork",
+            "join",
+            "terminate"
+          ]
         },
-        {
-          "type": "object",
-          "required": ["id", "kind"],
-          "additionalProperties": false,
-          "properties": {
-            "id": { "$ref": "#/definitions/id" },
-            "kind": { "enum": ["initial", "final", "shallow-history", "deep-history", "fork", "join", "terminate"] },
-            "name": { "type": "string" }
-          }
-        }
-      ]
+        "name": { "type": "string" }
+      },
+      "additionalProperties": false
     },
     "internalTransition": {
       "type": "object",
       "required": ["id", "on"],
-      "additionalProperties": false,
       "properties": {
         "id": { "$ref": "#/definitions/id" },
         "on": { "$ref": "#/definitions/id" },
         "guard": { "type": "array", "items": { "$ref": "#/definitions/guardTerm" } },
         "do": { "type": "array", "items": { "$ref": "#/definitions/action" } },
         "doc": { "type": "string" }
-      }
+      },
+      "additionalProperties": false
     },
     "transition": {
       "type": "object",
       "required": ["id", "from", "to"],
-      "additionalProperties": false,
       "properties": {
         "id": { "$ref": "#/definitions/id" },
         "from": { "$ref": "#/definitions/id" },
         "to": { "$ref": "#/definitions/id" },
         "on": { "$ref": "#/definitions/id" },
-        "auto": { "const": true },
-        "completion": { "const": true },
+        "auto": { "$ref": "#/definitions/flag" },
+        "completion": { "$ref": "#/definitions/flag" },
         "guard": { "type": "array", "items": { "$ref": "#/definitions/guardTerm" } },
         "do": { "type": "array", "items": { "$ref": "#/definitions/action" } },
         "doc": { "type": "string" }
       },
+      "additionalProperties": false,
       "not": {
         "anyOf": [
           { "required": ["on", "auto"] },
           { "required": ["on", "completion"] },
           { "required": ["auto", "completion"] }
         ]
-      }
+      },
+      "errorMessage": { "not": "at most one of 'on', 'auto' and 'completion'" }
+    },
+    "machine": {
+      "type": "object",
+      "required": ["root", "transitions"],
+      "properties": {
+        "root": { "$ref": "#/definitions/region" },
+        "transitions": { "type": "array", "items": { "$ref": "#/definitions/transition" } }
+      },
+      "additionalProperties": false
+    },
+    "stateLayout": {
+      "type": "object",
+      "required": ["x", "y", "w", "h"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "w": { "type": "number" },
+        "h": { "type": "number" },
+        "orientation": { "enum": ["horizontal", "vertical"] }
+      },
+      "additionalProperties": false
+    },
+    "regionLayout": {
+      "type": "object",
+      "properties": { "h": { "type": "number" }, "offPage": { "$ref": "#/definitions/flag" } },
+      "additionalProperties": false
     },
     "edgeEnd": {
       "type": "object",
       "required": ["side", "offset"],
-      "additionalProperties": false,
       "properties": {
         "side": { "enum": ["left", "right", "top", "bottom"] },
         "offset": { "type": "number" }
-      }
+      },
+      "additionalProperties": false
+    },
+    "labelLayout": {
+      "type": "object",
+      "required": ["x", "y", "w"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "w": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "point": {
+      "type": "array",
+      "additionalItems": false,
+      "items": [{ "type": "number" }, { "type": "number" }],
+      "minItems": 2,
+      "errorMessage": "expected [x, y]"
+    },
+    "jog": {
+      "description": "Position of the movable segment: x for a vertical segment, y for a horizontal one.",
+      "anyOf": [
+        {
+          "type": "object",
+          "required": ["x"],
+          "properties": { "x": { "type": "number" } },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["y"],
+          "properties": { "y": { "type": "number" } },
+          "additionalProperties": false
+        }
+      ],
+      "errorMessage": "expected exactly one of x or y"
+    },
+    "freeEdgeLayout": {
+      "description": "Stored polyline: from, via (bend points), to.",
+      "type": "object",
+      "required": ["from", "to"],
+      "properties": {
+        "route": { "type": "string", "const": "free" },
+        "from": { "$ref": "#/definitions/edgeEnd" },
+        "to": { "$ref": "#/definitions/edgeEnd" },
+        "via": { "type": "array", "items": { "$ref": "#/definitions/point" } },
+        "jog": { "not": {}, "errorMessage": "a jog belongs to S routes" },
+        "label": { "$ref": "#/definitions/labelLayout" }
+      },
+      "additionalProperties": false
+    },
+    "sEdgeLayout": {
+      "description": "Derived orthogonal route; from/to absent = automatic.",
+      "type": "object",
+      "required": ["route"],
+      "properties": {
+        "route": { "type": "string", "const": "s" },
+        "from": { "$ref": "#/definitions/edgeEnd" },
+        "to": { "$ref": "#/definitions/edgeEnd" },
+        "jog": { "$ref": "#/definitions/jog" },
+        "via": {
+          "not": {},
+          "errorMessage": "bend points belong to free routes; an S route is derived"
+        },
+        "label": { "$ref": "#/definitions/labelLayout" }
+      },
+      "additionalProperties": false
+    },
+    "edgeLayout": {
+      "anyOf": [{ "$ref": "#/definitions/freeEdgeLayout" }, { "$ref": "#/definitions/sEdgeLayout" }]
+    },
+    "titleBlock": {
+      "description": "Free fields of the title block drawn on every sheet; written only when not empty.",
+      "type": "object",
+      "properties": {
+        "revision": { "type": "string" },
+        "date": { "type": "string" },
+        "author": { "type": "string" },
+        "company": { "type": "string" },
+        "document": { "type": "string" }
+      },
+      "additionalProperties": false
     },
     "diagram": {
       "type": "object",
       "required": ["paper", "states", "regions", "transitions"],
-      "additionalProperties": false,
       "properties": {
-        "paper": { "description": "Paper size of every sheet (landscape, 2 units per pt).", "enum": ["A4", "A3", "A2", "A1"] },
-        "titleBlock": {
-          "description": "Free fields of the title block drawn on every sheet; written only when not empty.",
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "revision": { "type": "string" },
-            "date": { "type": "string" },
-            "author": { "type": "string" },
-            "company": { "type": "string" },
-            "document": { "type": "string" }
-          }
+        "paper": {
+          "description": "Paper size of every sheet (landscape, 2 units per pt).",
+          "enum": ["A4", "A3", "A2", "A1"]
         },
+        "titleBlock": { "$ref": "#/definitions/titleBlock" },
         "states": {
           "description": "Keyed by state id. x/y are relative to the owning state's top-left, or to the sheet origin (the top-left corner of the drawing area inside the frame) for the root region and off-page regions.",
           "type": "object",
-          "additionalProperties": {
-            "type": "object",
-            "required": ["x", "y", "w", "h"],
-            "additionalProperties": false,
-            "properties": {
-              "x": { "type": "number" },
-              "y": { "type": "number" },
-              "w": { "type": "number" },
-              "h": { "type": "number" },
-              "orientation": { "enum": ["horizontal", "vertical"] }
-            }
-          }
+          "additionalProperties": { "$ref": "#/definitions/stateLayout" }
         },
         "regions": {
           "description": "Keyed by region id.",
           "type": "object",
-          "additionalProperties": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "h": { "type": "number" },
-              "offPage": { "const": true }
-            }
-          }
+          "additionalProperties": { "$ref": "#/definitions/regionLayout" }
         },
         "transitions": {
           "description": "Keyed by transition id. route absent or \"free\": from/to required, via bend points. route \"s\": derived orthogonal route; from/to optional (absent = automatic), jog = position of the movable segment. via, jog and free labels are relative to the innermost region containing both endpoints; S labels to the route's label anchor.",
           "type": "object",
-          "additionalProperties": {
-            "type": "object",
-            "additionalProperties": false,
-            "if": { "properties": { "route": { "const": "s" } }, "required": ["route"] },
-            "then": { "not": { "required": ["via"] } },
-            "else": { "required": ["from", "to"], "not": { "required": ["jog"] } },
-            "properties": {
-              "route": { "enum": ["s", "free"] },
-              "from": { "$ref": "#/definitions/edgeEnd" },
-              "to": { "$ref": "#/definitions/edgeEnd" },
-              "jog": {
-                "type": "object",
-                "additionalProperties": false,
-                "oneOf": [{ "required": ["x"], "not": { "required": ["y"] } }, { "required": ["y"], "not": { "required": ["x"] } }],
-                "properties": { "x": { "type": "number" }, "y": { "type": "number" } }
-              },
-              "via": {
-                "type": "array",
-                "items": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 }
-              },
-              "label": {
-                "type": "object",
-                "required": ["x", "y", "w"],
-                "additionalProperties": false,
-                "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "w": { "type": "number" } }
-              }
-            }
-          }
+          "additionalProperties": { "$ref": "#/definitions/edgeLayout" }
         }
-      }
+      },
+      "additionalProperties": false
     }
   }
 }

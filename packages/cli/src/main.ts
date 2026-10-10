@@ -24,6 +24,8 @@ import {
   parseTrace,
   runTrace,
   serializeV1,
+  formatJson,
+  v1JsonSchema,
   transitionLabel,
   internalTransitionLabel,
   vertexName,
@@ -56,6 +58,7 @@ Usage:
   ufsm generate rust <model.ufsm> [-o dir]
          [--class-name C] [--signal-queue n] [--max-microsteps n]
                                          Generate <name>.rs (overrides targets.rust; docs/backend-rust.md)
+  ufsm schema [-o file]                  The JSON Schema of format v1 (stdout without -o)
   ufsm --version
 
 All commands accept v0 (legacy) and v1 files; v0 files are converted in memory.`;
@@ -101,6 +104,12 @@ function main(argv: string[]): number {
   if (values.help || !command) {
     console.log(USAGE);
     return command || values.help ? 0 : 1;
+  }
+  if (command === "schema") {
+    const text = formatJson(v1JsonSchema());
+    if (values.output) writeFileSync(userPath(values.output), text);
+    else process.stdout.write(text);
+    return 0;
   }
   const file = files[0];
   if (!file) {
