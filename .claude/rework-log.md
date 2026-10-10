@@ -506,3 +506,5 @@ Measured over the 21 valid legacy models (864 KB):
   to HEAD. Tests on Windows: core 503 (501 pass, 1 skipped, 1 fail: `test_model1.ufsm` hand-edited in 25c441d, see
   section 8), C suites with `CC` = LLVM clang 14/14, editor 68. Docs: format-v1.md (Options section, design rules),
   semantics.md, the four backend docs. Browser check updated (Options section in the Project tab) but not run.
+- 2026-10-10: `test_model1.ufsm` added to `fixedByHand` in v1.test.ts (tidied up in the editor in 25c441d); the converter
+  sync test now compares 18 files (floor lowered from 19).

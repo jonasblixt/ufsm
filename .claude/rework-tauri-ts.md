@@ -291,9 +291,6 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
   meaning (semantics.md).
 - Differential runs of generated code against the interpreter set a queue of 4096 (`DIFF_QUEUE` in test/harness.ts) on
   both sides unless a test sets one; the interpreter no longer has an unbounded queue (it takes the model's options).
-- `tests/models/test_model1.ufsm` was edited by hand in 25c441d ("tidy up": t1 on an S route, s1/s8/s20/s21 moved), so
-  `v1.test.ts` "keeps the committed v1 conversions in sync with the converter" fails since then. Revert the file, or add
-  it to `fixedByHand` (2026-10-10).
 - The simulator log shows the last 400 steps (the recorded trace keeps all of them).
 - `reset()` called from inside an action or guard is not detected (only `process()` is refused while busy): the outer
   call goes on with the new configuration. Rust cannot do it (borrow); the other languages document it.
