@@ -13,6 +13,7 @@ export const ID_PREFIX = {
   vertex: "s",
   region: "r",
   transition: "t",
+  timer: "tm",
   event: "ev",
   signal: "sig",
   action: "act",
@@ -26,7 +27,7 @@ export const DECL_PREFIX: Readonly<Record<DeclKind, string>> = {
   guard: ID_PREFIX.guard,
 };
 
-/** Every id in the document: declarations, regions, vertices, transitions and internal transitions. */
+/** Every id in the document: declarations, regions, vertices, transitions, internal transitions and timers. */
 export function documentIds(doc: UfsmDocument): Set<Id> {
   const ids = new Set<Id>();
   const d = doc.declarations;
@@ -37,6 +38,7 @@ export function documentIds(doc: UfsmDocument): Set<Id> {
       ids.add(v.id);
       if (v.kind !== "state") continue;
       for (const t of v.internal ?? []) ids.add(t.id);
+      for (const t of v.timers ?? []) ids.add(t.id);
       v.regions?.forEach(visit);
     }
   };

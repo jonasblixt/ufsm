@@ -164,6 +164,37 @@ export async function runC(cc: string, units: CUnit[]): Promise<StepResult[][]> 
           "",
         );
       }
+      if (u.ir.timers.length) {
+        // logged as "~start:<name>:<ms>:<0|1>" / "~stop:<name>" (driverCall in harness.ts); each call also checks
+        // timer_event() (and timer_name() with debugInfo) for that timer
+        const names = u.ir.timers.map((t) => str(t.name)).join(", ");
+        const events = u.ir.timers.map((t) => `${t.event}`).join(", ");
+        const check = [
+          `    if ((int)timer < 0 || (int)timer >= ${P}TIMER_COUNT) { test_call(user, "BAD_TIMER"); return; }`,
+          `    if ((int)${p}timer_event(timer) != timer_events[timer]) test_call(user, "BAD_TIMER_EVENT");`,
+          ...(u.options?.debugInfo ? [`    if (!${p}timer_name((uint16_t)timer) || strcmp(${p}timer_name((uint16_t)timer), timer_names[timer]) != 0) test_call(user, "BAD_TIMER_NAME");`] : []),
+        ];
+        c.push(
+          ...(debug ? [] : ["#include <stdio.h>", "#include <string.h>", ""]),
+          `static const char *const timer_names[] = { ${names} };`,
+          `static const int timer_events[] = { ${events} };`,
+          `void ${p}timer_start(void *user, enum ${p}timer timer, uint32_t ms, bool periodic)`,
+          "{",
+          "    char buf[300];",
+          ...check,
+          '    snprintf(buf, sizeof buf, "~start:%s:%lu:%d", timer_names[timer], (unsigned long)ms, periodic ? 1 : 0);',
+          "    test_call(user, buf);",
+          "}",
+          `void ${p}timer_stop(void *user, enum ${p}timer timer)`,
+          "{",
+          "    char buf[300];",
+          ...check,
+          '    snprintf(buf, sizeof buf, "~stop:%s", timer_names[timer]);',
+          "    test_call(user, buf);",
+          "}",
+          "",
+        );
+      }
       u.ir.actions.forEach((a) => c.push(`void ${p}${a.name}(void *user) { test_call(user, ${str(a.name)}); }`));
       u.ir.guards.forEach((g, i) => c.push(`bool ${p}${g.name}(void *user) { return test_guard(user, ${i}, ${str(g.name)}); }`));
       c.push(`static struct ${p}machine machine;`);

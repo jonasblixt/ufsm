@@ -10,7 +10,7 @@
  */
 import type { Action } from "../v1/model";
 import type { EntryOp, FlatGuard, FlatModel, FlatTransition, Offer, RegionOp } from "../semantics/flatten";
-import type { Expr, IrFunction, IrHistory, IrModule, IrTransition, Stmt } from "./ir";
+import type { Expr, IrFunction, IrHistory, IrModule, IrTimer, IrTransition, Stmt } from "./ir";
 import { fingerprint, stateNames } from "./ids";
 
 export interface LowerOptions {
@@ -27,6 +27,10 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
 
   /** A trace statement, or nothing without the `trace` option. */
   const hook = (h: "transition" | "enter" | "exit", index: number): Stmt[] => (trace ? [{ op: "trace", hook: h, index }] : []);
+  const starts = (timers: number[]): Stmt[] => timers.map((timer) => ({ op: "timerStart", timer }));
+  const stops = (timers: number[]): Stmt[] => timers.map((timer) => ({ op: "timerStop", timer }));
+  /** reset() and terminate stop every timer, in timer order. */
+  const stopAll = (): Stmt[] => stops(flat.timers.map((_, i) => i));
   const actions = (list: Action[]): Stmt[] => list.map((a) => ("call" in a ? { op: "call", action: a.call } : { op: "emit", signal: a.emit }));
   const hasContent = (r: number): boolean => R[r]!.slots.length > 0;
   const enterable = (r: number): boolean => R[r]!.init !== undefined || R[r]!.history !== "none";
@@ -47,7 +51,7 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
       const fv = V[v]!;
       const body: Stmt[] = [];
       for (const c of [...fv.regions].reverse()) if (hasContent(c)) body.push({ op: "invoke", fn: exitFn(c) });
-      body.push(...hook("exit", v), ...actions(fv.exit));
+      body.push(...hook("exit", v), ...stops(fv.timers), ...actions(fv.exit));
       return { slot: i + 1, body };
     }).filter((c) => c.body.length > 0);
     const body: Stmt[] = [];
@@ -83,7 +87,13 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
 
   const enterOp = (op: EntryOp): Stmt[] => {
     const fv = V[op.vertex]!;
-    return [{ op: "set", region: fv.region, slot: fv.slot }, ...hook("enter", op.vertex), ...actions(fv.entry), ...op.regions.flatMap(regionOp)];
+    return [
+      { op: "set", region: fv.region, slot: fv.slot },
+      ...hook("enter", op.vertex),
+      ...actions(fv.entry),
+      ...starts(fv.timers),
+      ...op.regions.flatMap(regionOp),
+    ];
   };
   const regionOp = (op: RegionOp): Stmt[] => {
     if ("path" in op) return enterOp(op.path);
@@ -120,7 +130,10 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
       on: top ? { kind: "hist", region: r } : { kind: "deep", history: r, index: c - base },
       cases: R[c]!.slots.map((v, i) => {
         const fv = V[v]!;
-        return { slot: i + 1, body: [{ op: "set", region: c, slot: i + 1 } as Stmt, ...hook("enter", v), ...actions(fv.entry), ...fv.regions.map((cc) => restoreIn(cc, false))] };
+        return {
+          slot: i + 1,
+          body: [{ op: "set", region: c, slot: i + 1 } as Stmt, ...hook("enter", v), ...actions(fv.entry), ...starts(fv.timers), ...fv.regions.map((cc) => restoreIn(cc, false))],
+        };
       }),
     });
     fns.push({ name, returns: "void", flags: [], body: [restoreIn(r, true)], doc: `Restore the deep history of ${regionName(r)}.` });
@@ -223,7 +236,9 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
     for (const d of domains) body.push(...whenAny(inDomain(d), [{ op: "invoke", fn: exitFn(d) }]));
     for (const k of ordered) body.push(...when(k, [...hook("transition", k), ...actions(T(k).actions)]));
     for (const k of byDomainAsc) body.push(...when(k, T(k).entry ? regionOp(T(k).entry!) : []));
-    for (const k of ordered) if (T(k).terminate) body.push(...when(k, [{ op: "terminate" }]));
+    // Two orthogonal transitions may terminate together: the timers are stopped once.
+    const terminating = ordered.filter((k) => T(k).terminate);
+    if (terminating.length) body.push(...whenAny(terminating, [{ op: "terminate" }, ...stopAll()]));
     body.push({ op: "return", value: true });
     fns.push({ name, returns: "bool", flags: ordered.map(flag), body: simplify(body), doc });
     return name;
@@ -235,7 +250,7 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
   };
 
   for (const f of fns) f.body = simplify(f.body);
-  const start = regionOp({ region: 0, default: true });
+  const start = [...stopAll(), ...regionOp({ region: 0, default: true })];
   const onEvent: Record<string, string> = {};
   const onSignal: Record<string, string> = {};
   for (const e of flat.events) {
@@ -268,6 +283,9 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
     return { id: t.id, label: `${t.id}: ${from} -> ${to}${on}` };
   });
 
+  const eventIndex = new Map(flat.events.map((e, i) => [e.id, i]));
+  const timers: IrTimer[] = flat.timers.map((t) => ({ id: t.id, name: t.name, ms: t.ms, periodic: t.periodic, event: eventIndex.get(t.event)! }));
+
   return {
     name: flat.name,
     regions: R.length,
@@ -279,6 +297,7 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
     signals: flat.signals,
     actions: flat.actions,
     guards: flat.guards,
+    timers,
     start,
     onEvent,
     onSignal,

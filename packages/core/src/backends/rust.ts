@@ -23,7 +23,9 @@
  * Always: `State` (one variant per state, document order) and `FINGERPRINT`.
  * With `debugInfo`: `name()` and `from_index()` on `Event`, `Signal` and
  * `State`, and `is_active()` on the machine. With `trace` (decided by the
- * IR): `TraceKind` and a `trace(kind, id)` method on `Handler`.
+ * IR): `TraceKind` and a `trace(kind, id)` method on `Handler`. With timers
+ * in the model: `Timer` (with `COUNT`, `event()` and `index()`) and
+ * `timer_start()`/`timer_stop()` methods on `Handler`.
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
@@ -68,7 +70,7 @@ const NOT_RAW = new Set(["self", "Self", "super", "crate", "_"]);
 
 /** Names the module itself defines or uses, which the machine struct cannot take. */
 const RUST_TAKEN = new Set([
-  "Error", "Event", "Handler", "H", "Result", "Ok", "Err", "Option", "Some", "None", "core", "Self", "State", "Signal", "TraceKind",
+  "Error", "Event", "Handler", "H", "Result", "Ok", "Err", "Option", "Some", "None", "core", "Self", "State", "Signal", "TraceKind", "Timer",
 ]);
 
 /**
@@ -112,6 +114,12 @@ function comment(text: string): string {
 /** Smallest unsigned type that holds 0..max. */
 function uintType(max: number): string {
   return max <= 0xff ? "u8" : max <= 0xffff ? "u16" : "u32";
+}
+
+/** A decimal literal clippy's `unreadable_literal` accepts: digits grouped by three from 10 000 on (`3_600_000`). */
+function rustInt(n: number): string {
+  const s = String(n);
+  return n < 10000 ? s : s.replace(/\B(?=(\d{3})+$)/g, "_");
 }
 
 /** Lines may be this long; longer conditions are broken as rustfmt breaks them, so the output is rustfmt-clean. */
@@ -175,6 +183,7 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   const trace = ir.trace;
   const debugInfo = options.debugInfo ?? false;
   const publicSignals = (trace || debugInfo) && ir.signals.length > 0;
+  const hasTimers = ir.timers.length > 0;
 
   // ------------------------------------------------------------ analysis
 
@@ -237,14 +246,20 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
 
   // Events are enum variants, actions and guards trait methods: each list must stay unique after renaming.
   const problems: string[] = [];
-  const methods = [...ir.actions, ...ir.guards, ...(trace ? [{ name: "trace" }] : [])];
-  const variants: [string, { name: string }[]][] = [["event", ir.events], ["handler method", methods], ["state", ir.states.map((st) => ({ name: st.ident }))]];
+  const methods = [...ir.actions, ...ir.guards, ...(trace ? [{ name: "trace" }] : []), ...(hasTimers ? [{ name: "timer_start" }, { name: "timer_stop" }] : [])];
+  const variants: [string, { name: string }[]][] = [
+    ["event", ir.events],
+    ["handler method", methods],
+    ["state", ir.states.map((st) => ({ name: st.ident }))],
+    ["timer", ir.timers],
+  ];
   if (publicSignals) variants.push(["signal", ir.signals]);
   for (const [kind, list] of variants) {
     const seen = new Map<string, string>();
     for (const d of list) {
       const n = rustName(d.name).replace(/^r#/, "");
-      if (seen.has(n)) problems.push(`${kind} '${d.name}' becomes '${rustName(d.name)}', like '${seen.get(n)}'${kind === "handler method" && d.name === "trace" ? " (the trace hook)" : ""}`);
+      const builtIn = kind !== "handler method" ? "" : d.name === "trace" ? " (the trace hook)" : d.name === "timer_start" || d.name === "timer_stop" ? " (a timer function)" : "";
+      if (seen.has(n)) problems.push(`${kind} '${d.name}' becomes '${rustName(d.name)}', like '${seen.get(n)}'${builtIn}`);
       seen.set(n, d.name);
     }
   }
@@ -329,6 +344,14 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     line(d, `${keyword}${lines[0]}`);
     out.push(...lines.slice(1));
     line(d, "{");
+  };
+  /** A statement calling `fn` with `args`; when the line is too long, one argument per line, as rustfmt breaks it. */
+  const callStmt = (d: number, fn: string, args: string[]): void => {
+    const one = `${fn}(${args.join(", ")});`;
+    if (4 * d + one.length <= MAX_WIDTH) return line(d, one);
+    line(d, `${fn}(`);
+    for (const a of args) line(d + 1, `${a},`);
+    line(d, ");");
   };
   /** A match arm `pattern => value,`; a long pattern list is put one alternative per line, a long value in a block. */
   const arm = (d: number, patterns: string[], value: string): void => {
@@ -481,6 +504,14 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
           line(d, `Handler::trace(&mut self.handler, TraceKind::${kind}, ${s.index}); // ${comment(what)}`);
           break;
         }
+        case "timerStart": {
+          const t = ir.timers[s.timer]!;
+          callStmt(d, "Handler::timer_start", ["&mut self.handler", `Timer::${rustName(t.name)}`, rustInt(t.ms), String(t.periodic)]);
+          break;
+        }
+        case "timerStop":
+          callStmt(d, "Handler::timer_stop", ["&mut self.handler", `Timer::${rustName(ir.timers[s.timer]!.name)}`]);
+          break;
         case "terminate":
           line(d, "self.terminated = true;");
           break;
@@ -525,6 +556,8 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   const eventSteps = ir.events.filter((ev) => ir.onEvent[ev.id] && reachable.has(ir.onEvent[ev.id]!));
   const signalSteps = hasQueue ? ir.signals.filter((sg) => ir.onSignal[sg.id] && reachable.has(ir.onSignal[sg.id]!)) : [];
   const settleBody = hasTerminate || ir.eventless !== undefined || hasQueue;
+  // with only a terminate to finish, settle() cannot fail (clippy's unnecessary_wraps)
+  const settleFails = ir.eventless !== undefined || hasQueue;
   const hasEvents = ir.events.length > 0;
   const variant = (name: string): string => `Event::${rustName(name)}`;
   const call = (fn: string): string => `self.${fn}()${fallible.has(fn) ? "?" : ""}`;
@@ -654,6 +687,39 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   } else line(0, "pub enum State {}");
   line(0, "");
   if (debugInfo) lookup("State", "state", ir.states.map((st) => ({ variant: rustName(st.ident), name: st.label })));
+  if (hasTimers) {
+    line(0, "/// Timers: started when their state is entered, stopped when it is left. `Handler` runs them.");
+    line(0, "#[allow(non_camel_case_types, dead_code)]");
+    line(0, "#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]");
+    line(0, "pub enum Timer {");
+    for (const t of ir.timers) {
+      line(1, `/// Timer \`${t.name}\`: ${t.periodic ? "every" : "after"} ${t.ms} ms, then \`Event::${rustName(ir.events[t.event]!.name)}\`.`);
+      line(1, `${rustName(t.name)},`);
+    }
+    line(0, "}");
+    line(0, "");
+    line(0, "#[allow(dead_code)]");
+    line(0, "impl Timer {");
+    line(1, "/// The number of timers.");
+    line(1, `pub const COUNT: usize = ${ir.timers.length};`);
+    line(0, "");
+    line(1, "/// The event to process when this timer expires.");
+    line(1, "#[must_use]");
+    line(1, "pub fn event(self) -> Event {");
+    line(2, "match self {");
+    for (const t of ir.timers) arm(3, [`Timer::${rustName(t.name)}`], variant(ir.events[t.event]!.name));
+    line(2, "}");
+    line(1, "}");
+    line(0, "");
+    line(1, "/// The timer's number, `0..COUNT` (e.g. an index into an array of platform timers).");
+    line(1, "#[must_use]");
+    line(1, "pub fn index(self) -> usize {");
+    line(2, "self as usize");
+    line(1, "}");
+    line(0, "}");
+    line(0, "");
+    if (debugInfo) lookup("Timer", "timer", ir.timers.map((t) => ({ variant: rustName(t.name), name: t.name })));
+  }
   line(0, "/// Identifies the numbering of events, signals, states and transitions (`ufsm info` prints it for a model file).");
   line(0, "#[allow(dead_code)]");
   line(0, `pub const FINGERPRINT: u32 = ${hex32(ir.fingerprint).replace(/^(0x....)/, "$1_")};`);
@@ -679,7 +745,7 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   line(0, "/// Actions and guards the machine calls. Guards return a `bool` and may be called more than once per event");
   line(0, "/// and in any order.");
   line(0, "#[allow(non_snake_case)]");
-  if (ir.actions.length || ir.guards.length || trace) {
+  if (ir.actions.length || ir.guards.length || trace || hasTimers) {
     line(0, "pub trait Handler {");
     for (const a of ir.actions) {
       line(1, `/// Action \`${a.name}\`.`);
@@ -688,6 +754,13 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     for (const g of ir.guards) {
       line(1, `/// Guard \`${g.name}\`.`);
       line(1, `fn ${rustName(g.name)}(&mut self) -> bool;`);
+    }
+    if (hasTimers) {
+      line(1, "/// Start `timer`: it expires once after `ms`, or (periodic) every `ms` until stopped, re-armed here. On");
+      line(1, "/// expiry, process `timer.event()`. Called inside `reset()` and `process()`: must not block or call the machine.");
+      line(1, "fn timer_start(&mut self, timer: Timer, ms: u32, periodic: bool);");
+      line(1, "/// Stop `timer`; does nothing if it is not running. No expiry of the earlier start should follow.");
+      line(1, "fn timer_stop(&mut self, timer: Timer);");
     }
     if (trace) {
       line(1, "/// Called inside `reset()` and `process()` with ids only; must not block or call the machine.");
@@ -798,10 +871,11 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   // the end of reset() and process(): settle, then clear the busy latch (an error returns early and leaves it set)
   const finish = (): void => {
     if (!hasEvents) {
-      line(2, settleBody ? "self.settle()" : "Ok(())");
+      if (settleBody && !settleFails) line(2, "self.settle();");
+      line(2, settleBody && settleFails ? "self.settle()" : "Ok(())");
       return;
     }
-    if (settleBody) line(2, "self.settle()?;");
+    if (settleBody) line(2, settleFails ? "self.settle()?;" : "self.settle();");
     line(2, "self.busy = false;");
     line(2, "Ok(())");
   };
@@ -850,6 +924,15 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   if (settleBody) {
     blocks.push(() => {
       line(1, "// Run eventless transitions and queued signals until the machine is stable.");
+      if (!settleFails) {
+        // only a terminate to finish: nothing to repeat (clippy's never_loop) and nothing that fails
+        line(1, "fn settle(&mut self) {");
+        line(2, "if self.terminated {");
+        line(3, `self.cfg = ${zeros(ir.regions)};`);
+        line(2, "}");
+        line(1, "}");
+        return;
+      }
       line(1, "fn settle(&mut self) -> Result<(), Error> {");
       line(2, "loop {");
       if (hasTerminate) {

@@ -116,6 +116,89 @@ compile, when a generated name clashes: an action called `init` with prefix
 clash with C keywords or the generated file's internal helpers. Rename the
 declaration or choose another prefix.
 
+## Timers
+
+A model with [timers](format-v1.md#timers) gets a timer enum, two functions
+the application implements, however many timers there are, and a lookup of
+the event a timer sends when it expires. A model without timers gets none of
+this. For `door` with timers `travel` and `poll`:
+
+```c
+enum door_timer {
+    DOOR_TIMER_travel = 0, /* after 20000 ms -> eTravelTimeout */
+    DOOR_TIMER_poll = 1,   /* every 500 ms -> ePoll */
+};
+#define DOOR_TIMER_COUNT 2
+
+/* Generated: the event to process when a timer expires. */
+enum door_event door_timer_event(enum door_timer timer);
+
+/* Implemented by the application */
+void door_timer_start(void *user, enum door_timer timer, uint32_t ms, bool periodic);
+void door_timer_stop(void *user, enum door_timer timer);
+```
+
+The application owns the clock: on expiry it passes
+`door_timer_event(timer)` to `door_process()`, like any other event. There is
+no `timer_expired()` entry point and nothing is allocated. Durations reach the
+application in ms (`uint32_t`, up to about 49.7 days). The contract:
+
+- Stopping a timer that is not running does nothing.
+- A periodic timer is started once; the application re-arms it every period.
+- After a stop returns, no expiry of the earlier start should be delivered.
+  One that is already queued arrives as an ordinary event and is handled as
+  such (in a state that does not react to it, nothing happens).
+- Start and stop run inside `reset()` and `process()`: they must not block or
+  call the machine. `reset()` stops every timer first, whatever runs.
+
+See [Timers](semantics.md#timers) for when the machine starts and stops them.
+
+With Zephyr, one `k_timer` per timer and the same message queue as the other
+events (no Zephyr code ships with uFSM; this is a sketch for the application):
+
+```c
+#include <zephyr/kernel.h>
+#include "door.h"
+
+K_MSGQ_DEFINE(door_q, sizeof(enum door_event), 16, 4);
+static struct k_timer door_timers[DOOR_TIMER_COUNT];
+
+static void door_expired(struct k_timer *t)
+{
+    /* runs in interrupt context: queue the event, the thread runs the machine */
+    enum door_event e = (enum door_event)(uintptr_t)k_timer_user_data_get(t);
+    (void)k_msgq_put(&door_q, &e, K_NO_WAIT);
+}
+
+void door_timer_start(void *user, enum door_timer timer, uint32_t ms, bool periodic)
+{
+    (void)user;
+    k_timer_start(&door_timers[timer], K_MSEC(ms), periodic ? K_MSEC(ms) : K_NO_WAIT);
+}
+
+void door_timer_stop(void *user, enum door_timer timer)
+{
+    (void)user;
+    k_timer_stop(&door_timers[timer]);
+}
+
+void door_timers_init(void)
+{
+    for (int i = 0; i < DOOR_TIMER_COUNT; i++) {
+        k_timer_init(&door_timers[i], door_expired, NULL);
+        k_timer_user_data_set(&door_timers[i], (void *)(uintptr_t)door_timer_event((enum door_timer)i));
+    }
+}
+
+/* the machine's thread: door_timers_init(); door_init(&m, &app); then
+ * for (;;) { enum door_event e; k_msgq_get(&door_q, &e, K_FOREVER); door_process(&m, e); } */
+```
+
+`k_timer_stop()` cannot take back an expiry that `door_expired()` already put
+in the queue. The machine handles such a late event as an ordinary one; an
+application that must not see it can count starts per timer and drop stale
+expiries.
+
 ## Debugging
 
 Always generated: a state enum (normal and final states in document order,
@@ -145,6 +228,7 @@ const char *dimmer_event_name(uint16_t event);   /* NULL for a number out of ran
 const char *dimmer_signal_name(uint16_t signal); /* only when the model has signals */
 const char *dimmer_state_name(uint16_t state);   /* "10%" */
 bool dimmer_is_active(const struct dimmer_machine *m, uint16_t state);
+const char *door_timer_name(uint16_t timer);     /* a model with timers: "travel" */
 ```
 
 With `trace`, the machine calls one more function the application implements,

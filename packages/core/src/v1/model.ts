@@ -82,6 +82,11 @@ export interface State {
    * exit or entry actions run and the state's regions keep their configuration. Drawn as text in the action block.
    */
   internal?: InternalTransition[];
+  /**
+   * Timers the state owns: started after its entry actions, stopped before its exit actions (docs/semantics.md#timers).
+   * Drawn as text in the action block, after entry and exit.
+   */
+  timers?: Timer[];
   /** Orthogonal regions, top-down in the diagram. */
   regions?: Region[];
 }
@@ -94,6 +99,39 @@ export interface InternalTransition {
   guard?: GuardTerm[];
   do?: Action[];
   doc?: string;
+}
+
+export type TimerUnit = "ms" | "s" | "min" | "h";
+
+export const TIMER_UNITS: readonly TimerUnit[] = ["ms", "s", "min", "h"];
+
+/** Milliseconds per timer unit. */
+export const TIMER_UNIT_MS: Readonly<Record<TimerUnit, number>> = { ms: 1, s: 1000, min: 60_000, h: 3_600_000 };
+
+/** Longest timer duration in ms: what an unsigned 32-bit integer holds (about 49.7 days). */
+export const TIMER_MAX_MS = 0xffffffff;
+
+/**
+ * A timer of a state: one-shot (`after`) or periodic (`every`), a positive integer count of `unit`. When it expires,
+ * the application sends `event` through process(). The machine only starts and stops it.
+ */
+export interface Timer {
+  id: Id;
+  /** Identifier, unique among the machine's timers; names the generated timer enum entry. */
+  name: string;
+  /** One-shot: expires once, this many units after the start. Exactly one of `after` and `every`. */
+  after?: number;
+  /** Periodic: expires every this many units until stopped (the application re-arms it). */
+  every?: number;
+  unit: TimerUnit;
+  /** The declared event the application sends when the timer expires. */
+  event: Id;
+  doc?: string;
+}
+
+/** A timer's duration in ms (may exceed `TIMER_MAX_MS`; the design rule check reports that). */
+export function timerMs(t: Timer): number {
+  return (t.after ?? t.every ?? 0) * TIMER_UNIT_MS[t.unit];
 }
 
 export interface Pseudo {

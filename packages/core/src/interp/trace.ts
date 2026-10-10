@@ -53,6 +53,16 @@ export interface TraceStep {
   doc?: string;
 }
 
+/** How a timer start appears among a trace's action calls: `start:travel(20000 ms)`, `start:poll(every 500 ms)`. */
+export function timerStartCall(name: string, ms: number, periodic: boolean): string {
+  return `start:${name}(${periodic ? "every " : ""}${ms} ms)`;
+}
+
+/** How a timer stop appears among a trace's action calls: `stop:travel`. */
+export function timerStopCall(name: string): string {
+  return `stop:${name}`;
+}
+
 /** What a trace's `raise` action or guard throws: the application's own exception, which no machine may catch. */
 export class TraceRaise extends Error {
   readonly what: string;
@@ -204,6 +214,12 @@ export function runTrace(doc: UfsmDocument, trace: Trace, options: InterpreterOp
     guard: (name) => {
       if (name === step.raise) throw new TraceRaise(name);
       return guards.get(name) ?? false;
+    },
+    timerStart: (name, _id, ms, periodic) => {
+      calls.push(timerStartCall(name, ms, periodic));
+    },
+    timerStop: (name) => {
+      calls.push(timerStopCall(name));
     },
   };
   const m = make(doc, host, { ...behaviourOptions(doc), ...defined(options), ...trace.options });

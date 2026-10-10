@@ -118,6 +118,7 @@
         "doc": { "type": "string" },
         "entry": { "type": "array", "items": { "$ref": "#/definitions/action" } },
         "exit": { "type": "array", "items": { "$ref": "#/definitions/action" } },
+        "timers": { "type": "array", "items": { "$ref": "#/definitions/timer" } },
         "internal": { "type": "array", "items": { "$ref": "#/definitions/internalTransition" } },
         "regions": { "type": "array", "items": { "$ref": "#/definitions/region" } }
       },
@@ -143,6 +144,36 @@
       },
       "additionalProperties": false
     },
+    "timer": {
+      "description": "A timer of a state, started after its entry actions and stopped before its exit actions; when it expires the application sends `event` through process(). Exactly one of after and every.",
+      "type": "object",
+      "required": ["id", "name", "unit", "event"],
+      "properties": {
+        "id": { "$ref": "#/definitions/id" },
+        "name": { "type": "string" },
+        "after": {
+          "description": "One-shot: expires once, this many units after the start.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "every": {
+          "description": "Periodic: expires every this many units until stopped.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "unit": { "$ref": "#/definitions/timerUnit" },
+        "event": { "$ref": "#/definitions/id" },
+        "doc": { "type": "string" }
+      },
+      "additionalProperties": false,
+      "not": { "required": ["after", "every"] },
+      "anyOf": [{ "required": ["after"] }, { "required": ["every"] }],
+      "errorMessage": {
+        "not": "expected exactly one of 'after' or 'every'",
+        "anyOf": "expected exactly one of 'after' or 'every'"
+      }
+    },
+    "timerUnit": { "enum": ["ms", "s", "min", "h"] },
     "internalTransition": {
       "type": "object",
       "required": ["id", "on"],

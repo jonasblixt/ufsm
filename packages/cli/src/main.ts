@@ -30,6 +30,7 @@ import {
   v1JsonSchema,
   transitionLabel,
   internalTransitionLabel,
+  timerLabel,
   vertexName,
   type GenerateOverrides,
   type LoadedModel,
@@ -150,6 +151,7 @@ function main(argv: string[]): number {
       console.log(`Signals:     ${d.signals.length}`);
       console.log(`Actions:     ${d.actions.length}`);
       console.log(`Guards:      ${d.guards.length}`);
+      if (index.timers.size) console.log(`Timers:      ${index.timers.size}`);
       if (doc.diagram) console.log(`Sheets:      ${sheets(index).length} (${doc.diagram.paper})`);
       // the fingerprint of the numbering generated code uses (state enum, trace ids)
       const ok = checkV1(doc).every((x) => x.severity !== "error");
@@ -181,6 +183,7 @@ function main(argv: string[]): number {
       for (const { transition, state } of index.internals.values()) {
         console.log(`${state.name} (internal)  : ${internalTransitionLabel(index, transition)}`);
       }
+      for (const { timer, state } of index.timers.values()) console.log(`${state.name} (timer)  : ${timerLabel(index, timer)}`);
       return 0;
     }
     case "migrate": {
@@ -241,6 +244,8 @@ function main(argv: string[]): number {
             }
             case "call": console.log(`   call  ${e.action}`); break;
             case "emit": console.log(`   emit  ${e.signal}`); break;
+            case "timer-start": console.log(`   start ${e.timer} (${e.periodic ? "every " : ""}${e.ms} ms)`); break;
+            case "timer-stop": console.log(`   stop  ${e.timer}`); break;
             case "terminate": console.log("   terminated"); break;
           }
         },

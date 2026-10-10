@@ -12,6 +12,7 @@ import {
   actionBlockHeight,
   actionLabel,
   internalTransitionLabel,
+  timerLabel,
   edgeGeometry,
   guardLabel,
   isOffPage,
@@ -290,7 +291,12 @@ function drawState(ctx: CanvasRenderingContext2D, index: DocIndex, s: State, loo
       line += 20;
     }
   }
-  // Internal transitions (visualSTATE: static reactions), after entry and exit: `event [guard] / actions`.
+  // Timers, after entry and exit: `t/name(20 s, eEvent)`.
+  for (const t of s.timers ?? []) {
+    ctx.fillText(timerLabel(index, t), x + 10, line);
+    line += 20;
+  }
+  // Internal transitions (visualSTATE: static reactions), after timers: `event [guard] / actions`.
   for (const t of s.internal ?? []) {
     ctx.fillText(internalTransitionLabel(index, t), x + 10, line);
     line += 20;

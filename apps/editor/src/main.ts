@@ -366,7 +366,7 @@ function problemMarks(d: Doc): Map<string, "error" | "warning"> {
   const marks = new Map<string, "error" | "warning">();
   for (const x of d.diagnostics) {
     if (!x.id) continue;
-    const id = d.index.vertices.has(x.id) || d.index.transitions.has(x.id) ? x.id : (d.index.internals.get(x.id)?.state.id ?? d.index.regions.get(x.id)?.owner?.id);
+    const id = d.index.vertices.has(x.id) || d.index.transitions.has(x.id) ? x.id : (d.index.internals.get(x.id)?.state.id ?? d.index.timers.get(x.id)?.state.id ?? d.index.regions.get(x.id)?.owner?.id);
     if (id && marks.get(id) !== "error") marks.set(id, x.severity === "error" ? "error" : "warning");
   }
   marksCache.set(d.diagnostics, marks);
@@ -862,6 +862,7 @@ const MENUS: Menu[] = [
       { label: "Trigger", keys: "E T", run: () => focusPanel("trigger"), enabled: () => singleTransition() !== undefined },
       { label: "Add Entry Action", keys: "A E", run: () => focusPanel("entry"), enabled: () => single()?.kind === "state" },
       { label: "Add Exit Action", keys: "A X", run: () => focusPanel("exit"), enabled: () => single()?.kind === "state" },
+      { label: "Add Timer", run: () => focusPanel("timer"), enabled: () => single()?.kind === "state" },
       { label: "Add Guard Term", keys: "A G", run: () => focusPanel("guard"), enabled: () => singleTransition() !== undefined },
       { label: "Add Action", keys: "A A", run: () => focusPanel("action"), enabled: () => singleTransition() !== undefined },
       "-",
@@ -1042,7 +1043,7 @@ function jumpTo(id: string): void {
     select([id]);
     return;
   }
-  const vid = index.vertices.has(id) ? id : (index.internals.get(id)?.state.id ?? index.regions.get(id)?.owner?.id);
+  const vid = index.vertices.has(id) ? id : (index.internals.get(id)?.state.id ?? index.timers.get(id)?.state.id ?? index.regions.get(id)?.owner?.id);
   const v = vid ? index.vertices.get(vid)?.vertex : undefined;
   if (v) revealVertex(v);
 }
@@ -1366,6 +1367,12 @@ const simOps: SimOps = {
     const d = doc;
     if (!d?.sim || simStale(d)) return;
     d.sim.send(event);
+    simChanged();
+  },
+  fire: (timerId) => {
+    const d = doc;
+    if (!d?.sim || simStale(d)) return;
+    d.sim.fire(timerId);
     simChanged();
   },
   setGuard: (name, value) => {
@@ -2216,6 +2223,11 @@ Object.assign(window, {
     simStart,
     simStop,
     simSend: (event: string) => simOps.send(event),
+    /** Fire a running timer by name (its event is sent). */
+    simFire: (name: string) => {
+      const t = doc?.sim?.timers().find((x) => x.name === name);
+      if (t) simOps.fire(t.id);
+    },
     simGuard: (name: string, value: boolean) => simOps.setGuard(name, value),
     sim: () => {
       const sim = doc?.sim;
@@ -2228,6 +2240,7 @@ Object.assign(window, {
         hover: doc.hoverEvent,
         would: doc.hoverEvent ? (wouldMap(doc).get(doc.hoverEvent) ?? []) : [],
         calls: sim.steps[sim.steps.length - 1]?.calls ?? [],
+        timers: sim.timers().map((t) => t.name),
         error: doc.simError,
         trace: traceText(doc, sim, undefined),
       };

@@ -133,6 +133,7 @@ describe("Python backend matches the interpreter", { skip }, () => {
       transitions: [],
       trace: false,
       fingerprint: 0,
+      timers: [],
       events: cases.map(([n]) => ({ id: `ev_${n}`, name: n })),
       signals: [],
       actions: [{ id: "act1", name: "hit" }],
@@ -271,6 +272,25 @@ print(bad)`,
     assert.match(signals, /if len\(self\._queue\) >= 5:/);
     const noCheck = generatePython(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), { maxMicrosteps: 0 }).source;
     assert.doesNotMatch(noCheck, /_steps|_microstep/);
+  });
+
+  it("emit the timer API only for a model with timers", () => {
+    const none = generatePython(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), { debugInfo: true }).source;
+    assert.doesNotMatch(none, /timer/i);
+    const src = generatePython(ir(load(join(repoRoot, "tests/models/test_timers.ufsm"))), { debugInfo: true }).source;
+    assert.match(src, /^class TestTimersTimer\(IntEnum\):$/m);
+    assert.match(src, /^ {4}poll = 1 {2}# every 100 ms -> eTick$/m);
+    assert.match(src, /^def test_timers_timer_event\(timer: TestTimersTimer\) -> TestTimersEvent:$/m);
+    assert.match(src, /^ {4}def timer_start\(self, timer: TestTimersTimer, ms: int, periodic: bool\) -> None:$/m);
+    assert.match(src, /^ {4}def timer_stop\(self, timer: TestTimersTimer\) -> None:$/m);
+    assert.match(src, /^ {4}TIMER_NAMES: Tuple\[str, \.\.\.\] = \("travel", "poll", "blink", "long"\)$/m);
+    assert.match(src, /self\._h\.timer_start\(TestTimersTimer\.long, 3600000, False\)/);
+  });
+
+  it("reject an action named like a timer function of the handler", () => {
+    const doc = load(join(repoRoot, "tests/models/test_timers.ufsm"));
+    doc.declarations.actions[0]!.name = "timer_stop";
+    assert.throws(() => generatePython(ir(doc)), /action 'timer_stop' is the name of a timer function of the handler/);
   });
 
   it("are the same for the same input", () => {

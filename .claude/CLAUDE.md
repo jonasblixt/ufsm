@@ -168,7 +168,11 @@ Build Tools "Desktop development with C++"), TypeScript 6, Vite 7, Tauri 2.
 - A state's `internal` list holds internal transitions (visualSTATE: static reactions):
   `{id, on, guard?, do?}`, no target, never leave the state; drawn as text in the
   action block after entry/exit. Prefer them to self-transitions unless exit/re-entry is wanted.
-  Guards: list of terms ANDed (`{call}`, `{call, not}`, `{in}`, `{in, not}`);
+- A state's `timers` list: `{id, name, after|every, unit (ms|s|min|h), event}`; started after entry actions, stopped
+  before exit actions, all stopped by reset()/terminate; the application runs the clock and sends `event` on expiry
+  (semantics.md "Timers"). Generated code has a timer API only when the model has timers; traces list the calls as
+  `start:<name>(<ms> ms)` / `start:<name>(every <ms> ms)` / `stop:<name>`.
+- Guards: list of terms ANDed (`{call}`, `{call, not}`, `{in}`, `{in, not}`);
   guard functions take no arguments and return a boolean (no compare terms;
   v0 compares are converted to derived guards). Actions: `{call}` | `{emit}`.
 

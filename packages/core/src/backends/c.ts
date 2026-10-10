@@ -19,6 +19,9 @@
  * fingerprint. With `debugInfo`: name lookup for events, signals and states
  * and `is_active()`. With `trace` (decided by the IR, see ir/ir.ts): calls to
  * `<prefix>trace(user, kind, id)`, which the application implements.
+ * With timers in the model: a timer enum, `<prefix>timer_start()` and
+ * `<prefix>timer_stop()` for the application to implement, and
+ * `<prefix>timer_event()`, the event to process when a timer expires.
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
@@ -215,6 +218,8 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   const stateName = (region: number, slot: number): string => comment(stateAt.get(`${region}:${slot}`) ?? `slot ${slot}`);
 
   const stateConst = new Map(ir.states.map((st, i) => [i, `${P}STATE_${st.ident}`]));
+  const timerConst = (i: number): string => `${P}TIMER_${ir.timers[i]!.name}`;
+  const hasTimers = ir.timers.length > 0;
   const traceConst = (k: TraceKind): string => `${P}TRACE_${k.toUpperCase()}`;
   // signals get a public enum when the application sees their numbers (trace hook, name lookup)
   const publicSignals = (trace || debugInfo) && ir.signals.length > 0;
@@ -242,11 +247,24 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
       ? ([[`${prefix}trace`, "the trace hook"], [`${prefix}trace_kind`, "the trace kind enum"], ...TRACE_KINDS.map((k) => [traceConst(k), "a trace kind"])] as [string, string][])
       : []),
     ...(debugInfo
-      ? ([`${prefix}event_name`, `${prefix}signal_name`, `${prefix}state_name`, `${prefix}is_active`].map((n) => [n, "a debugInfo function"]) as [string, string][])
+      ? ([`${prefix}event_name`, `${prefix}signal_name`, `${prefix}state_name`, `${prefix}is_active`, ...(hasTimers ? [`${prefix}timer_name`] : [])].map((n) => [
+          n,
+          "a debugInfo function",
+        ]) as [string, string][])
+      : []),
+    ...(hasTimers
+      ? ([
+          [`${prefix}timer`, "the timer enum"],
+          [`${P}TIMER_COUNT`, "the number of timers"],
+          [`${prefix}timer_start`, "the timer start function"],
+          [`${prefix}timer_stop`, "the timer stop function"],
+          [`${prefix}timer_event`, "the timer event function"],
+        ] as [string, string][])
       : []),
     ...[
       "settle", "push_signal", "pop_signal", "m", "rc", "user", "event", "signal", "r", "uint8_t", "uint16_t", "uint32_t",
       "sig", "kind", "id", "state", "event_names", "signal_names", "state_names", "state_region", "state_slot",
+      "timer", "ms", "periodic", "timer_events", "timer_names",
     ].map(
       (n): [string, string] => [n, "an internal name"],
     ),
@@ -271,6 +289,13 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     else if (seen.has(c)) problems.push(`${what} becomes '${c}', like ${seen.get(c)}`);
     seen.set(c, what);
   }
+  ir.timers.forEach((t, i) => {
+    const c = timerConst(i);
+    const what = `timer '${t.name}'`;
+    if (fixed.has(c)) problems.push(`${what} becomes '${c}', which is ${fixed.get(c)}`);
+    else if (seen.has(c)) problems.push(`${what} becomes '${c}', like ${seen.get(c)}`);
+    seen.set(c, what);
+  });
   if (problems.length) throw new CodegenError(`name clash in the generated C (rename, or set targets.c.prefix):\n  ${problems.join("\n  ")}`);
 
   // ------------------------------------------------------------ expressions
@@ -413,6 +438,14 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
           if (s.hook === "transition") line(d, `${prefix}trace(m->user, ${traceConst(s.hook)}, ${s.index}u); /* ${comment(ir.transitions[s.index]!.label)} */`);
           else line(d, `${prefix}trace(m->user, ${traceConst(s.hook)}, ${stateConst.get(s.index)});`);
           break;
+        case "timerStart": {
+          const t = ir.timers[s.timer]!;
+          line(d, `${prefix}timer_start(m->user, ${timerConst(s.timer)}, ${t.ms}u, ${t.periodic});`);
+          break;
+        }
+        case "timerStop":
+          line(d, `${prefix}timer_stop(m->user, ${timerConst(s.timer)});`);
+          break;
         case "terminate":
           line(d, "m->terminated = true;");
           break;
@@ -436,7 +469,7 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   hl(`#define ${guard}`);
   hl();
   hl("#include <stdint.h>");
-  if (hasTerminate || hasBusy || ir.guards.length || (debugInfo && ir.states.length)) hl("#include <stdbool.h>");
+  if (hasTerminate || hasBusy || hasTimers || ir.guards.length || (debugInfo && ir.states.length)) hl("#include <stdbool.h>");
   hl();
   hl("#ifdef __cplusplus");
   hl('extern "C" {');
@@ -451,8 +484,17 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     hl(" * called while another call runs (from an action or guard, or from an");
     hl(" * interrupt handler); such a call changes nothing and the event is lost.");
   }
-  hl(` * The application implements the actions and guards${trace ? " and the trace hook" : ""} declared at the end`);
+  const extras = [...(hasTimers ? ["the timer functions"] : []), ...(trace ? ["the trace hook"] : [])];
+  hl(` * The application implements the actions and guards${extras.length ? ` (and ${extras.join(" and ")})` : ""} declared at the end`);
   hl(` * of this file; each gets the user pointer passed to ${prefix}init().`);
+  if (hasTimers) {
+    hl(` * ${prefix}timer_start() starts a timer (periodic: it expires every ms until stopped,`);
+    hl(` * the application re-arms it); ${prefix}timer_stop() stops it and does nothing for a`);
+    hl(" * timer that is not running. After it returns, no expiry of the earlier start");
+    hl(` * should be delivered. On expiry, pass ${prefix}timer_event(timer) to ${prefix}process().`);
+    hl(` * Both are called inside ${prefix}init(), ${prefix}reset() and ${prefix}process(): they must not`);
+    hl(" * block or call the machine.");
+  }
   if (trace) {
     hl(` * ${prefix}trace() is called inside ${prefix}init(), ${prefix}reset() and ${prefix}process()`);
     hl(" * with ids only (event, signal, transition, entered and exited state); it must");
@@ -491,6 +533,14 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   }
   hl(`#define ${P}FINGERPRINT ${hex32(ir.fingerprint)}u`);
   hl();
+  if (hasTimers) {
+    hl("/* Timers: started when their state is entered, stopped when it is left. */");
+    hl(`enum ${prefix}timer {`);
+    ir.timers.forEach((t, i) => hl(`    ${timerConst(i)} = ${i}, /* ${t.periodic ? "every" : "after"} ${t.ms} ms -> ${comment(ir.events[t.event]!.name)} */`));
+    hl("};");
+    hl(`#define ${P}TIMER_COUNT ${ir.timers.length}`);
+    hl();
+  }
   if (trace) {
     hl(`enum ${prefix}trace_kind {`);
     hl(`    ${traceConst("event")} = 0, /* id: enum ${prefix}event; process() accepted it */`);
@@ -527,6 +577,11 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   hl(`int ${prefix}init(${machine} *m, void *user);`);
   hl(`int ${prefix}reset(${machine} *m);`);
   if (ir.events.length) hl(`int ${prefix}process(${machine} *m, enum ${prefix}event event);`);
+  if (hasTimers) {
+    hl();
+    hl("/* The event to process when a timer expires. */");
+    hl(`enum ${prefix}event ${prefix}timer_event(enum ${prefix}timer timer);`);
+  }
   if (debugInfo && (ir.events.length || ir.signals.length || ir.states.length)) {
     hl();
     hl("/* Names as in the model; NULL for a number out of range. */");
@@ -536,12 +591,17 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
       hl(`const char *${prefix}state_name(uint16_t state);`);
       hl(`bool ${prefix}is_active(const ${machine} *m, uint16_t state);`);
     }
+    if (hasTimers) hl(`const char *${prefix}timer_name(uint16_t timer);`);
   }
-  if (ir.actions.length || ir.guards.length || trace) {
+  if (ir.actions.length || ir.guards.length || trace || hasTimers) {
     hl();
     hl("/* Implemented by the application */");
     for (const a of ir.actions) hl(`void ${name.get(a.id)}(void *user);`);
     for (const g of ir.guards) hl(`bool ${name.get(g.id)}(void *user);`);
+    if (hasTimers) {
+      hl(`void ${prefix}timer_start(void *user, enum ${prefix}timer timer, uint32_t ms, bool periodic);`);
+      hl(`void ${prefix}timer_stop(void *user, enum ${prefix}timer timer);`);
+    }
     if (trace) hl(`void ${prefix}trace(void *user, enum ${prefix}trace_kind kind, uint16_t id);`);
   }
   hl();
@@ -752,6 +812,18 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     line(0, "}");
   }
 
+  if (hasTimers) {
+    line(0, "");
+    line(0, `static const enum ${prefix}event timer_events[${ir.timers.length}] = {`);
+    for (const t of ir.timers) line(1, `${name.get(ir.events[t.event]!.id)},`);
+    line(0, "};");
+    line(0, "");
+    line(0, `enum ${prefix}event ${prefix}timer_event(enum ${prefix}timer timer)`);
+    line(0, "{");
+    line(1, "return timer_events[timer];");
+    line(0, "}");
+  }
+
   if (debugInfo) {
     const lookup = (fn: string, param: string, table: string, names: string[]): void => {
       line(0, "");
@@ -777,6 +849,7 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
       line(1, `return state < ${ir.states.length} && m->cfg[state_region[state]] == state_slot[state];`);
       line(0, "}");
     }
+    if (hasTimers) lookup("timer_name", "timer", "timer_names", ir.timers.map((t) => t.name));
   }
 
   return { headerName, sourceName: `${file}.c`, header: `${h.join("\n")}\n`, source: `${out.join("\n")}\n` };

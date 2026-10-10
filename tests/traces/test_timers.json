@@ -1,0 +1,52 @@
+{
+  "model": "../models/test_timers.ufsm",
+  "doc": "Timers start after their state's entry actions and before its regions are entered; they stop after the state's children are exited and before its exit actions; a state's timers in list order. reset() and terminate stop every timer (states in document order, then list order). An expiry is an ordinary event the environment sends. Durations are reported in ms.",
+  "steps": [
+    { "reset": true, "expect": ["stop:travel", "stop:poll", "stop:blink", "stop:long", "eIdle"], "active": ["Idle"], "doc": "reset() stops every timer first, whatever runs." },
+    { "send": "eTick", "expect": [], "doc": "A late expiry where nothing reacts to it is ignored." },
+    {
+      "send": "eGo",
+      "expect": ["eP", "start:travel(2000 ms)", "start:poll(every 100 ms)", "iP", "eC1", "start:blink(every 60000 ms)"],
+      "active": ["P", "C1"],
+      "doc": "P's timers start after its entry actions, before the region's initializer action and C1's entry."
+    },
+    { "send": "eInt", "expect": ["aInt"], "doc": "An internal transition touches no timer." },
+    {
+      "send": "eTick",
+      "expect": ["stop:blink", "xC1", "eC2", "start:long(3600000 ms)"],
+      "active": ["P", "C2"],
+      "inactive": ["C1"],
+      "doc": "poll's expiry is handled like any event; P's timers keep running."
+    },
+    { "send": "eLong", "expect": [], "active": ["C2"] },
+    {
+      "send": "eSelf",
+      "expect": [
+        "stop:long", "xC2", "stop:travel", "stop:poll", "xP", "aSelf",
+        "eP", "start:travel(2000 ms)", "start:poll(every 100 ms)", "eC2", "start:long(3600000 ms)"
+      ],
+      "active": ["P", "C2"],
+      "doc": "An external self-transition restarts P's timers; history restores C2 and starts its timer."
+    },
+    {
+      "send": "eTimeout",
+      "expect": ["stop:long", "xC2", "stop:travel", "stop:poll", "xP", "eIdle"],
+      "active": ["Idle"],
+      "inactive": ["P"]
+    },
+    {
+      "send": "eGo",
+      "expect": ["eP", "start:travel(2000 ms)", "start:poll(every 100 ms)", "eC2", "start:long(3600000 ms)"],
+      "active": ["C2"],
+      "doc": "History restores C2: its timer starts too."
+    },
+    {
+      "send": "eEnd",
+      "expect": ["stop:long", "xC2", "stop:travel", "stop:poll", "stop:blink", "stop:long"],
+      "inactive": ["P", "C2"],
+      "doc": "C2 is exited (its timer stops before xC2); terminate then stops every timer, without exit actions."
+    },
+    { "send": "eGo", "expect": [], "doc": "Terminated: nothing runs until reset()." },
+    { "reset": true, "expect": ["stop:travel", "stop:poll", "stop:blink", "stop:long", "eIdle"], "active": ["Idle"] }
+  ]
+}

@@ -3,7 +3,7 @@
 
 /**
  * Property edits: what the editor's Properties and Project panels change. Names, documentation, entry/exit actions,
- * triggers, guards and actions of transitions (internal ones too), regions (name, off-page), fork/join orientation,
+ * triggers, guards and actions of transitions (internal ones too), timers, regions (name, off-page), fork/join orientation,
  * declarations (add, rename, delete) and the file-level settings (name, description, paper size, title block fields,
  * generator options). Every function mutates the document it is given
  * (an Immer draft in the editor). Checks that need a message for the user are separate (`declNameProblem`,
@@ -19,6 +19,8 @@ import { DECL_PREFIX, ID_PREFIX, IdAllocator } from "./ids";
 import type { OptionKey } from "./options";
 import {
   IDENTIFIER,
+  TIMER_MAX_MS,
+  TIMER_UNIT_MS,
   type Action,
   type Decl,
   type DeclKind,
@@ -29,6 +31,8 @@ import {
   type Paper,
   type Region,
   type State,
+  type Timer,
+  type TimerUnit,
   type TitleBlock,
   type Transition,
   type UfsmDocument,
@@ -70,7 +74,7 @@ export function renameDecl(doc: UfsmDocument, id: Id, name: string): void {
   if (d && d.decl.name !== name) d.decl.name = name;
 }
 
-/** Every place that uses a declaration, as the ids of the elements (states, transitions, internal transitions). */
+/** Every place that uses a declaration, as the ids of the elements (states, transitions, internal transitions, timers). */
 export function declUses(index: DocIndex, id: Id): Id[] {
   const out: Id[] = [];
   const inActions = (list: Action[] | undefined): boolean => !!list?.some((a) => ("call" in a ? a.call : a.emit) === id);
@@ -78,6 +82,7 @@ export function declUses(index: DocIndex, id: Id): Id[] {
   for (const { vertex } of index.vertices.values()) {
     if (vertex.kind !== "state") continue;
     if (inActions(vertex.entry) || inActions(vertex.exit)) out.push(vertex.id);
+    for (const t of vertex.timers ?? []) if (t.event === id) out.push(t.id);
     for (const t of vertex.internal ?? []) if (t.on === id || inGuard(t.guard) || inActions(t.do)) out.push(t.id);
   }
   for (const t of index.doc.machine.transitions) if (t.on === id || inGuard(t.guard) || inActions(t.do)) out.push(t.id);
@@ -93,7 +98,7 @@ function setList<O extends object, K extends keyof O>(o: O, k: K, list: NonNulla
 /**
  * Delete a declaration and its uses: action calls and emits are removed from entry, exit and transition actions,
  * guard terms calling it are removed (an empty guard goes), transitions triggered by it lose their trigger, and
- * internal transitions triggered by it are deleted (they need a trigger).
+ * internal transitions triggered by it and timers firing it are deleted (they need one).
  */
 export function deleteDecl(doc: UfsmDocument, id: Id): void {
   const d = findDecl(doc, id);
@@ -110,6 +115,7 @@ export function deleteDecl(doc: UfsmDocument, id: Id): void {
       if (v.kind !== "state") continue;
       if (v.entry?.some((a) => !keepA(a))) setList(v, "entry", v.entry.filter(keepA));
       if (v.exit?.some((a) => !keepA(a))) setList(v, "exit", v.exit.filter(keepA));
+      if (v.timers?.some((t) => t.event === id)) setList(v, "timers", v.timers.filter((t) => t.event !== id));
       if (v.internal) {
         if (v.internal.some((t) => t.on === id)) setList(v, "internal", v.internal.filter((t) => t.on !== id));
         v.internal?.forEach(clean);
@@ -124,14 +130,15 @@ export function deleteDecl(doc: UfsmDocument, id: Id): void {
   }
 }
 
-/** Set (or with "" remove) the `doc` text of a declaration, state, transition or internal transition. */
+/** Set (or with "" remove) the `doc` text of a declaration, state, transition, internal transition or timer. */
 export function setDocText(doc: UfsmDocument, id: Id, text: string): void {
   const index = indexV1(doc);
   const target: { doc?: string } | undefined =
     index.decls.get(id)?.decl ??
     (index.vertices.get(id)?.vertex.kind === "state" ? (index.vertices.get(id)!.vertex as State) : undefined) ??
     index.transitions.get(id) ??
-    index.internals.get(id)?.transition;
+    index.internals.get(id)?.transition ??
+    index.timers.get(id)?.timer;
   if (!target) return;
   if (text === "") delete target.doc;
   else if (target.doc !== text) target.doc = text;
@@ -260,6 +267,67 @@ export function addInternal(doc: UfsmDocument, stateId: Id, on: Id, opts: { ids?
   const id = (opts.ids ?? new IdAllocator(doc)).take(ID_PREFIX.transition);
   (v.internal ??= []).push({ id, on });
   return id;
+}
+
+/** Why `name` cannot name a timer (a message for the user), or undefined. `except` is the timer being renamed. */
+export function timerNameProblem(index: DocIndex, name: string, except?: Id): string | undefined {
+  if (name === "") return "A name is needed.";
+  if (!IDENTIFIER.test(name)) return `'${name}' is not an identifier: letters, digits and _, not starting with a digit.`;
+  for (const { timer, state } of index.timers.values()) {
+    if (timer.name === name && timer.id !== except) return `'${name}' is the name of a timer of '${state.name}' already.`;
+  }
+  return undefined;
+}
+
+/** Why `count` `unit` cannot be a timer's duration (a message for the user), or undefined. */
+export function timerDurationProblem(count: number, unit: TimerUnit): string | undefined {
+  if (!Number.isInteger(count) || count < 1) return "A whole number from 1 up is needed.";
+  if (count * TIMER_UNIT_MS[unit] > TIMER_MAX_MS) {
+    return `At most ${Math.floor(TIMER_MAX_MS / TIMER_UNIT_MS[unit])} ${unit} (2^32 - 1 ms, about 49.7 days).`;
+  }
+  return undefined;
+}
+
+/** A timer name no timer of the machine has: `timer1`, `timer2`, ... */
+export function freshTimerName(index: DocIndex): string {
+  const taken = new Set([...index.timers.values()].map((t) => t.timer.name));
+  let n = 1;
+  while (taken.has(`timer${n}`)) n++;
+  return `timer${n}`;
+}
+
+/** Add a timer to a state: one-shot after 1 s, firing event `event`; returns its id (undefined for a non-state). */
+export function addTimer(doc: UfsmDocument, stateId: Id, event: Id, opts: { ids?: IdAllocator; name?: string } = {}): Id | undefined {
+  const index = indexV1(doc);
+  const v = index.vertices.get(stateId)?.vertex;
+  if (v?.kind !== "state") return undefined;
+  const id = (opts.ids ?? new IdAllocator(doc)).take(ID_PREFIX.timer);
+  (v.timers ??= []).push({ id, name: opts.name ?? freshTimerName(index), after: 1, unit: "s", event });
+  return id;
+}
+
+/** What `setTimer` changes; fields left out stay as they are. */
+export interface TimerChange {
+  name?: string;
+  /** One-shot (`after`) or periodic (`every`); the count is kept. */
+  kind?: "after" | "every";
+  count?: number;
+  unit?: TimerUnit;
+  event?: Id;
+}
+
+/** Change a timer (check timerNameProblem and timerDurationProblem first). */
+export function setTimer(doc: UfsmDocument, timerId: Id, change: TimerChange): void {
+  const found = indexV1(doc).timers.get(timerId);
+  if (!found) return;
+  const t: Timer = found.timer;
+  const kind = change.kind ?? (t.every !== undefined ? "every" : "after");
+  const count = change.count ?? t.after ?? t.every ?? 1;
+  if (change.name !== undefined && t.name !== change.name) t.name = change.name;
+  if (change.unit !== undefined && t.unit !== change.unit) t.unit = change.unit;
+  if (change.event !== undefined && t.event !== change.event) t.event = change.event;
+  if (t[kind === "after" ? "every" : "after"] !== undefined) delete t[kind === "after" ? "every" : "after"];
+  if (t[kind] !== count) t[kind] = count;
 }
 
 /**

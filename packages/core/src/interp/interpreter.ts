@@ -17,6 +17,7 @@ import {
   conflicts,
   type CompoundTransition,
   type SemRegion,
+  type SemTimer,
   type SemVertex,
   type Structure,
 } from "../semantics/structure";
@@ -25,6 +26,10 @@ import {
 export interface InterpreterHost {
   call?(name: string, id: Id): void;
   guard?(name: string, id: Id): boolean;
+  /** Start a timer (by name and id): one-shot, or periodic (the host re-arms it). On expiry the host sends its event. */
+  timerStart?(name: string, id: Id, ms: number, periodic: boolean): void;
+  /** Stop a timer; stopping one that is not running does nothing. */
+  timerStop?(name: string, id: Id): void;
 }
 
 export type TraceEntry =
@@ -35,6 +40,8 @@ export type TraceEntry =
   /** `id` carries the trigger (a join's outgoing transition); `parts` are every model transition taken, fork/join legs included. */
   | { type: "transition"; id: Id; parts: Id[]; internal: boolean }
   | { type: "event"; name: string; signal: boolean }
+  | { type: "timer-start"; timer: string; id: Id; ms: number; periodic: boolean }
+  | { type: "timer-stop"; timer: string; id: Id }
   | { type: "reset" }
   | { type: "terminate" };
 
@@ -126,6 +133,7 @@ export class Interpreter {
     this.terminatedFlag = false;
     this.steps = 0;
     this.trace({ type: "reset" });
+    this.stopTimers(this.structure.timers);
     this.enter([], [this.structure.root]);
     this.settle();
     this.busy = false;
@@ -271,6 +279,7 @@ export class Interpreter {
     for (const s of exitOrder) for (const r of s.regions) if (r.history) this.recordHistory(r);
     for (const s of exitOrder) {
       this.trace({ type: "exit", state: s.id });
+      this.stopTimers(s.timers);
       if (s.vertex.kind === "state") this.run(s.vertex.exit);
       this.active.delete(s);
     }
@@ -357,6 +366,7 @@ export class Interpreter {
         this.active.add(item);
         this.trace({ type: "enter", state: item.id });
         if (item.vertex.kind === "state") this.run(item.vertex.entry);
+        this.startTimers(item.timers);
       } else {
         this.run(content.get(item));
       }
@@ -367,6 +377,23 @@ export class Interpreter {
       this.terminatedFlag = true;
       this.active.clear();
       this.queue = [];
+      this.stopTimers(this.structure.timers);
+    }
+  }
+
+  // ------------------------------------------------------------ timers
+
+  private startTimers(timers: SemTimer[]): void {
+    for (const t of timers) {
+      this.trace({ type: "timer-start", timer: t.name, id: t.id, ms: t.ms, periodic: t.periodic });
+      this.host.timerStart?.(t.name, t.id, t.ms, t.periodic);
+    }
+  }
+
+  private stopTimers(timers: SemTimer[]): void {
+    for (const t of timers) {
+      this.trace({ type: "timer-stop", timer: t.name, id: t.id });
+      this.host.timerStop?.(t.name, t.id);
     }
   }
 

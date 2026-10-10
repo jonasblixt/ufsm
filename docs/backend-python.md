@@ -105,6 +105,45 @@ class Dimmer:
 - Everything else (`_cfg`, `_step_eButton`, ...) is internal and may change
   between uFSM versions.
 
+## Timers
+
+A model with [timers](format-v1.md#timers) gets a timer enum, two more
+handler methods and a module function that gives the event to process when
+a timer expires (none of this without timers). For `door` with timers
+`travel` and `poll`:
+
+```python
+class DoorTimer(IntEnum):
+    travel = 0  # after 20000 ms -> eTravelTimeout
+    poll = 1  # every 500 ms -> ePoll
+
+
+def door_timer_event(timer: DoorTimer) -> DoorEvent: ...  # <module>_timer_event
+
+
+class DoorHandler(Protocol):
+    def timer_start(self, timer: DoorTimer, ms: int, periodic: bool) -> None: ...
+    def timer_stop(self, timer: DoorTimer) -> None: ...
+    # ... actions and guards
+```
+
+The handler runs the clock (an asyncio task, `threading.Timer`, a GUI
+toolkit's timer, ...) and, on expiry, calls
+`machine.process(door_timer_event(timer))` from the thread that owns the
+machine. With `debugInfo`, `Door.TIMER_NAMES` names them. An action or guard
+named `timer_start` or `timer_stop` clashes with the handler's methods. The
+contract:
+
+- Stopping a timer that is not running does nothing.
+- A periodic timer is started once; the application re-arms it every period.
+- After a stop returns, no expiry of the earlier start should be delivered.
+  One that is already queued arrives as an ordinary event and is handled as
+  such (in a state that does not react to it, nothing happens).
+- Start and stop run inside `reset()` and `process()`: they must not block or
+  call the machine. `reset()` stops every timer first, whatever runs.
+
+See [Timers](semantics.md#timers) for when the machine starts and stops them.
+
 ## Debugging
 
 Always generated: a state enum (normal and final states in document order,

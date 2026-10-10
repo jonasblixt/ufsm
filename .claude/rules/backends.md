@@ -34,6 +34,12 @@ paths:
   `rustc`); clippy (`$CLIPPY_DRIVER`) and rustfmt (`$RUSTFMT`) checks skip
   without those; CI sets `UFSM_REQUIRE_RUST` (all three).
   `UFSM_RUST_RANDOM=<n>` runs more random models.
+- Timers: a test driver implements `timer_start`/`timer_stop` and logs them
+  among the action calls as `~start:<name>:<ms>:<0|1>` / `~stop:<name>`
+  (`driverCall` in `test/harness.ts` turns them into the trace spelling); it
+  also checks the timer's expiry event (and name with `debugInfo`). Random
+  models have timers (`test/random-model.ts`), so every differential pass
+  covers them; `tests/traces/test_timers.json` pins the order down.
 - Every backend's differential runs include a pass with `debugInfo` and
   `trace` on: generated trace hook calls are logged among the action calls as
   pseudo-calls (`decodeHooks`/`interpreterHooks` in `test/harness.ts`) and

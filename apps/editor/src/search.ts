@@ -3,7 +3,7 @@
 
 /**
  * The search behind the title bar's search field (Ctrl+P), after VS Code's Quick Open and command palette: one list
- * of everything a name can find — states, regions, transitions, internal transitions and declarations of every open
+ * of everything a name can find — states, regions, transitions, internal transitions, timers and declarations of every open
  * machine, the machines themselves, every command of the menus and the settings — ranked by how well it matches.
  * A prefix narrows it, as in VS Code: `>` commands and settings (Ctrl+Shift+P, F1), `@` elements of the machine in
  * focus, `#` elements of all open machines, `?` lists the prefixes.
@@ -19,6 +19,7 @@ import {
   actionLabel,
   ancestors,
   internalTransitionLabel,
+  timerLabel,
   transitionLabel,
   vertexName,
   type DeclKind,
@@ -34,6 +35,7 @@ export type ItemKind =
   | "region"
   | "transition"
   | "internal"
+  | "timer"
   | DeclKind
   | "help";
 
@@ -111,7 +113,7 @@ export function helpItems(machine: string | undefined): SearchItem[] {
   ];
 }
 
-const ELEMENT_KINDS: ReadonlySet<ItemKind> = new Set(["state", "pseudo", "region", "transition", "internal", "event", "signal", "action", "guard"]);
+const ELEMENT_KINDS: ReadonlySet<ItemKind> = new Set(["state", "pseudo", "region", "transition", "internal", "timer", "event", "signal", "action", "guard"]);
 export const isElement = (it: SearchItem): boolean => ELEMENT_KINDS.has(it.kind);
 const isCommand = (it: SearchItem): boolean => it.kind === "command" || it.kind === "setting";
 
@@ -129,7 +131,7 @@ const PSEUDO_NAMES: Readonly<Record<string, string>> = {
 
 /**
  * Everything of one machine a search can find, in document order: states (and named pseudo-states), off-page regions
- * and named regions of states with several, transitions, internal transitions, then declarations (events, signals,
+ * and named regions of states with several, transitions, internal transitions, timers, then declarations (events, signals,
  * actions, guards).
  */
 export function elementItems(index: DocIndex, doc: number, docName: string): SearchItem[] {
@@ -162,6 +164,10 @@ export function elementItems(index: DocIndex, doc: number, docName: string): Sea
   }
   for (const { transition: t, state } of index.internals.values()) {
     out.push({ ...base, key: key(t.id), kind: "internal", id: t.id, label: internalTransitionLabel(index, t), detail: `internal, in ${state.name}` });
+  }
+  for (const { timer: t, state } of index.timers.values()) {
+    // the label `t/name(20 s, eEvent)` is searched by the timer's name; the rest are hidden words
+    out.push({ ...base, key: key(t.id), kind: "timer", id: t.id, label: t.name, detail: `${timerLabel(index, t)} in ${state.name}`, keywords: timerLabel(index, t) });
   }
   for (const { kind, decl } of index.decls.values()) {
     out.push({ ...base, key: key(decl.id), kind, id: decl.id, label: decl.name, detail: decl.doc ? `${kind} · ${decl.doc}` : kind });
@@ -368,7 +374,7 @@ export interface SearchContext {
   limit?: number;
 }
 
-const KIND_ORDER: readonly ItemKind[] = ["state", "machine", "command", "setting", "region", "pseudo", "transition", "internal", "event", "signal", "action", "guard", "help"];
+const KIND_ORDER: readonly ItemKind[] = ["state", "machine", "command", "setting", "region", "pseudo", "transition", "internal", "timer", "event", "signal", "action", "guard", "help"];
 
 /** Items `mode` looks at. */
 function inMode(it: SearchItem, mode: Mode, activeDoc: number | undefined): boolean {

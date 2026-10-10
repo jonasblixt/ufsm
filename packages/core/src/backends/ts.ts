@@ -22,7 +22,9 @@
  * Always: `<Class>State` (document order) and `<Class>.FINGERPRINT`. With
  * `debugInfo`: `EVENT_NAMES`, `SIGNAL_NAMES`, `STATE_NAMES` and `isActive()`.
  * With `trace` (decided by the IR): `<Class>TraceKind` and a
- * `trace(kind, id)` method on the handler.
+ * `trace(kind, id)` method on the handler. With timers in the model:
+ * `<Class>Timer`, `timer_start()` and `timer_stop()` on the handler, and
+ * `<class>TimerEvent()`, the event to process when a timer expires.
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
@@ -114,6 +116,9 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
   const stateCls = `${cls}State`;
   const signalCls = `${cls}Signal`;
   const kindCls = `${cls}TraceKind`;
+  const timerCls = `${cls}Timer`;
+  const timerEventFn = `${cls[0]!.toLowerCase()}${cls.slice(1)}TimerEvent`;
+  const hasTimers = ir.timers.length > 0;
   if (options.trace !== undefined && options.trace !== ir.trace) throw new CodegenError("options.trace differs from the IR's: lower the model with { trace }");
   const trace = ir.trace;
   const debugInfo = options.debugInfo ?? false;
@@ -167,8 +172,12 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
     for (const d of list) {
       if (OBJECT_MEMBERS.has(d.name)) problems.push(`${kind} '${d.name}' is a name every JavaScript object already has`);
       else if (trace && d.name === "trace" && (kind === "action" || kind === "guard")) problems.push(`${kind} 'trace' is the name of the trace hook`);
+      else if (hasTimers && (d.name === "timer_start" || d.name === "timer_stop") && (kind === "action" || kind === "guard")) {
+        problems.push(`${kind} '${d.name}' is the name of a timer function of the handler`);
+      }
     }
   }
+  for (const t of ir.timers) if (OBJECT_MEMBERS.has(t.name)) problems.push(`timer '${t.name}' is a name every JavaScript object already has`);
   for (const st of ir.states) if (OBJECT_MEMBERS.has(st.ident)) problems.push(`state '${st.label}' is a name every JavaScript object already has`);
   if (problems.length) throw new CodegenError(`names that cannot be used in the generated TypeScript (rename them):\n  ${problems.join("\n  ")}`);
 
@@ -311,6 +320,14 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
           if (s.hook === "transition") line(d, `this.h.trace(${kindCls}.transition, ${s.index}); // ${comment(ir.transitions[s.index]!.label)}`);
           else line(d, `this.h.trace(${kindCls}.${s.hook}, ${stateCls}.${ir.states[s.index]!.ident});`);
           break;
+        case "timerStart": {
+          const t = ir.timers[s.timer]!;
+          line(d, `this.h.timer_start(${timerCls}.${t.name}, ${t.ms}, ${t.periodic});`);
+          break;
+        }
+        case "timerStop":
+          line(d, `this.h.timer_stop(${timerCls}.${ir.timers[s.timer]!.name});`);
+          break;
         case "terminate":
           line(d, "this.terminated = true;");
           break;
@@ -374,6 +391,19 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
   };
   if (publicSignals) constEnum(signalCls, undefined, ir.signals.map((x) => [x.name]));
   constEnum(stateCls, "States in document order.", ir.states.map((st) => [st.ident, st.label !== st.ident ? st.label : undefined]));
+  if (hasTimers) {
+    constEnum(
+      timerCls,
+      "Timers: started when their state is entered, stopped when it is left.",
+      ir.timers.map((t) => [t.name, `${t.periodic ? "every" : "after"} ${t.ms} ms -> ${ir.events[t.event]!.name}`]),
+    );
+    line(0, "/** The event to process when a timer expires. */");
+    line(0, `export function ${timerEventFn}(timer: ${timerCls}): ${eventCls} {`);
+    line(1, `const events = [${ir.timers.map((t) => `${eventCls}.${ir.events[t.event]!.name}`).join(", ")}] as const;`);
+    line(1, "return events[timer];");
+    line(0, "}");
+    line(0, "");
+  }
   if (trace) {
     const what = {
       event: `${eventCls}; process() accepted it`,
@@ -385,10 +415,19 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
     constEnum(kindCls, `What ${handlerT}.trace() reports; the id is a number of the type named here.`, TRACE_KINDS.map((k) => [k, what[k]]));
   }
   line(0, "/** Actions and guards the machine calls. Guards may be called more than once per event and in any order. */");
-  if (ir.actions.length || ir.guards.length || trace) {
+  if (ir.actions.length || ir.guards.length || trace || hasTimers) {
     line(0, `export interface ${handlerT} {`);
     for (const a of ir.actions) line(1, `${a.name}(): void;`);
     for (const g of ir.guards) line(1, `${g.name}(): boolean;`);
+    if (hasTimers) {
+      line(1, "/**");
+      line(1, " * Start a timer: it expires once, or every `ms` until stopped (the handler re-arms it). On expiry, pass");
+      line(1, ` * ${timerEventFn}(timer) to process(). Called inside reset() and process(): must not block or call the machine.`);
+      line(1, " */");
+      line(1, `timer_start(timer: ${timerCls}, ms: number, periodic: boolean): void;`);
+      line(1, "/** Stop a timer; does nothing if it is not running. No expiry of the earlier start should follow. */");
+      line(1, `timer_stop(timer: ${timerCls}): void;`);
+    }
     if (trace) {
       line(1, "/** Called inside reset() and process() with ids only; must not block or call the machine. */");
       line(1, `trace(kind: ${kindCls}, id: number): void;`);
@@ -419,11 +458,15 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
     line(1, `static readonly SIGNAL_NAMES: readonly string[] = ${names(ir.signals.map((x) => x.name))};`);
     line(1, "/** State names as in the model (qualified when not unique), by number. */");
     line(1, `static readonly STATE_NAMES: readonly string[] = ${names(ir.states.map((st) => st.label))};`);
+    if (hasTimers) {
+      line(1, "/** Timer names as in the model, by number. */");
+      line(1, `static readonly TIMER_NAMES: readonly string[] = ${names(ir.timers.map((t) => t.name))};`);
+    }
     if (ir.states.length) {
       line(1, `private static readonly STATE_AT: readonly (readonly [number, number])[] = [${ir.states.map((st) => `[${st.region}, ${st.slot}]`).join(", ")}];`);
     }
   }
-  const usesHandler = ir.actions.length + ir.guards.length > 0 || trace;
+  const usesHandler = ir.actions.length + ir.guards.length > 0 || trace || hasTimers;
   line(1, `private readonly h: ${handlerT};`);
   line(1, "private started = false;");
   line(1, "/** A reset()/process() call is running, or one did not finish. */");

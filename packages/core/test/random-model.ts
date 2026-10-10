@@ -5,7 +5,7 @@
  * Random but valid models for differential testing (interpreter vs flat
  * rules vs generated code). Deterministic for a given seed.
  */
-import type { Action, GuardTerm, InternalTransition, Region, State, Transition, UfsmDocument, Vertex } from "../src/index";
+import type { Action, GuardTerm, InternalTransition, Region, State, Timer, TimerUnit, Transition, UfsmDocument, Vertex } from "../src/index";
 
 export interface RandomModelOptions {
   maxDepth?: number;
@@ -16,6 +16,8 @@ export interface RandomModelOptions {
   guards?: number;
   /** Allow joins (selection rules for joins are uFSM-specific, see docs/semantics.md). */
   joins?: boolean;
+  /** Give some states timers (default true). */
+  timers?: boolean;
 }
 
 /** mulberry32 */
@@ -203,6 +205,24 @@ export function randomModel(seed: number, opts: RandomModelOptions = {}): UfsmDo
       if (signals.length && ri() < 0.2) d.push({ emit: pickI(signals).id });
       it.do = d;
       (st.internal ??= []).push(it);
+    }
+  }
+
+  // timers, now and then; their own generator too. They fire the model's events (so an expiry is just one of the
+  // events a script sends) and use every unit; one in a while is near the uint32 limit (1193 h = 4 294 800 000 ms),
+  // which a signed 32-bit integer would get wrong.
+  const rt = rng(seed * 104729 + 7);
+  const pickT = <T>(xs: readonly T[]): T => xs[Math.floor(rt() * xs.length)]!;
+  let nTimer = 0;
+  for (const st of opts.timers === false ? [] : states) {
+    if (rt() >= 0.2) continue;
+    for (let k = rt() < 0.3 ? 2 : 1; k > 0; k--) {
+      const n = ++nTimer;
+      const unit = pickT<TimerUnit>(["ms", "s", "min", "h"]);
+      const count = rt() < 0.05 ? (unit === "h" ? 1193 : 1) : 1 + Math.floor(rt() * 999);
+      const base = { id: `tm${n}`, name: `k${n}`, unit, event: pickT(events).id };
+      const timer: Timer = rt() < 0.5 ? { ...base, after: count } : { ...base, every: count };
+      (st.timers ??= []).push(timer);
     }
   }
 

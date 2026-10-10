@@ -3,11 +3,12 @@
 
 /**
  * The Simulator tab: start/stop, events to send (marked when they would take a transition now; hovering one shows
- * those transitions on the canvas), guard values, the active states, the recorded trace and the step log.
+ * those transitions on the canvas), guard values, the active states, the running timers (fire one to send its event),
+ * the recorded trace and the step log.
  */
 import { Component, type ComponentChildren } from "preact";
 import { useState } from "preact/hooks";
-import { vertexName, type DocIndex, type Id } from "@ufsm/core";
+import { timerDurationLabel, vertexName, type DocIndex, type Id } from "@ufsm/core";
 import { type LogLine, type LogStep, type SimOptions, type Simulation } from "./sim";
 import { Field, Section } from "./widgets";
 
@@ -16,6 +17,8 @@ export interface SimOps {
   start(): void;
   stop(): void;
   send(event: string): void;
+  /** A running timer expires: send its event. */
+  fire(timerId: Id): void;
   setGuard(name: string, value: boolean): void;
   setOption(key: keyof SimOptions, value: number): void;
   /** The event under the pointer (its transitions are shown on the canvas), or undefined. */
@@ -110,6 +113,14 @@ function Line({ index, line, ops }: { index: DocIndex; line: LogLine; ops: SimOp
           <code>{line.name}</code>
         </div>
       );
+    case "timer":
+      return (
+        <div class="sline timer">
+          <span class="sk">{line.start ? "start" : "stop"}</span>
+          <code>{line.name}</code>
+          {line.start && <span class="dim"> {`${line.periodic ? "every " : ""}${line.ms} ms`}</span>}
+        </div>
+      );
     case "terminate":
       return (
         <div class="sline terminate">
@@ -126,6 +137,7 @@ function Step({ index, step, ops }: { index: DocIndex; step: LogStep; ops: SimOp
       <div class="shead">
         <span class="sn">{step.n}</span>
         <span class="sev">{step.event ?? "reset"}</span>
+        {step.timer && <span class="dim">timer {step.timer}</span>}
         {guards && <span class="dim sguards">{guards}</span>}
       </div>
       {step.lines.map((l, i) => (
@@ -273,6 +285,35 @@ function Guards({ index, guards, ops }: { index: DocIndex; guards: SimProps["gua
   );
 }
 
+/** The running timers; time is virtual, so a timer expires when Fire sends its event. */
+function Timers({ sim, live, ops }: { sim: Simulation; live: boolean; ops: SimOps }) {
+  const running = sim.timers();
+  return (
+    <Section title="Timers" count={running.length}>
+      {running.length === 0 && <div class="none">None running.</div>}
+      {running.map((t) => {
+        const owner = sim.index.timers.get(t.id);
+        return (
+          <div class="erow stimer" key={t.id}>
+            <span class="elabel">
+              <code>{t.name}</code> <span class="dim">{owner ? `${timerDurationLabel(owner.timer)} → ${t.event}, in ${owner.state.name}` : t.event}</span>
+            </span>
+            <button
+              type="button"
+              class="sbtn"
+              disabled={!live}
+              title={`Expire now: send ${t.event}${t.periodic ? " (the timer keeps running)" : ""}`}
+              onClick={() => ops.fire(t.id)}
+            >
+              Fire
+            </button>
+          </div>
+        );
+      })}
+    </Section>
+  );
+}
+
 function Controls(p: SimProps) {
   const running = p.sim !== undefined;
   let state: ComponentChildren;
@@ -324,6 +365,7 @@ export function SimulatorTab(p: SimProps) {
           </ul>
         </Section>
       )}
+      {sim && !p.stale && sim.index.timers.size > 0 && <Timers sim={sim} live={live} ops={p.ops} />}
       {sim && (
         <Section title="Trace" count={sim.steps.length}>
           <div class="erow">

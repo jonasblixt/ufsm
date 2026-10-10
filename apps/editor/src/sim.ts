@@ -6,6 +6,9 @@
  * the panel, the highlight for the canvas, and every step recorded as a conformance trace (tests/traces format) that
  * can be saved and replayed against the interpreter and the generated code.
  *
+ * Time is virtual, as in traces: the simulator keeps the timers the machine started (and has not stopped) and fires
+ * one on request by sending its event. A one-shot timer is no longer running once fired; a periodic one keeps running.
+ *
  * No DOM here, so it is unit-tested with node:test.
  */
 import {
@@ -15,6 +18,8 @@ import {
   indexV1,
   behaviourOptions,
   resolveStateRef,
+  timerStartCall,
+  timerStopCall,
   type DocIndex,
   type Id,
   type Trace,
@@ -37,13 +42,26 @@ export type LogLine =
   | { kind: "exit" | "enter"; state: Id }
   | { kind: "transition"; id: Id; internal: boolean }
   | { kind: "call" | "emit" | "signal"; name: string }
+  | { kind: "timer"; start: boolean; name: string; ms: number; periodic: boolean }
   | { kind: "terminate" };
+
+/** A timer the machine started and has not stopped (the simulator's virtual clock). */
+export interface RunningTimer {
+  id: Id;
+  name: string;
+  ms: number;
+  periodic: boolean;
+  /** Name of the event its expiry sends. */
+  event: string;
+}
 
 export interface LogStep {
   /** 0 for the first reset, counting up. */
   n: number;
   /** The event sent, or undefined for a reset. */
   event: string | undefined;
+  /** The timer whose expiry sent the event (`fire`). */
+  timer?: string;
   /** Guard values that changed since the previous step (what the trace step records). */
   guards: Record<string, boolean> | undefined;
   lines: LogLine[];
@@ -68,6 +86,8 @@ export class Simulation {
   fired = new Set<Id>();
   private readonly interp: Interpreter;
   private readonly guards: ReadonlyMap<string, boolean>;
+  /** Timers started and not stopped, by id. */
+  private readonly running = new Map<Id, RunningTimer>();
   /** Guard values as of the last recorded step. */
   private recordedGuards = new Map<string, boolean>();
   private current: LogStep | undefined;
@@ -86,6 +106,15 @@ export class Simulation {
       {
         call: (name) => void this.current?.calls.push(name),
         guard: (name) => guards.get(name) ?? false,
+        timerStart: (name, id, ms, periodic) => {
+          const t = this.index.timers.get(id)?.timer;
+          this.running.set(id, { id, name, ms, periodic, event: (t && this.index.decls.get(t.event)?.decl.name) ?? "?" });
+          this.current?.calls.push(timerStartCall(name, ms, periodic));
+        },
+        timerStop: (name, id) => {
+          this.running.delete(id);
+          this.current?.calls.push(timerStopCall(name));
+        },
       },
       { ...this.options, onTrace: (e) => this.log(e) },
     );
@@ -108,6 +137,25 @@ export class Simulation {
   /** Send an event by name. */
   send(event: string): LogStep {
     return this.step(event, () => this.interp.process(event));
+  }
+
+  /** Timers running now (started and not stopped), in timer order. */
+  timers(): RunningTimer[] {
+    return this.interp.structure.timers.flatMap((t) => this.running.get(t.id) ?? []);
+  }
+
+  /**
+   * A running timer expires: its event is sent like any other (that is all a trace records). A one-shot timer stops
+   * running first; a periodic one goes on. Undefined when the timer is not running.
+   */
+  fire(timerId: Id): LogStep | undefined {
+    const t = this.running.get(timerId);
+    if (!t) return undefined;
+    if (!t.periodic) this.running.delete(timerId);
+    const step = this.send(t.event);
+    step.timer = t.name;
+    this.version++;
+    return step;
   }
 
   isActive(id: Id): boolean {
@@ -224,6 +272,12 @@ export class Simulation {
         break;
       case "emit":
         s.lines.push({ kind: "emit", name: e.signal });
+        break;
+      case "timer-start":
+        s.lines.push({ kind: "timer", start: true, name: e.timer, ms: e.ms, periodic: e.periodic });
+        break;
+      case "timer-stop":
+        s.lines.push({ kind: "timer", start: false, name: e.timer, ms: 0, periodic: false });
         break;
       case "event":
         if (e.signal) s.lines.push({ kind: "signal", name: e.name });

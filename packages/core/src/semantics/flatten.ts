@@ -32,8 +32,20 @@ export interface FlatVertex {
   slot: number;
   entry: Action[];
   exit: Action[];
+  /** The state's timers (indices into `FlatModel.timers`), in list order: started after `entry`, stopped before `exit`. */
+  timers: number[];
   /** Child regions, top-down. */
   regions: number[];
+}
+
+/** A timer; its index in `FlatModel.timers` is its number (states in document order, then list order). */
+export interface FlatTimer {
+  id: Id;
+  name: string;
+  ms: number;
+  periodic: boolean;
+  /** The event the application sends when the timer expires. */
+  event: Id;
 }
 
 /** Entering a vertex: set its slot, run its entry actions, then enter its regions in order. */
@@ -119,6 +131,8 @@ export interface FlatModel {
   offers: Record<Id, Offer[]>;
   /** Offers for auto and completion transitions, evaluated in the settle phase. */
   eventless: Offer[];
+  /** Every timer; reset() and terminate stop them all, in this order. */
+  timers: FlatTimer[];
 }
 
 export function flatten(doc: UfsmDocument, prebuilt?: Structure): FlatModel {
@@ -145,6 +159,7 @@ export function flatten(doc: UfsmDocument, prebuilt?: Structure): FlatModel {
       slot,
       entry: st?.entry ?? [],
       exit: st?.exit ?? [],
+      timers: v.timers.map((t) => t.index),
       regions: v.regions.map(ri),
     };
   });
@@ -252,5 +267,6 @@ export function flatten(doc: UfsmDocument, prebuilt?: Structure): FlatModel {
     transitions,
     offers,
     eventless: offerList((t) => t.trigger.kind === "auto" || t.trigger.kind === "completion"),
+    timers: s.timers.map((t) => ({ id: t.id, name: t.name, ms: t.ms, periodic: t.periodic, event: t.event })),
   };
 }

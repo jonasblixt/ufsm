@@ -533,3 +533,27 @@ Measured over the 21 valid legacy models (864 KB):
   planted exit-hook-order bug caught); debug variants in pyright, tsc, freestanding C99 (+ clang++ by hand), rustc/clippy
   /rustfmt crate checks. Windows, `CC` = LLVM clang: core 526/526, editor 68/68, browser check 356/356. Docs:
   semantics.md "Numbering and trace hooks", format-v1.md Options, a Debugging section in each backend doc.
+- 2026-10-11: Timers (Jonas's decisions of 2026-10-10, PoEtato): decisions recorded, "timers" dropped from the open
+  questions, design written to `docs/timers.md` (format, design rules, semantics, traces, IR, per-language API, Zephyr
+  example, editor, tests, six open points); no code yet, waiting for approval.
+- 2026-10-11: Timers built (Jonas approved docs/timers.md as proposed; its text now lives in format-v1.md, semantics.md and
+  the backend docs, the file is gone). Format: `timers` on states (`model.ts` `Timer`, TypeBox schema as one closed object with
+  `not`/`anyOf` for exactly one of after/every: a union made the reader blame a bad `unit` on after/every), ids `tm<n>`,
+  `index.timers`, `timerMs`, `timerLabel`; check rules `timer-name`, `timer-duration`, `timer-same-event` (event refs use
+  the existing `dangling-ref`/`wrong-ref` instead of a separate `timer-event`). Semantics: `SemTimer` in the structure,
+  `InterpreterHost.timerStart/timerStop`, trace entries `timer-start`/`timer-stop`, pseudo-calls `start:<name>(<ms> ms)` /
+  `start:<name>(every <ms> ms)` / `stop:<name>` (`timerStartCall`/`timerStopCall`); flat tables and runner; IR `timers` +
+  `timerStart`/`timerStop` statements, `start` begins with a stop of every timer, a terminating microstep stops them once.
+  Backends: C enum + `<P>TIMER_COUNT` + `timer_event()` table + `timer_name()` (debugInfo); Python `<Class>Timer`,
+  `<module>_timer_event()`, `TIMER_NAMES`; TS `<Class>Timer`, `<class>TimerEvent()`, `TIMER_NAMES`; Rust `Timer` with
+  `COUNT`/`event()`/`index()` (+ `name()`/`from_index()`), durations digit-grouped for clippy, long calls broken as rustfmt
+  does. Found and fixed: Rust `settle()` for a model with a terminate but no eventless transitions or signals was a `loop`
+  that never loops (clippy never_loop) and needlessly fallible (unnecessary_wraps); test_timers was the first such model.
+  Tests: `tests/models/test_timers.ufsm` + hand-derived `test_timers.json` (12 steps) replayed by the interpreter and all
+  four backends; random models get timers from their own RNG (about 2/3 of them; one in twenty near the uint32 limit);
+  drivers log `~start:`/`~stop:` tokens (`driverCall`) and check the expiry event and names; a planted "no stop" bug is
+  caught by random runs in 39/60 models, 7/7 timer mutants of the interpreter fail the trace. Editor: action block lines,
+  Properties › Timers (name, after/every, count, unit, event picker incl. new event, doc, delete), Edit › Add Timer,
+  paste renames clashing timer names `_2`, search kind `timer`, simulator Timers section with Fire (`simFire`), problem
+  badges/jump on the owning state. CLI: `run` prints start/stop, `info` counts timers, `list` lists them. Windows, `CC` =
+  LLVM clang: core 547/547, editor 70/70, browser check 368/368, typecheck clean.

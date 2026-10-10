@@ -23,6 +23,8 @@ import {
   v0,
   vertexBox,
   actionBlockHeight,
+  timerLabel,
+  timerMs,
   type UfsmDocument,
 } from "../src/index";
 
@@ -303,6 +305,55 @@ describe("internal transitions in the format", () => {
   });
 });
 
+describe("timers in the format", () => {
+  const withTimers = (): UfsmDocument => {
+    const doc = minimalDoc();
+    const a = doc.machine.root.states[1]!;
+    if (a.kind === "state") {
+      a.timers = [
+        { id: "tm1", name: "travel", after: 20, unit: "s", event: "ev1", doc: "door travel time" },
+        { id: "tm2", name: "poll", every: 500, unit: "ms", event: "ev1" },
+      ];
+      a.internal = [{ id: "t9", on: "ev1" }];
+    }
+    return doc;
+  };
+  it("round-trip through the canonical writer, after exit and before internal transitions", () => {
+    const text = serializeV1(withTimers());
+    assert.ok(text.indexOf('"entry"') < text.indexOf('"timers"') && text.indexOf('"timers"') < text.indexOf('"internal"'));
+    assert.match(text, /"id": "tm1",\s+"name": "travel",\s+"after": 20,\s+"unit": "s",\s+"event": "ev1",\s+"doc": "door travel time"/);
+    assert.deepEqual(parseV1(text), withTimers());
+    assert.equal(serializeV1(parseV1(text)), text);
+  });
+  it("are read strictly: exactly one of after and every, a known unit, a positive whole count", () => {
+    const json = (): { machine: { root: { states: { timers?: Record<string, unknown>[] }[] } } } => JSON.parse(serializeV1(withTimers()));
+    const both = json();
+    both.machine.root.states[1]!.timers![0]!["every"] = 5;
+    assert.throws(() => parseV1(JSON.stringify(both)), /exactly one of 'after' or 'every'/);
+    const neither = json();
+    delete neither.machine.root.states[1]!.timers![0]!["after"];
+    assert.throws(() => parseV1(JSON.stringify(neither)), /after|every/);
+    const unit = json();
+    unit.machine.root.states[1]!.timers![0]!["unit"] = "days";
+    assert.throws(() => parseV1(JSON.stringify(unit)), /unit/);
+    for (const bad of [0, 1.5, -2]) {
+      const count = json();
+      count.machine.root.states[1]!.timers![1]!["every"] = bad;
+      assert.throws(() => parseV1(JSON.stringify(count)), /every/, String(bad));
+    }
+  });
+  it("make the action block taller, are indexed and labelled", () => {
+    const doc = withTimers();
+    const index = indexV1(doc);
+    assert.equal(index.timers.get("tm2")?.state.name, "A");
+    const a = doc.machine.root.states[1]!;
+    assert.ok(a.kind === "state");
+    assert.equal(actionBlockHeight(a), 20 + 20 * 4, "one entry action, two timers and one internal transition");
+    assert.deepEqual(a.timers!.map((t) => timerLabel(index, t)), ["t/travel(20 s, e1)", "t/poll(every 500 ms, e1)"]);
+    assert.deepEqual(a.timers!.map(timerMs), [20000, 500]);
+  });
+});
+
 describe("v1 writer", () => {
   it("keeps lines within 100 columns where possible", () => {
     for (const path of v1Files) {
@@ -391,6 +442,53 @@ describe("design rule check", () => {
     assert.ok(c.includes("duplicate-id"), "ids are shared with transitions");
     assert.ok(c.includes("wrong-ref"), "an action is not a trigger");
     assert.ok(c.includes("dangling-ref"), "unknown guard");
+  });
+
+  it("checks timers: ids, names, the event, the duration", () => {
+    const doc = minimalDoc();
+    const a = doc.machine.root.states[1]!;
+    assert.ok(a.kind === "state");
+    a.timers = [{ id: "tm1", name: "travel", after: 49, unit: "min", event: "ev1" }];
+    assert.deepEqual(checkV1(doc), [], "a valid timer; its event counts as used");
+    a.timers = [
+      { id: "t2", name: "9lives", after: 1, unit: "s", event: "act1" },
+      { id: "tm2", name: "dup", after: 1194, unit: "h", event: "nope" },
+      { id: "tm3", name: "dup", every: 0, unit: "ms", event: "ev1" },
+    ];
+    const at = (code: string): (string | undefined)[] => checkV1(doc).filter((d) => d.code === code).map((d) => d.id);
+    assert.deepEqual(at("duplicate-id"), ["t2"], "ids are shared with transitions");
+    assert.deepEqual(at("timer-name"), ["t2", "tm3"], "not an identifier; the same name twice");
+    assert.deepEqual(at("wrong-ref"), ["t2"], "an action is not an event");
+    assert.deepEqual(at("dangling-ref"), ["tm2"]);
+    assert.deepEqual(at("timer-duration"), ["tm2", "tm3"], "1194 h is over 2^32 - 1 ms; 0 ms");
+    a.timers = [{ id: "tm1", name: "max", after: 4294967295, unit: "ms", event: "ev1" }];
+    assert.deepEqual(at("timer-duration"), [], "2^32 - 1 ms is the longest");
+  });
+
+  it("warns about timers that can run together and fire the same event", () => {
+    const doc = minimalDoc();
+    const [, a, b] = doc.machine.root.states;
+    assert.ok(a?.kind === "state" && b?.kind === "state");
+    // A and B are never active together: sharing an event is fine
+    a.timers = [{ id: "tm1", name: "ta", after: 1, unit: "s", event: "ev1" }];
+    b.timers = [{ id: "tm2", name: "tb", after: 2, unit: "s", event: "ev1" }];
+    const warned = (): (string | undefined)[] => checkV1(doc).filter((d) => d.code === "timer-same-event").map((d) => d.id);
+    assert.deepEqual(warned(), []);
+    // the same state
+    a.timers.push({ id: "tm3", name: "ta2", every: 1, unit: "s", event: "ev1" });
+    assert.deepEqual(warned(), ["tm3"]);
+    a.timers.pop();
+    // a state inside A
+    a.regions = [{ id: "r1", states: [{ id: "i1", kind: "initial" }, { id: "c1", kind: "state", name: "C", timers: [{ id: "tm4", name: "tc", after: 3, unit: "s", event: "ev1" }] }] }];
+    doc.machine.transitions.push({ id: "t3", from: "i1", to: "c1" });
+    assert.deepEqual(warned(), ["tm4"]);
+    // orthogonal regions of A
+    a.regions[0]!.states[1] = { id: "c1", kind: "state", name: "C" };
+    a.regions.push({ id: "r2", states: [{ id: "i2", kind: "initial" }, { id: "c2", kind: "state", name: "D", timers: [{ id: "tm5", name: "td", after: 3, unit: "s", event: "ev1" }] }] });
+    a.regions[0]!.states[1] = { id: "c1", kind: "state", name: "C", timers: [{ id: "tm4", name: "tc", after: 3, unit: "s", event: "ev1" }] };
+    delete a.timers;
+    doc.machine.transitions.push({ id: "t4", from: "i2", to: "c2" });
+    assert.deepEqual(warned(), ["tm5"]);
   });
 
     it("finds initial states without exactly one transition", () => {

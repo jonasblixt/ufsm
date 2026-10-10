@@ -158,6 +158,7 @@ describe("TypeScript backend matches the interpreter", () => {
       transitions: [],
       trace: false,
       fingerprint: 0,
+      timers: [],
       events: cases.map(([n]) => ({ id: `ev_${n}`, name: n })),
       signals: [],
       actions: [{ id: "act1", name: "hit" }],
@@ -265,6 +266,56 @@ describe("TypeScript backend: generated files", () => {
     assert.match(signals, /if \(this\.queue\.length >= 5\) \{/);
     const noCheck = generateTypeScript(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), { maxMicrosteps: 0 }).source;
     assert.doesNotMatch(noCheck, /steps|microstep/);
+  });
+
+  it("emit the timer API only for a model with timers, usable by a typed caller", () => {
+    const none = generateTypeScript(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), { debugInfo: true }).source;
+    assert.doesNotMatch(none, /timer/i);
+    const timers = ir(load(join(repoRoot, "tests/models/test_timers.ufsm")));
+    const src = generateTypeScript(timers, { debugInfo: true }).source;
+    assert.match(src, /^export const TestTimersTimer = \{$/m);
+    assert.match(src, /^ {2}poll: 1, \/\/ every 100 ms -> eTick$/m);
+    assert.match(src, /^export function testTimersTimerEvent\(timer: TestTimersTimer\): TestTimersEvent \{$/m);
+    assert.match(src, /^ {2}timer_start\(timer: TestTimersTimer, ms: number, periodic: boolean\): void;$/m);
+    assert.match(src, /^ {2}timer_stop\(timer: TestTimersTimer\): void;$/m);
+    assert.match(src, /^ {2}static readonly TIMER_NAMES: readonly string\[\] = \["travel", "poll", "blink", "long"\];$/m);
+    assert.match(src, /this\.h\.timer_start\(TestTimersTimer\.long, 3600000, false\);/);
+    const dir = mkdtempSync(join(tmpdir(), "ufsm-tsc-"));
+    try {
+      writeFileSync(join(dir, "test_timers.ts"), src);
+      writeFileSync(
+        join(dir, "caller.ts"),
+        [
+          'import { TestTimers, type TestTimersTimer, testTimersTimerEvent } from "./test_timers.ts";',
+          "",
+          "const running = new Set<TestTimersTimer>();",
+          "const machine = new TestTimers({",
+          ...timers.actions.map((a) => `  ${a.name}() {},`),
+          "  timer_start(timer: TestTimersTimer, ms: number, periodic: boolean) {",
+          "    void ms;",
+          "    void periodic;",
+          "    running.add(timer);",
+          "  },",
+          "  timer_stop(timer: TestTimersTimer) {",
+          "    running.delete(timer);",
+          "  },",
+          "});",
+          "machine.reset();",
+          "for (const t of running) machine.process(testTimersTimerEvent(t));",
+          "",
+        ].join("\n"),
+      );
+      const diags = typeCheck([join(dir, "caller.ts")], ["ES2020"]);
+      assert.deepEqual(diags, [], diags.map((d) => `${d.file}:${d.line}: ${d.message}`).join("\n"));
+    } finally {
+      removeTempDir(dir);
+    }
+  });
+
+  it("reject an action named like a timer function of the handler", () => {
+    const doc = load(join(repoRoot, "tests/models/test_timers.ufsm"));
+    doc.declarations.actions[0]!.name = "timer_start";
+    assert.throws(() => generateTypeScript(ir(doc)), /action 'timer_start' is the name of a timer function of the handler/);
   });
 
   it("are the same for the same input", () => {

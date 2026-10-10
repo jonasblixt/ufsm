@@ -2,8 +2,8 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 /**
- * Right-hand panel with tabs. "Properties" edits the selection: a state's name, entry and exit actions, internal
- * transitions, regions and documentation; a transition's trigger, guard, actions and documentation; a pseudo state's
+ * Right-hand panel with tabs. "Properties" edits the selection: a state's name, entry and exit actions, timers,
+ * internal transitions, regions and documentation; a transition's trigger, guard, actions and documentation; a pseudo state's
  * name (a fork/join's orientation). "Project" holds the settings of the whole project; until a project format exists
  * it edits the active machine's name, declarations and code generator options. "Problems" lists the design rule
  * check's findings, live, and jumps to them.
@@ -24,6 +24,7 @@ import {
   addDecl,
   addInternal,
   addRegion,
+  addTimer,
   cIdentifier,
   cannotOffPage,
   declNameProblem,
@@ -53,7 +54,12 @@ import {
   setTargetOption,
   setTransitionActions,
   setTrigger,
+  setTimer,
   stateLayout,
+  timerLabel,
+  timerNameProblem,
+  timerDurationProblem,
+  TIMER_UNITS,
   triggerLabel,
   vertexName,
   PAPER_SIZES,
@@ -70,6 +76,8 @@ import {
   type TitleBlock,
   type Region,
   type State,
+  type Timer,
+  type TimerUnit,
   type Transition,
   type TriggerSpec,
   type UfsmDocument,
@@ -79,7 +87,7 @@ import {
 export type PanelTab = "properties" | "project" | "problems" | "simulator" | "code" | "settings";
 
 /** What a key of the `e`/`a` maps asks the panel to open (passed for one render only). */
-export type FocusField = "name" | "trigger" | "entry" | "exit" | "guard" | "action";
+export type FocusField = "name" | "trigger" | "entry" | "exit" | "guard" | "action" | "timer";
 
 /** A declaration picked in a picker, or one to create first. */
 export type Choice = { id: Id } | { create: { kind: DeclKind; name: string } };
@@ -518,6 +526,29 @@ function TriggerField({ index, current, onPick, internal, open }: {
   );
 }
 
+/** The event a timer fires: declared events only (signals are internal), or a new event. */
+function TimerEventField({ index, current, onPick, open }: { index: DocIndex; current: string; onPick(c: Choice): void; open?: boolean }) {
+  const [picking, setPicking] = useState(false);
+  useLayoutEffect(() => {
+    if (open) setPicking(true);
+  }, [open]);
+  if (!picking) {
+    return (
+      <button type="button" class="trigger" title="Change the event the timer fires" onClick={() => setPicking(true)}>
+        <code>{current}</code>
+      </button>
+    );
+  }
+  return (
+    <Picker
+      placeholder="Event to fire on expiry"
+      onClose={() => setPicking(false)}
+      options={declsOf(index, "event").map((d) => ({ key: d.id, label: d.name, detail: "event", pick: () => onPick({ id: d.id }) }))}
+      extra={creating(index, [{ kind: "event", label: (n) => n, detail: "new event" }], onPick)}
+    />
+  );
+}
+
 /** Apply a trigger pick: a special trigger directly, a declaration (maybe created first) as `on`. */
 function pickTrigger(ops: PanelOps, transitionId: Id, t: TriggerSpec | Choice): void {
   if (t && ("id" in t || "create" in t)) ops.use(t, (d, id) => setTrigger(d, transitionId, { on: id }));
@@ -591,10 +622,59 @@ function InternalProps({ index, t, ops }: { index: DocIndex; t: InternalTransiti
   );
 }
 
+function TimerProps({ index, t, ops }: { index: DocIndex; t: Timer; ops: PanelOps }) {
+  const count = t.after ?? t.every ?? 1;
+  const kind = t.every !== undefined ? "every" : "after";
+  const countProblem = (v: string): string | undefined => (/^\s*\d+\s*$/.test(v) ? timerDurationProblem(Number(v), t.unit) : "A whole number from 1 up is needed.");
+  const pickUnit = (unit: TimerUnit): void => {
+    const problem = timerDurationProblem(count, unit);
+    if (problem) ops.say(`${count} ${unit}: ${problem}`);
+    else ops.edit((d) => setTimer(d, t.id, { unit }));
+  };
+  return (
+    <details class="internal">
+      <summary>
+        <code>{timerLabel(index, t)}</code>
+        <IconButton label="×" title="Delete this timer" onClick={() => ops.edit((d) => void deleteElements(d, [t.id]))} />
+      </summary>
+      <div class="ibody">
+        <Field label="Name">
+          <TextInput label="Timer name" value={t.name} validate={(v) => timerNameProblem(index, v.trim(), t.id)} onCommit={(v) => ops.edit((d) => setTimer(d, t.id, { name: v.trim() }))} />
+        </Field>
+        <Field label="Duration">
+          <span class="timer-duration">
+            <select aria-label="One-shot or periodic" value={kind} onChange={(e) => ops.edit((d) => setTimer(d, t.id, { kind: e.currentTarget.value as "after" | "every" }))}>
+              <option value="after">after</option>
+              <option value="every">every</option>
+            </select>
+            <TextInput cls="text count" label="Duration" value={String(count)} validate={countProblem} onCommit={(v) => ops.edit((d) => setTimer(d, t.id, { count: Number(v) }))} />
+            <select aria-label="Unit" value={t.unit} onChange={(e) => pickUnit(e.currentTarget.value as TimerUnit)}>
+              {TIMER_UNITS.map((u) => (
+                <option key={u} value={u}>
+                  {u}
+                </option>
+              ))}
+            </select>
+          </span>
+        </Field>
+        <Field label="Fires">
+          <TimerEventField index={index} current={index.decls.get(t.event)?.decl.name ?? "?"} onPick={(c) => ops.use(c, (d, id) => setTimer(d, t.id, { event: id }))} />
+        </Field>
+        <div class="sublabel">Documentation</div>
+        <DocField id={t.id} value={t.doc} ops={ops} />
+      </div>
+    </details>
+  );
+}
+
 function StateProps({ index, s, ops, focus }: { index: DocIndex; s: State; ops: PanelOps; focus: FocusField | undefined }) {
   const region = index.vertices.get(s.id)?.region;
   const out = index.outgoing.get(s.id) ?? [];
   const [addingInternal, setAddingInternal] = useState(false);
+  const [addingTimer, setAddingTimer] = useState(false);
+  useLayoutEffect(() => {
+    if (focus === "timer") setAddingTimer(true);
+  }, [focus]);
   const offPage = (r: Region): boolean => index.doc.diagram?.regions[r.id]?.offPage === true;
   return (
     <>
@@ -626,6 +706,27 @@ function StateProps({ index, s, ops, focus }: { index: DocIndex; s: State; ops: 
           add="Add exit action"
           open={focus === "exit"}
         />
+      </Section>
+      <Section title="Timers" count={s.timers?.length}>
+        {(s.timers ?? []).length === 0 && <div class="none">None (started on entry, stopped on exit; fire an event)</div>}
+        {(s.timers ?? []).map((t) => (
+          <TimerProps key={t.id} index={index} t={t} ops={ops} />
+        ))}
+        {addingTimer ? (
+          <TimerEventField
+            index={index}
+            open
+            current=""
+            onPick={(c) => {
+              setAddingTimer(false);
+              ops.use(c, (d, id) => void addTimer(d, s.id, id));
+            }}
+          />
+        ) : (
+          <button type="button" class="add" onClick={() => setAddingTimer(true)}>
+            + Add timer
+          </button>
+        )}
       </Section>
       <Section title="Internal transitions" count={s.internal?.length}>
         {(s.internal ?? []).length === 0 && <div class="none">None (react to an event without leaving the state)</div>}

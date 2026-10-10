@@ -131,8 +131,36 @@ function testCode(ir: IrModule, debug: boolean): string {
         "    }",
       ]
     : [];
+  // timer calls are logged as "~start:<name>:<ms>:<0|1>" / "~stop:<name>" (driverCall in harness.ts); each call also
+  // checks the timer's number, event() and, with debugInfo, name() and from_index()
+  const timers = ir.timers.length
+    ? [
+        "    fn timer_start(&mut self, timer: Timer, ms: u32, periodic: bool) {",
+        "        let name = test_timer(self, timer);",
+        '        self.calls.push(format!("~start:{name}:{ms}:{}", u8::from(periodic)));',
+        "    }",
+        "    fn timer_stop(&mut self, timer: Timer) {",
+        "        let name = test_timer(self, timer);",
+        '        self.calls.push(format!("~stop:{name}"));',
+        "    }",
+      ]
+    : [];
+  const timerCheck = ir.timers.length
+    ? `
+fn test_timer(h: &mut crate::TestHandler, timer: Timer) -> &'static str {
+    const NAMES: &[&str] = &[${ir.timers.map((t) => str(t.name)).join(", ")}];
+    const EVENTS: &[usize] = &[${ir.timers.map((t) => t.event).join(", ")}];
+    let i = timer.index();
+    if i >= Timer::COUNT || NAMES.len() != Timer::COUNT || timer.event() as usize != EVENTS[i] {
+        h.calls.push("BAD_TIMER_EVENT".to_string());
+    }
+${debug ? `    if timer.name() != NAMES[i] || Timer::from_index(u16::try_from(i).unwrap()) != Some(timer) {\n        h.calls.push("BAD_TIMER_NAME".to_string());\n    }\n` : ""}    NAMES[i]
+}
+`
+    : "";
   return `
 // ---- test harness (not generated) ----
+${timerCheck}
 ${debug ? `\nconst _: () = assert!(FINGERPRINT == ${ir.fingerprint});\n` : ""}
 impl<H: Handler> Machine<H> {
     /// Whether state number \`i\` is active.
@@ -147,7 +175,7 @@ ${ir.events.length ? `    match i {\n${events.join("\n")}\n        _ => None,\n 
 }
 
 impl Handler for crate::TestHandler {
-${[...actions, ...guards, ...trace].join("\n")}
+${[...actions, ...guards, ...trace, ...timers].join("\n")}
 }
 `;
 }

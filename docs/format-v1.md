@@ -86,6 +86,7 @@ pseudo-state, told apart by `kind`.
 { "id": "s3", "kind": "state", "name": "On",
   "entry": [{ "call": "act2" }],
   "exit":  [{ "emit": "sig1" }],
+  "timers": [{ "id": "tm1", "name": "travel", "after": 20, "unit": "s", "event": "ev3" }],
   "internal": [{ "id": "t7", "on": "ev2", "guard": [{ "call": "grd1" }], "do": [{ "call": "act3" }] }],
   "regions": [ { "id": "r1", "name": "Lamp", "states": [ … ] } ] }
 
@@ -94,7 +95,7 @@ pseudo-state, told apart by `kind`.
 
 | `kind` | Notes |
 |--------|-------|
-| `state` | `name` required (free text, used for display); optional `doc`, `entry`, `exit`, `internal`, `regions` |
+| `state` | `name` required (free text, used for display); optional `doc`, `entry`, `exit`, `timers`, `internal`, `regions` |
 | `initial` | One per region at most; exactly one outgoing transition, no trigger or guard |
 | `shallow-history`, `deep-history` | Act as the region's initializer; same rules as `initial` |
 | `final` | No outgoing transitions |
@@ -112,7 +113,7 @@ in generated code.
 A state's `internal` list holds transitions that react to an event without
 leaving the state (UML internal transitions). No exit or entry actions run, 
 and the state's regions keep their configuration. They have no diagram 
-layout: the editor lists them as text in the state's action block, after `entry` and `exit`.
+layout: the editor lists them as text in the state's action block, after `entry`, `exit` and `timers`.
 
 ```jsonc
 { "id": "t7", "on": "ev2", "guard": [{ "call": "grd1" }], "do": [{ "call": "act3" }], "doc": "…" }
@@ -126,6 +127,34 @@ layout: the editor lists them as text in the state's action block, after `entry`
 
 Selection and priority are those of a transition from the state to itself;
 only the execution differs. See [semantics.md](semantics.md#internal-transitions).
+
+### Timers
+
+A state's `timers` list holds timers the machine starts when the state is
+entered (after its `entry` actions) and stops when it is left (before its
+`exit` actions). The application runs them and, when one expires, sends its
+`event` through `process()`. They have no diagram layout: the editor lists
+them in the state's action block after `entry` and `exit`, as
+`t/travel(20 s, eTravelTimeout)` or `t/poll(every 500 ms, ePoll)`.
+
+```jsonc
+{ "id": "tm1", "name": "travel", "after": 20, "unit": "s", "event": "ev3" }
+{ "id": "tm2", "name": "poll", "every": 500, "unit": "ms", "event": "ev4", "doc": "…" }
+```
+
+| Field | Meaning |
+|-------|---------|
+| `id` | Unique in the document like every id; new ones are `tm1`, `tm2`, … |
+| `name` | Identifier, unique among the machine's timers; it names the timer in generated code |
+| `after` / `every` | Exactly one: one-shot or periodic. A whole number from 1 up |
+| `unit` | `"ms"`, `"s"`, `"min"` or `"h"` (required) |
+| `event` | Id of a declared **event** (not a signal: signals are internal) |
+| `doc` | Optional |
+
+The duration in ms must fit an unsigned 32-bit integer (at most
+4 294 967 295 ms, about 49.7 days); the design rule check enforces it.
+No option turns timers on: generated code has a timer API exactly when the
+model has timers. See [semantics.md](semantics.md#timers).
 
 ### Actions
 
@@ -338,7 +367,7 @@ Settings of the generators: [C](backend-c.md#generating) (`c`),
 The writer (`serializeV1`, used by the editor and `ufsm fmt`) produces:
 
 - keys in the order shown in this document; diagram maps in document order
-- optional empty lists (`entry`, `exit`, `internal`, `regions`, `guard`, `do`) omitted
+- optional empty lists (`entry`, `exit`, `timers`, `internal`, `regions`, `guard`, `do`) omitted
 - whole numbers without a decimal point, others rounded to 3 decimals
 - 2-space indentation; an array or object stays on one line if it fits in
   100 columns
@@ -352,12 +381,15 @@ or duplicate declaration names, initial/history states without exactly one
 outgoing transition, more than one initializer in a region, triggers out of
 pseudo-states or into joins, transitions out of final/terminate, fork
 targets or join sources that are not in different orthogonal regions of one
-state, `options.signalQueue` of 0 in a model that emits signals. Warnings:
+state, `options.signalQueue` of 0 in a model that emits signals, timers whose name is not an identifier or is
+used by another timer (`timer-name`), timers firing something other than a declared event, timer durations of 0 or
+over 2^32 - 1 ms (`timer-duration`). Warnings:
 transitions and internal transitions that can never fire (no trigger, or
 shadowed by an earlier transition of the same state with the same trigger
 and no guard; a state's outgoing transitions come before its internal ones),
 regions entered by default without an initial state,
-duplicate state names in a region, unused declarations, behaviour options
+duplicate state names in a region, two timers that can run at the same time (on one state, a state and one inside
+it, or states in orthogonal regions) firing the same event (`timer-same-event`), unused declarations, behaviour options
 under `targets` and API options there that are not `true`/`false`, stale or missing
 layout, and drawings that do not fit their sheet (outside the drawing frame,
 or over the title block; see "Drawing frame and title block").

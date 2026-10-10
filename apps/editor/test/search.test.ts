@@ -147,11 +147,18 @@ describe("search: elements of a machine", () => {
     assert.ok(!els.some((e) => e.kind === "region"), "converted files name every region 'New region'");
   });
 
-  it("finds internal transitions, off-page regions and named regions of states with several", () => {
+  it("finds timers by name, with their label and state as detail", () => {
+    const found = elementItems(index("tests/models/test_timers.ufsm"), 1, "test_timers.ufsm").filter((e) => e.kind === "timer");
+    assert.deepEqual(found.map((e) => e.label), ["travel", "poll", "blink", "long"]);
+    assert.equal(found[1]!.detail, "t/poll(every 100 ms, eTick) in P");
+  });
+
+  it("finds internal transitions, timers, off-page regions and named regions of states with several", () => {
     for (const f of readdirSync(join(repoRoot, "tests/models")).filter((x) => x.endsWith(".ufsm"))) {
       const ix = index(`tests/models/${f}`);
       const found = elementItems(ix, 1, f);
       assert.equal(found.filter((e) => e.kind === "internal").length, ix.internals.size, f);
+      assert.equal(found.filter((e) => e.kind === "timer").length, ix.timers.size, f);
       for (const { region, owner } of ix.regions.values()) {
         const wanted = owner && (ix.doc.diagram?.regions[region.id]?.offPage === true || (region.name && (owner.regions?.length ?? 0) > 1));
         assert.equal(found.some((e) => e.id === region.id), !!wanted, `${f} ${region.id}`);

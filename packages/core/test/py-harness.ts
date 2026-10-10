@@ -98,6 +98,8 @@ export function runPython(python: string[], units: PyUnit[]): StepResult[][] {
         // generated with debugInfo and trace: log the trace hook calls, read the state through is_active()
         debug: u.ir.trace && u.options?.debugInfo === true,
         labels: u.ir.states.map((s) => s.label),
+        // name and expiry event (index) per timer, checked against the module's timer_event() and TIMER_NAMES
+        timers: u.ir.timers.map((t) => [t.name, t.event]),
         fingerprint: u.ir.fingerprint,
       };
     });
@@ -176,10 +178,34 @@ def tracer(unit, cls):
     return trace
 
 
-def make_handler(unit, cls):
+def timer_check(unit, mod, cls, timer):
+    # the machine passes members of the timer enum; their expiry event and name must match the model
+    if not isinstance(timer, getattr(mod, unit["cls"] + "Timer")):
+        calls.append("BAD_TIMER_TYPE")
+    name, event = unit["timers"][timer]
+    if getattr(mod, unit["module"] + "_timer_event")(timer) != event:
+        calls.append("BAD_TIMER_EVENT")
+    if unit["debug"] and cls.TIMER_NAMES[timer] != name:
+        calls.append("BAD_TIMER_NAME")
+    return name
+
+
+def make_handler(unit, mod, cls):
     h = Handler()
     if unit["debug"]:
         h.trace = tracer(unit, cls)
+    if unit["timers"]:
+        def timer_start(timer, ms, periodic):
+            name = timer_check(unit, mod, cls, timer)
+            if type(ms) is not int or type(periodic) is not bool:
+                calls.append("BAD_TIMER_ARGS")
+            calls.append("~start:%s:%d:%d" % (name, ms, 1 if periodic else 0))
+
+        def timer_stop(timer):
+            calls.append("~stop:" + timer_check(unit, mod, cls, timer))
+
+        h.timer_start = timer_start
+        h.timer_stop = timer_stop
     for py, name in unit["actions"]:
         setattr(h, py, (lambda n: lambda: action(n))(name))
     for i, (py, name) in enumerate(unit["guards"]):
@@ -207,7 +233,7 @@ for line in sys.stdin:
         cls = getattr(mod, unit["cls"])
         if cls.FINGERPRINT != unit["fingerprint"]:
             sys.exit("unit %d: FINGERPRINT %x, expected %x" % (k, cls.FINGERPRINT, unit["fingerprint"]))
-        machine = cls(make_handler(unit, cls))
+        machine = cls(make_handler(unit, mod, cls))
         error = getattr(mod, unit["cls"] + "Error")
         out.append("#u %d" % k)
         continue

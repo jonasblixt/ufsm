@@ -332,7 +332,8 @@ body {
 }
 
 .qp-icon.k-transition,
-.qp-icon.k-internal {
+.qp-icon.k-internal,
+.qp-icon.k-timer {
   color: var(--aqua);
 }
 
@@ -1477,6 +1478,18 @@ details.internal[open] {
 
 .ibody {
   padding: 4px 0 6px;
+}
+
+/* a timer's duration: after/every, count, unit on one line */
+.timer-duration {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timer-duration .tinput {
+  flex: 1;
+  min-width: 0;
 }
 
 .check {

@@ -75,6 +75,7 @@ export class FlatRunner {
     this.started = true;
     this.terminatedFlag = false;
     this.steps = 0;
+    this.stopTimers(this.model.timers.map((_, i) => i));
     this.enterRegion({ region: 0, default: true });
     this.settle();
     this.busy = false;
@@ -161,6 +162,7 @@ export class FlatRunner {
       for (let v = d.vertexTo - 1; v >= d.vertexFrom; v--) {
         if (!this.isActiveIndex(v)) continue;
         const fv = m.vertices[v]!;
+        this.stopTimers(fv.timers);
         this.run(fv.exit);
         this.cfg[fv.region] = 0;
       }
@@ -175,6 +177,7 @@ export class FlatRunner {
       this.terminatedFlag = true;
       this.cfg.fill(0);
       this.queue = [];
+      this.stopTimers(m.timers.map((_, i) => i));
     }
     return 1;
   }
@@ -230,6 +233,7 @@ export class FlatRunner {
     const fv = this.model.vertices[op.vertex]!;
     this.cfg[fv.region] = fv.slot;
     this.run(fv.entry);
+    this.startTimers(fv.timers);
     for (const r of op.regions) this.enterRegion(r);
   }
 
@@ -243,9 +247,24 @@ export class FlatRunner {
       const fv = m.vertices[v]!;
       this.cfg[region] = s;
       this.run(fv.entry);
+      this.startTimers(fv.timers);
       for (const c of fv.regions) enter(c, snap[c - base]!);
     };
     enter(r, slot);
+  }
+
+  private startTimers(timers: number[]): void {
+    for (const i of timers) {
+      const t = this.model.timers[i]!;
+      this.host.timerStart?.(t.name, t.id, t.ms, t.periodic);
+    }
+  }
+
+  private stopTimers(timers: number[]): void {
+    for (const i of timers) {
+      const t = this.model.timers[i]!;
+      this.host.timerStop?.(t.name, t.id);
+    }
   }
 
   private run(actions: Action[]): void {

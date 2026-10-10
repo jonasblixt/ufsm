@@ -6,10 +6,10 @@
  * cannot express. Errors make code generation impossible or wrong;
  * warnings point at likely mistakes.
  */
-import { indexV1, regionChain, vertexName, type DocIndex } from "./doc-index";
+import { ancestors, indexV1, regionChain, vertexName, type DocIndex } from "./doc-index";
 import { sheetFit, sheetFitMessage } from "./sheet";
 import { isApiOption, isBehaviourOption } from "./options";
-import { IDENTIFIER, type Action, type DeclKind, type GuardTerm, type Id, type Transition, type UfsmDocument } from "./model";
+import { IDENTIFIER, TIMER_MAX_MS, timerMs, type Action, type DeclKind, type GuardTerm, type Id, type Transition, type UfsmDocument } from "./model";
 
 export type Severity = "error" | "warning";
 
@@ -56,6 +56,7 @@ export function checkV1(doc: UfsmDocument, prebuilt?: DocIndex): Diagnostic[] {
   for (const { vertex } of index.vertices.values()) {
     if (vertex.kind === "state") for (const t of vertex.internal ?? []) claim(t.id, `an internal transition of '${vertex.name}'`);
   }
+  for (const { timer, state } of index.timers.values()) claim(timer.id, `timer '${timer.name}' of '${state.name}'`);
 
   // ---- declaration names: identifiers, unique across all kinds (they share the generated namespace)
   const names = new Map<string, Id>();
@@ -155,6 +156,21 @@ export function checkV1(doc: UfsmDocument, prebuilt?: DocIndex): Diagnostic[] {
       warn("completion-without-regions", `${where}: completion transition from a state without regions`, t.id);
     }
   }
+  // ---- timers: names are identifiers unique in the machine (they name the generated timer enum), they fire a
+  // declared event, and their duration fits an unsigned 32-bit count of ms
+  const timerNames = new Map<string, Id>();
+  for (const { timer, state } of index.timers.values()) {
+    const where = `timer '${timer.name}' of state '${state.name}'`;
+    if (!IDENTIFIER.test(timer.name)) err("timer-name", `${where}: the name is not a valid identifier`, timer.id);
+    else if (timerNames.has(timer.name)) err("timer-name", `${where}: another timer of the machine has the same name`, timer.id);
+    else timerNames.set(timer.name, timer.id);
+    expectDecl(timer.event, "event", where, timer.id);
+    const ms = timerMs(timer);
+    if (!Number.isInteger(ms) || ms < 1 || ms > TIMER_MAX_MS) {
+      err("timer-duration", `${where}: the duration must be a whole number of ms from 1 to ${TIMER_MAX_MS} (about 49.7 days)`, timer.id);
+    }
+  }
+
   // ---- forks and joins connect states in different orthogonal regions of one state
   const orthogonal = (a: Id, b: Id): boolean => {
     const ca = regionChain(index, a);
@@ -165,6 +181,27 @@ export function checkV1(doc: UfsmDocument, prebuilt?: DocIndex): Diagnostic[] {
     const oa = index.regions.get(ca[i]!.id)?.owner;
     return oa !== undefined && oa === index.regions.get(cb[i]!.id)?.owner;
   };
+  // ---- two timers that can run at the same time fire the same event: the machine cannot tell them apart. They can when
+  // their states are one and the same, one contains the other, or they lie in orthogonal regions of one state.
+  const timerList = [...index.timers.values()];
+  const together = (a: Id, b: Id): boolean =>
+    a === b || ancestors(index, a).some((s) => s.id === b) || ancestors(index, b).some((s) => s.id === a) || orthogonal(a, b);
+  const reported = new Set<Id>();
+  for (let i = 0; i < timerList.length; i++) {
+    for (let j = i + 1; j < timerList.length; j++) {
+      const a = timerList[i]!;
+      const b = timerList[j]!;
+      if (a.timer.event !== b.timer.event || reported.has(b.timer.id) || !together(a.state.id, b.state.id)) continue;
+      reported.add(b.timer.id);
+      const ev = index.decls.get(b.timer.event)?.decl.name ?? b.timer.event;
+      warn(
+        "timer-same-event",
+        `timer '${b.timer.name}' of '${b.state.name}' fires '${ev}' like timer '${a.timer.name}' of '${a.state.name}', and both can run at the same time`,
+        b.timer.id,
+      );
+    }
+  }
+
   for (const { vertex } of index.vertices.values()) {
     if (vertex.kind !== "fork" && vertex.kind !== "join") continue;
     const ends = vertex.kind === "fork"

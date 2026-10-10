@@ -186,6 +186,7 @@ describe("Rust backend matches the interpreter", { skip }, () => {
       transitions: [],
       trace: false,
       fingerprint: 0,
+      timers: [],
       events: [{ id: "ev1", name: "e1" }],
       signals: [],
       actions: [{ id: "act1", name: "moved" }],
@@ -329,7 +330,24 @@ describe("Rust backend: generated files", () => {
     assert.deepEqual(generateRust(ir(doc)), generateRust(ir(doc)));
   });
 
+  it("emit the timer API only for a model with timers", () => {
+    const none = generateRust(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), { debugInfo: true }).source;
+    assert.doesNotMatch(none, /timer/i);
+    const src = generateRust(ir(load(join(repoRoot, "tests/models/test_timers.ufsm"))), { debugInfo: true }).source;
+    assert.match(src, /^pub enum Timer \{$/m);
+    assert.match(src, /^ {4}pub const COUNT: usize = 4;$/m);
+    assert.match(src, /^ {4}pub fn event\(self\) -> Event \{$/m);
+    assert.match(src, /^ {12}Timer::poll => Event::eTick,$/m);
+    assert.match(src, /^ {4}fn timer_start\(&mut self, timer: Timer, ms: u32, periodic: bool\);$/m);
+    assert.match(src, /^ {4}fn timer_stop\(&mut self, timer: Timer\);$/m);
+    assert.match(src, /^impl Timer \{\n {4}\/\/\/ The timer's name as in the model\.$/m, "name() and from_index() with debugInfo");
+    assert.match(src, /Handler::timer_start\(&mut self\.handler, Timer::long, 3_600_000, false\);/, "digits grouped for clippy");
+  });
+
   it("reject names that cannot be used in Rust", () => {
+    const timers = load(join(repoRoot, "tests/models/test_timers.ufsm"));
+    timers.declarations.actions[0]!.name = "timer_start";
+    assert.throws(() => generateRust(ir(timers)), /handler method 'timer_start' becomes 'timer_start', like 'timer_start' \(a timer function\)/);
     const doc = load(join(repoRoot, "tests/models/test_guard1.ufsm"));
     doc.declarations.actions[0]!.name = "self";
     doc.declarations.actions[1]!.name = "self_";
@@ -382,6 +400,7 @@ function shapesModule(): IrModule {
     transitions: [],
     trace: false,
     fingerprint: 0,
+    timers: [],
     events: SHAPES.map(([n]) => ({ id: `ev_${n}`, name: n })),
     signals: [],
     actions: [{ id: "act1", name: "hit" }],
@@ -418,6 +437,7 @@ function wideModule(): IrModule {
     transitions: [],
     trace: false,
     fingerprint: 0,
+    timers: [],
     events,
     signals: [],
     actions: [{ id: "act1", name: "hit" }, { id: "act2", name: "other" }],

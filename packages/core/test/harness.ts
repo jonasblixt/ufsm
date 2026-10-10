@@ -20,6 +20,8 @@ import {
   TraceRaise,
   type TraceMachine,
   type UfsmDocument,
+  timerStartCall,
+  timerStopCall,
 } from "../src/index";
 import { randomModel, rng } from "./random-model";
 
@@ -67,13 +69,25 @@ export function parseDriverOutput(output: string, units: number, codes: Record<s
     if (line.startsWith("#u ")) cur = results[Number(line.slice(3))];
     else if (line !== "") {
       const [calls = "", active = "", err = "-", nested = "-"] = line.split("\t");
-      const res: StepResult = { calls: calls ? calls.split(" ") : [], active: active ? active.split(",") : [] };
+      const res: StepResult = { calls: calls ? calls.split(" ").map(driverCall) : [], active: active ? active.split(",") : [] };
       if (err !== "-") res.error = code(err);
       if (nested !== "-") res.nested = nested === "0" ? "ok" : code(nested);
       cur!.push(res);
     }
   }
   return results;
+}
+
+/**
+ * A driver's call token as the trace runner names it. Drivers log timer calls without spaces, `~start:<name>:<ms>:<0|1>`
+ * (1 = periodic) and `~stop:<name>`; traces spell them `start:<name>(<ms> ms)`, `start:<name>(every <ms> ms)` and
+ * `stop:<name>`.
+ */
+export function driverCall(token: string): string {
+  const start = /^~start:(\w+):(\d+):([01])$/.exec(token);
+  if (start) return timerStartCall(start[1]!, Number(start[2]), start[3] === "1");
+  const stop = /^~stop:(\w+)$/.exec(token);
+  return stop ? timerStopCall(stop[1]!) : token;
 }
 
 /** Random script: a reset, then `steps` steps; guards get fresh random values before every step. */
@@ -142,7 +156,12 @@ export function runScript(make: (host: InterpreterHost) => TraceMachine, script:
   const guards = new Map<string, boolean>();
   const log: string[] = [];
   let calls: string[] = [];
-  const m = make({ call: (n) => void calls.push(n), guard: (n) => guards.get(n) ?? false });
+  const m = make({
+    call: (n) => void calls.push(n),
+    guard: (n) => guards.get(n) ?? false,
+    timerStart: (n, _id, ms, periodic) => void calls.push(timerStartCall(n, ms, periodic)),
+    timerStop: (n) => void calls.push(timerStopCall(n)),
+  });
   for (const step of script) {
     for (const [k, v] of Object.entries(step.guards ?? {})) guards.set(k, v);
     calls = [];

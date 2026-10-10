@@ -320,7 +320,7 @@ export function addTransition(
 }
 
 /**
- * Delete vertices, regions and transitions (internal ones too) by id, with everything that depends on them:
+ * Delete vertices, regions, transitions (internal ones too) and timers by id, with everything that depends on them:
  * a vertex takes its regions and their contents, a region its contents; transitions into or out of anything deleted
  * go too; guard terms `in`/`not in` a deleted state are dropped (a guard left empty is removed); their diagram
  * entries are removed. Deleting a region of a surviving state keeps the state's size: the regions below it move up
@@ -329,7 +329,7 @@ export function addTransition(
  */
 export function deleteElements(doc: UfsmDocument, ids: Iterable<Id>): Set<Id> {
   const index = indexV1(doc);
-  const goneV = new Set<Id>(), goneR = new Set<Id>(), goneT = new Set<Id>();
+  const goneV = new Set<Id>(), goneR = new Set<Id>(), goneT = new Set<Id>(), goneTimers = new Set<Id>();
   const dropRegion = (r: Region): void => {
     goneR.add(r.id);
     r.states.forEach(dropVertex);
@@ -345,6 +345,7 @@ export function deleteElements(doc: UfsmDocument, ids: Iterable<Id>): Set<Id> {
     const v = index.vertices.get(id)?.vertex;
     if (v) dropVertex(v);
     else if (index.transitions.has(id) || index.internals.has(id)) goneT.add(id);
+    else if (index.timers.has(id)) goneTimers.add(id);
     else {
       const info = index.regions.get(id);
       if (info?.owner) explicitRegions.push(info.region);
@@ -352,7 +353,7 @@ export function deleteElements(doc: UfsmDocument, ids: Iterable<Id>): Set<Id> {
   }
   for (const r of explicitRegions) dropRegion(r);
   for (const t of index.doc.machine.transitions) if (goneV.has(t.from) || goneV.has(t.to)) goneT.add(t.id);
-  if (goneV.size + goneR.size + goneT.size === 0) return new Set();
+  if (goneV.size + goneR.size + goneT.size + goneTimers.size === 0) return new Set();
 
   followTransitions(doc, index, () => {
     // regions deleted from states that stay: later bands move up, the last band fills
@@ -404,6 +405,13 @@ export function deleteElements(doc: UfsmDocument, ids: Iterable<Id>): Set<Id> {
       else delete t.guard;
     };
     doc.machine.transitions.forEach(prune);
+    for (const id of goneTimers) {
+      const { timer, state } = index.timers.get(id)!;
+      if (goneV.has(state.id)) continue;
+      const timers = state.timers!.filter((t) => t !== timer);
+      if (timers.length) state.timers = timers;
+      else delete state.timers;
+    }
     for (const { vertex } of index.vertices.values()) {
       if (vertex.kind !== "state" || goneV.has(vertex.id) || !vertex.internal) continue;
       if (vertex.internal.some((t) => goneT.has(t.id))) {
@@ -420,7 +428,7 @@ export function deleteElements(doc: UfsmDocument, ids: Iterable<Id>): Set<Id> {
     for (const id of goneR) delete dia.regions[id];
     for (const id of goneT) delete dia.transitions[id];
   }
-  return new Set([...goneV, ...goneR, ...goneT]);
+  return new Set([...goneV, ...goneR, ...goneT, ...goneTimers]);
 }
 
 /** True when vertex `id` is `ancestor` or lies inside it. */

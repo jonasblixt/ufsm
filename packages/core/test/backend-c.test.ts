@@ -165,6 +165,29 @@ describe("C backend: generated files", () => {
     assert.doesNotMatch(noCheck.header + noCheck.source, /steps;|->steps/);
   });
 
+  it("emit the timer API only for a model with timers", () => {
+    const none = generateC(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), { debugInfo: true });
+    assert.doesNotMatch(none.header + none.source, /timer/);
+    const out = generateC(ir(load(join(repoRoot, "tests/models/test_timers.ufsm"))), { debugInfo: true });
+    assert.match(out.header, /^ {4}TEST_TIMERS_TIMER_travel = 0, \/\* after 2000 ms -> eTimeout \*\/$/m);
+    assert.match(out.header, /^#define TEST_TIMERS_TIMER_COUNT 4$/m);
+    assert.match(out.header, /^void test_timers_timer_start\(void \*user, enum test_timers_timer timer, uint32_t ms, bool periodic\);$/m);
+    assert.match(out.header, /^void test_timers_timer_stop\(void \*user, enum test_timers_timer timer\);$/m);
+    assert.match(out.header, /^enum test_timers_event test_timers_timer_event\(enum test_timers_timer timer\);$/m);
+    assert.match(out.header, /^const char \*test_timers_timer_name\(uint16_t timer\);$/m);
+    assert.match(out.source, /test_timers_timer_start\(m->user, TEST_TIMERS_TIMER_poll, 100u, true\);/);
+    assert.match(out.source, /test_timers_timer_start\(m->user, TEST_TIMERS_TIMER_long, 3600000u, false\);/);
+  });
+
+  it("reject timer names that clash in C", () => {
+    const doc = load(join(repoRoot, "tests/models/test_timers.ufsm"));
+    doc.declarations.actions[0]!.name = "timer_start";
+    assert.throws(() => generateC(ir(doc)), /action 'timer_start' becomes 'test_timers_timer_start', which is the timer start function/);
+    doc.declarations.actions[0]!.name = "eIdle";
+    doc.declarations.events[0]!.name = "TIMER_poll";
+    assert.throws(() => generateC(ir(doc)), /timer 'poll' becomes 'TEST_TIMERS_TIMER_poll', like event 'TIMER_poll'/);
+  });
+
   it("keep the queue bound exact: the last free slot can be used (B3)", () => {
     const src = generateC(ir(load(join(repoRoot, "tests/models/test_chained_signals.ufsm"))), { signalQueue: 3 }).source;
     assert.match(src, /if \(m->queue_len == 3u\) \{\n\s+return TEST_CHAINED_SIGNALS_ERR_QUEUE_FULL;/);

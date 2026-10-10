@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 import { declName, vertexName, type DocIndex } from "./doc-index";
-import type { Action, GuardTerm, InternalTransition, Transition } from "./model";
+import type { Action, GuardTerm, InternalTransition, Timer, Transition } from "./model";
 
 /** `lamp_off()` or `^sDone`. */
 export function actionLabel(index: DocIndex, a: Action): string {
@@ -48,6 +48,16 @@ export function internalTransitionLabel(index: DocIndex, t: InternalTransition):
   if (guards.length > 0) s += ` [${guards.join(", ")}]`;
   if (actions.length > 0) s += ` / ${actions.join(", ")}`;
   return s;
+}
+
+/** A timer's duration as written: `20 s`, `every 500 ms`. */
+export function timerDurationLabel(t: Timer): string {
+  return t.every !== undefined ? `every ${t.every} ${t.unit}` : `${t.after} ${t.unit}`;
+}
+
+/** A timer as it is listed in its state: `t/travel(20 s, eTravelTimeout)`, `t/poll(every 500 ms, ePoll)`. */
+export function timerLabel(index: DocIndex, t: Timer): string {
+  return `t/${t.name}(${timerDurationLabel(t)}, ${declName(index, t.event)})`;
 }
 
 /** `eButton [ready()] / lamp_on(), ^sDone` */

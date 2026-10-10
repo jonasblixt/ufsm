@@ -178,6 +178,16 @@ export class IrRunner {
         case "trace":
           this.onHook?.(s.hook, s.index);
           break;
+        case "timerStart": {
+          const t = this.ir.timers[s.timer]!;
+          this.host.timerStart?.(t.name, t.id, t.ms, t.periodic);
+          break;
+        }
+        case "timerStop": {
+          const t = this.ir.timers[s.timer]!;
+          this.host.timerStop?.(t.name, t.id);
+          break;
+        }
         case "terminate":
           this.terminatedFlag = true;
           break;

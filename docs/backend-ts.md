@@ -107,6 +107,56 @@ export class Dimmer {
 - Everything `private` (`cfg`, `step_eButton`, ...) is internal and may
   change between uFSM versions.
 
+## Timers
+
+A model with [timers](format-v1.md#timers) gets a timer object, two more
+handler methods and an exported function that gives the event to process
+when a timer expires (none of this without timers). For `door` with timers
+`travel` and `poll`:
+
+```ts
+export const DoorTimer = { travel: 0, poll: 1 } as const;
+export type DoorTimer = (typeof DoorTimer)[keyof typeof DoorTimer];
+export function doorTimerEvent(timer: DoorTimer): DoorEvent; // <class>TimerEvent
+
+export interface DoorHandler {
+  timer_start(timer: DoorTimer, ms: number, periodic: boolean): void;
+  timer_stop(timer: DoorTimer): void;
+  // ... actions and guards
+}
+```
+
+A handler can keep one `setTimeout`/`setInterval` handle per timer:
+
+```ts
+const handles = new Map<DoorTimer, ReturnType<typeof setTimeout>>();
+const handler: DoorHandler = {
+  // ... actions and guards
+  timer_start(timer, ms, periodic) {
+    const expire = () => machine.process(doorTimerEvent(timer));
+    handles.set(timer, periodic ? setInterval(expire, ms) : setTimeout(expire, ms));
+  },
+  timer_stop(timer) {
+    clearTimeout(handles.get(timer)); // clears an interval too
+    handles.delete(timer);
+  },
+};
+```
+
+The handler methods keep the snake_case names of the other languages. With
+`debugInfo`, `Door.TIMER_NAMES` names them. An action or guard named
+`timer_start` or `timer_stop` clashes with them. The contract:
+
+- Stopping a timer that is not running does nothing.
+- A periodic timer is started once; the application re-arms it every period.
+- After a stop returns, no expiry of the earlier start should be delivered.
+  One that is already queued arrives as an ordinary event and is handled as
+  such (in a state that does not react to it, nothing happens).
+- Start and stop run inside `reset()` and `process()`: they must not block or
+  call the machine. `reset()` stops every timer first, whatever runs.
+
+See [Timers](semantics.md#timers) for when the machine starts and stops them.
+
 ## Debugging
 
 Always generated: a state enum (normal and final states in document order,

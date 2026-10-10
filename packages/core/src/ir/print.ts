@@ -79,6 +79,12 @@ export function printIr(ir: IrModule): string {
         case "saveDeep": line(d, `deep[r${s.region}] = snapshot of the regions inside r${s.region}`); break;
         case "microstep": line(d, "microstep  // livelock check"); break;
         case "trace": line(d, `trace ${s.hook} ${s.index}  // ${s.hook === "transition" ? ir.transitions[s.index]!.id : ir.states[s.index]!.label}`); break;
+        case "timerStart": {
+          const t = ir.timers[s.timer]!;
+          line(d, `timer_start ${t.name} ${t.periodic ? "every " : ""}${t.ms} ms`);
+          break;
+        }
+        case "timerStop": line(d, `timer_stop ${ir.timers[s.timer]!.name}`); break;
         case "terminate": line(d, "terminate"); break;
         case "return": line(d, `return ${s.value}`); break;
       }
@@ -92,6 +98,7 @@ export function printIr(ir: IrModule): string {
     const h = ir.history.find((x) => x.region === r);
     line(0, `//   r${r} ${n}: ${slots}${h ? `  (${h.kind} history)` : ""}`);
   });
+  ir.timers.forEach((t, i) => line(0, `//   timer ${i} ${t.name}: ${t.periodic ? "every" : "after"} ${t.ms} ms -> ${ir.events[t.event]!.name}`));
   line(0, "");
   line(0, "start {");
   stmts(ir.start, 1);

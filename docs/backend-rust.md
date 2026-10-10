@@ -125,6 +125,44 @@ impl<H: Handler> Dimmer<H> {
   fields and the private methods (`step_eButton`, `enter_r0`, ...) may
   change between uFSM versions.
 
+## Timers
+
+A model with [timers](format-v1.md#timers) gets a `Timer` enum and two more
+`Handler` methods (none of this without timers). For `door` with timers
+`travel` and `poll`:
+
+```rust
+pub enum Timer { travel, poll } // Copy, Eq, Hash, Debug
+impl Timer {
+    pub const COUNT: usize = 2;
+    pub fn event(self) -> Event;  // the event to process when it expires
+    pub fn index(self) -> usize;  // 0..COUNT, e.g. into an array of platform timers
+}
+
+pub trait Handler {
+    fn timer_start(&mut self, timer: Timer, ms: u32, periodic: bool);
+    fn timer_stop(&mut self, timer: Timer);
+    // ... actions and guards
+}
+```
+
+The handler runs the clock (an embassy or RTIC timer, a hardware timer, ...)
+and the application calls `machine.process(timer.event())` on expiry, from
+the context that owns the machine. With `debugInfo`, `Timer` has `name()` and
+`from_index()` like the other enums. An action or guard named `timer_start`
+or `timer_stop` clashes with them. Durations above 9 999 ms are printed with
+digit groups (`3_600_000`) for clippy. The contract:
+
+- Stopping a timer that is not running does nothing.
+- A periodic timer is started once; the application re-arms it every period.
+- After a stop returns, no expiry of the earlier start should be delivered.
+  One that is already queued arrives as an ordinary event and is handled as
+  such (in a state that does not react to it, nothing happens).
+- Start and stop run inside `reset()` and `process()`: they must not block or
+  call the machine. `reset()` stops every timer first, whatever runs.
+
+See [Timers](semantics.md#timers) for when the machine starts and stops them.
+
 ## Debugging
 
 Always generated: a state enum (normal and final states in document order,

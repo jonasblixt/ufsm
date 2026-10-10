@@ -16,7 +16,7 @@
  * the same structure.
  */
 import { indexV1, type DocIndex } from "../v1/doc-index";
-import type { Action, GuardTerm, Id, PseudoKind, Region, State, Transition, UfsmDocument, Vertex } from "../v1/model";
+import { timerMs, type Action, type GuardTerm, type Id, type PseudoKind, type Region, type State, type Transition, type UfsmDocument, type Vertex } from "../v1/model";
 
 export interface SemRegion {
   id: Id;
@@ -51,6 +51,22 @@ export interface SemVertex {
   depth: number;
   /** Ids of all regions containing this vertex, innermost included. */
   within: ReadonlySet<Id>;
+  /** The state's timers, in list order (empty for pseudo-states). */
+  timers: SemTimer[];
+}
+
+/** A timer of a state: started after the state's entry actions, stopped before its exit actions. */
+export interface SemTimer {
+  id: Id;
+  name: string;
+  /** Position in `Structure.timers`: states in document order, then list order. The generated timer enum's value. */
+  index: number;
+  state: SemVertex;
+  /** Duration in ms. */
+  ms: number;
+  periodic: boolean;
+  /** The event the application sends when the timer expires. */
+  event: Id;
 }
 
 export type Trigger =
@@ -112,6 +128,8 @@ export interface Structure {
   initializers: Map<Id, Initializer>;
   /** Event and signal ids by name. */
   triggers: Map<string, Id>;
+  /** Every timer: states in document order, then each state's list order. reset() and terminate stop them in this order. */
+  timers: SemTimer[];
 }
 
 export class SemanticsError extends Error {
@@ -137,6 +155,7 @@ export function buildStructure(doc: UfsmDocument): Structure {
   const vertices = new Map<Id, SemVertex>();
   const ordered: (SemVertex | SemRegion)[] = [];
   const postOrder: SemVertex[] = [];
+  const timers: SemTimer[] = [];
   let order = 0;
 
   const visitRegion = (region: Region, owner: SemVertex | undefined, within: ReadonlySet<Id>, depth: number): SemRegion => {
@@ -166,7 +185,13 @@ export function buildStructure(doc: UfsmDocument): Structure {
         post: -1,
         depth,
         within: inner,
+        timers: [],
       };
+      for (const t of v.kind === "state" ? (v.timers ?? []) : []) {
+        const timer: SemTimer = { id: t.id, name: t.name, index: timers.length, state: sv, ms: timerMs(t), periodic: t.every !== undefined, event: t.event };
+        sv.timers.push(timer);
+        timers.push(timer);
+      }
       vertices.set(sv.id, sv);
       ordered.push(sv);
       r.vertices.push(sv);
@@ -343,7 +368,7 @@ export function buildStructure(doc: UfsmDocument): Structure {
   const triggers = new Map<string, Id>();
   for (const e of [...doc.declarations.events, ...doc.declarations.signals]) triggers.set(e.name, e.id);
 
-  return { doc, index, root, regions, vertices, ordered, postOrder, transitions, bySource, initializers, triggers };
+  return { doc, index, root, regions, vertices, ordered, postOrder, transitions, bySource, initializers, triggers, timers };
 }
 
 /** Proper ancestor states of a vertex, innermost first. */

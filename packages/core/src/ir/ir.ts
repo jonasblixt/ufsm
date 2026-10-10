@@ -22,6 +22,9 @@
  *
  *   reset():      busy = true; clear cfg, hist, deep, queue, terminated;
  *                 steps = 0; run `start`; settle(); busy = false
+ *                 (`start` begins by stopping every timer, a microstep that
+ *                 terminates ends by stopping every timer: the lowering emits
+ *                 those `timerStop` statements, the runtime loop adds none)
  *   process(e):   if busy: fail "busy"; if terminated: return;
  *                 busy = true; steps = 0; [trace(event, e)]
  *                 call events[e] (if any); settle(); busy = false
@@ -97,6 +100,10 @@ export type Stmt =
   | { op: "saveDeep"; region: number }
   /** call the application's trace hook: a transition (index in `transitions`) or a state (index in `states`) */
   | { op: "trace"; hook: "transition" | "enter" | "exit"; index: number }
+  /** call the application's timer start (index in `timers`; its duration and kind are in the table) */
+  | { op: "timerStart"; timer: number }
+  /** call the application's timer stop (index in `timers`) */
+  | { op: "timerStop"; timer: number }
   /** count a microstep; fails when the livelock limit is exceeded */
   | { op: "microstep" }
   /** set terminated: the runtime loop clears cfg and the queue */
@@ -130,6 +137,18 @@ export interface IrState {
   final: boolean;
 }
 
+/** A timer the application runs: the machine starts and stops it, the application sends `event` when it expires. */
+export interface IrTimer {
+  id: Id;
+  /** The timer's name (an identifier, unique among the timers). */
+  name: string;
+  /** Duration in ms (1 .. 2^32-1). */
+  ms: number;
+  periodic: boolean;
+  /** Index into `events` of the event to send on expiry. */
+  event: number;
+}
+
 export interface IrHistory {
   region: number;
   kind: "shallow" | "deep";
@@ -153,7 +172,12 @@ export interface IrModule {
   signals: { id: Id; name: string }[];
   actions: { id: Id; name: string }[];
   guards: { id: Id; name: string }[];
-  /** Run by reset() after clearing everything. */
+  /**
+   * Timers, numbered by their index (states in document order, then each state's list order). Empty: the model has
+   * none, and backends emit no timer API at all.
+   */
+  timers: IrTimer[];
+  /** Run by reset() after clearing everything (it starts by stopping every timer). */
   start: Stmt[];
   /** Step function per event / signal id (absent: nothing reacts to it). */
   onEvent: Record<Id, string>;

@@ -12,7 +12,7 @@
  * names, structure) are the design rule check's (`check.ts`).
  */
 import Type, { type Static, type TSchema } from "typebox";
-import { ID_PATTERN, PAPER_SIZES, PSEUDO_KINDS } from "./model";
+import { ID_PATTERN, PAPER_SIZES, PSEUDO_KINDS, TIMER_UNITS } from "./model";
 import type * as M from "./model";
 
 const closed = { additionalProperties: false } as const;
@@ -51,12 +51,33 @@ const defs = {
       doc: opt(str()),
       entry: opt(list("action")),
       exit: opt(list("action")),
+      timers: opt(list("timer")),
       internal: opt(list("internalTransition")),
       regions: opt(list("region")),
     },
     closed,
   ),
   pseudo: Type.Object({ id: ref("id"), kind: Type.Enum([...PSEUDO_KINDS]), name: opt(str()) }, closed),
+  timer: Type.Object(
+    {
+      id: ref("id"),
+      name: str(),
+      after: opt(Type.Integer({ minimum: 1, description: "One-shot: expires once, this many units after the start." })),
+      every: opt(Type.Integer({ minimum: 1, description: "Periodic: expires every this many units until stopped." })),
+      unit: ref("timerUnit"),
+      event: ref("id"),
+      doc: opt(str()),
+    },
+    {
+      ...closed,
+      description:
+        "A timer of a state, started after its entry actions and stopped before its exit actions; when it expires the application sends `event` through process(). Exactly one of after and every.",
+      not: { required: ["after", "every"] },
+      anyOf: [{ required: ["after"] }, { required: ["every"] }],
+      errorMessage: { not: "expected exactly one of 'after' or 'every'", anyOf: "expected exactly one of 'after' or 'every'" },
+    },
+  ),
+  timerUnit: Type.Enum([...TIMER_UNITS]),
   internalTransition: Type.Object(
     { id: ref("id"), on: ref("id"), guard: opt(list("guardTerm")), do: opt(list("action")), doc: opt(str()) },
     closed,
@@ -240,6 +261,7 @@ const agree: {
   region: true,
   state: true,
   pseudo: true,
+  timer: true,
   internalTransition: true,
   transition: true,
   machine: true,
@@ -264,6 +286,7 @@ interface Checked {
   region: ["region", M.Region];
   state: ["state", M.State];
   pseudo: ["pseudo", M.Pseudo];
+  timer: ["timer", M.Timer];
   internalTransition: ["internalTransition", M.InternalTransition];
   transition: ["transition", M.Transition];
   machine: ["machine", M.Machine];

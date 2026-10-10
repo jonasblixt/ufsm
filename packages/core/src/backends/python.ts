@@ -21,7 +21,9 @@
  * Always: `<Class>State` (an IntEnum, document order) and `<Class>.FINGERPRINT`.
  * With `debugInfo`: `EVENT_NAMES`, `SIGNAL_NAMES`, `STATE_NAMES` and
  * `is_active()` on the machine class. With `trace` (decided by the IR):
- * `<Class>TraceKind` and a `trace(kind, id)` method on the handler.
+ * `<Class>TraceKind` and a `trace(kind, id)` method on the handler. With
+ * timers in the model: `<Class>Timer` (an IntEnum), `timer_start()` and
+ * `timer_stop()` on the handler, and the module function `<module>_timer_event()`.
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
@@ -115,6 +117,9 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   const stateCls = `${cls}State`;
   const signalCls = `${cls}Signal`;
   const kindCls = `${cls}TraceKind`;
+  const timerCls = `${cls}Timer`;
+  const hasTimers = ir.timers.length > 0;
+  const timerEventFn = `${module}_timer_event`;
   if (options.trace !== undefined && options.trace !== ir.trace) throw new CodegenError("options.trace differs from the IR's: lower the model with { trace }");
   const trace = ir.trace;
   const debugInfo = options.debugInfo ?? false;
@@ -168,10 +173,15 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
       if (d.name.startsWith("__")) problems.push(`${what} starts with '__' (Python would mangle it)`);
       else if (seen.has(py)) problems.push(`${what} becomes '${py}', like ${seen.get(py)}`);
       else if (trace && py === "trace" && (kind === "action" || kind === "guard")) problems.push(`${what} is the name of the trace hook`);
+      else if (hasTimers && (py === "timer_start" || py === "timer_stop") && (kind === "action" || kind === "guard")) {
+        problems.push(`${what} is the name of a timer function of the handler`);
+      }
       seen.set(py, what);
     }
   }
   const stateMember = ir.states.map((st) => pythonName(st.ident));
+  const timerMember = ir.timers.map((t) => pythonName(t.name));
+  for (const t of ir.timers) if (t.name.startsWith("__")) problems.push(`timer '${t.name}' starts with '__' (Python would mangle it)`);
   if (problems.length) throw new CodegenError(`names that cannot be used in the generated Python (rename them):\n  ${problems.join("\n  ")}`);
 
   const decl = new Map<string, string>();
@@ -318,6 +328,14 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
           if (s.hook === "transition") line(d, `self._h.trace(${kindCls}.transition, ${s.index})  # ${comment(ir.transitions[s.index]!.label)}`);
           else line(d, `self._h.trace(${kindCls}.${s.hook}, ${stateCls}.${stateMember[s.index]})`);
           break;
+        case "timerStart": {
+          const t = ir.timers[s.timer]!;
+          line(d, `self._h.timer_start(${timerCls}.${timerMember[s.timer]}, ${t.ms}, ${t.periodic ? "True" : "False"})`);
+          break;
+        }
+        case "timerStop":
+          line(d, `self._h.timer_stop(${timerCls}.${timerMember[s.timer]})`);
+          break;
         case "terminate":
           line(d, "self._terminated = True");
           break;
@@ -373,6 +391,22 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   ir.states.forEach((st, i) => line(1, `${stateMember[i]} = ${i}${st.label !== st.ident ? `  # ${comment(st.label)}` : ""}`));
   line(0, "");
   line(0, "");
+  if (hasTimers) {
+    line(0, `class ${timerCls}(IntEnum):`);
+    line(1, '"""Timers: started when their state is entered, stopped when it is left."""');
+    line(0, "");
+    ir.timers.forEach((t, i) => line(1, `${timerMember[i]} = ${i}  # ${t.periodic ? "every" : "after"} ${t.ms} ms -> ${comment(ir.events[t.event]!.name)}`));
+    line(0, "");
+    line(0, "");
+    line(0, `_TIMER_EVENTS: Tuple[${eventCls}, ...] = (${ir.timers.map((t) => `${eventCls}.${eventNames[t.event]}`).join(", ")}${ir.timers.length === 1 ? "," : ""})`);
+    line(0, "");
+    line(0, "");
+    line(0, `def ${timerEventFn}(timer: ${timerCls}) -> ${eventCls}:`);
+    line(1, '"""The event to process when a timer expires."""');
+    line(1, "return _TIMER_EVENTS[timer]");
+    line(0, "");
+    line(0, "");
+  }
   if (trace) {
     line(0, `class ${kindCls}(IntEnum):`);
     line(1, `"""What ${handlerCls}.trace() reports; the id is a number of the type named here."""`);
@@ -397,6 +431,19 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   for (const g of ir.guards) {
     line(0, "");
     line(1, `def ${pythonName(g.name)}(self) -> bool: ...`);
+  }
+  if (hasTimers) {
+    line(0, "");
+    line(1, `def timer_start(self, timer: ${timerCls}, ms: int, periodic: bool) -> None:`);
+    line(2, '"""Start a timer: it expires once, or every ms until stopped (the handler re-arms it).');
+    line(0, "");
+    line(2, `On expiry, pass ${timerEventFn}(timer) to process(). Called inside reset() and process():`);
+    line(2, 'it must not block or call the machine."""');
+    line(2, "...");
+    line(0, "");
+    line(1, `def timer_stop(self, timer: ${timerCls}) -> None:`);
+    line(2, '"""Stop a timer; does nothing if it is not running. No expiry of the earlier start should follow."""');
+    line(2, "...");
   }
   if (trace) {
     line(0, "");
@@ -429,6 +476,7 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
     line(1, `EVENT_NAMES: Tuple[str, ...] = ${names(ir.events.map((e) => e.name))}`);
     line(1, `SIGNAL_NAMES: Tuple[str, ...] = ${names(ir.signals.map((x) => x.name))}`);
     line(1, `STATE_NAMES: Tuple[str, ...] = ${names(ir.states.map((st) => st.label))}`);
+    if (hasTimers) line(1, `TIMER_NAMES: Tuple[str, ...] = ${names(ir.timers.map((t) => t.name))}`);
     if (ir.states.length) line(1, `_STATE_AT: Tuple[Tuple[int, int], ...] = ${tup(ir.states.map((st) => `(${st.region}, ${st.slot})`))}`);
   }
   line(0, "");

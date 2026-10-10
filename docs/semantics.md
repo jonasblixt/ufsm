@@ -54,8 +54,8 @@ the event itself fired nothing, so an `auto` transition whose guard became
 true in the meantime fires then.
 
 `reset()` forgets the configuration, history and queued signals without
-running exit actions, enters the root region by default (see
-[Entering](#entering)) and settles.
+running exit actions, stops every timer (see [Timers](#timers)), enters the
+root region by default (see [Entering](#entering)) and settles.
 
 A macrostep that runs more microsteps than the model's
 `options.maxMicrosteps` (default 10 000) is a **livelock** error, e.g. two
@@ -134,8 +134,8 @@ All selected transitions run together:
 1. **Exit**: the union of their exit sets, in reverse document order
    (innermost first; of two orthogonal regions, the lower one first). Before
    anything is exited, history is recorded for every region with a history
-   pseudo-state whose owner is about to be exited. Each exited state runs
-   its `exit` actions.
+   pseudo-state whose owner is about to be exited. Each exited state stops
+   its timers, then runs its `exit` actions.
 2. **Transition actions**: each taken transition's `do` actions, in the
    order they were taken (which is the document order of their sources). For a compound transition: a transition into a fork
    runs its own `do` and then those of the fork's outgoing transitions;
@@ -143,7 +143,7 @@ All selected transitions run together:
    and then that of its outgoing transition.
 3. **Enter**: the union of their entry sets, in document order (outermost
    first; of two orthogonal regions, the upper one first). Each entered state
-   runs its `entry` actions.
+   runs its `entry` actions, then starts its timers.
 
 An internal transition contributes nothing to steps 1 and 3: it only runs
 its actions in step 2.
@@ -218,8 +218,52 @@ the machine is finished: nothing is enabled any more.
 A transition to a **terminate** pseudo-state exits its exit set and runs
 its actions like any other, but enters nothing. At the end of that
 microstep the machine ends: the configuration and the signal queue are
-cleared without running exit actions, and later events are ignored until
-`reset()`.
+cleared without running exit actions, every timer is stopped, and later
+events are ignored until `reset()`.
+
+## Timers
+
+A state can own timers (`timers` in the format). The machine never sees
+time: it asks the environment to **start** and **stop** a timer, and the
+environment sends the timer's event through `process()` when it expires.
+That event is an ordinary event: nothing about selection, priority or
+settling changes, and an expiry where nothing reacts to the event does
+nothing. The interpreter, the simulator and traces run on virtual time: an
+expiry is sent like any other event.
+
+- **Start**: when a state is entered, after its `entry` actions and before
+  its regions are entered (so before an initializer's actions and the
+  entry actions of states inside it), its timers are started in list
+  order. Also when history restores the state.
+- **Stop**: when a state is exited, after its children are exited and
+  before its `exit` actions, its timers are stopped in list order.
+- An external **self-transition** stops and restarts the state's timers;
+  that is how a timer is restarted. An **internal transition** touches no
+  timer.
+- **`reset()`** stops every timer of the machine, in timer order, before it
+  enters anything, whatever was running: after a failed call, or at the
+  first reset, the machine cannot know which timers run.
+- **Terminate** stops every timer, in timer order, when the configuration
+  is cleared at the end of the terminating microstep (once, even when two
+  orthogonal transitions terminate together).
+- A one-shot timer (`after`) expires once; a periodic one (`every`) expires
+  every period until it is stopped. The machine starts it once; the
+  environment re-arms it.
+
+**Timer order** is the states in document order, then each state's list
+order; generated code numbers timers that way, from 0.
+
+The environment's side of the contract:
+
+1. Stopping a timer that is not running does nothing.
+2. Starting a timer that is running restarts it (the machine always stops
+   first, so this does not happen through the machine).
+3. A periodic timer is re-armed by the environment.
+4. After a stop returns, no expiry of the earlier start should be
+   delivered. One that arrives anyway (already in the application's queue)
+   is an ordinary event and is handled as such.
+5. Start and stop run inside `reset()` and `process()`: they must not block
+   or call the machine.
 
 ## Numbering and trace hooks
 
@@ -233,6 +277,8 @@ Generated code numbers what it reports, the same way in every language:
   `machine.transitions` (a join counts once, at its outgoing transition), then
   internal transitions, states in post-order (children first). Initial and
   history transitions are not numbered: they are never reported.
+- **Timers**: in timer order (see [Timers](#timers)). Timer numbers are not
+  reported by the trace hook and are not part of the fingerprint.
 
 The numbering is stable for a given model. Each generated file carries a
 *fingerprint* of it (`ufsm info` prints the model's), so a host can check that
@@ -258,6 +304,8 @@ are the application's. Each call comes just before the actions it introduces:
 So a microstep reads `exit… transition… enter…`, each followed by its actions.
 `reset()` reports the states it enters and nothing else; a terminate clears the
 rest of the configuration without exit reports, as it runs no exit actions.
+Timer starts and stops are not reported: the application sees those calls
+itself, and an expiry arrives as the event it is.
 
 ## Traces
 
@@ -283,7 +331,7 @@ and the action calls each step must produce, by name:
 | `reset` | Run `reset()` |
 | `send` | Process this event (by name) |
 | `guards` | Guard values (`true`/`false`) from this step on (default false), applied before the step runs |
-| `expect` | Action calls of the step, in order; required with `reset`/`send` unless `error` is given |
+| `expect` | Action calls of the step, in order; required with `reset`/`send` unless `error` is given. Timer calls are listed among them as `start:<name>(<ms> ms)`, `start:<name>(every <ms> ms)` and `stop:<name>` |
 | `active` | States that must be active afterwards (name, or id where names repeat); others may be too |
 | `inactive` | States that must not be active afterwards (same references as `active`) |
 | `error` | The step must fail with this error code |

@@ -130,6 +130,16 @@ the generated code. Status refers to the new implementation.
 - [x] `ufsm generate ts` (2026-10-09)
 - [x] `ufsm generate rust` (2026-10-09)
 - [ ] Single-binary CLI build
+- [x] Timers (decisions log 2026-10-10/11): `timers` on states in format v1 (schema, reader, writer, design rules),
+      semantics.md "Timers" + interpreter + flat runner + hand-derived `test_timers` trace, IR statements and lowering,
+      C/Python/TS/Rust APIs (traces + random models with timers in every differential pass), CLI (`run`, `info`, `list`),
+      editor (action block, Properties › Timers, Edit › Add Timer, clipboard, search, simulator Timers with Fire), docs incl.
+      the Zephyr example in backend-c.md (2026-10-11)
+- [ ] Timers follow-ups: Jonas to review the generated APIs (`npm run ufsm -- generate c tests/models/test_timers.ufsm -o build
+      --debug-info`, also python/ts/rust) and try Properties › Timers and the simulator's Fire in `npm run dev`; an `e` key for
+      Add Timer (needs editor.ufsm and a regenerated editor-fsm.ts); reorder timers in Properties (as for other lists);
+      a "restart" action (decided: not for now); a wall-clock mode in the simulator?; a host-side check that a late expiry
+      cannot reach the wrong state (generation counter recipe in backend-c.md)
 - [x] Common `options` section (format v1): `signalQueue`/`maxMicrosteps` moved out of `targets.*`; behaviour options
       only there, API options overridable per target (resolution `options` -> `targets.<name>` -> CLI flags); interpreter,
       trace runner, simulator and `ufsm run` honour it; Project tab shows it once; design rules `signal-queue` and
@@ -248,7 +258,7 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
       licence notice and source link)
 
 ### Open questions
-- Event parameters, machine variables, expression guards (`&&`/`||`/`!`), timers (`after(100ms)`)? Guards are bool-only
+- Event parameters, machine variables, expression guards (`&&`/`||`/`!`)? Guards are bool-only
   (decided 2026-10-09); conditions on data beyond named predicates would come with model-owned variables, not with
   arguments or typed return values on guard functions.
 - Optional code identifier for states (`ident`) for languages that emit state enums?
@@ -310,6 +320,13 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
   reset only as enter reports for the root's states.
 - `generateFiles` lowers once per `trace` value; the editor's code preview passes its cached IR, which is lowered again
   for a target whose resolved `trace` differs.
+- Timers: every `reset()` stops every timer first (by design, also at the first reset), so reset steps in traces list one
+  `stop:` per timer. An expiry the application queued before a stop arrives as an ordinary event; uFSM adds no generation
+  counter (backend-c.md says how an application can). The simulator runs on virtual time only (Fire sends the event).
+- Timer numbers and timers are not part of the fingerprint and not reported by the trace hook (the application sees
+  start/stop itself).
+- In the Properties panel, Esc in the "Add timer" event picker leaves an empty event button until the state is reselected
+  (internal transitions behave the same).
 - The sheet fit check does not measure transition labels (their size depends on the font), so a label can stick out of the
   frame or over the title block without a warning. The title block is drawn under the diagram, so a state over it hides it
   (and gets a `title-block` warning).

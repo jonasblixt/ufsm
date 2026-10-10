@@ -50,6 +50,9 @@ function KindIcon({ kind }: { kind: ItemKind }) {
     case "transition":
       body = <path d="M2.5 8H12.5M9.5 5L12.5 8L9.5 11" {...S} />;
       break;
+    case "timer":
+      body = <path d="M8 2.5A5.5 5.5 0 1 0 8 13.5A5.5 5.5 0 1 0 8 2.5ZM8 5V8L10 9.5" {...S} />;
+      break;
     case "internal":
       body = <path d="M11.5 5.5A4 4 0 1 0 12 9.5M11.5 2.5V5.5H8.5" {...S} />;
       break;

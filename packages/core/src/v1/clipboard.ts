@@ -23,6 +23,7 @@ import type {
   Region,
   RegionLayout,
   StateLayout,
+  Timer,
   Transition,
   UfsmDocument,
   Vertex,
@@ -133,6 +134,7 @@ export function copyFragment(index: DocIndex, ids: Iterable<Id>): Fragment | und
     if (v.kind !== "state") continue;
     actionsDecls(v.entry, used);
     actionsDecls(v.exit, used);
+    for (const t of v.timers ?? []) used.add(t.event);
     for (const t of v.internal ?? []) {
       used.add(t.on);
       guardDecls(t.guard, used);
@@ -209,6 +211,7 @@ export function pasteFragment(doc: UfsmDocument, frag: Fragment, regionId: Id, a
   const internalIds = (v: Vertex): void => {
     if (v.kind !== "state") return;
     for (const t of v.internal ?? []) map.set(t.id, ids.take(ID_PREFIX.transition));
+    for (const t of v.timers ?? []) map.set(t.id, ids.take(ID_PREFIX.timer));
     v.regions?.forEach((r) => r.states.forEach(internalIds));
   };
   frag.vertices.forEach(internalIds);
@@ -226,6 +229,14 @@ export function pasteFragment(doc: UfsmDocument, frag: Fragment, regionId: Id, a
     }
     return out.length ? out : undefined;
   };
+  // timer names are unique in the machine: a pasted timer whose name is taken becomes name_2, name_3, ...
+  const timerNames = new Set([...index.timers.values()].map((t) => t.timer.name));
+  const timerName = (name: string): string => {
+    let n = name;
+    for (let k = 2; timerNames.has(n); k++) n = `${name}_${k}`;
+    timerNames.add(n);
+    return n;
+  };
   const set = <T extends object, K extends keyof T>(o: T, k: K, v: T[K] | undefined): void => {
     if (v === undefined) delete o[k];
     else o[k] = v;
@@ -236,6 +247,7 @@ export function pasteFragment(doc: UfsmDocument, frag: Fragment, regionId: Id, a
     if (c.kind === "state" && v.kind === "state") {
       set(c, "entry", actions(v.entry));
       set(c, "exit", actions(v.exit));
+      if (v.timers) c.timers = v.timers.map((t): Timer => ({ ...clone(t), id: map.get(t.id)!, name: timerName(t.name), event: decl(t.event) }));
       if (v.internal) {
         c.internal = v.internal.map((t): InternalTransition => {
           const n: InternalTransition = { ...clone(t), id: map.get(t.id)!, on: decl(t.on) };

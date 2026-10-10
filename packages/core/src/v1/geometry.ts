@@ -79,9 +79,9 @@ export function vertexBox(index: DocIndex, id: Id): Box {
   return { x: o.x + l.x, y: o.y + l.y, w: l.w, h: l.h };
 }
 
-/** Space taken by entry/exit lines below the header. */
+/** Space taken by the action block below the header: entry, exit, timer and internal transition lines. */
 export function actionBlockHeight(s: State): number {
-  const n = (s.entry?.length ?? 0) + (s.exit?.length ?? 0) + (s.internal?.length ?? 0);
+  const n = (s.entry?.length ?? 0) + (s.exit?.length ?? 0) + (s.timers?.length ?? 0) + (s.internal?.length ?? 0);
   return n > 0 ? ACTION_LINE_H + ACTION_LINE_H * n : 0;
 }
 

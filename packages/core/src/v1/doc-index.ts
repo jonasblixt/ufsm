@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
-import type { Decl, DeclKind, Id, InternalTransition, Region, State, Transition, UfsmDocument, Vertex } from "./model";
+import type { Decl, DeclKind, Id, InternalTransition, Region, State, Timer, Transition, UfsmDocument, Vertex } from "./model";
 
 export interface VertexInfo {
   vertex: Vertex;
@@ -28,6 +28,8 @@ export interface DocIndex {
   transitions: Map<Id, Transition>;
   /** Internal transitions by id, with the state they belong to. */
   internals: Map<Id, { transition: InternalTransition; state: State }>;
+  /** Timers by id, with the state they belong to. */
+  timers: Map<Id, { timer: Timer; state: State }>;
   /** Transitions by source vertex id, in document order. */
   outgoing: Map<Id, Transition[]>;
   decls: Map<Id, DeclInfo>;
@@ -40,6 +42,7 @@ export function indexV1(doc: UfsmDocument): DocIndex {
     regions: new Map(),
     transitions: new Map(),
     internals: new Map(),
+    timers: new Map(),
     outgoing: new Map(),
     decls: new Map(),
   };
@@ -60,6 +63,7 @@ export function indexV1(doc: UfsmDocument): DocIndex {
       index.vertices.set(v.id, { vertex: v, region });
       if (v.kind === "state") {
         for (const t of v.internal ?? []) index.internals.set(t.id, { transition: t, state: v });
+        for (const t of v.timers ?? []) index.timers.set(t.id, { timer: t, state: v });
         v.regions?.forEach((r) => visit(r, v));
       }
     }

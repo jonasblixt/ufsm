@@ -138,6 +138,28 @@ describe("simulation", () => {
     assert.deepEqual(runTrace(doc, t), []);
   });
 
+  it("keeps the running timers on a virtual clock: fire sends the event, a one-shot stops, a periodic goes on", () => {
+    const doc = load("tests/models/test_timers.ufsm");
+    const sim = new Simulation(doc, new Map());
+    sim.reset();
+    assert.deepEqual(sim.timers(), [], "reset stops every timer");
+    assert.deepEqual(sim.steps[0]!.calls.slice(0, 2), ["stop:travel", "stop:poll"]);
+    sim.send("eGo");
+    assert.deepEqual(sim.timers().map((t) => [t.name, t.event, t.periodic]), [["travel", "eTimeout", false], ["poll", "eTick", true], ["blink", "eBlink", true]]);
+    assert.ok(sim.steps[1]!.lines.some((l) => l.kind === "timer" && l.start && l.name === "travel" && l.ms === 2000));
+    const poll = sim.timers()[1]!.id;
+    const step = sim.fire(poll)!;
+    assert.equal(step.event, "eTick");
+    assert.equal(step.timer, "poll");
+    assert.deepEqual(step.record.send, "eTick", "a trace records the event, like any other");
+    assert.deepEqual(sim.timers().map((t) => t.name), ["travel", "poll", "long"], "poll keeps running; blink stopped with C1");
+    sim.fire(sim.timers()[0]!.id);
+    assert.deepEqual(sim.timers(), [], "travel expired and P was left");
+    assert.equal(sim.fire(poll), undefined, "not running");
+    const trace = sim.trace("../models/test_timers.ufsm");
+    assert.deepEqual(runTrace(doc, parseTrace(formatTrace(trace))), [], "the recorded trace replays");
+  });
+
   it("refuses a model with errors", () => {
     const doc = load("examples/dimmer.ufsm");
     doc.machine.transitions.push({ id: "tx", from: "nowhere", to: "nowhere" });

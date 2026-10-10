@@ -21,6 +21,7 @@ import {
   type RegionLayout,
   type StateLayout,
   type TitleBlock,
+  type Timer,
   type Transition,
   type UfsmDocument,
   type Vertex,
@@ -67,6 +68,7 @@ function vertexJ(v: Vertex): Json {
       ["doc", v.doc],
       ["entry", nonEmpty(v.entry, actionJ)],
       ["exit", nonEmpty(v.exit, actionJ)],
+      ["timers", nonEmpty(v.timers, timerJ)],
       ["internal", nonEmpty(v.internal, internalJ)],
       ["regions", nonEmpty(v.regions, regionJ)],
     ]);
@@ -76,6 +78,18 @@ function vertexJ(v: Vertex): Json {
 
 function regionJ(r: Region): Json {
   return ordered([["id", r.id], ["name", r.name], ["states", r.states.map(vertexJ)]]);
+}
+
+function timerJ(t: Timer): Json {
+  return ordered([
+    ["id", t.id],
+    ["name", t.name],
+    ["after", t.after],
+    ["every", t.every],
+    ["unit", t.unit],
+    ["event", t.event],
+    ["doc", t.doc],
+  ]);
 }
 
 function internalJ(t: InternalTransition): Json {

@@ -39,6 +39,13 @@ import {
   setTransitionActions,
   setTrigger,
   transitionLabel,
+  addTimer,
+  setTimer,
+  timerNameProblem,
+  timerDurationProblem,
+  timerLabel,
+  copyFragment,
+  pasteFragment,
   type State,
   type UfsmDocument,
 } from "../src/index";
@@ -249,6 +256,66 @@ describe("declarations", () => {
     setTitleField(doc, "author", "");
     assert.equal(doc.diagram!.titleBlock, undefined);
     roundTrips(doc);
+  });
+});
+
+describe("timers", () => {
+  it("add, change and check names and durations", () => {
+    const doc = testDoc();
+    const a = addTimer(doc, "s5", "ev1")!;
+    const b = addTimer(doc, "s3", "ev1", { name: "poll" })!;
+    assert.deepEqual([a, b], ["tm1", "tm2"]);
+    assert.equal(addTimer(doc, "s1", "ev1"), undefined, "pseudo-states have no timers");
+    assert.deepEqual(S(doc, "s5").timers, [{ id: "tm1", name: "timer1", after: 1, unit: "s", event: "ev1" }]);
+    setTimer(doc, b, { kind: "every", count: 500, unit: "ms" });
+    assert.deepEqual(S(doc, "s3").timers, [{ id: "tm2", name: "poll", every: 500, unit: "ms", event: "ev1" }], "after became every");
+    setTimer(doc, b, { kind: "after" });
+    assert.equal(timerLabel(indexV1(doc), S(doc, "s3").timers![0]!), "t/poll(500 ms, e1)", "the count is kept");
+    const index = indexV1(doc);
+    assert.match(timerNameProblem(index, "poll", a)!, /timer of 'A'/);
+    assert.equal(timerNameProblem(index, "poll", b), undefined, "its own name");
+    assert.match(timerNameProblem(index, "9x")!, /not an identifier/);
+    assert.equal(timerDurationProblem(1193, "h"), undefined);
+    assert.match(timerDurationProblem(1194, "h")!, /At most 1193 h/);
+    assert.match(timerDurationProblem(0, "s")!, /whole number/);
+    assert.match(timerDurationProblem(1.5, "s")!, /whole number/);
+    assert.deepEqual(broken(doc), []);
+    roundTrips(doc);
+  });
+
+  it("go with their event, their state, or one by one; doc text; uses", () => {
+    const doc = testDoc();
+    const a = addTimer(doc, "s5", "ev1")!;
+    addTimer(doc, "s3", "ev1");
+    assert.deepEqual(declUses(indexV1(doc), "ev1").filter((id) => id.startsWith("tm")), ["tm2", "tm1"]);
+    setDocText(doc, a, "how long the door may take");
+    assert.equal(S(doc, "s5").timers![0]!.doc, "how long the door may take");
+    assert.deepEqual([...deleteElements(doc, [a])], [a]);
+    assert.equal(S(doc, "s5").timers, undefined, "an empty list goes");
+    deleteDecl(doc, "ev1");
+    assert.equal(S(doc, "s3").timers, undefined, "a timer needs its event");
+    const again = testDoc();
+    addTimer(again, "s3", "ev1");
+    deleteElements(again, ["s2"]);
+    assert.equal(indexV1(again).timers.size, 0, "deleted with the state that owns it");
+    assert.deepEqual(broken(again), []);
+  });
+
+  it("are copied with their state: fresh ids, their event, a name of their own", () => {
+    const doc = testDoc();
+    addTimer(doc, "s3", "ev1", { name: "poll" });
+    const frag = copyFragment(indexV1(doc), ["s3"])!;
+    assert.deepEqual(frag.declarations.map((d) => d.decl.name), ["e1"], "the timer's event comes along");
+    const ids = pasteFragment(doc, frag, "r0", { x: 600, y: 500 });
+    const copy = S(doc, ids[0]!);
+    assert.deepEqual(copy.timers, [{ id: "tm2", name: "poll_2", after: 1, unit: "s", event: "ev1" }]);
+    assert.deepEqual(checkV1(doc).filter((d) => d.code.startsWith("timer-")), [], "no duplicate timer names");
+    const other = testDoc();
+    other.declarations.events = [];
+    deleteElements(other, ["t2", "t3", "t4", "t5", "t7"]);
+    pasteFragment(other, frag, "r0", { x: 600, y: 500 });
+    const added = other.declarations.events.find((e) => e.name === "e1")!;
+    assert.equal([...indexV1(other).timers.values()][0]!.timer.event, added.id, "the event is declared in the target");
   });
 });
 
