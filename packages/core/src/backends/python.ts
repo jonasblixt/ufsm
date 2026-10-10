@@ -13,13 +13,16 @@
  * in ir/ir.ts.
  *
  * Errors (full signal queue, livelock, unknown event, process() before
- * reset()) raise `<Class>Error`, whose `code` is the interpreter's error
- * code. Only what the model uses is emitted, as in the C backend.
+ * reset(), process() while busy) raise `<Class>Error`, whose `code` is the
+ * interpreter's error code. Exceptions from the handler are not caught: they
+ * leave the machine busy until reset(), as the interpreter does. Only what
+ * the model uses is emitted, as in the C backend.
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
 import { UFSM_VERSION } from "../version";
 import type { Expr, IrModule, Stmt, SwitchOn } from "../ir/ir";
+import { BUSY_MESSAGE } from "../interp/interpreter";
 import { CodegenError, OUTPUT_NOTICE, cIdentifier } from "./c";
 
 export interface PythonOptions {
@@ -320,13 +323,16 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   if (eventNames.length) line(0, `#     machine.process(${eventCls}.${eventNames[0]})`);
   line(0, "#");
   line(0, `# reset() and process() raise ${errorCls} on errors; after one, call reset().`);
+  line(0, "# An exception from an action or guard passes through unchanged and leaves the");
+  line(0, `# machine half-way: until reset(), process() raises ${errorCls} "busy", as it`);
+  line(0, "# does when an action or guard calls it.");
   line(0, "");
   line(0, "from enum import IntEnum");
   line(0, "from typing import Callable, List, Optional, Protocol, Tuple");
   line(0, "");
   line(0, "");
   line(0, `class ${errorCls}(Exception):`);
-  line(1, '"""code: "queue-overflow", "livelock", "unknown-event" or "not-started"."""');
+  line(1, '"""code: "queue-overflow", "livelock", "unknown-event", "not-started" or "busy"."""');
   line(0, "");
   line(1, "def __init__(self, code: str, message: str) -> None:");
   line(2, "super().__init__(message)");
@@ -363,6 +369,7 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   line(1, `def __init__(self, handler: ${handlerCls}) -> None:`);
   line(2, "self._h = handler");
   line(2, "self._started = False");
+  line(2, "self._busy = False  # a reset()/process() call is running, or one did not finish");
   line(2, `self._cfg: List[int] = [0] * ${R}`);
   if (ir.history.length) line(2, `self._hist: List[int] = [0] * ${ir.history.length}`);
   for (const dh of deepRegions) line(2, `self._deep_r${dh.region}: List[int] = [0] * ${dh.snapshotTo! - dh.snapshotFrom!}`);
@@ -381,6 +388,7 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
 
   // reset
   line(1, "def reset(self) -> None:");
+  line(2, "self._busy = True");
   line(2, "self._started = True");
   line(2, `self._cfg = [0] * ${ir.regions}`);
   if (ir.history.length) line(2, `self._hist = [0] * ${ir.history.length}`);
@@ -391,6 +399,7 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   stmts(ir.start, 2);
   const settleBody = hasTerminate || ir.eventless !== undefined || hasQueue;
   if (settleBody) line(2, "self._settle()");
+  line(2, "self._busy = False");
   line(0, "");
 
   // process
@@ -399,10 +408,13 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   line(3, `raise ${errorCls}("not-started", "call reset() before process()")`);
   line(2, `if not 0 <= event < ${ir.events.length}:`);
   line(3, `raise ${errorCls}("unknown-event", "unknown event %r" % (event,))`);
+  line(2, "if self._busy:");
+  line(3, `raise ${errorCls}("busy", ${JSON.stringify(BUSY_MESSAGE)})`);
   if (hasTerminate) {
     line(2, "if self._terminated:");
     line(3, "return");
   }
+  line(2, "self._busy = True");
   if (checkSteps) line(2, "self._steps = 0");
   if (ir.events.some((e) => ir.onEvent[e.id])) {
     line(2, "step = self._on_event[event]");
@@ -410,6 +422,7 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
     line(3, "step()");
   }
   if (settleBody) line(2, "self._settle()");
+  line(2, "self._busy = False");
 
   // runtime helpers
   if (settleBody) {

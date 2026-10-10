@@ -48,9 +48,9 @@ and ignored.
 For `examples/dimmer.ufsm`:
 
 ```rust
-pub enum Error { NotStarted, QueueOverflow, Livelock } // Copy, Eq, Hash, Display, core::error::Error
+pub enum Error { NotStarted, QueueOverflow, Livelock, Busy } // Copy, Eq, Hash, Display, core::error::Error
 impl Error {
-    pub fn code(self) -> &'static str; // "not-started", "queue-overflow", "livelock"
+    pub fn code(self) -> &'static str; // "not-started", "queue-overflow", "livelock", "busy"
 }
 
 pub enum Event { eButton, eOffButton } // Copy, Eq, Hash, Debug
@@ -85,8 +85,17 @@ impl<H: Handler> Dimmer<H> {
 - `new()` does not start the machine. Call `reset()` first; `process()`
   before that returns `Err(Error::NotStarted)`.
 - Errors are returned, never panics. After an error the machine is in an
-  undefined state until `reset()`. `code()` gives the interpreter's error
+  undefined state until `reset()`, and `process()` returns
+  `Err(Error::Busy)` until then. `code()` gives the interpreter's error
   code; `Display` gives a sentence.
+- A panic in an action or guard unwinds through the machine. With
+  `panic = "abort"` (usual on embedded targets) that ends the program; if
+  the application catches it (`catch_unwind`, std only), the machine is
+  left half-way and `process()` returns `Err(Error::Busy)` until `reset()`.
+  An action cannot call `process()` on its own machine: the machine is
+  borrowed while it runs, so the nested call that the other languages
+  refuse at run time does not compile. See
+  [Failed and nested calls](semantics.md#failed-and-nested-calls).
 - Names are used as written, so events keep their case
   (`Event::eButton`; `#[allow(non_camel_case_types)]` is on the enum).
   Rust keywords become raw identifiers (`Event::r#type`, `fn r#match`);

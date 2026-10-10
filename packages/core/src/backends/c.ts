@@ -194,7 +194,9 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   const stateAt = new Map(ir.states.map((s) => [`${s.region}:${s.slot}`, s.name]));
   const stateName = (region: number, slot: number): string => comment(stateAt.get(`${region}:${slot}`) ?? `slot ${slot}`);
 
-  const status = { ok: `${P}OK`, queue: `${P}ERR_QUEUE_FULL`, livelock: `${P}ERR_LIVELOCK`, event: `${P}ERR_EVENT` };
+  const status = { ok: `${P}OK`, queue: `${P}ERR_QUEUE_FULL`, livelock: `${P}ERR_LIVELOCK`, event: `${P}ERR_EVENT`, busy: `${P}ERR_BUSY` };
+  // the busy latch guards process(); without events there is no process()
+  const hasBusy = ir.events.length > 0;
   // Every identifier the files define, to catch clashes with declaration names.
   const fixed = new Map<string, string>([
     [`${prefix}machine`, "the machine struct"],
@@ -207,6 +209,7 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     [status.queue, "a status code"],
     [status.livelock, "a status code"],
     [status.event, "a status code"],
+    [status.busy, "a status code"],
     [`UFSM_${cIdentifier(file).toUpperCase()}_H`, "the include guard"],
     ...["settle", "push_signal", "pop_signal", "m", "rc", "user", "event", "signal", "r", "uint8_t", "uint16_t", "uint32_t"].map(
       (n): [string, string] => [n, "an internal name"],
@@ -387,7 +390,7 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   hl(`#define ${guard}`);
   hl();
   hl("#include <stdint.h>");
-  if (hasTerminate || ir.guards.length) hl("#include <stdbool.h>");
+  if (hasTerminate || hasBusy || ir.guards.length) hl("#include <stdbool.h>");
   hl();
   hl("#ifdef __cplusplus");
   hl('extern "C" {');
@@ -397,6 +400,11 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   hl(` * Usage: call ${prefix}init() once, then ${ir.events.length ? `${prefix}process() for every event` : `${prefix}reset() to restart`}.`);
   hl(` * They return ${status.ok} or a negative ${P}ERR_* code; after an error the`);
   hl(` * machine is in an undefined state until ${prefix}reset() is called.`);
+  if (hasBusy) {
+    hl(` * Until then ${prefix}process() returns ${status.busy}, as it does when`);
+    hl(" * called while another call runs (from an action or guard, or from an");
+    hl(" * interrupt handler); such a call changes nothing and the event is lost.");
+  }
   hl(" * The application implements the actions and guards declared at the end");
   hl(` * of this file; each gets the user pointer passed to ${prefix}init().`);
   hl(" */");
@@ -406,6 +414,7 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   hl(`    ${status.queue} = -1, /* signal queue full */`);
   hl(`    ${status.livelock} = -2, /* too many microsteps in one call */`);
   hl(`    ${status.event} = -3, /* unknown event */`);
+  hl(`    ${status.busy} = -4, /* an earlier call failed, or this one was made from inside a call */`);
   hl("};");
   hl();
   if (ir.events.length) {
@@ -426,6 +435,7 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   }
   if (checkSteps) hl(`    ${stepsT} steps; /* microsteps in the current call */`);
   if (hasTerminate) hl("    bool terminated;");
+  if (hasBusy) hl("    bool busy; /* a call is running, or one did not finish */");
   hl("    void *user;");
   hl("};");
   hl();
@@ -555,7 +565,21 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     line(1, "}");
     line(0, "}");
   }
-  const finish = (d: number): void => line(d, settleBody ? "return settle(m);" : `return ${status.ok};`);
+  // End of reset/process: settle, then clear the busy latch (an error returns early and leaves it set).
+  const finish = (d: number): void => {
+    if (!hasBusy) {
+      line(d, settleBody ? "return settle(m);" : `return ${status.ok};`);
+      return;
+    }
+    if (settleBody) {
+      line(d, "rc = settle(m);");
+      line(d, "if (rc < 0) {");
+      line(d + 1, "return rc;");
+      line(d, "}");
+    }
+    line(d, "m->busy = false;");
+    line(d, `return ${status.ok};`);
+  };
 
   line(0, "");
   line(0, `int ${prefix}init(${machine} *m, void *user)`);
@@ -567,7 +591,8 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   line(0, "");
   line(0, `int ${prefix}reset(${machine} *m)`);
   line(0, "{");
-  if (needsRc(ir.start)) line(1, "int rc;");
+  if (needsRc(ir.start) || (hasBusy && settleBody)) line(1, "int rc;");
+  if (hasBusy) line(1, "m->busy = true;");
   line(1, `for (unsigned int r = 0u; r < ${ir.regions}u; r++) {`);
   line(2, "m->cfg[r] = 0u;");
   line(1, "}");
@@ -591,29 +616,31 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     line(0, `int ${prefix}process(${machine} *m, enum ${prefix}event event)`);
     line(0, "{");
     const reacting = ir.events.filter((e) => ir.onEvent[e.id]);
-    const idle = ir.events.filter((e) => !ir.onEvent[e.id]);
-    if (reacting.length) line(1, "int rc;");
+    if (reacting.length || settleBody) line(1, "int rc;");
+    line(1, `if ((int)event < 0 || (int)event >= ${ir.events.length}) {`);
+    line(2, `return ${status.event};`);
+    line(1, "}");
+    line(1, "if (m->busy) {");
+    line(2, `return ${status.busy};`);
+    line(1, "}");
     if (hasTerminate) {
       line(1, "if (m->terminated) {");
       line(2, `return ${status.ok};`);
       line(1, "}");
     }
+    line(1, "m->busy = true;");
     if (checkSteps) line(1, "m->steps = 0u;");
-    line(1, "switch (event) {");
-    for (const e of reacting) {
-      line(1, `case ${name.get(e.id)}:`);
-      line(2, `rc = ${ir.onEvent[e.id]}(m);`);
-      line(2, "break;");
-    }
-    if (idle.length) {
-      for (const e of idle) line(1, `case ${name.get(e.id)}:`);
-      line(2, reacting.length ? "rc = 0;" : "break;");
-      if (reacting.length) line(2, "break;");
-    }
-    line(1, "default:");
-    line(2, `return ${status.event};`);
-    line(1, "}");
     if (reacting.length) {
+      line(1, "switch (event) {");
+      for (const e of reacting) {
+        line(1, `case ${name.get(e.id)}:`);
+        line(2, `rc = ${ir.onEvent[e.id]}(m);`);
+        line(2, "break;");
+      }
+      line(1, "default:");
+      line(2, "rc = 0;");
+      line(2, "break;");
+      line(1, "}");
       line(1, "if (rc < 0) {");
       line(2, "return rc;");
       line(1, "}");

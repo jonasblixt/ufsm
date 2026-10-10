@@ -46,7 +46,7 @@ export interface InterpreterOptions {
   onTrace?: (entry: TraceEntry) => void;
 }
 
-export type InterpreterErrorCode = "invalid-model" | "not-started" | "unknown-event" | "queue-overflow" | "livelock";
+export type InterpreterErrorCode = "invalid-model" | "not-started" | "unknown-event" | "queue-overflow" | "livelock" | "busy";
 
 export class InterpreterError extends Error {
   readonly code: InterpreterErrorCode;
@@ -56,6 +56,17 @@ export class InterpreterError extends Error {
     this.code = code;
   }
 }
+
+/**
+ * process() while an earlier reset()/process() call has not finished: it was called from inside an action or guard,
+ * or the earlier call failed (an error, or an exception from the host) half-way through a microstep.
+ */
+export function busyError(): InterpreterError {
+  return new InterpreterError("busy", BUSY_MESSAGE);
+}
+
+/** The message of a `busy` error, in the interpreter and in generated code. */
+export const BUSY_MESSAGE = "reset() or process() did not finish (it failed, or this call was made from inside it); call reset()";
 
 type TriggerSel = { kind: "event"; id: Id } | { kind: "eventless" };
 
@@ -69,6 +80,8 @@ export class Interpreter {
   private queue: Id[] = [];
   private started = false;
   private terminatedFlag = false;
+  /** Set while reset()/process() runs; a call that fails leaves it set until the next reset(). */
+  private busy = false;
   private steps = 0;
 
   constructor(doc: UfsmDocument, host: InterpreterHost = {}, options: InterpreterOptions = {}) {
@@ -99,9 +112,11 @@ export class Interpreter {
   /**
    * Enter the initial configuration (the root region's default entry).
    * Calling it again restarts the machine without running exit actions,
-   * and forgets history and queued signals.
+   * and forgets history and queued signals. It also recovers from a failed
+   * call (see process()).
    */
   reset(): void {
+    this.busy = true;
     this.active.clear();
     this.history.clear();
     this.queue = [];
@@ -111,23 +126,33 @@ export class Interpreter {
     this.trace({ type: "reset" });
     this.enter([], [this.structure.root]);
     this.settle();
+    this.busy = false;
   }
 
   /**
    * Process one event (by name or id): one microstep for the event, then
    * eventless transitions and queued signals until the machine is stable.
    * Returns the number of microsteps that fired.
+   *
+   * Throws `busy` when called from inside an action or guard of a running
+   * call, or after a call that did not finish (an error, or an exception
+   * from the host): the machine may be half-way through a microstep then,
+   * and only reset() starts it again.
    */
   process(event: string): number {
     if (!this.started) throw new InterpreterError("not-started", "call reset() before process()");
     const s = this.structure;
     const id = this.eventId(event);
     if (id === undefined) throw new InterpreterError("unknown-event", `unknown event '${event}'`);
+    if (this.busy) throw busyError();
     if (this.terminatedFlag) return 0;
+    this.busy = true;
     this.steps = 0;
     this.trace({ type: "event", name: s.index.decls.get(id)!.decl.name, signal: false });
     const fired = this.microstep(this.select({ kind: "event", id }));
-    return fired + this.settle();
+    const total = fired + this.settle();
+    this.busy = false;
+    return total;
   }
 
   /**

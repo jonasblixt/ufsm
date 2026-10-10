@@ -61,6 +61,35 @@ A macrostep that runs more microsteps than a fixed limit (10 000 in the
 interpreter) is a **livelock** error, e.g. two `auto` transitions that
 undo each other.
 
+### Failed and nested calls
+
+A `reset()` or `process()` call that does not finish leaves the machine
+half-way through a microstep: some states exited, others not yet entered,
+signals of the macrostep still queued. That happens on an error
+(`queue-overflow`, `livelock`) and when an action or guard throws (an
+exception in Python and TypeScript, a panic caught with `catch_unwind` in
+Rust, a `longjmp` out of it in C). The machine never catches the
+application's exceptions: they leave the call unchanged.
+
+So the machine is **busy** from the start of every `reset()` and
+`process()` call until that call finishes, and stays busy after a call
+that did not finish. `process()` on a busy machine fails with `busy` and
+changes nothing. Only `reset()` starts it again.
+
+The same check refuses a **nested call**: `process()` called from inside
+an action or guard, or from an interrupt handler while the main program
+is inside `process()`, fails with `busy` and changes nothing; the event is
+lost, and the outer call goes on. (In Rust a nested call does not compile.)
+An application that wants to react to an event from inside an action
+queues it itself, or emits a signal instead.
+
+`reset()` is not refused, since it is the way out of a failed call; it must
+not be called from inside an action or guard (the outer call would go on
+with the new configuration), and that is not detected.
+
+`process()` checks, in this order: `not-started`, `unknown-event`, `busy`;
+then a terminated machine ignores the event.
+
 ## Selecting transitions
 
 For one microstep, transitions are selected against the configuration as
@@ -220,6 +249,8 @@ and the action calls each step must produce, by name:
 | `active` | States that must be active afterwards (name, or id where names repeat); others may be too |
 | `inactive` | States that must not be active afterwards (same references as `active`) |
 | `error` | The step must fail with this error code |
+| `raise` | This action or guard (by name) throws when it is called in this step; the step must end with that exception, unchanged. `expect` lists the calls up to and including the action. Not with `error` |
+| `reenter` | This action (by name) calls `process()` with the step's event (`send` steps only); that nested call must fail with `busy` |
 | `doc` | Free text, e.g. why an expectation differs from v0.5 |
 
 `options` sets what the machine is built with for the whole trace:

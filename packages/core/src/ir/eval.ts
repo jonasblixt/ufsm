@@ -8,7 +8,7 @@
  * faithfully matches it too.
  */
 import type { Id } from "../v1/model";
-import { InterpreterError, type InterpreterHost, type InterpreterOptions } from "../interp/interpreter";
+import { InterpreterError, busyError, type InterpreterHost, type InterpreterOptions } from "../interp/interpreter";
 import type { Expr, IrFunction, IrModule, Stmt, SwitchOn } from "./ir";
 
 class Return {
@@ -30,6 +30,8 @@ export class IrRunner {
   private queue: Id[] = [];
   private terminatedFlag = false;
   private started = false;
+  /** Set while reset()/process() runs; a call that fails leaves it set until the next reset(). */
+  private busy = false;
   private steps = 0;
 
   constructor(ir: IrModule, host: InterpreterHost = {}, options: InterpreterOptions = {}) {
@@ -62,6 +64,7 @@ export class IrRunner {
   }
 
   reset(): void {
+    this.busy = true;
     this.cfg.fill(0);
     this.hist.fill(0);
     this.deep.clear();
@@ -71,17 +74,21 @@ export class IrRunner {
     this.steps = 0;
     this.exec(this.ir.start, new Set());
     this.settle();
+    this.busy = false;
   }
 
   process(event: string): number {
     if (!this.started) throw new InterpreterError("not-started", "call reset() before process()");
     const id = this.eventByName.get(event);
     if (id === undefined) throw new InterpreterError("unknown-event", `unknown event '${event}'`);
+    if (this.busy) throw busyError();
     if (this.terminatedFlag) return 0;
+    this.busy = true;
     this.steps = 0;
     const fn = this.ir.onEvent[id];
     if (fn) this.call(fn);
     this.settle();
+    this.busy = false;
     return this.steps;
   }
 

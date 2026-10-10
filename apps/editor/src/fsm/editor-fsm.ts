@@ -6,8 +6,11 @@
 //     machine.process(EditorFsmEvent.eKey_o);
 //
 // reset() and process() throw EditorFsmError on errors; after one, call reset().
+// An exception from an action or guard passes through unchanged and leaves the
+// machine half-way: until reset(), process() throws EditorFsmError "busy", as it
+// does when an action or guard calls it.
 
-export type EditorFsmErrorCode = "queue-overflow" | "livelock" | "unknown-event" | "not-started";
+export type EditorFsmErrorCode = "queue-overflow" | "livelock" | "unknown-event" | "not-started" | "busy";
 
 export class EditorFsmError extends Error {
   readonly code: EditorFsmErrorCode;
@@ -181,6 +184,8 @@ export class EditorFsm {
   // Signals: 0 sPlace, 1 sConnect, 2 sSelect, 3 sDone
   private readonly h: EditorFsmHandler;
   private started = false;
+  /** A reset()/process() call is running, or one did not finish. */
+  private busy = false;
   private cfg: number[] = [0, 0, 0, 0, 0];
   private queue: number[] = [];
   private steps = 0;
@@ -193,12 +198,14 @@ export class EditorFsm {
   }
 
   reset(): void {
+    this.busy = true;
     this.started = true;
     this.cfg = [0, 0, 0, 0, 0];
     this.queue = [];
     this.steps = 0;
     this.enter_r0();
     this.settle();
+    this.busy = false;
   }
 
   process(event: EditorFsmEvent): void {
@@ -209,9 +216,14 @@ export class EditorFsm {
     if (!Number.isInteger(e) || e < 0 || e >= 44) {
       throw new EditorFsmError("unknown-event", `unknown event ${String(event)}`);
     }
+    if (this.busy) {
+      throw new EditorFsmError("busy", "reset() or process() did not finish (it failed, or this call was made from inside it); call reset()");
+    }
+    this.busy = true;
     this.steps = 0;
     this.onEvent[e]?.();
     this.settle();
+    this.busy = false;
   }
 
   /** Run eventless transitions and queued signals until the machine is stable. */

@@ -46,6 +46,7 @@ enum dimmer_status {
     DIMMER_ERR_QUEUE_FULL = -1, /* signal queue full */
     DIMMER_ERR_LIVELOCK = -2,   /* too many microsteps in one call */
     DIMMER_ERR_EVENT = -3,      /* unknown event */
+    DIMMER_ERR_BUSY = -4,       /* an earlier call failed, or this one was made from inside a call */
 };
 
 enum dimmer_event {
@@ -75,11 +76,19 @@ void dimmer_lamp_10_percent(void *user);
   than once per event and in any order, so they should not have side
   effects.
 - `init`, `reset` and `process` return `<PREFIX>OK` or a negative error.
-  After an error the machine is in an undefined state until `reset`.
+  After an error the machine is in an undefined state until `reset`, and
+  `process` returns `ERR_BUSY` until then. It returns `ERR_BUSY` too when
+  it is called while another call runs: from an action or guard, or from an
+  interrupt handler while the main loop is inside `process`. Such a call
+  changes nothing and its event is lost; queue events for later instead
+  (see [Failed and nested calls](semantics.md#failed-and-nested-calls)).
+  The check is a plain `bool`, not a lock: it is enough on one core, where
+  an interrupt runs to its end before the interrupted call goes on.
+  A `longjmp` out of an action leaves the machine busy as an error does.
 - A model without events has no event enum and no `process`.
 - The struct holds one small integer per region (active state), one per
   history region, the deep-history snapshots, the signal queue, a
-  microstep counter, a terminated flag and the user pointer; each part is
+  microstep counter, a terminated flag, a busy flag and the user pointer; each part is
   only present if the model needs it. `dimmer_machine` is 16 bytes on
   x86-64. Zero-initialized storage is fine before `init`.
 - Signals are internal: actions emit them, `process` runs them (FIFO) after

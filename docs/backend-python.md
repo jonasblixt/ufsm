@@ -43,7 +43,7 @@ For `examples/dimmer.ufsm`:
 
 ```python
 class DimmerError(Exception):
-    code: str  # "queue-overflow", "livelock", "unknown-event" or "not-started"
+    code: str  # "queue-overflow", "livelock", "unknown-event", "not-started" or "busy"
 
 class DimmerEvent(IntEnum):
     eButton = 0
@@ -72,6 +72,12 @@ class Dimmer:
   `process()` before that raises `not-started`.
 - Errors raise `<Class>Error` with the interpreter's error code. After an
   error the machine is in an undefined state until `reset()`.
+- An exception raised by an action or guard is not caught: it leaves
+  `reset()`/`process()` unchanged, half-way through a microstep. Until the
+  next `reset()`, `process()` then raises `busy`, as it does when an action
+  or guard calls `process()` itself (that nested call changes nothing; the
+  outer call goes on). See
+  [Failed and nested calls](semantics.md#failed-and-nested-calls).
 - Events are an `IntEnum` in declaration order. `process` also accepts
   plain ints at run time (untyped callers), and rejects numbers outside the
   enum with `unknown-event`.

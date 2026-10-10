@@ -27,6 +27,7 @@
       "error": "queue-overflow",
       "doc": "Three signals in one microstep do not fit into a queue of 2."
     },
+    { "send": "burst", "error": "busy", "doc": "The failed call left the machine half-way: process() refuses until reset()." },
     { "reset": true, "expect": ["eA", "xA", "eB", "xB", "eC"], "doc": "reset() recovers after the overflow." }
   ]
 }

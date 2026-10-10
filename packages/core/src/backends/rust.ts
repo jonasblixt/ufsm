@@ -519,6 +519,8 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   if (hasEvents) line(0, `//     machine.process(${variant(ir.events[0]!.name)})?;`);
   line(0, "//");
   line(0, "// reset() and process() return an Error on failure; after one, call reset().");
+  line(0, "// A panic out of an action or guard that is caught (catch_unwind) leaves the");
+  line(0, "// machine half-way: until reset(), process() returns Error::Busy.");
   line(0, "// No heap, no unsafe, no dependencies: builds in #![no_std] crates (Rust 1.81+).");
   line(0, "");
   // Public items a program may leave unused (events it never sends, error kinds it never sees) carry
@@ -533,6 +535,8 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   line(1, "QueueOverflow,");
   line(1, checkSteps ? `/// More than ${maxSteps} microsteps in one call.` : "/// Too many microsteps in one call (not checked in this build).");
   line(1, "Livelock,");
+  line(1, "/// `process()` after a call that did not finish (an error, or a caught panic) and before `reset()`.");
+  line(1, "Busy,");
   line(0, "}");
   line(0, "");
   line(0, "#[allow(dead_code)]");
@@ -544,6 +548,7 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   line(3, 'Error::NotStarted => "not-started",');
   line(3, 'Error::QueueOverflow => "queue-overflow",');
   line(3, 'Error::Livelock => "livelock",');
+  line(3, 'Error::Busy => "busy",');
   line(2, "}");
   line(1, "}");
   line(0, "}");
@@ -554,6 +559,7 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   line(3, 'Error::NotStarted => "call reset() before process()",');
   line(3, `Error::QueueOverflow => "signal queue full (${queueCap})",`);
   line(3, `Error::Livelock => "${checkSteps ? `more than ${maxSteps} microsteps in one call` : "livelock"}",`);
+  line(3, 'Error::Busy => "an earlier reset() or process() did not finish; call reset()",');
   line(2, "})");
   line(1, "}");
   line(0, "}");
@@ -603,6 +609,8 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   if (hasQueue) line(1, `// Signals: ${ir.signals.map((s, i) => `${i} ${s.name}`).join(", ")}`);
   const fields: [string, string, string][] = [["handler", "H", "handler"]];
   if (hasEvents) fields.push(["started", "bool", "false"]);
+  // a call is running or did not finish (an error, or a caught panic); only process() reads it
+  if (hasEvents) fields.push(["busy", "bool", "false"]);
   fields.push(["cfg", `[${slotT}; ${ir.regions}]`, zeros(ir.regions)]);
   if (ir.history.length) fields.push(["hist", `[${slotT}; ${ir.history.length}]`, zeros(ir.history.length)]);
   for (const dh of deepRegions) fields.push([`deep_r${dh.region}`, `[${slotT}; ${dh.snapshotTo! - dh.snapshotFrom!}]`, zeros(dh.snapshotTo! - dh.snapshotFrom!)]);
@@ -651,7 +659,11 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   // reset and process
   line(0, `impl<H: Handler> ${ty}<H> {`);
   const errorsDoc = (notStarted: boolean): void => {
-    const kinds = [...(notStarted ? ["`Error::NotStarted` before the first `reset()`"] : []), ...(hasQueue ? ["`Error::QueueOverflow`"] : []), ...(countSteps ? ["`Error::Livelock`"] : [])];
+    const kinds = [
+      ...(notStarted ? ["`Error::NotStarted` before the first `reset()`", "`Error::Busy` after a call that did not finish"] : []),
+      ...(hasQueue ? ["`Error::QueueOverflow`"] : []),
+      ...(countSteps ? ["`Error::Livelock`"] : []),
+    ];
     line(1, "///");
     line(1, "/// # Errors");
     line(1, "///");
@@ -662,10 +674,20 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   line(1, "pub fn reset(&mut self) -> Result<(), Error> {");
   for (const [n, , v] of fields) {
     if (n === "handler") continue;
-    line(2, `self.${n} = ${n === "started" ? "true" : v};`);
+    line(2, `self.${n} = ${n === "started" || n === "busy" ? "true" : v};`);
   }
   stmts(ir.start, 2, { result: true });
-  line(2, settleBody ? "self.settle()" : "Ok(())");
+  // the end of reset() and process(): settle, then clear the busy latch (an error returns early and leaves it set)
+  const finish = (): void => {
+    if (!hasEvents) {
+      line(2, settleBody ? "self.settle()" : "Ok(())");
+      return;
+    }
+    if (settleBody) line(2, "self.settle()?;");
+    line(2, "self.busy = false;");
+    line(2, "Ok(())");
+  };
+  finish();
   line(1, "}");
   line(0, "");
   line(1, "/// Process one event, then everything it causes (eventless transitions, signals), until the machine is stable.");
@@ -676,11 +698,15 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     line(2, "if !self.started {");
     line(3, "return Err(Error::NotStarted);");
     line(2, "}");
+    line(2, "if self.busy {");
+    line(3, "return Err(Error::Busy);");
+    line(2, "}");
     if (hasTerminate) {
       line(2, "if self.terminated {");
       line(3, "return Ok(());");
       line(2, "}");
     }
+    line(2, "self.busy = true;");
     if (countSteps) line(2, "self.steps = 0;");
     if (!eventSteps.length) line(2, "let _ = event;");
     else {
@@ -691,7 +717,7 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
       if (idle.length) arm(3, idle.map((ev) => variant(ev.name)), "false");
       line(2, "};");
     }
-    line(2, settleBody ? "self.settle()" : "Ok(())");
+    finish();
   }
   line(1, "}");
   line(0, "}");

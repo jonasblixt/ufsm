@@ -42,7 +42,24 @@ export interface TraceStep {
   inactive?: string[];
   /** Expected InterpreterError / backend error code instead of `expect`, e.g. "queue-overflow". */
   error?: string;
+  /**
+   * An action or guard (by name) that throws when it is called in this step (a panic in Rust, a longjmp out of it in
+   * C). The step must end with that exception, unchanged; `expect` lists the calls up to and including the action.
+   */
+  raise?: string;
+  /** An action (by name) that calls process() with the step's event again; that nested call must fail with `busy`. */
+  reenter?: string;
   doc?: string;
+}
+
+/** What a trace's `raise` action or guard throws: the application's own exception, which no machine may catch. */
+export class TraceRaise extends Error {
+  readonly what: string;
+  constructor(what: string) {
+    super(`'${what}' raised (trace step)`);
+    this.name = "TraceRaise";
+    this.what = what;
+  }
 }
 
 export interface TraceOptions {
@@ -61,7 +78,7 @@ export interface Trace {
   steps: TraceStep[];
 }
 
-const STEP_KEYS = new Set(["reset", "send", "guards", "expect", "active", "inactive", "error", "doc"]);
+const STEP_KEYS = new Set(["reset", "send", "guards", "raise", "reenter", "expect", "active", "inactive", "error", "doc"]);
 const OPTION_KEYS = ["signalQueue", "maxMicrosteps"] as const;
 
 /** Parse and validate a trace file. Throws UfsmFormatError. */
@@ -119,8 +136,16 @@ export function parseTrace(text: string): Trace {
       if (typeof s["error"] !== "string") throw new UfsmFormatError(`${p}.error`, "expected an error code");
       step.error = s["error"];
     }
+    for (const k of ["raise", "reenter"] as const) {
+      if (s[k] === undefined) continue;
+      if (typeof s[k] !== "string") throw new UfsmFormatError(`${p}.${k}`, k === "raise" ? "expected an action or guard name" : "expected an action name");
+      step[k] = s[k];
+    }
     if (typeof s["doc"] === "string") step.doc = s["doc"];
     const acts = step.reset || step.send !== undefined;
+    if (step.raise !== undefined && (!acts || step.error !== undefined)) throw new UfsmFormatError(`${p}.raise`, "needs a reset or send, and no `error`");
+    if (step.reenter !== undefined && step.send === undefined) throw new UfsmFormatError(`${p}.reenter`, "needs a send (the nested call sends the same event)");
+    if (step.raise !== undefined && step.raise === step.reenter) throw new UfsmFormatError(p, "an action either raises or reenters, not both");
     if (acts && step.expect === undefined && step.error === undefined) throw new UfsmFormatError(p, "a reset or send step needs `expect` (or `error`)");
     if (!acts && (step.expect !== undefined || step.error !== undefined)) throw new UfsmFormatError(p, "`expect`/`error` need a reset or send");
     if (!acts && !step.guards && !step.active && !step.inactive) throw new UfsmFormatError(p, "empty step");
@@ -158,7 +183,29 @@ export function runTrace(doc: UfsmDocument, trace: Trace, options: InterpreterOp
   const failures: TraceFailure[] = [];
   const guards = new Map<string, boolean>();
   let calls: string[] = [];
-  const m = make(doc, { call: (name) => void calls.push(name), guard: (name) => guards.get(name) ?? false }, { ...options, ...trace.options });
+  let step: TraceStep = {};
+  /** Outcome of the step's nested process() call (`reenter`): "ok" or an error code; undefined until it is made. */
+  let nested: string | undefined;
+  const host: InterpreterHost = {
+    call: (name) => {
+      calls.push(name);
+      if (name === step.raise) throw new TraceRaise(name);
+      if (name === step.reenter && nested === undefined) {
+        try {
+          m.process(step.send!);
+          nested = "ok";
+        } catch (e) {
+          if (!(e instanceof InterpreterError)) throw e;
+          nested = e.code;
+        }
+      }
+    },
+    guard: (name) => {
+      if (name === step.raise) throw new TraceRaise(name);
+      return guards.get(name) ?? false;
+    },
+  };
+  const m = make(doc, host, { ...options, ...trace.options });
   const names = new Map<Id, string>();
   const walk = (states: UfsmDocument["machine"]["root"]["states"]): void => {
     for (const v of states) {
@@ -167,20 +214,34 @@ export function runTrace(doc: UfsmDocument, trace: Trace, options: InterpreterOp
     }
   };
   walk(doc.machine.root.states);
-  trace.steps.forEach((step, i) => {
+  trace.steps.forEach((current, i) => {
+    step = current;
+    nested = undefined;
     for (const [k, v] of Object.entries(step.guards ?? {})) guards.set(k, v);
     calls = [];
     let error: string | undefined;
+    let raised = false;
     try {
       if (step.reset) m.reset();
       else if (step.send !== undefined) m.process(step.send);
     } catch (e) {
-      if (!(e instanceof InterpreterError)) throw e;
-      error = e.code;
-      if (step.error === undefined) failures.push({ step: i, message: `unexpected error: ${e.message}` });
+      if (e instanceof TraceRaise) raised = true;
+      else if (!(e instanceof InterpreterError)) throw e;
+      else {
+        error = e.code;
+        if (step.error === undefined) failures.push({ step: i, message: `unexpected error: ${e.message}` });
+      }
     }
     if (step.error !== undefined && error !== step.error) {
       failures.push({ step: i, message: `expected error '${step.error}', got ${error ? `'${error}'` : "none"}` });
+    }
+    if (step.raise !== undefined && !raised && error === undefined) {
+      failures.push({ step: i, message: `expected the exception from '${step.raise}' to end the step, but '${step.raise}' was not called` });
+    }
+    if (step.raise === undefined && raised) failures.push({ step: i, message: "an action or guard raised in a step without `raise`" });
+    if (step.reenter !== undefined && nested !== "busy") {
+      const got = nested === undefined ? `'${step.reenter}' was not called` : `the nested process() gave ${nested === "ok" ? "no error" : `'${nested}'`}`;
+      failures.push({ step: i, message: `${got}; expected the nested process() from '${step.reenter}' to fail with 'busy'` });
     }
     if (step.expect && error === undefined) {
       const same = calls.length === step.expect.length && calls.every((c, j) => c === step.expect![j]);
@@ -209,7 +270,7 @@ export function formatFailure(trace: Trace, f: TraceFailure): string {
   return s;
 }
 
-const STEP_ORDER = ["reset", "guards", "send", "expect", "active", "inactive", "error", "doc"] as const;
+const STEP_ORDER = ["reset", "guards", "send", "raise", "reenter", "expect", "active", "inactive", "error", "doc"] as const;
 
 /**
  * Write a trace as JSON in the layout of the files in tests/traces: one key per line at the top, each step on one

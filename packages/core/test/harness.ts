@@ -14,6 +14,7 @@ import {
   type InterpreterHost,
   type InterpreterOptions,
   type MachineFactory,
+  TraceRaise,
   type TraceMachine,
   type UfsmDocument,
 } from "../src/index";
@@ -23,11 +24,53 @@ export type Engine = (doc: UfsmDocument, host: InterpreterHost, options: Interpr
 
 export const interpreterEngine: Engine = (doc, host, options) => new Interpreter(doc, host, options);
 
-/** One step of a scripted run: set guard values, then reset or send an event. */
+/** One step of a scripted run: set guard values, then reset or send an event. `raise`/`reenter` as in TraceStep. */
 export interface ScriptStep {
   guards?: Record<string, boolean>;
   reset?: true;
   send?: string;
+  raise?: string;
+  reenter?: string;
+}
+
+/**
+ * Driver protocol lines for a script step (the C, Python and Rust drivers share it):
+ *   g <guard> <0|1>        set a guard value (index into the guards)
+ *   x raise <name>         the action or guard <name> raises when called in the next r/e
+ *   x reenter <name>       the action <name> calls process() with the same event in the next e
+ *   r                      reset (init the first time in C)
+ *   e <event>              process (index into the events; -1 = unknown)
+ */
+export function driverLines(s: ScriptStep, guardIndex: Map<string, number>, eventIndex: Map<string, number>): string[] {
+  const out: string[] = [];
+  for (const [g, v] of Object.entries(s.guards ?? {})) if (guardIndex.has(g)) out.push(`g ${guardIndex.get(g)} ${v ? 1 : 0}`);
+  if (s.raise !== undefined) out.push(`x raise ${s.raise}`);
+  if (s.reenter !== undefined) out.push(`x reenter ${s.reenter}`);
+  if (s.reset) out.push("r");
+  else if (s.send !== undefined) out.push(`e ${eventIndex.get(s.send) ?? -1}`);
+  return out;
+}
+
+/**
+ * Parse a driver's output: "#u <unit>" starts a unit; every other line is "calls<TAB>active ids<TAB>error<TAB>nested",
+ * where error is "-", "raised" or an error code (C's negative numbers go through `codes`) and nested is the outcome of
+ * the nested process() call of `x reenter` ("-" when none was made, "ok" or an error code).
+ */
+export function parseDriverOutput(output: string, units: number, codes: Record<string, string> = {}): StepResult[][] {
+  const results: StepResult[][] = Array.from({ length: units }, () => []);
+  let cur: StepResult[] | undefined;
+  const code = (c: string): string => codes[c] ?? (/^-?\d+$/.test(c) ? `code ${c}` : c);
+  for (const line of output.split(/\r?\n/)) {
+    if (line.startsWith("#u ")) cur = results[Number(line.slice(3))];
+    else if (line !== "") {
+      const [calls = "", active = "", err = "-", nested = "-"] = line.split("\t");
+      const res: StepResult = { calls: calls ? calls.split(" ") : [], active: active ? active.split(",") : [] };
+      if (err !== "-") res.error = code(err);
+      if (nested !== "-") res.nested = nested === "0" ? "ok" : code(nested);
+      cur!.push(res);
+    }
+  }
+  return results;
 }
 
 /** Random script: a reset, then `steps` steps; guards get fresh random values before every step. */
@@ -50,7 +93,10 @@ export function randomScript(doc: UfsmDocument, seed: number, steps: number): Sc
 export interface StepResult {
   calls: string[];
   active: string[];
+  /** An error code, or "raised" when the step's `raise` action or guard ended it. */
   error?: string;
+  /** Outcome of the nested process() call of `reenter`: "ok" or an error code. */
+  nested?: string;
 }
 
 /** Log line of a step, as compared between engines. */
@@ -96,11 +142,26 @@ export function replayResults(results: StepResult[], backend: string): MachineFa
   return (_doc, host) => {
     let i = 0;
     let active: string[] = [];
+    /** The result being replayed: a process() call made while replaying its calls is the step's nested call. */
+    let replaying: StepResult | undefined;
     const next = (): void => {
+      if (replaying) {
+        // the trace runner's `reenter` action calls process(): give it the nested outcome the driver recorded
+        const nested = replaying.nested ?? "ok";
+        if (nested !== "ok") throw new InterpreterError(nested as InterpreterErrorCode, nested);
+        return;
+      }
       const r = results[i++];
       if (!r) throw new Error(`${backend} produced fewer results than the trace has steps`);
-      for (const c of r.calls) host.call?.(c, c);
       active = r.active;
+      replaying = r;
+      try {
+        // the recorded calls end with the `raise` action, if one raised: the runner's host throws again there
+        for (const c of r.calls) host.call?.(c, c);
+      } finally {
+        replaying = undefined;
+      }
+      if (r.error === "raised") throw new TraceRaise("(recorded)"); // a guard raised
       if (r.error) throw new InterpreterError(r.error as InterpreterErrorCode, r.error);
     };
     return { reset: next, process: next, isActive: (id) => active.includes(id), activeIds: () => active };

@@ -44,7 +44,7 @@ and ignored.
 For `examples/dimmer.ufsm`:
 
 ```ts
-export type DimmerErrorCode = "queue-overflow" | "livelock" | "unknown-event" | "not-started";
+export type DimmerErrorCode = "queue-overflow" | "livelock" | "unknown-event" | "not-started" | "busy";
 export class DimmerError extends Error {
   readonly code: DimmerErrorCode;
 }
@@ -76,6 +76,12 @@ export class Dimmer {
   `process()` before that throws `not-started`.
 - Errors throw `<Class>Error` with the interpreter's error code. After an
   error the machine is in an undefined state until `reset()`.
+- An exception thrown by an action or guard is not caught: it leaves
+  `reset()`/`process()` unchanged, half-way through a microstep. Until the
+  next `reset()`, `process()` then throws `busy`, as it does when an action
+  or guard calls `process()` itself (that nested call changes nothing; the
+  outer call goes on). See
+  [Failed and nested calls](semantics.md#failed-and-nested-calls).
 - Events are a const object plus a union type of its values, the erasable
   replacement for an `enum`. `process` checks at run time too: anything
   else throws `unknown-event`.

@@ -180,6 +180,57 @@ describe("interpreter", () => {
     assert.deepEqual(run(doc, ["e1", "e1", "e1"]), ["xA", "eB", "xB", "eA", "xA", "eB", "xB", "eA", "xA", "eB", "xB", "eA"]);
   });
 
+  it("stays busy after a call that did not finish, until reset()", () => {
+    const doc = machine({ root: ["A", "B"], signals: ["s"], transitions: ["A -e1/^s,^s-> B", "B -e1-> A"] });
+    const isBusy = (e: unknown): boolean => e instanceof InterpreterError && e.code === "busy";
+    const id = (name: string): string => doc.machine.root.states.find((v) => v.name === name)!.id;
+    const m = new Interpreter(doc, {}, { signalQueue: 1 });
+    m.reset();
+    assert.throws(() => m.process("e1"), (e: unknown) => e instanceof InterpreterError && e.code === "queue-overflow");
+    assert.throws(() => m.process("e1"), isBusy);
+    assert.throws(() => m.process("e9"), /unknown event/, "unknown-event is checked first");
+    m.reset();
+    assert.ok(m.isActive(id("A")));
+    // an exception from the host passes through unchanged and latches the same way
+    const boom = new Error("boom");
+    let raise = true;
+    const h = new Interpreter(doc, {
+      call: (name) => {
+        if (raise && name === "xA") throw boom;
+      },
+    });
+    h.reset();
+    assert.throws(() => h.process("e1"), (e: unknown) => e === boom);
+    raise = false;
+    assert.throws(() => h.process("e1"), isBusy);
+    h.reset();
+    h.process("e1");
+    assert.ok(h.isActive(id("B")));
+  });
+
+  it("refuses process() from inside an action without changing anything; the outer call goes on", () => {
+    const doc = machine({ root: ["A", "B"], transitions: ["A -e1/go-> B", "B -e1-> A"] });
+    const calls: string[] = [];
+    let nested: unknown;
+    const m: Interpreter = new Interpreter(doc, {
+      call: (name) => {
+        calls.push(name);
+        if (name !== "go") return;
+        try {
+          m.process("e1");
+        } catch (e) {
+          nested = e;
+        }
+      },
+    });
+    m.reset();
+    m.process("e1");
+    assert.ok(nested instanceof InterpreterError && nested.code === "busy");
+    assert.deepEqual(calls, ["eA", "xA", "go", "eB"]);
+    m.process("e1");
+    assert.ok(m.isActive(doc.machine.root.states.find((v) => v.name === "A")!.id), "a refused nested call does not latch");
+  });
+
   it("restores shallow history one level deep", () => {
     const doc = machine({
       root: ["Off", "On{X{X1,X2},Y}"],
@@ -349,6 +400,28 @@ describe("trace files", () => {
     assert.throws(() => parseTrace(`{"model":"m","steps":[{"send":"e1"}]}`), /needs `expect`/);
     assert.throws(() => parseTrace(`{"model":"m","steps":[{"send":"e1","expect":[],"bogus":1}]}`), /unknown key/);
     assert.throws(() => parseTrace(`{"model":"m","steps":[{"reset":true,"send":"e1","expect":[]}]}`), /not both/);
+    assert.throws(() => parseTrace(`{"model":"m","steps":[{"reset":true,"reenter":"eA","expect":[]}]}`), /needs a send/);
+    assert.throws(() => parseTrace(`{"model":"m","steps":[{"send":"e1","raise":"xA","error":"busy"}]}`), /no `error`/);
+    assert.throws(() => parseTrace(`{"model":"m","steps":[{"guards":{"g":true},"raise":"g"}]}`), /needs a reset or send/);
+  });
+
+  it("raise exceptions from actions and call process() from inside an action (guards: test_busy.json)", () => {
+    const doc = machine({ root: ["A", "B"], transitions: ["A -e1/go-> B", "B -e1-> A"] });
+    const steps = [
+      `{"reset":true,"expect":["eA"]}`,
+      `{"send":"e1","raise":"go","expect":["xA","go"]}`,
+      `{"send":"e1","error":"busy"}`,
+      `{"reset":true,"expect":["eA"]}`,
+      `{"send":"e1","reenter":"go","expect":["xA","go","eB"],"active":["B"]}`,
+      `{"send":"e1","expect":["xB","eA"]}`,
+    ];
+    const trace = parseTrace(`{"model":"m","steps":[${steps.join(",")}]}`);
+    assert.deepEqual(runTrace(doc, trace), []);
+    // raised where none was expected, expected but not raised, a nested call on the wrong action
+    const wrong = parseTrace(`{"model":"m","steps":[{"reset":true,"raise":"zz","expect":["eA"]},{"send":"e1","reenter":"zz","expect":[]}]}`);
+    const failures = runTrace(doc, wrong).map((f) => f.message);
+    assert.match(failures[0]!, /'zz' was not called/);
+    assert.match(failures[1]!, /'zz' was not called; expected the nested process\(\)/);
   });
 
   it("report differing traces", () => {

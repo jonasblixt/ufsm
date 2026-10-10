@@ -16,11 +16,14 @@
  * `<Class>Handler` (an interface with one method per action and guard) and
  * the machine class `<Class>`. The runtime loop (reset/process/settle) is the
  * one described in ir/ir.ts; errors are exceptions, as in the interpreter.
+ * Exceptions from the handler are not caught: they leave the machine busy
+ * until reset(), as in the interpreter.
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
 import { UFSM_VERSION } from "../version";
 import type { Expr, IrModule, Stmt, SwitchOn } from "../ir/ir";
+import { BUSY_MESSAGE } from "../interp/interpreter";
 import { CodegenError, OUTPUT_NOTICE, cIdentifier } from "./c";
 import { pythonClassName } from "./python";
 
@@ -310,8 +313,11 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
   if (ir.events.length) line(0, `//     machine.process(${eventCls}.${ir.events[0]!.name});`);
   line(0, "//");
   line(0, `// reset() and process() throw ${errorCls} on errors; after one, call reset().`);
+  line(0, "// An exception from an action or guard passes through unchanged and leaves the");
+  line(0, `// machine half-way: until reset(), process() throws ${errorCls} "busy", as it`);
+  line(0, "// does when an action or guard calls it.");
   line(0, "");
-  line(0, `export type ${codeT} = "queue-overflow" | "livelock" | "unknown-event" | "not-started";`);
+  line(0, `export type ${codeT} = "queue-overflow" | "livelock" | "unknown-event" | "not-started" | "busy";`);
   line(0, "");
   line(0, `export class ${errorCls} extends Error {`);
   line(1, `readonly code: ${codeT};`);
@@ -353,6 +359,8 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
   const usesHandler = ir.actions.length + ir.guards.length > 0;
   line(1, `private readonly h: ${handlerT};`);
   line(1, "private started = false;");
+  line(1, "/** A reset()/process() call is running, or one did not finish. */");
+  line(1, "private busy = false;");
   line(1, `private cfg: number[] = ${zeros(ir.regions)};`);
   if (ir.history.length) line(1, `private hist: number[] = ${zeros(ir.history.length)};`);
   for (const dh of deepRegions) line(1, `private deep_r${dh.region}: number[] = ${zeros(dh.snapshotTo! - dh.snapshotFrom!)};`);
@@ -375,6 +383,7 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
 
   // reset
   line(1, "reset(): void {");
+  line(2, "this.busy = true;");
   line(2, "this.started = true;");
   line(2, `this.cfg = ${zeros(ir.regions)};`);
   if (ir.history.length) line(2, `this.hist = ${zeros(ir.history.length)};`);
@@ -385,6 +394,7 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
   stmts(ir.start, 2);
   const settleBody = hasTerminate || ir.eventless !== undefined || hasQueue;
   if (settleBody) line(2, "this.settle();");
+  line(2, "this.busy = false;");
   line(1, "}");
   line(0, "");
 
@@ -397,14 +407,19 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
   line(2, `if (!Number.isInteger(e) || e < 0 || e >= ${ir.events.length}) {`);
   line(3, `throw new ${errorCls}("unknown-event", \`unknown event \${String(event)}\`);`);
   line(2, "}");
+  line(2, "if (this.busy) {");
+  line(3, `throw new ${errorCls}("busy", ${JSON.stringify(BUSY_MESSAGE)});`);
+  line(2, "}");
   if (hasTerminate) {
     line(2, "if (this.terminated) {");
     line(3, "return;");
     line(2, "}");
   }
+  line(2, "this.busy = true;");
   if (countSteps) line(2, "this.steps = 0;");
   if (eventSteps) line(2, "this.onEvent[e]?.();");
   if (settleBody) line(2, "this.settle();");
+  line(2, "this.busy = false;");
   line(1, "}");
 
   // runtime helpers

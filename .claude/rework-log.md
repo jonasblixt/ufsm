@@ -475,3 +475,17 @@ Measured over the 21 valid legacy models (864 KB):
   Error messages unchanged except absent fields ("missing"). Tests: core 485 + 1 skip, editor 67, browser check 347.
 - 2026-10-10: Live tracing from an embedded target discussed and written up as a later feature in
   `docs/live-trace.md` (replay log of events + guard bits, keyframes, transports, timeline); not started.
+- 2026-10-10: Busy latch for failed and nested calls (Jonas: exceptions out of actions). `docs/semantics.md` gains
+  "Failed and nested calls"; interpreter, flat runner and IR evaluator get the `busy` error (`busyError`,
+  `BUSY_MESSAGE`); Python/TS/C/Rust printers set the flag at the start of reset/process and clear it at the end (C:
+  `ERR_BUSY = -4`, an event range check up front, so an unknown event after terminate is now `ERR_EVENT` as in the
+  interpreter; Rust: `Error::Busy`). Trace keys `raise` and `reenter` (parser, runner, `formatTrace` order); the driver
+  protocol gains `x raise|reenter <name>` and a fourth output column (shared `driverLines`/`parseDriverOutput` in
+  `test/harness.ts`): C leaves with `longjmp`, Python raises, Rust panics under `catch_unwind` (re-entry cannot compile
+  there, reported as refused), TS runs in-process. New trace `test_busy.json` (on test_guard1.ufsm; raise in an exit
+  action, an entry action during reset and a guard; reenter from an entry action); busy steps added after the errors in
+  `test_eventless` and `test_signals_queue`; planted-bug check: dropping the latch or never clearing it fails all three
+  traces. Editor: `input.ts` resets its machine when an editor action throws, then rethrows; `editor-fsm.ts`
+  regenerated. Backend docs updated. Tests on Windows: core 498 (C suites with `CC` = LLVM clang, which is installed but
+  not on PATH), editor 67. Browser check not run.
+- 2026-10-10: Jonas reviewed the busy latch semantics (accepted); the simulator keeps Stop/Start and Reset as the way out.

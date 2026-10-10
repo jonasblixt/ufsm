@@ -8,7 +8,7 @@
  * interpreter step for step) and to document what backends emit.
  */
 import type { Action, Id } from "../v1/model";
-import { InterpreterError, type InterpreterHost, type InterpreterOptions } from "../interp/interpreter";
+import { InterpreterError, busyError, type InterpreterHost, type InterpreterOptions } from "../interp/interpreter";
 import type { EntryOp, FlatGuard, FlatModel, FlatTransition, Offer, RegionOp } from "./flatten";
 
 export class FlatRunner {
@@ -23,6 +23,8 @@ export class FlatRunner {
   private queue: number[] = [];
   private started = false;
   private terminatedFlag = false;
+  /** Set while reset()/process() runs; a call that fails leaves it set until the next reset(). */
+  private busy = false;
   private steps = 0;
   private readonly eventIndex = new Map<string, Id>();
   private readonly actionName = new Map<Id, string>();
@@ -64,6 +66,7 @@ export class FlatRunner {
   }
 
   reset(): void {
+    this.busy = true;
     this.cfg.fill(0);
     this.hist.fill(0);
     this.deep.clear();
@@ -73,15 +76,20 @@ export class FlatRunner {
     this.steps = 0;
     this.enterRegion({ region: 0, default: true });
     this.settle();
+    this.busy = false;
   }
 
   process(event: string): number {
     if (!this.started) throw new InterpreterError("not-started", "call reset() before process()");
     const id = this.eventIndex.get(event);
     if (id === undefined) throw new InterpreterError("unknown-event", `unknown event '${event}'`);
+    if (this.busy) throw busyError();
     if (this.terminatedFlag) return 0;
+    this.busy = true;
     this.steps = 0;
-    return this.microstep(this.select(this.model.offers[id] ?? [])) + this.settle();
+    const fired = this.microstep(this.select(this.model.offers[id] ?? [])) + this.settle();
+    this.busy = false;
+    return fired;
   }
 
   private settle(): number {

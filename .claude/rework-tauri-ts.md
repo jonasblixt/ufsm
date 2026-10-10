@@ -118,6 +118,13 @@ the generated code. Status refers to the new implementation.
 - [ ] B-FZ Differential fuzzer: the per-backend differential runs exist (C, Python, TypeScript and Rust, 300 random
       models each, `UFSM_C_RANDOM`/`UFSM_PY_RANDOM`/`UFSM_TS_RANDOM`/`UFSM_RUST_RANDOM` for more); left: a long-running fuzz command or nightly CI job that
       saves failing seeds
+- [x] Busy latch: a failed call (error, exception, caught panic, longjmp) or a nested `process()` leaves/meets the
+      machine busy, `process()` fails with `busy` until `reset()`; interpreter, runners and all four backends; trace keys
+      `raise`/`reenter`, `test_busy.json` (2026-10-10)
+- [x] Busy follow-ups: Jonas reviewed the semantics (2026-10-10: fine as written); the simulator stays as it is (after
+      an error, Stop/Start or Reset)
+- [ ] Later, optional: SCXML-style `error.execution` as an opt-in (catch, finish the transition, queue an error event
+      the model can handle)
 - [x] `ufsm generate c` in the CLI (2026-10-09)
 - [x] `ufsm generate python` (2026-10-09)
 - [x] `ufsm generate ts` (2026-10-09)
@@ -275,6 +282,10 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - `maxMicrosteps: 0` means "no livelock check" to the generators but makes the interpreter fail at the first microstep,
   and the trace format accepts 0; no trace uses it. The simulator only allows 1 and up. Decide one meaning (semantics.md).
 - The simulator log shows the last 400 steps (the recorded trace keeps all of them).
+- `reset()` called from inside an action or guard is not detected (only `process()` is refused while busy): the outer
+  call goes on with the new configuration. Rust cannot do it (borrow); the other languages document it.
+- The busy flag in C is a plain `bool`, not a lock: it detects a call from an interrupt handler on one core, not
+  concurrent calls from two threads or cores.
 - The sheet fit check does not measure transition labels (their size depends on the font), so a label can stick out of the
   frame or over the title block without a warning. The title block is drawn under the diagram, so a state over it hides it
   (and gets a `title-block` warning).

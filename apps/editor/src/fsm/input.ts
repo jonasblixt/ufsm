@@ -101,6 +101,17 @@ export function attachInput(
   machine.reset();
   let pointer: number | undefined;
 
+  // An exception out of an editor action leaves the machine busy (every later event would fail): start it over in
+  // its initial states, then pass the exception on so the bug still shows.
+  const dispatch = (event: EditorFsmEvent): void => {
+    try {
+      machine.process(event);
+    } catch (e) {
+      machine.reset();
+      throw e;
+    }
+  };
+
   const send = (event: EditorFsmEvent, e: MouseEvent | KeyboardEvent): void => {
     input.shift = e.shiftKey;
     input.ctrl = e.ctrlKey || e.metaKey;
@@ -110,7 +121,7 @@ export function attachInput(
     }
     const press = event === EditorFsmEvent.eLMBDown || event === EditorFsmEvent.eRMBDown || event === EditorFsmEvent.eMouseBack;
     if (e instanceof KeyboardEvent || press) before();
-    machine.process(event);
+    dispatch(event);
     if (e instanceof MouseEvent) {
       input.lastX = e.clientX;
       input.lastY = e.clientY;
@@ -180,7 +191,7 @@ export function attachInput(
   window.addEventListener("blur", () => {
     if (pointer === undefined) return;
     pointer = undefined;
-    machine.process(EditorFsmEvent.eCancel);
+    dispatch(EditorFsmEvent.eCancel);
   });
 
   window.addEventListener("keydown", (e) => {
@@ -202,7 +213,7 @@ export function attachInput(
     pickTool(tool) {
       input.tool = tool;
       before();
-      machine.process(EditorFsmEvent.ePalette);
+      dispatch(EditorFsmEvent.ePalette);
     },
   };
 }

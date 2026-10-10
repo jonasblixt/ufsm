@@ -8,10 +8,11 @@
  *
  * Driver protocol (one command per line):
  *   u <unit> <autoReset>  start unit: fresh zeroed machine, guards false
- *   g <guard> <0|1>       set a guard value (index into ir.guards)
- *   r                     init (first time) or reset
- *   e <event>             process (index into ir.events)
- * Each r/e prints "calls<TAB>active ids<TAB>error code or -". With
+ *   g, x, r, e            a script step (driverLines in harness.ts); r is
+ *                         init the first time
+ * `x raise` leaves the generated code with a longjmp, the C counterpart of
+ * an exception. Each r/e prints "calls<TAB>active ids<TAB>error<TAB>nested"
+ * (parseDriverOutput; error codes as numbers). With
  * autoReset, an error is followed by a reset; if that fails too, the unit
  * is dead and prints nothing more (like runScript in harness.ts).
  */
@@ -21,7 +22,7 @@ import { availableParallelism, tmpdir } from "node:os";
 import { promisify } from "node:util";
 import { join } from "node:path";
 import { generateC, type COptions, type IrModule } from "../src/index";
-import type { ScriptStep, StepResult } from "./harness";
+import { driverLines, parseDriverOutput, type ScriptStep, type StepResult } from "./harness";
 
 /**
  * Remove a temp directory, best effort. On Windows a just-exited driver.exe is
@@ -87,7 +88,7 @@ export interface CUnit {
 }
 
 const str = (s: string): string => JSON.stringify(s);
-const ERRORS: Record<string, string> = { "-1": "queue-overflow", "-2": "livelock", "-3": "unknown-event" };
+const ERRORS: Record<string, string> = { "-1": "queue-overflow", "-2": "livelock", "-3": "unknown-event", "-4": "busy" };
 
 const execFileAsync = promisify(execFile);
 
@@ -122,7 +123,7 @@ export async function runC(cc: string, units: CUnit[]): Promise<StepResult[][]> 
       const c: string[] = [];
       c.push(`#include "${files.headerName}"`, '#include "driver.h"', "");
       u.ir.actions.forEach((a) => c.push(`void ${p}${a.name}(void *user) { test_call(user, ${str(a.name)}); }`));
-      u.ir.guards.forEach((g, i) => c.push(`bool ${p}${g.name}(void *user) { return test_guard(user, ${i}); }`));
+      u.ir.guards.forEach((g, i) => c.push(`bool ${p}${g.name}(void *user) { return test_guard(user, ${i}, ${str(g.name)}); }`));
       c.push(`static struct ${p}machine machine;`);
       c.push(`static int w_init(void *user) { return ${p}init(&machine, user); }`);
       c.push(`static int w_reset(void) { return ${p}reset(&machine); }`);
@@ -151,26 +152,11 @@ export async function runC(cc: string, units: CUnit[]): Promise<StepResult[][]> 
       const gi = new Map(u.ir.guards.map((g, i) => [g.name, i]));
       const ei = new Map(u.ir.events.map((e, i) => [e.name, i]));
       input.push(`u ${k} ${u.autoReset ? 1 : 0}`);
-      for (const s of u.script) {
-        for (const [g, v] of Object.entries(s.guards ?? {})) if (gi.has(g)) input.push(`g ${gi.get(g)} ${v ? 1 : 0}`);
-        if (s.reset) input.push("r");
-        else if (s.send !== undefined) input.push(`e ${ei.get(s.send) ?? -1}`);
-      }
+      for (const s of u.script) input.push(...driverLines(s, gi, ei));
     });
     input.push("q");
     const output = execFileSync(exe, [], { input: `${input.join("\n")}\n`, encoding: "utf8", maxBuffer: 1 << 28 });
-    const results: StepResult[][] = units.map(() => []);
-    let cur: StepResult[] | undefined;
-    for (const line of output.split(/\r?\n/)) {
-      if (line.startsWith("#u ")) cur = results[Number(line.slice(3))];
-      else if (line !== "") {
-        const [calls = "", active = "", err = "-"] = line.split("\t");
-        const res: StepResult = { calls: calls ? calls.split(" ") : [], active: active ? active.split(",") : [] };
-        if (err !== "-") res.error = ERRORS[err] ?? `code ${err}`;
-        cur!.push(res);
-      }
-    }
-    return results;
+    return parseDriverOutput(output, units.length, ERRORS);
   } finally {
     removeTempDir(dir);
   }
@@ -192,11 +178,12 @@ struct test_unit {
     unsigned int nevents;
 };
 void test_call(void *user, const char *name);
-bool test_guard(void *user, int index);
+bool test_guard(void *user, int index, const char *name);
 #endif
 `;
 
-const MAIN_C = `#include <stdio.h>
+const MAIN_C = `#include <setjmp.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "driver.h"
@@ -205,22 +192,43 @@ struct ctx { int guards[256]; };
 static struct ctx context;
 static char calls[1 << 20];
 static size_t ncalls;
+/* x raise / x reenter of the next step, the unit and event being run, the nested call's result */
+static char raise_name[256], reenter_name[256];
+static const struct test_unit *current;
+static int current_event, nested_done, nested_rc;
+static jmp_buf raised;
 
 void test_call(void *user, const char *name)
 {
     size_t n = strlen(name);
-    if (user != &context) name = "BAD_USER_POINTER";
-    if (ncalls + n + 2 >= sizeof calls) { fprintf(stderr, "call buffer full\\n"); exit(3); }
+    const char *logged = user == &context ? name : "BAD_USER_POINTER";
+    size_t ln = strlen(logged);
+    if (ncalls + ln + 2 >= sizeof calls) { fprintf(stderr, "call buffer full\\n"); exit(3); }
     if (ncalls) calls[ncalls++] = ' ';
-    memcpy(calls + ncalls, name, n);
-    ncalls += n;
+    memcpy(calls + ncalls, logged, ln);
+    ncalls += ln;
     calls[ncalls] = 0;
+    if (n && strcmp(name, raise_name) == 0) longjmp(raised, 1);
+    if (n && strcmp(name, reenter_name) == 0 && !nested_done) {
+        nested_done = 1;
+        nested_rc = current->process ? current->process(current_event) : -3;
+    }
 }
 
-bool test_guard(void *user, int index)
+bool test_guard(void *user, int index, const char *name)
 {
     if (user != &context) test_call(user, "guard"); /* logged as BAD_USER_POINTER */
+    if (strcmp(name, raise_name) == 0) longjmp(raised, 1);
     return context.guards[index] != 0;
+}
+
+/* One reset/init or process; returns 1 when an action or guard raised (longjmp), else 0 and the result in *rc. */
+static int run_step(int reset, int started, int *rc)
+{
+    if (setjmp(raised)) return 1;
+    if (reset) *rc = started ? current->reset() : current->init(&context);
+    else *rc = current->process ? current->process(current_event) : -3;
+    return 0;
 }
 `;
 
@@ -231,7 +239,7 @@ int main(void)
     const struct test_unit *u = 0;
     int auto_reset = 0, started = 0, dead = 0;
     while (fgets(line, sizeof line, stdin)) {
-        int a = 0, b = 0, rc;
+        int a = 0, b = 0, rc = 0, raised_now;
         if (line[0] == 'q') break;
         if (line[0] == 'u') {
             if (sscanf(line + 1, "%d %d", &a, &b) != 2) return 2;
@@ -248,16 +256,21 @@ int main(void)
             context.guards[a] = b;
             continue;
         }
+        if (line[0] == 'x') {
+            char mode[16], name[256];
+            if (sscanf(line + 1, "%15s %255s", mode, name) != 2) return 2;
+            strcpy(strcmp(mode, "raise") == 0 ? raise_name : reenter_name, name);
+            continue;
+        }
         if (dead || !u) continue;
         ncalls = 0;
         calls[0] = 0;
-        if (line[0] == 'r') {
-            rc = started ? u->reset() : u->init(&context);
-            started = 1;
-        } else {
-            if (sscanf(line + 1, "%d", &a) != 1) return 2;
-            rc = u->process ? u->process(a) : -3;
-        }
+        current = u;
+        nested_done = 0;
+        if (line[0] == 'e' && sscanf(line + 1, "%d", &current_event) != 1) return 2;
+        raised_now = run_step(line[0] == 'r', started, &rc);
+        if (line[0] == 'r') started = 1;
+        raise_name[0] = reenter_name[0] = 0;
         printf("%s\\t", calls);
         {
             int first = 1;
@@ -269,8 +282,9 @@ int main(void)
                 }
             }
         }
-        if (rc < 0) printf("\\t%d\\n", rc); else printf("\\t-\\n");
-        if (rc < 0 && auto_reset && u->reset() < 0) dead = 1;
+        if (raised_now) printf("\\traised"); else if (rc < 0) printf("\\t%d", rc); else printf("\\t-");
+        if (nested_done) printf("\\t%d\\n", nested_rc); else printf("\\t-\\n");
+        if ((raised_now || rc < 0) && auto_reset && u->reset() < 0) dead = 1;
     }
     return 0;
 }

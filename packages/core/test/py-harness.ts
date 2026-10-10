@@ -8,11 +8,9 @@
  * backend-python.test.ts. Same protocol and output as c-harness.ts:
  *
  *   u <unit> <autoReset>  start unit: fresh machine, guards false
- *   g <guard> <0|1>       set a guard value (index into ir.guards)
- *   r                     reset
- *   e <event>             process (index into ir.events; -1 = unknown)
+ *   g, x, r, e            a script step (driverLines in harness.ts)
  *
- * Each r/e prints "calls<TAB>active ids<TAB>error code or -". With
+ * Each r/e prints "calls<TAB>active ids<TAB>error<TAB>nested" (parseDriverOutput). With
  * autoReset, an error is followed by a reset; if that fails too, the unit
  * is dead and prints nothing more (like runScript in harness.ts).
  */
@@ -22,7 +20,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { generatePython, pythonName, type IrModule, type PythonOptions } from "../src/index";
 import { removeTempDir } from "./c-harness";
-import type { ScriptStep, StepResult } from "./harness";
+import { driverLines, parseDriverOutput, type ScriptStep, type StepResult } from "./harness";
 
 /** Oldest Python the generated code supports (its grammar is checked against it too). */
 export const MIN_PYTHON = [3, 8] as const;
@@ -95,7 +93,7 @@ export function runPython(python: string[], units: PyUnit[]): StepResult[][] {
         module: `u${k}`,
         cls: `U${k}`,
         actions: u.ir.actions.map((a) => [pythonName(a.name), a.name]),
-        guards: u.ir.guards.map((g) => pythonName(g.name)),
+        guards: u.ir.guards.map((g) => [pythonName(g.name), g.name]),
         states: u.ir.states.map((s) => [s.region, s.slot, s.id]),
       };
     });
@@ -106,11 +104,7 @@ export function runPython(python: string[], units: PyUnit[]): StepResult[][] {
       const gi = new Map(u.ir.guards.map((g, i) => [g.name, i]));
       const ei = new Map(u.ir.events.map((e, i) => [e.name, i]));
       input.push(`u ${k} ${u.autoReset ? 1 : 0}`);
-      for (const s of u.script) {
-        for (const [g, v] of Object.entries(s.guards ?? {})) if (gi.has(g)) input.push(`g ${gi.get(g)} ${v ? 1 : 0}`);
-        if (s.reset) input.push("r");
-        else if (s.send !== undefined) input.push(`e ${ei.get(s.send) ?? -1}`);
-      }
+      for (const s of u.script) input.push(...driverLines(s, gi, ei));
     });
     input.push("q");
     const [cmd, ...args] = python;
@@ -121,18 +115,7 @@ export function runPython(python: string[], units: PyUnit[]): StepResult[][] {
       const err = e as { stderr?: string; message: string };
       throw new Error(`generated Python failed:\n${String(err.stderr ?? err.message).slice(-4000)}`);
     }
-    const results: StepResult[][] = units.map(() => []);
-    let cur: StepResult[] | undefined;
-    for (const line of output.split(/\r?\n/)) {
-      if (line.startsWith("#u ")) cur = results[Number(line.slice(3))];
-      else if (line !== "") {
-        const [calls = "", active = "", err = "-"] = line.split("\t");
-        const res: StepResult = { calls: calls ? calls.split(" ") : [], active: active ? active.split(",") : [] };
-        if (err !== "-") res.error = err;
-        cur!.push(res);
-      }
-    }
-    return results;
+    return parseDriverOutput(output, units.length);
   } finally {
     removeTempDir(dir);
   }
@@ -146,18 +129,42 @@ with open(sys.argv[1] + "/units.json") as f:
     META = json.load(f)
 calls = []
 guards = {}
+# x raise/reenter for the next step (action or guard names), its event, the nested call's outcome
+step = {"raise": None, "reenter": None, "event": 0, "nested": "-"}
+
+
+class Raised(Exception):
+    pass
 
 
 class Handler(object):
     pass
 
 
+def action(name):
+    calls.append(name)
+    if name == step["raise"]:
+        raise Raised(name)
+    if name == step["reenter"] and step["nested"] == "-":
+        try:
+            machine.process(step["event"])
+            step["nested"] = "ok"
+        except error as e:
+            step["nested"] = e.code
+
+
+def guard(i, name):
+    if name == step["raise"]:
+        raise Raised(name)
+    return guards.get(i, False)
+
+
 def make_handler(unit):
     h = Handler()
     for py, name in unit["actions"]:
-        setattr(h, py, (lambda n: lambda: calls.append(n))(name))
-    for i, py in enumerate(unit["guards"]):
-        setattr(h, py, (lambda i: lambda: guards.get(i, False))(i))
+        setattr(h, py, (lambda n: lambda: action(n))(name))
+    for i, (py, name) in enumerate(unit["guards"]):
+        setattr(h, py, (lambda i, n: lambda: guard(i, n))(i, name))
     return h
 
 
@@ -185,6 +192,9 @@ for line in sys.stdin:
     if cmd == "g":
         guards[int(parts[1])] = parts[2] == "1"
         continue
+    if cmd == "x":
+        step[parts[1]] = parts[2]
+        continue
     if dead or machine is None:
         continue
     del calls[:]
@@ -193,11 +203,15 @@ for line in sys.stdin:
         if cmd == "r":
             machine.reset()
         else:
-            machine.process(int(parts[1]))
+            step["event"] = int(parts[1])
+            machine.process(step["event"])
     except error as e:
         code = e.code
+    except Raised:
+        code = "raised"
     active = [sid for (r, s, sid) in unit["states"] if machine._cfg[r] == s]
-    out.append("%s\\t%s\\t%s" % (" ".join(calls), ",".join(active), code))
+    out.append("%s\\t%s\\t%s\\t%s" % (" ".join(calls), ",".join(active), code, step["nested"]))
+    step.update({"raise": None, "reenter": None, "nested": "-"})
     if code != "-" and auto:
         try:
             machine.reset()

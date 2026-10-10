@@ -30,6 +30,7 @@
     { "guards": { "ready": false }, "send": "poke", "expect": ["xDone", "eWait"] },
     { "guards": { "ready": true }, "send": "poke", "expect": ["xWait", "aGo", "eRun"] },
     { "send": "spin", "error": "livelock", "doc": "L1 and L2 undo each other." },
+    { "send": "poke", "error": "busy", "doc": "After an error process() refuses to run until reset()." },
     { "reset": true, "guards": { "ready": false }, "expect": ["eWait"] }
   ]
 }

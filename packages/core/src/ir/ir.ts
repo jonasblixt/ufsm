@@ -16,13 +16,15 @@
  *   queue         FIFO of signal numbers, capacity chosen by the backend
  *   terminated    true after a terminate pseudo-state was reached
  *   steps         microsteps in the current macrostep (livelock limit)
+ *   busy          a reset()/process() call is running, or one did not finish
  *
  * Runtime loop every backend implements (identical to docs/semantics.md):
  *
- *   reset():      clear cfg, hist, deep, queue, terminated; steps = 0;
- *                 run `start`; settle()
- *   process(e):   if terminated: return; steps = 0;
- *                 call events[e] (if any); settle()
+ *   reset():      busy = true; clear cfg, hist, deep, queue, terminated;
+ *                 steps = 0; run `start`; settle(); busy = false
+ *   process(e):   if busy: fail "busy"; if terminated: return;
+ *                 busy = true; steps = 0;
+ *                 call events[e] (if any); settle(); busy = false
  *   settle():     loop {
  *                   if terminated: clear queue; return
  *                   if eventless && call eventless(): continue
@@ -32,7 +34,11 @@
  *
  * Step functions return whether a microstep ran. `microstep` and `emit`
  * may fail (livelock, full queue): the backend aborts the whole
- * process()/reset() call with that error.
+ * process()/reset() call with that error. `busy` is cleared only at the end
+ * of a call that finished, so an error, or an exception or panic out of an
+ * action or guard, leaves it set and process() refuses to run until the
+ * next reset(); a process() call from inside an action or guard is refused
+ * the same way. Nothing catches the application's exceptions.
  */
 import type { Id } from "../v1/model";
 

@@ -8,12 +8,13 @@
  * backend-rust.test.ts. Same protocol and output as c-harness.ts:
  *
  *   u <unit> <autoReset>  start unit: fresh machine, guards false
- *   g <guard> <0|1>       set a guard value (index into ir.guards)
- *   r                     reset
- *   e <event>             process (index into ir.events; -1 = unknown)
+ *   g, x, r, e            a script step (driverLines in harness.ts)
  *
- * Each r/e prints "calls<TAB>active ids<TAB>error code or -". With autoReset, an error is followed by a reset; if
- * that fails too, the unit is dead and prints nothing more (like runScript in harness.ts).
+ * `x raise` makes the action or guard panic; the driver catches it (catch_unwind). `x reenter` cannot be done in
+ * safe Rust (the machine is borrowed while an action runs), so the driver reports the nested call as refused.
+ *
+ * Each r/e prints "calls<TAB>active ids<TAB>error<TAB>nested" (parseDriverOutput). With autoReset, an error is
+ * followed by a reset; if that fails too, the unit is dead and prints nothing more (like runScript in harness.ts).
  */
 import { execFile, execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";
@@ -22,7 +23,7 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 import { generateRust, rustName, type IrModule, type RustOptions } from "../src/index";
 import { removeTempDir } from "./c-harness";
-import type { ScriptStep, StepResult } from "./harness";
+import { driverLines, parseDriverOutput, type ScriptStep, type StepResult } from "./harness";
 
 const execFileAsync = promisify(execFile);
 const exe = (name: string): string => (process.platform === "win32" ? `${name}.exe` : name);
@@ -98,8 +99,9 @@ const str = (s: string): string => JSON.stringify(s);
  */
 function testCode(ir: IrModule): string {
   const events = ir.events.map((e, i) => `        ${i} => Some(Event::${rustName(e.name)}),`);
-  const actions = ir.actions.map((a) => `    fn ${rustName(a.name)}(&mut self) {\n        self.calls.push(${str(a.name)});\n    }`);
-  const guards = ir.guards.map((g, i) => `    fn ${rustName(g.name)}(&mut self) -> bool {\n        self.guards[${i}]\n    }`);
+  const raise = (name: string): string => `        if self.raise.as_deref() == Some(${str(name)}) {\n            panic!("raised");\n        }\n`;
+  const actions = ir.actions.map((a) => `    fn ${rustName(a.name)}(&mut self) {\n        self.calls.push(${str(a.name)});\n${raise(a.name)}    }`);
+  const guards = ir.guards.map((g, i) => `    fn ${rustName(g.name)}(&mut self) -> bool {\n${raise(g.name)}        self.guards[${i}]\n    }`);
   return `
 // ---- test harness (not generated) ----
 
@@ -134,6 +136,8 @@ export async function runRust(tools: RustTools, units: RustUnit[], options: { li
       "    pub calls: Vec<&'static str>,",
       "    /// Guard values by guard number.",
       "    pub guards: [bool; 256],",
+      "    /// The action or guard that panics when called (`x raise`).",
+      "    pub raise: Option<String>,",
       "}",
       "",
       "/// A machine under test, driven by event numbers.",
@@ -175,7 +179,7 @@ export async function runRust(tools: RustTools, units: RustUnit[], options: { li
         "}",
         "",
       );
-      makes.push(`        ${k} => Box::new(u${k}::Machine::new(TestHandler { calls: Vec::new(), guards: [false; 256] })),`);
+      makes.push(`        ${k} => Box::new(u${k}::Machine::new(TestHandler { calls: Vec::new(), guards: [false; 256], raise: None })),`);
       states.push(`    &[${u.ir.states.map((s) => `(${s.region}, ${s.slot}, ${str(s.id)})`).join(", ")}],`);
     });
     lib.push(
@@ -210,26 +214,11 @@ export async function runRust(tools: RustTools, units: RustUnit[], options: { li
       const gi = new Map(u.ir.guards.map((g, i) => [g.name, i]));
       const ei = new Map(u.ir.events.map((e, i) => [e.name, i]));
       input.push(`u ${k} ${u.autoReset ? 1 : 0}`);
-      for (const s of u.script) {
-        for (const [g, v] of Object.entries(s.guards ?? {})) if (gi.has(g)) input.push(`g ${gi.get(g)} ${v ? 1 : 0}`);
-        if (s.reset) input.push("r");
-        else if (s.send !== undefined) input.push(`e ${ei.get(s.send) ?? -1}`);
-      }
+      for (const s of u.script) input.push(...driverLines(s, gi, ei));
     });
     input.push("q");
     const output = execFileSync(join(dir, exe("driver")), [], { input: `${input.join("\n")}\n`, encoding: "utf8", maxBuffer: 1 << 28 });
-    const results: StepResult[][] = units.map(() => []);
-    let cur: StepResult[] | undefined;
-    for (const line of output.split(/\r?\n/)) {
-      if (line.startsWith("#u ")) cur = results[Number(line.slice(3))];
-      else if (line !== "") {
-        const [calls = "", active = "", err = "-"] = line.split("\t");
-        const res: StepResult = { calls: calls ? calls.split(" ") : [], active: active ? active.split(",") : [] };
-        if (err !== "-") res.error = err;
-        cur!.push(res);
-      }
-    }
-    return results;
+    return parseDriverOutput(output, units.length);
   } finally {
     removeTempDir(dir);
   }
@@ -244,6 +233,14 @@ fn main() {
     let mut index = 0;
     let mut auto_reset = false;
     let mut dead = false;
+    let mut reenter = false;
+    // the panic of an "x raise" action or guard is the expected outcome of its step: keep stderr quiet
+    let report = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        if info.payload().downcast_ref::<&str>() != Some(&"raised") {
+            report(info);
+        }
+    }));
     for line in stdin.lock().lines() {
         let line = line.unwrap();
         let words: Vec<&str> = line.split_whitespace().collect();
@@ -263,6 +260,16 @@ fn main() {
                 unit.as_mut().unwrap().handler().guards[g] = num(2) != 0;
                 continue;
             }
+            Some("x") if words[1] == "raise" => {
+                unit.as_mut().unwrap().handler().raise = Some(words[2].to_string());
+                continue;
+            }
+            Some("x") => {
+                // An action cannot call process(): the machine is borrowed mutably while it runs, so the compiler
+                // refuses the nested call that the other languages refuse at run time with "busy".
+                reenter = true;
+                continue;
+            }
             _ => {}
         }
         if dead {
@@ -270,10 +277,17 @@ fn main() {
         }
         let Some(u) = unit.as_mut() else { continue };
         u.handler().calls.clear();
-        let rc = if words[0] == "r" { u.reset() } else { u.process(num(1)) };
+        let run = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| if words[0] == "r" { u.reset() } else { u.process(num(1)) }));
+        u.handler().raise = None;
+        let (failed, error) = match run {
+            Ok(Ok(())) => (false, "-"),
+            Ok(Err(code)) => (true, code),
+            Err(_) => (true, "raised"),
+        };
+        let nested = if std::mem::take(&mut reenter) { "busy" } else { "-" };
         let active: Vec<&str> = units::STATES[index].iter().filter(|s| u.active(s.0, s.1)).map(|s| s.2).collect();
-        writeln!(out, "{}\\t{}\\t{}", u.handler().calls.join(" "), active.join(","), rc.err().unwrap_or("-")).unwrap();
-        if rc.is_err() && auto_reset && u.reset().is_err() {
+        writeln!(out, "{}\\t{}\\t{}\\t{}", u.handler().calls.join(" "), active.join(","), error, nested).unwrap();
+        if failed && auto_reset && u.reset().is_err() {
             dead = true;
         }
     }
