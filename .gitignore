@@ -13,3 +13,6 @@ target/
 Thumbs.db
 *.log
 build
+
+# Claude Code: personal permission approvals
+.claude/settings.local.json

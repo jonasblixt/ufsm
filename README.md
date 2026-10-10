@@ -92,7 +92,7 @@ The key map follows the old editor; two-key commands start with <kbd>A</kbd> (ad
 | Record a conformance trace | every simulation step is recorded: Simulator › Trace › Save trace… (replay with `ufsm trace`) | |
 | Generated code | Code tab: C header and source, Python, TypeScript, live; Copy, Save…; File › Generate C / Python / TypeScript Code… writes the files into a folder | |
 | Open state (off-page region, or zoom in) | double-click | <kbd>Enter</kbd> |
-| Up to parent page / root | breadcrumb, ↑ | <kbd>Backspace</kbd>, <kbd>J</kbd> <kbd>A</kbd> / <kbd>J</kbd> <kbd>R</kbd> |
+| Up to parent page / root | breadcrumb, ↑, the mouse's back button | <kbd>Backspace</kbd>, <kbd>J</kbd> <kbd>A</kbd> / <kbd>J</kbd> <kbd>R</kbd> |
 | Show / hide the explorer (tools and machine trees) | View › Explorer | <kbd>N</kbd> |
 | Show / hide the Properties / Project panel | View › Properties Panel | <kbd>P</kbd> |
 | Resize the explorer or the panel | drag its edge (double-click resets) | |

@@ -87,8 +87,8 @@ export interface Input {
 
 /**
  * Create the machine around `handler` (whose guards can read `input`) and feed it the canvas's and the window's
- * events. Pointer events are only passed on while `active()` (a model is open); keys always are. `before` runs before
- * every key, button press and palette pick.
+ * events. Pointer events are only passed on while `active()` (a model is open); keys and the mouse's back button always
+ * are. `before` runs before every key, button press and palette pick.
  */
 export function attachInput(
   canvas: HTMLCanvasElement,
@@ -108,7 +108,8 @@ export function attachInput(
       input.x = e.clientX;
       input.y = e.clientY;
     }
-    if (e instanceof KeyboardEvent || event === EditorFsmEvent.eLMBDown || event === EditorFsmEvent.eRMBDown) before();
+    const press = event === EditorFsmEvent.eLMBDown || event === EditorFsmEvent.eRMBDown || event === EditorFsmEvent.eMouseBack;
+    if (e instanceof KeyboardEvent || press) before();
     machine.process(event);
     if (e instanceof MouseEvent) {
       input.lastX = e.clientX;
@@ -156,9 +157,25 @@ export function attachInput(
     },
     { passive: false },
   );
-  // The webview's own context menu ("Save image as…") is no use on the canvas.
-  canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+  // The webview's own context menu ("Save image as…", "Reload", "Inspect") is no use anywhere in the window: canvas,
+  // explorer, menus, panels. Text fields keep it for cut/copy/paste and spelling.
+  window.addEventListener("contextmenu", (e) => {
+    const t = e.target;
+    if (t instanceof HTMLElement && t.closest("input, textarea, [contenteditable]:not([contenteditable='false'])")) return;
+    e.preventDefault();
+  });
   canvas.addEventListener("auxclick", (e) => e.preventDefault());
+  // The mouse's back button (button 3) goes up one level anywhere in the window, like Backspace; it acts on release, as
+  // in browsers and file managers. Its default and the forward button's (4) would navigate the webview's history: in a
+  // browser (`dev:web`) that leaves the editor.
+  window.addEventListener("mouseup", (e) => {
+    if (e.button === 3) send(EditorFsmEvent.eMouseBack, e);
+  });
+  for (const type of ["mousedown", "mouseup", "auxclick"] as const) {
+    window.addEventListener(type, (e) => {
+      if (e.button === 3 || e.button === 4) e.preventDefault();
+    });
+  }
   // Losing the window (Alt+Tab) ends any drag.
   window.addEventListener("blur", () => {
     if (pointer === undefined) return;

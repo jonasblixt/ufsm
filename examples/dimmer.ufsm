@@ -49,7 +49,7 @@
       { "id": "t5", "from": "s5", "to": "s4" },
       { "id": "t6", "from": "s6", "to": "s7", "on": "ev1" },
       { "id": "t7", "from": "s7", "to": "s8", "on": "ev1" },
-      { "id": "t8", "from": "s8", "to": "s1", "on": "ev1" }
+      { "id": "t8", "from": "s8", "to": "s4", "on": "ev1" }
     ]
   },
   "diagram": {
@@ -102,10 +102,10 @@
         "label": { "x": 230, "y": 630, "w": 100 }
       },
       "t8": {
-        "from": { "side": "left", "offset": 70 },
-        "to": { "side": "bottom", "offset": 140 },
-        "via": [[480, 1150]],
-        "label": { "x": 610, "y": 1090, "w": 100 }
+        "route": "s",
+        "to": { "side": "right", "offset": 60 },
+        "jog": { "x": 360 },
+        "label": { "x": 40, "y": -650, "w": 120 }
       }
     }
   }

@@ -1342,6 +1342,7 @@ await page.evaluate(() => localStorage.removeItem("ufsm.searchRecent"));
   check("an off-page marker names the sheet it continues on", (await inked(sx - 60, sy - 8, sx - 14, sy + 8)) > 20);
   await U("select", ["s1"]);
   check("the status line says where a selected state is drawn", /sheet 1, A1/.test(await U("status")), await U("status"));
+
   await U("select", []);
 
   // the free fields: Project tab, double-click on the title block, search
@@ -1367,6 +1368,35 @@ await page.evaluate(() => localStorage.removeItem("ufsm.searchRecent"));
   await page.waitForTimeout(100);
   check("...and picking one puts the cursor in it", (await focusedLabel()) === "Title block author", await focusedLabel());
   await page.keyboard.press("Escape");
+
+  // the mouse's back button goes up one level, like Backspace, and never navigates the webview's history
+  {
+    const cdp = await page.context().newCDPSession(page);
+    const back = async (x, y) => {
+      await cdp.send("Input.dispatchMouseEvent", { type: "mousePressed", x, y, button: "back", buttons: 8, clickCount: 1 });
+      await cdp.send("Input.dispatchMouseEvent", { type: "mouseReleased", x, y, button: "back", buttons: 0, clickCount: 1 });
+      await page.waitForTimeout(100);
+    };
+    const crumbs = () => page.$$eval("#crumbs .crumb", (l) => l.map((e) => e.textContent).join(" › "));
+    await page.evaluate(() => history.pushState(null, "", "#back-button"));
+    await U("select", ["s1"]);
+    await page.keyboard.press("Enter"); // open its off-page region
+    await page.waitForTimeout(100);
+    check("(Enter opened Top's sheet)", (await crumbs()) === "frame › Top", await crumbs());
+    const [cx, cy] = await w2s(800, 500);
+    await back(cx, cy);
+    check("the mouse's back button goes up one level and selects the state it came from", (await crumbs()) === "frame" && JSON.stringify(await sel()) === '["s1"]', `${await crumbs()} ${JSON.stringify(await sel())}`);
+    check("...without navigating the webview's history", (await page.evaluate(() => location.hash)) === "#back-button", await page.evaluate(() => location.href));
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(100);
+    const [ex, ey] = await page.$eval("#explorer", (e) => { const b = e.getBoundingClientRect(); return [b.left + b.width / 2, b.bottom - 20]; });
+    await back(ex, ey);
+    check("...also with the pointer outside the canvas (over the explorer)", (await crumbs()) === "frame", await crumbs());
+    await back(cx, cy);
+    check("...and does nothing on the top sheet", (await crumbs()) === "frame" && (await page.evaluate(() => location.hash)) === "#back-button", `${await crumbs()} ${await page.evaluate(() => location.href)}`);
+    await page.evaluate(() => history.replaceState(null, "", location.pathname));
+    await cdp.detach();
+  }
 
   // fit: outside the frame, over the title block; findings name the sheet and zone
   const far = structuredClone(frame);
