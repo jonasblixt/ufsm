@@ -473,3 +473,5 @@ Measured over the 21 valid legacy models (864 KB):
   (schema.test checks it is fresh, pins 15 error messages, and that Ajv reading the published file agrees with the
   reader); compile-time check that each `model.ts` interface and its schema definition have the same fields and types.
   Error messages unchanged except absent fields ("missing"). Tests: core 485 + 1 skip, editor 67, browser check 347.
+- 2026-10-10: Live tracing from an embedded target discussed and written up as a later feature in
+  `docs/live-trace.md` (replay log of events + guard bits, keyframes, transports, timeline); not started.

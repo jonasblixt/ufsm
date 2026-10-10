@@ -221,6 +221,8 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
       or a static scope, since dialog grants last only until the app exits
 - [x] One schema source for format v1: TypeBox definitions in `core/src/v1/schema.ts` drive the reader and generate
       `schema/ufsm-v1.schema.json`; `model.ts` checked against them at compile time (2026-10-10)
+- [ ] Later: live tracing from a target (compact replay log of events + guard bits, keyframes, timeline in the
+      simulator); proposal in `docs/live-trace.md`, needs a fixed guard call order first
 - [ ] Later: `"auto"` route via libavoid-js (trial on canvas.ufsm first; LGPL-2.1+, compatible with uFSM's GPL-3; keep its
       licence notice and source link)
 
