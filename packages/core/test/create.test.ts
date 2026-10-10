@@ -264,7 +264,11 @@ describe("structure edits: adding", () => {
     const doc = testDoc();
     const pts = (id: string): Point[] => edgeGeometry(indexV1(doc), id)!.points;
     const level = addTransition(doc, "s3", "s6", { route: "straight" });
-    assert.deepEqual(free(doc, level), { from: { side: "right", offset: 30 }, to: { side: "left", offset: 30 } }, "level boxes: horizontal");
+    assert.deepEqual(free(doc, level), {
+      from: { side: "right", offset: 30 },
+      to: { side: "left", offset: 30 },
+      label: { x: 130, y: 30, w: 120 },
+    }, "level boxes: horizontal, the label stored at its default place snapped to the grid");
     assert.deepEqual(pts(level), [{ x: 220, y: 180 }, { x: 300, y: 180 }]);
     const diagonal = addTransition(doc, "s3", "s4", { route: "straight" });
     assert.deepEqual(pts(diagonal), [{ x: 210, y: 210 }, { x: 310, y: 290 }], "leaves A's bottom and enters B's top where the centre line does, snapped");
@@ -275,8 +279,13 @@ describe("structure edits: adding", () => {
       from: { side: "right", offset: 20 },
       to: { side: "top", offset: 100 },
       via: [[850, 120], [850, 70], [800, 70]],
+      label: { x: 810, y: 20, w: 120 },
     }, "a self-transition: a free loop around the top-right corner");
-    for (const id of [level, diagonal, nested, loop]) assert.ok(pts(id).every((p) => p.x % 10 === 0 && p.y % 10 === 0), id);
+    for (const id of [level, diagonal, nested, loop]) {
+      assert.ok(pts(id).every((p) => p.x % 10 === 0 && p.y % 10 === 0), id);
+      const label = free(doc, id).label;
+      assert.ok(label && label.x % 10 === 0 && label.y % 10 === 0, `${id}: label on the grid`);
+    }
     const bent = addTransition(doc, "s3", "s6", { route: "straight", via: [{ x: 172, y: 248 }] });
     assert.deepEqual(free(doc, bent)?.via, [[70, 150]], "bend points as before");
     assert.deepEqual(broken(doc), []);

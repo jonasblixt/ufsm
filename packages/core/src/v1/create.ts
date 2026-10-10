@@ -12,9 +12,10 @@
  */
 import { ancestors, commonRegion, indexV1, type DocIndex } from "./doc-index";
 import { followTransitions, nearestEnd, regionLayoutOf, diagramOf, snap, MIN_BAR, MIN_STATE } from "./edit";
-import { HEADER_H, actionBlockHeight, isOffPage, isSheet, regionBoxes, regionOrigin, stateLayout, vertexBox, type Box, type Point } from "./geometry";
+import { HEADER_H, actionBlockHeight, isOffPage, isSheet, regionBoxes, regionOrigin, stateLayout, vertexBox, edgeGeometry, edgeOrigin, type Box, type Point } from "./geometry";
 import { IdAllocator, ID_PREFIX } from "./ids";
 import { GRID, type EdgeEnd, type EdgeLayout, type GuardTerm, type Id, type Region, type State, type StateLayout, type Transition, type UfsmDocument, type Vertex } from "./model";
+import { defaultLabel, labelAnchor } from "./route";
 
 export type VertexKind = Vertex["kind"];
 
@@ -288,6 +289,22 @@ export function addTransition(doc: UfsmDocument, from: Id, to: Id, opts: AddOpti
   const t: Transition = { id, from, to };
   doc.machine.transitions.push(t);
   diagramOf(doc).transitions[id] = layout;
+
+  if (opts.route === "straight") {
+    const fresh = indexV1(doc);
+    const g = edgeGeometry(fresh, id);
+    if (g) {
+      const anchor = labelAnchor(g.points).anchor;
+      const rel = defaultLabel(g.points);
+      const o = edgeOrigin(fresh, id);
+      layout.label = {
+        x: snap(anchor.x + rel.x - o.x),
+        y: snap(anchor.y + rel.y - o.y),
+        w: rel.w,
+      };
+    }
+  }
+
   return id;
 }
 
