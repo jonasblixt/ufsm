@@ -1426,6 +1426,31 @@ await page.evaluate(() => localStorage.removeItem("ufsm.searchRecent"));
   const [p0x] = await w2s(-50, -50), [p1x] = await w2s(1634, 1140);
   check("z f on an empty page fits the whole sheet", (await sheetVisible()) && p1x - p0x > (r[2] - r[0]) * 0.8, JSON.stringify([r, p0x, p1x]));
   await U("closeTab", (await U("tabs")).findIndex((t) => t.active), true);
+
+  // right-clicking anywhere opens no webview context menu, except in text fields (cut/copy/paste)
+  await page.evaluate(([t]) => window.ufsm.load(t, "ctx.ufsm"), [modelText]);
+  const blocked = await page.evaluate(() => {
+    const at = (el) => {
+      if (!el) return "missing";
+      const e = new MouseEvent("contextmenu", { bubbles: true, cancelable: true, button: 2 });
+      el.dispatchEvent(e);
+      return e.defaultPrevented;
+    };
+    return {
+      canvas: at(document.getElementById("canvas")),
+      explorer: at(document.querySelector("#explorer *") ?? document.getElementById("explorer")),
+      sidebar: at(document.getElementById("sidebar")),
+      titlebar: at(document.querySelector("#titlebar button") ?? document.getElementById("titlebar")),
+      panel: at(document.querySelector("#panel *") ?? document.getElementById("panel")),
+      statusbar: at(document.getElementById("status")),
+      body: at(document.body),
+      input: at(document.querySelector("#panel input[type=text], #panel input:not([type]), #panel textarea")),
+    };
+  });
+  const { input: inField, ...rest } = blocked;
+  check("right-click opens no context menu on canvas, explorer, menus, panel or background", Object.values(rest).every((v) => v === true), JSON.stringify(blocked));
+  check("...but text fields keep theirs", inField === false, JSON.stringify(blocked));
+  await U("closeTab", (await U("tabs")).findIndex((t) => t.active), true);
 }
 check("no page errors", errors.length === 0, errors.join("\n"));
 console.log(`${pass} passed, ${fail} failed`);

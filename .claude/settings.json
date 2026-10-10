@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm test *)",
+      "Bash(npm run test *)",
+      "Bash(npm run typecheck *)",
+      "Bash(npm run ufsm *)",
+      "Bash(npm run gen:editor-fsm *)",
+      "Bash(npx tsx --test *)",
+      "Bash(npx tsc *)",
+      "Bash(node apps/editor/test/browser/check.mjs *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch *)",
+      "PowerShell(npm test *)",
+      "PowerShell(npm run test *)",
+      "PowerShell(npm run typecheck *)",
+      "PowerShell(npm run ufsm *)",
+      "PowerShell(npm run gen:editor-fsm *)",
+      "PowerShell(npx tsx --test *)",
+      "PowerShell(npx tsc *)",
+      "PowerShell(node apps/editor/test/browser/check.mjs *)",
+      "PowerShell(git status *)",
+      "PowerShell(git diff *)",
+      "PowerShell(git log *)",
+      "PowerShell(git show *)",
+      "PowerShell(git branch *)"
+    ],
+    "ask": [
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "PowerShell(git commit *)",
+      "PowerShell(git push *)"
+    ]
+  }
+}
