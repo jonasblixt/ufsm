@@ -172,4 +172,7 @@ Build Tools "Desktop development with C++"), TypeScript 6, Vite 7, Tauri 2.
   and record newly found bugs or caveats in `.claude/rework-tauri-ts.md`
   (sections 2 and 8).
 - Ask before committing or pushing; Jonas commits himself unless he asks.
+- Commit messages: short but clear. A subject line under ~60 characters saying what changed, with an area prefix as in
+  the history (`editor: …`, `core: …`, `ci: …`, `gen/c: …`). Add a body only when the reason isn't obvious, and keep it
+  to a few lines. Leave out file lists, test counts and the progress-log detail; those belong in `.claude/rework-log.md`.
 - Keep CI green on all three OSes; add tests with every behaviour change.
