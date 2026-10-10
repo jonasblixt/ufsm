@@ -185,39 +185,40 @@ export function defaultLabel(points: Pt[]): { x: number; y: number; w: number } 
 }
 
 /**
- * Free routes follow their ends: when the start moves by `ds` and the end by `de`, each bend point moves by the
- * blend of the two, weighted by how far along the old path it lies (a point at a fraction f of the length moves by
- * (1-f)·ds + f·de). Moving both ends equally translates the whole route.
+ * How each point of a free route moves when its start moves by `ds` and its end by `de`: both ends by the same
+ * amount translates the whole route; otherwise the bend points stay where the user put them (on the grid) and only
+ * the first and last segments change.
  */
+function followDeltas(n: number, ds: Pt, de: Pt): Pt[] {
+  const together = Math.abs(ds.x - de.x) < 1e-6 && Math.abs(ds.y - de.y) < 1e-6;
+  return Array.from({ length: n }, (_, i) => (i === 0 ? ds : i === n - 1 ? de : together ? ds : { x: 0, y: 0 }));
+}
+
+/** Free routes follow their ends (see followDeltas): the route's points after its ends moved by `ds` and `de`. */
 export function followPolyline(points: Pt[], ds: Pt, de: Pt): Pt[] {
-  if (points.length < 2) return points.map((p) => ({ ...p }));
-  const lens = [0];
-  for (let i = 1; i < points.length; i++) lens.push(lens[i - 1]! + Math.hypot(points[i]!.x - points[i - 1]!.x, points[i]!.y - points[i - 1]!.y));
-  const total = lens[lens.length - 1]!;
-  return points.map((p, i) => {
-    const f = total > 0 ? lens[i]! / total : i / (points.length - 1);
-    return { x: p.x + (1 - f) * ds.x + f * de.x, y: p.y + (1 - f) * ds.y + f * de.y };
-  });
+  const d = followDeltas(points.length, ds, de);
+  return points.map((p, i) => ({ x: p.x + d[i]!.x, y: p.y + d[i]!.y }));
 }
 
 /**
- * How far a point next to a free route (its label) moves when the route follows its ends: followPolyline's blend at
- * the point of the path nearest to `pt`.
+ * How far a point next to a free route (its label) moves when the route follows its ends: on the segment nearest to
+ * `pt`, the blend of how that segment's two points move (a label on a bend-to-bend segment stays; one on the last
+ * segment moves with the end, more the closer it is to it).
  */
 export function followOffset(points: Pt[], pt: Pt, ds: Pt, de: Pt): Pt {
   if (points.length < 2) return { x: ds.x, y: ds.y };
-  let best = Infinity, at = 0, acc = 0;
+  const d = followDeltas(points.length, ds, de);
+  let best = Infinity, out: Pt = { x: ds.x, y: ds.y };
   for (let i = 1; i < points.length; i++) {
     const a = points[i - 1]!, b = points[i]!;
     const len = Math.hypot(b.x - a.x, b.y - a.y);
     const t = len > 0 ? Math.min(Math.max(((pt.x - a.x) * (b.x - a.x) + (pt.y - a.y) * (b.y - a.y)) / (len * len), 0), 1) : 0;
-    const d = Math.hypot(pt.x - (a.x + t * (b.x - a.x)), pt.y - (a.y + t * (b.y - a.y)));
-    if (d < best) {
-      best = d;
-      at = acc + t * len;
+    const dist = Math.hypot(pt.x - (a.x + t * (b.x - a.x)), pt.y - (a.y + t * (b.y - a.y)));
+    if (dist < best) {
+      best = dist;
+      const da = d[i - 1]!, db = d[i]!;
+      out = { x: (1 - t) * da.x + t * db.x, y: (1 - t) * da.y + t * db.y };
     }
-    acc += len;
   }
-  const f = acc > 0 ? at / acc : 0.5;
-  return { x: (1 - f) * ds.x + f * de.x, y: (1 - f) * ds.y + f * de.y };
+  return out;
 }

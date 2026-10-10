@@ -12,6 +12,7 @@ import {
   attachPoint,
   autoSides,
   edgeGeometry,
+  followOffset,
   followPolyline,
   indexV1,
   labelAnchor,
@@ -27,6 +28,8 @@ import {
   type UfsmDocument,
 } from "../src/index";
 import { rng } from "./random-model";
+
+const ZERO: Pt = { x: 0, y: 0 };
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const SIDES: Side[] = ["left", "right", "top", "bottom"];
@@ -128,7 +131,18 @@ describe("S routes (geometry)", () => {
     const moved = followPolyline(pts, { x: 0, y: 0 }, { x: 0, y: 40 });
     assert.deepEqual(moved[0], { x: 0, y: 0 });
     assert.deepEqual(moved[2], { x: 100, y: 140 });
-    assert.deepEqual(moved[1], { x: 100, y: 20 }, "the bend half way along moves half as much");
+    assert.deepEqual(moved[1], { x: 100, y: 0 }, "one end moved: the bend point stays, only the last segment changes");
+    const both = followPolyline(pts, { x: 10, y: 0 }, { x: 0, y: 40 });
+    assert.deepEqual(both, [{ x: 10, y: 0 }, { x: 100, y: 0 }, { x: 100, y: 140 }], "both ends moved differently: the bend point still stays");
+  });
+
+  it("move a label next to a free route only with the segment it is on", () => {
+    const pts: Pt[] = [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 100, y: 100 }, { x: 200, y: 100 }];
+    const de = { x: 0, y: 40 };
+    assert.deepEqual(followOffset(pts, { x: 105, y: 50 }, ZERO, de), ZERO, "between two bend points: stays");
+    assert.deepEqual(followOffset(pts, { x: 150, y: 95 }, ZERO, de), { x: 0, y: 20 }, "half way along the last segment: half the end's move");
+    assert.deepEqual(followOffset(pts, { x: 50, y: -5 }, { x: 10, y: 10 }, { x: 10, y: 10 }), { x: 10, y: 10 }, "a route moved as a whole");
+    assert.deepEqual(followOffset([{ x: 0, y: 0 }, { x: 100, y: 0 }], { x: 25, y: -5 }, ZERO, { x: 0, y: 40 }), { x: 0, y: 10 }, "no bend points: blended along the line");
   });
 });
 

@@ -142,14 +142,14 @@ describe("layout edits: moving", () => {
     assert.deepEqual(moveVertices(testDoc(), ["s3", "s5"], 0, 100, "s5"), { x: 0, y: 50 }, "a group moves as far as its tightest member");
   });
 
-  it("let free routes follow: translated when both ends move, blended along the path when one does", () => {
+  it("let free routes follow: translated when both ends move, bend points kept when one does", () => {
     const doc = testDoc();
     moveVertices(doc, ["s2"], 10, 10, "s2");
     // t2 runs between A and B, both inside P, but its bend point is in root coordinates: it moves with them
     assert.deepEqual(free(doc, "t2").via, [[180, 330]]);
     assert.deepEqual(free(doc, "t2").label, { x: 190, y: 270, w: 100 });
-    // t5 leaves P (moved by 10,10) for C (still): bend points at 100/220 and 120/220 of the path move by 5.45 and 4.55
-    assert.deepEqual(free(doc, "t5").via, [[605, 155], [605, 135]]);
+    // t5 leaves P (moved by 10,10) for C (still): its bend points stay on the grid, only its first segment changes
+    assert.deepEqual(free(doc, "t5").via, [[600, 150], [600, 130]]);
     // t6 lies inside r1: its coordinates are relative to P and need no change
     assert.deepEqual(free(doc, "t6").via, [[150, 80]]);
     assert.deepEqual(free(doc, "t1"), free(testDoc(), "t1"), "no bend points, no label: nothing to write");

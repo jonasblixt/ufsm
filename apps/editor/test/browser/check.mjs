@@ -242,6 +242,15 @@ check("double-click on the jog resets it", /"t4": \{ "route": "s" \}/.test(await
 r = await U("route", "t5");
 await drag(await w2s(r.label.x + 10, r.label.y + 36), await w2s(r.label.x + 31, r.label.y + 58));
 check("dragging t5's label selects it and moves the label", JSON.stringify(await sel()) === '["t5"]' && JSON.stringify((await U("route", "t5")).label) === JSON.stringify({ x: 540, y: 120, w: 150 }), JSON.stringify((await U("route", "t5")).label));
+{
+  // moving the target of a free route: its bend points stay (on the grid), only the last segment changes
+  const via = async () => JSON.stringify(JSON.parse(await U("serialize")).diagram.transitions.t5.via);
+  const before = await via(), c0 = await box("s5"), from = await center("s5", 20);
+  await drag(from, [from[0] + 33 * k, from[1] + 47 * k]);
+  const after = await via(), c1 = await box("s5"), pts = (await U("route", "t5")).points;
+  check("moving the target of a free route keeps its bend points; the last segment follows", c1.x !== c0.x && c1.y !== c0.y && after === before && pts.every((p) => p.x % 10 === 0 && p.y % 10 === 0), JSON.stringify([c0, c1, before, after, pts]));
+  await page.keyboard.press("Control+z");
+}
 
 // 12. free bend points
 r = await U("route", "t2");

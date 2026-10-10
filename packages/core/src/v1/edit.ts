@@ -12,7 +12,8 @@
  *   - a state cannot shrink past its contents or below a minimum size, region bands keep a minimum height;
  *   - a limit never forces an element to move: one that already breaks it may stay where it is.
  *
- * Transitions follow: free routes map their bend points and label with followPolyline when their ends move; S routes
+ * Transitions follow: a free route keeps its bend points when one end moves (only its first or last segment changes)
+ * and moves as a whole when both ends move equally (followPolyline; its label likewise, followOffset); S routes
  * are derived anyway, so only their stored jog changes, and only when the whole route moves (both ends by the same
  * amount); otherwise the jog keeps its absolute position.
  */
@@ -121,8 +122,8 @@ interface Snapshot {
 }
 
 /**
- * Run `change` (which moves or resizes vertices) and let the transitions follow: free bend points and labels are
- * mapped by how their ends moved, an S jog moves only with a route that moves as a whole. Transitions whose geometry
+ * Run `change` (which moves or resizes vertices) and let the transitions follow: free bend points and labels move only
+ * with a route that moves as a whole (a label on a first or last segment also moves with that end), and so does an S jog. Transitions whose geometry
  * did not change are not written. `before` must index `doc` as it is before the change.
  */
 export function followTransitions(doc: UfsmDocument, before: DocIndex, change: () => void): void {

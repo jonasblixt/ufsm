@@ -456,3 +456,8 @@ Measured over the 21 valid legacy models (864 KB):
   `setEdgeEnd`); S routes get both ends pinned, straight ones use them instead of the centre line or the first/last bend
   point; self-transitions ignore them. The editor passes the clicks; the previews start from the clicked source end.
   Core test + browser check (346 checks, all passing on Windows); editor typecheck clean.
+- 2026-10-10: Free routes keep their bend points when one end moves. `followPolyline` no longer blends each bend point
+  by its position along the path (which scaled the route off the grid); bend points move only when both ends move by
+  the same amount (the route is translated), otherwise only the first or last segment changes. `followOffset` moves a
+  label by the blend of its segment's two points (stays between bend points, follows the end on a first/last segment).
+  route/edit unit tests updated + new label test; browser check: dragging C keeps t5's bend points (347 checks).
