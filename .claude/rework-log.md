@@ -445,3 +445,9 @@ Measured over the 21 valid legacy models (864 KB):
   the owner selected, the history entry kept, with the pointer over the explorer, nothing on the top sheet; disabling the
   preventDefault fails three of them). 435 core + 67 editor tests in the cloud workspace (old/ absent: 6 skipped),
   typecheck clean.
+- **2026-10-10** Bugfix: right-clicking the explorer, menus, right panel, status bar or background opened the webview's
+  context menu (only the canvas suppressed it). input.ts: one `contextmenu` listener on the window prevents it everywhere
+  except text fields (input, textarea, contenteditable keep cut/copy/paste and spelling). Browser check: 345 checks (2 new:
+  dispatched on canvas, explorer, sidebar, title bar, panel, status bar and body; a Project text field keeps it; with the
+  old canvas-only listener the first fails). Run on Windows for the first time (Playwright + esbuild in the scratchpad via
+  UFSM_NODE_TOOLS): 345 passed; editor typecheck clean.

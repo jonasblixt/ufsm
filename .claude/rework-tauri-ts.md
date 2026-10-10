@@ -278,6 +278,9 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - UI checks run in the cloud workspace instead (npm is blocked there too, but `/opt/npm-tools/node_modules` has
   esbuild, tsx, typescript and playwright): stage `packages/core/src`, `apps/editor/src` and `index.html` from the device, bundle
   `main.ts` with an alias for `@ufsm/core` and a stub for `@tauri-apps/*`, serve, drive with Playwright.
+- The browser check also runs directly on Jonas's Windows machine (2026-10-10): `npm i playwright esbuild` in a scratch folder,
+  `npx playwright install chromium` there, then `UFSM_NODE_TOOLS=<folder>/node_modules node apps/editor/test/browser/check.mjs`
+  from the repo. The first run after installing can fail a dozen drag checks (cold start); rerun.
 - Fastest full setup in the cloud workspace (2026-10-09): on the device `tar czf build/sync.tgz` the repo without
   `node_modules`/`.git`/`build`/`src-tauri/target`, plus the pure-JS packages (`node_modules/{@types,@tauri-apps,ajv,
   fast-deep-equal,fast-uri,json-schema-traverse,require-from-string,immer,preact,typescript}`); stage it, extract,

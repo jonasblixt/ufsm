@@ -1428,7 +1428,8 @@ await page.evaluate(() => localStorage.removeItem("ufsm.searchRecent"));
   await U("closeTab", (await U("tabs")).findIndex((t) => t.active), true);
 
   // right-clicking anywhere opens no webview context menu, except in text fields (cut/copy/paste)
-  await page.evaluate(([t]) => window.ufsm.load(t, "ctx.ufsm"), [modelText]);
+  await page.evaluate(([t]) => window.ufsm.load(t, "ctx.ufsm"), [text]);
+  await page.click("#panel-tab-project");
   const blocked = await page.evaluate(() => {
     const at = (el) => {
       if (!el) return "missing";

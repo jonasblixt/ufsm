@@ -68,7 +68,7 @@ The editor exposes `window.ufsm` for automation: `load(text, name)`, `newModel()
 `simGuard(name, true|false)`, `sim()` (steps, active, fired, last calls, hovered event and its transitions, trace text),
 `simError()` (all act on the active tab; `load` opens a new one). `apps/editor/test/browser/check.mjs` bundles
 `apps/editor/src/main.ts` with esbuild (stubbing `@tauri-apps/*`), serves it and drives
-it with Playwright (343 checks; the page emulates a dark OS, mostly on `test/browser/edit.ufsm`: select, drag, resize,
+it with Playwright (345 checks; the page emulates a dark OS, mostly on `test/browser/edit.ufsm`: select, drag, resize,
 separators, transition handles, labels, undo/redo, pan/zoom, then menus, search field,
 panel keys, Properties/Project, sash, several machines in tabs, File › New, adding/deleting (tools,
 transitions, regions, bend points, Delete, copy/cut/paste) and properties (e/a keys, pickers,
@@ -77,7 +77,7 @@ highlight read back as pixels, log, saved traces, out of date, a model with erro
 models (C, Python, TypeScript, Rust) and the Settings tab (all six gruvbox variants and Everforest/Solarized/Catppuccin dark and light read back as pixels,
 Catppuccin's flavor, following the OS, kept across a reload; UI zoom with the canvas unchanged), then the search
 (Ctrl+P/Ctrl+Shift+P/F1, other machines, focus order, commands, settings preview, Project settings, prefixes),
-the sheet frame and title block (frame, zones, off-page marker, fields, double-click, fit findings with sheet and zone), the mouse's back button (sent through CDP, so the webview's history navigation is covered);
+the sheet frame and title block (frame, zones, off-page marker, fields, double-click, fit findings with sheet and zone), the mouse's back button (sent through CDP, so the webview's history navigation is covered), no webview context menu outside text fields;
 with a second argument
 it writes screenshots there); it needs esbuild and
 playwright (`UFSM_NODE_TOOLS=/opt/npm-tools` in the cloud workspace). Run it after
