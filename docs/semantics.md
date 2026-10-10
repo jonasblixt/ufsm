@@ -221,6 +221,44 @@ microstep the machine ends: the configuration and the signal queue are
 cleared without running exit actions, and later events are ignored until
 `reset()`.
 
+## Numbering and trace hooks
+
+Generated code numbers what it reports, the same way in every language:
+
+- **States**: normal and final states in document order, from 0 (pseudo-states
+  are never active). State *s* is active exactly when it is in the
+  configuration.
+- **Events** and **signals**: their order in `declarations`, from 0.
+- **Transitions**: those that leave a state, in the order of
+  `machine.transitions` (a join counts once, at its outgoing transition), then
+  internal transitions, states in post-order (children first). Initial and
+  history transitions are not numbered: they are never reported.
+
+The numbering is stable for a given model. Each generated file carries a
+*fingerprint* of it (`ufsm info` prints the model's), so a host can check that
+it decodes ids with the matching `.ufsm`: FNV-1a (32 bit) over the UTF-8 bytes
+of the JSON text
+`["ufsm-ids",1,<model name>,[[id,name],…events],[[id,name],…signals],[[id,label],…states],[id,…transitions]]`,
+where a state's label is its name, qualified with its parent states' names
+(`Door/Open`) where names repeat. Layout, actions and guards are not part of it.
+
+With the `trace` option, generated code calls one hook the application
+implements, `trace(kind, id)`, with ids only. It is called inside `reset()` and
+`process()`, so it must not block or call the machine; timestamps and transport
+are the application's. Each call comes just before the actions it introduces:
+
+| Kind | When | Id |
+|------|------|----|
+| event | `process()` accepted the event: after the not-started, unknown-event, busy and terminated checks, before anything runs; also when nothing reacts to it | event number |
+| signal | a signal was taken from the queue, before its microstep | signal number |
+| transition | per transition taken in a microstep, in selection order, after every exit of that microstep and before the transition's own actions | transition number |
+| enter | a state became active, before its entry actions (also when history restores it) | state number |
+| exit | a state is left, before its exit actions (its children are exited first) | state number |
+
+So a microstep reads `exit… transition… enter…`, each followed by its actions.
+`reset()` reports the states it enters and nothing else; a terminate clears the
+rest of the configuration without exit reports, as it runs no exit actions.
+
 ## Traces
 
 A trace file (`tests/traces/*.json`) lists steps to run against one model
@@ -253,7 +291,7 @@ and the action calls each step must produce, by name:
 | `reenter` | This action (by name) calls `process()` with the step's event (`send` steps only); that nested call must fail with `busy` |
 | `doc` | Free text, e.g. why an expectation differs from v0.5 |
 
-`options` overrides the model's `options` for the whole trace (same keys):
+`options` overrides the model's behaviour options for the whole trace:
 `signalQueue` (queue capacity) and `maxMicrosteps` (livelock limit per
 `reset()`/`process()` call). Both are non-negative integers. What is not set
 in either comes from the defaults (16 and 10 000), so the interpreter and the

@@ -10,14 +10,23 @@
  */
 import type { Action } from "../v1/model";
 import type { EntryOp, FlatGuard, FlatModel, FlatTransition, Offer, RegionOp } from "../semantics/flatten";
-import type { Expr, IrFunction, IrHistory, IrModule, Stmt } from "./ir";
+import type { Expr, IrFunction, IrHistory, IrModule, IrTransition, Stmt } from "./ir";
+import { fingerprint, stateNames } from "./ids";
 
-export function lowerToIr(flat: FlatModel): IrModule {
+export interface LowerOptions {
+  /** Emit trace statements (the `trace` option): transitions taken, states entered and exited. Default false. */
+  trace?: boolean;
+}
+
+export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule {
+  const trace = options.trace ?? false;
   const fns: IrFunction[] = [];
   const done = new Set<string>();
   const R = flat.regions;
   const V = flat.vertices;
 
+  /** A trace statement, or nothing without the `trace` option. */
+  const hook = (h: "transition" | "enter" | "exit", index: number): Stmt[] => (trace ? [{ op: "trace", hook: h, index }] : []);
   const actions = (list: Action[]): Stmt[] => list.map((a) => ("call" in a ? { op: "call", action: a.call } : { op: "emit", signal: a.emit }));
   const hasContent = (r: number): boolean => R[r]!.slots.length > 0;
   const enterable = (r: number): boolean => R[r]!.init !== undefined || R[r]!.history !== "none";
@@ -38,7 +47,7 @@ export function lowerToIr(flat: FlatModel): IrModule {
       const fv = V[v]!;
       const body: Stmt[] = [];
       for (const c of [...fv.regions].reverse()) if (hasContent(c)) body.push({ op: "invoke", fn: exitFn(c) });
-      body.push(...actions(fv.exit));
+      body.push(...hook("exit", v), ...actions(fv.exit));
       return { slot: i + 1, body };
     }).filter((c) => c.body.length > 0);
     const body: Stmt[] = [];
@@ -74,7 +83,7 @@ export function lowerToIr(flat: FlatModel): IrModule {
 
   const enterOp = (op: EntryOp): Stmt[] => {
     const fv = V[op.vertex]!;
-    return [{ op: "set", region: fv.region, slot: fv.slot }, ...actions(fv.entry), ...op.regions.flatMap(regionOp)];
+    return [{ op: "set", region: fv.region, slot: fv.slot }, ...hook("enter", op.vertex), ...actions(fv.entry), ...op.regions.flatMap(regionOp)];
   };
   const regionOp = (op: RegionOp): Stmt[] => {
     if ("path" in op) return enterOp(op.path);
@@ -111,7 +120,7 @@ export function lowerToIr(flat: FlatModel): IrModule {
       on: top ? { kind: "hist", region: r } : { kind: "deep", history: r, index: c - base },
       cases: R[c]!.slots.map((v, i) => {
         const fv = V[v]!;
-        return { slot: i + 1, body: [{ op: "set", region: c, slot: i + 1 } as Stmt, ...actions(fv.entry), ...fv.regions.map((cc) => restoreIn(cc, false))] };
+        return { slot: i + 1, body: [{ op: "set", region: c, slot: i + 1 } as Stmt, ...hook("enter", v), ...actions(fv.entry), ...fv.regions.map((cc) => restoreIn(cc, false))] };
       }),
     });
     fns.push({ name, returns: "void", flags: [], body: [restoreIn(r, true)], doc: `Restore the deep history of ${regionName(r)}.` });
@@ -212,7 +221,7 @@ export function lowerToIr(flat: FlatModel): IrModule {
       ordered.length === ks.length ? then : [{ op: "if", cond: or(ks.map((k): Expr => ({ op: "flag", name: flag(k) }))), then }];
     for (const d of domains) if (historyInside(d)) body.push(...whenAny(inDomain(d), [{ op: "invoke", fn: recordFn(d) }]));
     for (const d of domains) body.push(...whenAny(inDomain(d), [{ op: "invoke", fn: exitFn(d) }]));
-    for (const k of ordered) body.push(...when(k, actions(T(k).actions)));
+    for (const k of ordered) body.push(...when(k, [...hook("transition", k), ...actions(T(k).actions)]));
     for (const k of byDomainAsc) body.push(...when(k, T(k).entry ? regionOp(T(k).entry!) : []));
     for (const k of ordered) if (T(k).terminate) body.push(...when(k, [{ op: "terminate" }]));
     body.push({ op: "return", value: true });
@@ -244,11 +253,27 @@ export function lowerToIr(flat: FlatModel): IrModule {
     return [fr.history === "deep" ? { region: r, kind: "deep", snapshotFrom: fr.regionFrom, snapshotTo: fr.regionTo } : { region: r, kind: "shallow" }];
   });
 
+  const names = stateNames(V.map((v) => ({ id: v.id, name: v.name, parent: R[v.region]!.owner })));
+  const states = V.map((v, i) => ({ id: v.id, name: v.name, ...names[i]!, region: v.region, slot: v.slot, final: v.kind === "final" }));
+  /** The explicit targets of an entry: the innermost vertices its paths lead to. */
+  const targets = (op: RegionOp | undefined): number[] => {
+    if (!op || !("path" in op)) return [];
+    const inner = op.path.regions.flatMap(targets);
+    return inner.length ? inner : [op.path.vertex];
+  };
+  const transitions: IrTransition[] = flat.transitions.map((t) => {
+    const from = t.sources.map((v) => states[v]!.label).join(", ");
+    const to = t.internal ? "(internal)" : t.terminate ? "terminate" : targets(t.entry).map((v) => states[v]!.label).join(", ");
+    const on = t.trigger.kind === "event" ? ` on ${t.trigger.name}` : t.trigger.kind === "none" ? "" : ` (${t.trigger.kind})`;
+    return { id: t.id, label: `${t.id}: ${from} -> ${to}${on}` };
+  });
+
   return {
     name: flat.name,
     regions: R.length,
     regionNames: R.map((_, r) => regionName(r)),
-    states: V.map((v) => ({ id: v.id, name: v.name, region: v.region, slot: v.slot, final: v.kind === "final" })),
+    states,
+    transitions,
     history,
     events: flat.events,
     signals: flat.signals,
@@ -260,6 +285,8 @@ export function lowerToIr(flat: FlatModel): IrModule {
     eventless,
     // helpers were pushed while building the step functions; put them first, keep the steps in trigger order
     functions: [...fns.filter((f) => f.returns === "void"), ...fns.filter((f) => f.returns === "bool")],
+    trace,
+    fingerprint: fingerprint({ name: flat.name, events: flat.events, signals: flat.signals, states, transitions }),
   };
 }
 

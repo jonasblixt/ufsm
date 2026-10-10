@@ -18,12 +18,19 @@
  * one described in ir/ir.ts; errors are exceptions, as in the interpreter.
  * Exceptions from the handler are not caught: they leave the machine busy
  * until reset(), as in the interpreter.
+ *
+ * Always: `<Class>State` (document order) and `<Class>.FINGERPRINT`. With
+ * `debugInfo`: `EVENT_NAMES`, `SIGNAL_NAMES`, `STATE_NAMES` and `isActive()`.
+ * With `trace` (decided by the IR): `<Class>TraceKind` and a
+ * `trace(kind, id)` method on the handler.
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
 import { OPTION_DEFAULTS, targetSection } from "../v1/options";
 import { UFSM_VERSION } from "../version";
 import type { Expr, IrModule, Stmt, SwitchOn } from "../ir/ir";
+import { TRACE_KINDS } from "../ir/ir";
+import { hex32 } from "../ir/ids";
 import { BUSY_MESSAGE } from "../interp/interpreter";
 import { CodegenError, OUTPUT_NOTICE, cIdentifier } from "./c";
 import { pythonClassName } from "./python";
@@ -37,6 +44,10 @@ export interface TsOptions {
   signalQueue?: number;
   /** Microsteps per reset()/process() call before a "livelock" error; 0 disables the check. Default 10000. */
   maxMicrosteps?: number;
+  /** Name tables for events, signals and states, and `is_active()`. Default false. */
+  debugInfo?: boolean;
+  /** Must equal the IR's `trace` when given (the trace calls are emitted by the lowering). */
+  trace?: boolean;
 }
 
 export interface TsFiles {
@@ -100,6 +111,13 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
   const codeT = `${cls}ErrorCode`;
   const eventCls = `${cls}Event`;
   const handlerT = `${cls}Handler`;
+  const stateCls = `${cls}State`;
+  const signalCls = `${cls}Signal`;
+  const kindCls = `${cls}TraceKind`;
+  if (options.trace !== undefined && options.trace !== ir.trace) throw new CodegenError("options.trace differs from the IR's: lower the model with { trace }");
+  const trace = ir.trace;
+  const debugInfo = options.debugInfo ?? false;
+  const publicSignals = (trace || debugInfo) && ir.signals.length > 0;
 
   // ------------------------------------------------------------ analysis
 
@@ -146,8 +164,12 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
   // keywords are fine; names every object already has (constructor, toString, ...) are not.
   const problems: string[] = [];
   for (const [kind, list] of [["event", ir.events], ["signal", ir.signals], ["action", ir.actions], ["guard", ir.guards]] as const) {
-    for (const d of list) if (OBJECT_MEMBERS.has(d.name)) problems.push(`${kind} '${d.name}' is a name every JavaScript object already has`);
+    for (const d of list) {
+      if (OBJECT_MEMBERS.has(d.name)) problems.push(`${kind} '${d.name}' is a name every JavaScript object already has`);
+      else if (trace && d.name === "trace" && (kind === "action" || kind === "guard")) problems.push(`${kind} 'trace' is the name of the trace hook`);
+    }
   }
+  for (const st of ir.states) if (OBJECT_MEMBERS.has(st.ident)) problems.push(`state '${st.label}' is a name every JavaScript object already has`);
   if (problems.length) throw new CodegenError(`names that cannot be used in the generated TypeScript (rename them):\n  ${problems.join("\n  ")}`);
 
   const decl = new Map<string, string>();
@@ -285,6 +307,10 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
         case "microstep":
           if (countSteps) line(d, "this.microstep();");
           break;
+        case "trace":
+          if (s.hook === "transition") line(d, `this.h.trace(${kindCls}.transition, ${s.index}); // ${comment(ir.transitions[s.index]!.label)}`);
+          else line(d, `this.h.trace(${kindCls}.${s.hook}, ${stateCls}.${ir.states[s.index]!.ident});`);
+          break;
         case "terminate":
           line(d, "this.terminated = true;");
           break;
@@ -332,11 +358,41 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
     line(0, `export type ${eventCls} = never;`);
   }
   line(0, "");
+  /** A const object of numbered names and its union type. */
+  const constEnum = (name: string, doc: string | undefined, keys: [string, string?][]): void => {
+    if (doc) line(0, `/** ${doc} */`);
+    if (keys.length) {
+      line(0, `export const ${name} = {`);
+      keys.forEach(([k, c], i) => line(1, `${k}: ${i},${c ? ` // ${comment(c)}` : ""}`));
+      line(0, "} as const;");
+      line(0, `export type ${name} = (typeof ${name})[keyof typeof ${name}];`);
+    } else {
+      line(0, `export const ${name} = {} as const;`);
+      line(0, `export type ${name} = never;`);
+    }
+    line(0, "");
+  };
+  if (publicSignals) constEnum(signalCls, undefined, ir.signals.map((x) => [x.name]));
+  constEnum(stateCls, "States in document order.", ir.states.map((st) => [st.ident, st.label !== st.ident ? st.label : undefined]));
+  if (trace) {
+    const what = {
+      event: `${eventCls}; process() accepted it`,
+      signal: `${publicSignals ? signalCls : "signal number"}; taken from the queue`,
+      transition: "transition number (see the machine class); before its actions",
+      enter: `${stateCls}; before its entry actions`,
+      exit: `${stateCls}; before its exit actions`,
+    };
+    constEnum(kindCls, `What ${handlerT}.trace() reports; the id is a number of the type named here.`, TRACE_KINDS.map((k) => [k, what[k]]));
+  }
   line(0, "/** Actions and guards the machine calls. Guards may be called more than once per event and in any order. */");
-  if (ir.actions.length || ir.guards.length) {
+  if (ir.actions.length || ir.guards.length || trace) {
     line(0, `export interface ${handlerT} {`);
     for (const a of ir.actions) line(1, `${a.name}(): void;`);
     for (const g of ir.guards) line(1, `${g.name}(): boolean;`);
+    if (trace) {
+      line(1, "/** Called inside reset() and process() with ids only; must not block or call the machine. */");
+      line(1, `trace(kind: ${kindCls}, id: number): void;`);
+    }
     line(0, "}");
   } else line(0, `export type ${handlerT} = object;`);
   line(0, "");
@@ -349,7 +405,25 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
     line(1, `//   ${r} ${comment(n)}: ${slots}${hd}`);
   });
   if (hasQueue) line(1, `// Signals: ${ir.signals.map((s, i) => `${i} ${s.name}`).join(", ")}`);
-  const usesHandler = ir.actions.length + ir.guards.length > 0;
+  if (trace && ir.transitions.length) {
+    line(1, "// Transition numbers (trace):");
+    ir.transitions.forEach((t, i) => line(1, `//   ${i} ${comment(t.label)}`));
+  }
+  line(1, "/** Identifies the numbering of events, signals, states and transitions (`ufsm info` prints it for a model file). */");
+  line(1, `static readonly FINGERPRINT = ${hex32(ir.fingerprint)};`);
+  if (debugInfo) {
+    const names = (list: string[]): string => `[${list.map((n) => JSON.stringify(n)).join(", ")}]`;
+    line(1, "/** Event names as in the model, by number. */");
+    line(1, `static readonly EVENT_NAMES: readonly string[] = ${names(ir.events.map((e) => e.name))};`);
+    line(1, "/** Signal names as in the model, by number. */");
+    line(1, `static readonly SIGNAL_NAMES: readonly string[] = ${names(ir.signals.map((x) => x.name))};`);
+    line(1, "/** State names as in the model (qualified when not unique), by number. */");
+    line(1, `static readonly STATE_NAMES: readonly string[] = ${names(ir.states.map((st) => st.label))};`);
+    if (ir.states.length) {
+      line(1, `private static readonly STATE_AT: readonly (readonly [number, number])[] = [${ir.states.map((st) => `[${st.region}, ${st.slot}]`).join(", ")}];`);
+    }
+  }
+  const usesHandler = ir.actions.length + ir.guards.length > 0 || trace;
   line(1, `private readonly h: ${handlerT};`);
   line(1, "private started = false;");
   line(1, "/** A reset()/process() call is running, or one did not finish. */");
@@ -410,6 +484,7 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
   }
   line(2, "this.busy = true;");
   if (countSteps) line(2, "this.steps = 0;");
+  if (trace) line(2, `this.h.trace(${kindCls}.event, e);`);
   if (eventSteps) line(2, "this.onEvent[e]?.();");
   if (settleBody) line(2, "this.settle();");
   line(2, "this.busy = false;");
@@ -438,6 +513,7 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
       line(3, "if (signal === undefined) {");
       line(4, "return;");
       line(3, "}");
+      if (trace) line(3, `this.h.trace(${kindCls}.signal, signal);`);
       if (signalSteps) line(3, "this.onSignal[signal]?.();");
     } else line(3, "return;");
     line(2, "}");
@@ -450,6 +526,14 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
     line(3, `throw new ${errorCls}("queue-overflow", "signal queue full (${queueCap})");`);
     line(2, "}");
     line(2, "this.queue.push(signal);");
+    line(1, "}");
+  }
+  if (debugInfo && ir.states.length) {
+    line(0, "");
+    line(1, "/** Whether `state` is active. */");
+    line(1, `isActive(state: ${stateCls}): boolean {`);
+    line(2, `const at = ${cls}.STATE_AT[state];`);
+    line(2, "return at !== undefined && this.cfg[at[0]] === at[1];");
     line(1, "}");
   }
   if (countSteps) {

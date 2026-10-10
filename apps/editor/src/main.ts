@@ -70,7 +70,7 @@ import {
   TITLE_BLOCK_FIELDS,
   locate,
   locationText,
-  modelOptions,
+  behaviourOptions,
   OPTION_DEFAULTS,
   paperOf,
   sheetFrame,
@@ -110,7 +110,7 @@ import { TOOL_KEYS, TOOL_NAMES, buildPalette, type ToolId } from "./palette";
 import { drawGhost, drawLink, drawLinkRoute } from "./preview";
 import { buildTree, type Tree } from "./tree";
 import { explorerEntry, type ExplorerEntry } from "./explorer";
-import { MODEL_OPTIONS, TARGETS, TITLE_FIELD_LABELS, TITLE_FIELD_NAMES, renderPanel, type FocusField, type PanelOps, type PanelTab } from "./panel";
+import { API_OPTION_INFO, MODEL_OPTIONS, TARGETS, TITLE_FIELD_LABELS, TITLE_FIELD_NAMES, renderPanel, type FocusField, type PanelOps, type PanelTab } from "./panel";
 import { attachSash } from "./sash";
 import { autoHideScrollbars, wheelScrollsHorizontally } from "./scrollbars";
 import { renderTabs } from "./tabs";
@@ -1140,8 +1140,28 @@ function projectItems(d: Doc): SearchItem[] {
       run: () => focusProjectField(o.label),
     });
   }
+  for (const o of API_OPTION_INFO) {
+    out.push({
+      key: `proj:options:${o.key}`,
+      kind: "setting",
+      label: `Project: Options: ${o.label}`,
+      detail: x.options?.[o.key] === true ? "on" : "off (default)",
+      keywords: "generator option debug trace",
+      run: () => focusProjectField(o.label),
+    });
+  }
   for (const t of TARGETS) {
     const set = x.targets?.[t.key] ?? {};
+    for (const o of API_OPTION_INFO) {
+      out.push({
+        key: `proj:${t.key}:${o.key}`,
+        kind: "setting",
+        label: `Project: Code Generation: ${t.title} ${o.label}`,
+        detail: set[o.key] === true ? "on" : set[o.key] === false ? "off" : "as in Options",
+        keywords: "generator target option debug trace",
+        run: () => focusProjectField(`${t.title} ${o.label}`),
+      });
+    }
     for (const o of t.options) {
       out.push({
         key: `proj:${t.key}:${o.key}`,
@@ -1358,7 +1378,7 @@ const simOps: SimOps = {
     if (!doc) return;
     const { [key]: _, ...rest } = doc.simOptions;
     // The model's own value is no override: the run follows the model again when its options change.
-    doc.simOptions = value === modelOptions(doc.history.current)[key] ? rest : { ...rest, [key]: value };
+    doc.simOptions = value === behaviourOptions(doc.history.current)[key] ? rest : { ...rest, [key]: value };
     renderShell();
   },
   hover: (event) => {
@@ -1385,7 +1405,7 @@ function simProps(d: Doc): SimProps {
     error: d.simError,
     would: wouldMap(d),
     guards: d.guards,
-    options: { ...modelOptions(d.history.current), ...d.simOptions },
+    options: { ...behaviourOptions(d.history.current), ...d.simOptions },
     overridden: d.simOptions,
     recordActive: d.recordActive,
     ops: simOps,

@@ -21,6 +21,8 @@ import {
   loadModel,
   lowerToIr,
   printIr,
+  hex32,
+  modelIr,
   parseTrace,
   runTrace,
   serializeV1,
@@ -48,16 +50,16 @@ Usage:
   ufsm flatten <model.ufsm> [--json]     Show the static tables code generators work from
   ufsm ir <model.ufsm> [--json]          Show the IR every backend prints, as pseudo-code
   ufsm generate c <model.ufsm> [-o dir]  Generate <name>.h and <name>.c (default: current directory)
-         [--prefix p] [--signal-queue n] [--max-microsteps n]
+         [--prefix p] [--signal-queue n] [--max-microsteps n] [--debug-info] [--trace]
                                          (override targets.c and options in the model; see docs/backend-c.md)
   ufsm generate python <model.ufsm> [-o dir]
-         [--class-name C] [--signal-queue n] [--max-microsteps n]
+         [--class-name C] [--signal-queue n] [--max-microsteps n] [--debug-info] [--trace]
                                          Generate <name>.py (overrides targets.python, options; docs/backend-python.md)
   ufsm generate ts <model.ufsm> [-o dir]
-         [--class-name C] [--signal-queue n] [--max-microsteps n]
+         [--class-name C] [--signal-queue n] [--max-microsteps n] [--debug-info] [--trace]
                                          Generate <name>.ts (overrides targets.ts, options; docs/backend-ts.md)
   ufsm generate rust <model.ufsm> [-o dir]
-         [--class-name C] [--signal-queue n] [--max-microsteps n]
+         [--class-name C] [--signal-queue n] [--max-microsteps n] [--debug-info] [--trace]
                                          Generate <name>.rs (overrides targets.rust, options; docs/backend-rust.md)
   ufsm schema [-o file]                  The JSON Schema of format v1 (stdout without -o)
   ufsm --version
@@ -94,6 +96,8 @@ function main(argv: string[]): number {
       "class-name": { type: "string" },
       "signal-queue": { type: "string" },
       "max-microsteps": { type: "string" },
+      "debug-info": { type: "boolean" },
+      trace: { type: "boolean" },
     },
   });
 
@@ -147,6 +151,9 @@ function main(argv: string[]): number {
       console.log(`Actions:     ${d.actions.length}`);
       console.log(`Guards:      ${d.guards.length}`);
       if (doc.diagram) console.log(`Sheets:      ${sheets(index).length} (${doc.diagram.paper})`);
+      // the fingerprint of the numbering generated code uses (state enum, trace ids)
+      const ok = checkV1(doc).every((x) => x.severity !== "error");
+      console.log(`Fingerprint: ${ok ? hex32(modelIr(doc).fingerprint) : "- (the model has errors)"}`);
       return 0;
     }
     case "check": {
@@ -313,6 +320,8 @@ function main(argv: string[]): number {
       if (values.prefix !== undefined) overrides.prefix = values.prefix;
       if (values["class-name"] !== undefined) overrides.className = values["class-name"];
       Object.assign(overrides, optionFlags());
+      if (values["debug-info"]) overrides.debugInfo = true;
+      if (values.trace) overrides.trace = true;
       const out = generateFiles(m.doc, target, overrides);
       for (const p of out.problems) console.error(`warning: ${p}`);
       const written = out.files.map((f) => [f.name, f.text] as const);

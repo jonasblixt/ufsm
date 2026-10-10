@@ -69,12 +69,20 @@ function typeCheck(files: string[], lib: string[]): { file: string; line: number
   }));
 }
 
-/** Differential runs: every doc gets a generated machine with the interpreter's limits. */
-async function compareAll(cases: { doc: UfsmDocument; seeds: number[]; steps: number; signalQueue?: number }[]): Promise<void> {
-  const { units, cleanup } = await loadTs(cases.map((c) => ({ ir: ir(c.doc), options: { maxMicrosteps: MAX_STEPS, signalQueue: c.signalQueue ?? DIFF_QUEUE } })));
+/**
+ * Differential runs: every doc gets a generated machine with the interpreter's limits. With `hooks`, the machines are
+ * generated with debugInfo and trace, and the trace hook calls, names and isActive() are compared too.
+ */
+async function compareAll(cases: { doc: UfsmDocument; seeds: number[]; steps: number; signalQueue?: number }[], hooks = false): Promise<void> {
+  const { units, cleanup } = await loadTs(
+    cases.map((c) => ({
+      ir: lowerToIr(flatten(c.doc), { trace: hooks }),
+      options: { maxMicrosteps: MAX_STEPS, signalQueue: c.signalQueue ?? DIFF_QUEUE, debugInfo: hooks },
+    })),
+  );
   try {
     cases.forEach((c, k) => {
-      for (const seed of c.seeds) compareWithInterpreter((_doc, host) => units[k]!.make(host), c.doc, seed, c.steps, { signalQueue: c.signalQueue ?? DIFF_QUEUE });
+      for (const seed of c.seeds) compareWithInterpreter((_doc, host) => units[k]!.make(host), c.doc, seed, c.steps, { signalQueue: c.signalQueue ?? DIFF_QUEUE }, hooks);
     });
   } finally {
     cleanup();
@@ -114,6 +122,15 @@ describe("TypeScript backend matches the interpreter", () => {
   it(`on ${count} random models`, async () => {
     await compareAll(Array.from({ length: count }, (_, i) => ({ doc: randomModel(i + 1, { transitions: 16 }), seeds: [(i + 1) * 31], steps: 40 })));
   });
+  it(`with debugInfo and trace: hooks, names and isActive() on every repo model and ${Math.ceil(count / 3)} random models`, async () => {
+    await compareAll(
+      [
+        ...modelFiles.map((f) => ({ doc: load(f), seeds: [1, 2], steps: 120 })),
+        ...Array.from({ length: Math.ceil(count / 3) }, (_, i) => ({ doc: randomModel(i + 1, { signals: 2, transitions: 16 }), seeds: [(i + 1) * 37], steps: 40 })),
+      ],
+      true,
+    );
+  });
   it("on random models with a small signal queue", async () => {
     await compareAll(Array.from({ length: 100 }, (_, i) => ({ doc: randomModel(i + 1, { signals: 2, transitions: 18 }), seeds: [i + 1], steps: 30, signalQueue: 2 })));
   });
@@ -136,8 +153,11 @@ describe("TypeScript backend matches the interpreter", () => {
       name: "precedence",
       regions: 1,
       regionNames: ["root"],
-      states: [{ id: "s1", name: "A", region: 0, slot: 1, final: false }],
+      states: [{ id: "s1", name: "A", ident: "A", label: "A", region: 0, slot: 1, final: false }],
       history: [],
+      transitions: [],
+      trace: false,
+      fingerprint: 0,
       events: cases.map(([n]) => ({ id: `ev_${n}`, name: n })),
       signals: [],
       actions: [{ id: "act1", name: "hit" }],
@@ -176,6 +196,10 @@ describe("TypeScript backend: generated files", () => {
         if (written.has(out.fileName)) continue; // examples/ and tests/models/ both have a test_model1
         written.set(out.fileName, join(dir, out.fileName));
         writeFileSync(join(dir, out.fileName), out.source);
+        // and with debugInfo and trace
+        const debug = generateTypeScript(lowerToIr(flatten(load(f)), { trace: true }), { debugInfo: true, module: out.fileName.replace(/\.ts$/, "_debug") });
+        written.set(debug.fileName, join(dir, debug.fileName));
+        writeFileSync(join(dir, debug.fileName), debug.source);
       }
       const diags = typeCheck([...written.values()], ["ES2020"]);
       assert.deepEqual(diags, [], diags.map((d) => `${d.file}:${d.line}: ${d.message}`).join("\n"));

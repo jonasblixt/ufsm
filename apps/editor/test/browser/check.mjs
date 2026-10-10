@@ -7,7 +7,7 @@
  * region separators, transition handles, labels, undo/redo, pan/zoom; then the window layout (menus, search field,
  * Properties/Project panel, panel keys, sash), several machines in tabs, File › New, and adding and deleting (tools, transitions,
  * regions, bend points, Delete, copy/cut/paste), and properties: names, actions, triggers, guards, internal transitions,
- * regions, declarations, code generator options and the Problems tab; then the simulator (F5, events, guards, the
+ * regions, declarations, code generator options (incl. debugInfo and trace) and the Problems tab; then the simulator (F5, events, guards, the
  * canvas highlight, the log, saved traces, going out of date, a model with errors), the code preview and the Settings tab
  * (color themes: all gruvbox variants, Everforest, Solarized and Catppuccin dark and light, Catppuccin's flavor, following
  * the OS, kept across a reload; UI zoom: keys, View menu, the tab's buttons, limits, the sash, kept across a reload, the
@@ -762,6 +762,14 @@ check("...set in the options section...", (await P()).options?.signalQueue === 4
 await page.fill('input[aria-label="Signal queue"]', "");
 await page.keyboard.press("Enter");
 check("...and cleared back to the default", (await P()).options === undefined);
+await page.click('input[aria-label="Debug info"]');
+check("API options are switches in the options section...", (await P()).options?.debugInfo === true);
+await page.click('input[aria-label="Debug info"]');
+check("...off by default (not written)", (await P()).options === undefined);
+await page.selectOption('select[aria-label="C Trace hook"]', "on");
+check("...and may be overridden per language", (await P()).targets?.c?.trace === true && (await P()).options === undefined);
+await page.selectOption('select[aria-label="C Trace hook"]', "");
+check("...or follow the options section again", (await P()).targets === undefined);
 
 // Problems
 await page.click("#panel-tab-problems");
@@ -898,6 +906,14 @@ await page.keyboard.press("Enter");
 await page.click("#panel-tab-code");
 check("...with its own options", /pub struct Lamp<H> \{/.test(await $text(".code .src")) && /"rust": \{\s*"className": "Lamp"/.test(await U("serialize")));
 await page.click(".cview:has-text('C header')");
+check("the C header has the state enum and fingerprint, but no trace hook by default", /enum dimmer_state \{/.test(await $text(".code .src")) && /DIMMER_FINGERPRINT 0x/.test(await $text(".code .src")) && !/dimmer_trace\(/.test(await $text(".code .src")));
+await page.click("#panel-tab-project");
+await page.selectOption('select[aria-label="C Trace hook"]', "on");
+await page.click("#panel-tab-code");
+check("...and the trace hook once targets.c.trace is on", /void dimmer_trace\(void \*user, enum dimmer_trace_kind kind, uint16_t id\);/.test(await $text(".code .src")));
+await page.click("#panel-tab-project");
+await page.selectOption('select[aria-label="C Trace hook"]', "");
+await page.click("#panel-tab-code");
 const both = [];
 page.on("download", (d) => both.push(d.suggestedFilename()));
 await page.click(".cfile button:has-text('Save both…')");

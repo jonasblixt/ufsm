@@ -34,3 +34,8 @@ paths:
   `rustc`); clippy (`$CLIPPY_DRIVER`) and rustfmt (`$RUSTFMT`) checks skip
   without those; CI sets `UFSM_REQUIRE_RUST` (all three).
   `UFSM_RUST_RANDOM=<n>` runs more random models.
+- Every backend's differential runs include a pass with `debugInfo` and
+  `trace` on: generated trace hook calls are logged among the action calls as
+  pseudo-calls (`decodeHooks`/`interpreterHooks` in `test/harness.ts`) and
+  compared with the interpreter's `onTrace`; the type/lint checks also cover a
+  debug variant of every repo model. A new backend implements the same.

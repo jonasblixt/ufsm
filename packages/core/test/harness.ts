@@ -13,13 +13,15 @@ import {
   type InterpreterErrorCode,
   type InterpreterHost,
   type InterpreterOptions,
+  type IrModule,
   type MachineFactory,
-  modelOptions,
+  type TraceEntry,
+  behaviourOptions,
   TraceRaise,
   type TraceMachine,
   type UfsmDocument,
 } from "../src/index";
-import { rng } from "./random-model";
+import { randomModel, rng } from "./random-model";
 
 export type Engine = (doc: UfsmDocument, host: InterpreterHost, options: InterpreterOptions) => TraceMachine;
 
@@ -88,6 +90,32 @@ export function randomScript(doc: UfsmDocument, seed: number, steps: number): Sc
     script.push(step);
   }
   return script;
+}
+
+/**
+ * Differential runs with `debugInfo` and `trace` on: every trace hook call is logged among the action calls as a
+ * pseudo-call, so its order relative to the actions is compared too. Generated code logs `@event:<name>` and
+ * `@signal:<name>` (names from its own lookup), `@t:<n>`, `@enter:<n>` and `@exit:<n>` (numbers); `decodeHooks`
+ * turns the numbers into ids, which is what `interpreterHooks` logs.
+ */
+export function decodeHooks(calls: string[], ir: IrModule): string[] {
+  return calls.map((c) => {
+    const m = /^@(t|enter|exit):(\d+)$/.exec(c);
+    if (!m) return c;
+    const n = Number(m[2]);
+    const id = m[1] === "t" ? ir.transitions[n]?.id : ir.states[n]?.id;
+    return `@${m[1]}:${id ?? `BAD_NUMBER_${n}`}`;
+  });
+}
+
+/** The interpreter's trace entries as the pseudo-calls of decodeHooks, logged through the host. */
+export function interpreterHooks(host: InterpreterHost): (e: TraceEntry) => void {
+  const log = (s: string): void => host.call?.(s, s);
+  return (e) => {
+    if (e.type === "event") log(`@${e.signal ? "signal" : "event"}:${e.name}`);
+    else if (e.type === "transition") log(`@t:${e.id}`);
+    else if (e.type === "enter" || e.type === "exit") log(`@${e.type}:${e.state}`);
+  };
 }
 
 /** Outcome of one reset/send step. */
@@ -180,15 +208,36 @@ export interface BackendDiff {
   signalQueue?: number;
 }
 
-/** Assert that results recorded from generated code (one list per diff, autoReset on) equal the interpreter's. */
-export function assertMatchesInterpreter(diffs: BackendDiff[], results: StepResult[][], maxMicrosteps: number, backend: string): void {
+/**
+ * Assert that results recorded from generated code (one list per diff, autoReset on) equal the interpreter's. With
+ * `hooks` (the IR of each diff, generated with debugInfo and trace), the trace hook calls are compared too.
+ */
+export function assertMatchesInterpreter(diffs: BackendDiff[], results: StepResult[][], maxMicrosteps: number, backend: string, hooks?: IrModule[]): void {
   diffs.forEach((d, k) => {
-    const expected = runScript((h) => new Interpreter(d.doc, h, { maxMicrosteps, signalQueue: d.signalQueue ?? DIFF_QUEUE }), d.script);
+    const ir = hooks?.[k];
+    const expected = runScript(
+      (h) => new Interpreter(d.doc, h, { maxMicrosteps, signalQueue: d.signalQueue ?? DIFF_QUEUE, ...(ir ? { onTrace: interpreterHooks(h) } : {}) }),
+      d.script,
+    );
     const steps = d.script.filter((s) => s.reset || s.send !== undefined);
-    const actual = (results[k] ?? []).map((r, i) => logLine(steps[i]!, r));
+    const actual = (results[k] ?? []).map((r, i) => logLine(steps[i]!, ir ? { ...r, calls: decodeHooks(r.calls, ir) } : r));
     const i = expected.findIndex((x, j) => x !== actual[j]);
     assert.ok(i < 0 && expected.length === actual.length, `${d.label}, step ${i}:\n  interpreter: ${expected[i]}\n  ${`${backend}:`.padEnd(13)}${actual[i]}`);
   });
+}
+
+/**
+ * The differential runs with debugInfo and trace on, for backends that run scripts (C, Python, Rust): every given
+ * model with two seeds, and random models with two signals (so signal hooks are exercised).
+ */
+export function hookDiffs(models: { label: string; doc: UfsmDocument }[], random: number): BackendDiff[] {
+  return [
+    ...models.flatMap(({ label, doc }) => [1, 2].map((seed) => ({ label: `${label} seed ${seed} (hooks)`, doc, script: randomScript(doc, seed, 120) }))),
+    ...Array.from({ length: random }, (_, i) => {
+      const doc = randomModel(i + 1, { signals: 2, transitions: 16 });
+      return { label: `random model ${i + 1} (hooks)`, doc, script: randomScript(doc, (i + 1) * 37, 40) };
+    }),
+  ];
 }
 
 /** Log of one random run (see randomScript and runScript). */
@@ -196,10 +245,13 @@ export function drive(make: (host: InterpreterHost) => TraceMachine, doc: UfsmDo
   return runScript(make, randomScript(doc, seed, steps));
 }
 
-/** Assert that `engine` behaves exactly like the reference interpreter on one random run. */
-export function compareWithInterpreter(engine: Engine, doc: UfsmDocument, seed: number, steps: number, options: InterpreterOptions = {}): void {
-  const opts = { ...modelOptions(doc), maxMicrosteps: 300, ...options };
-  const a = drive((h) => new Interpreter(doc, h, opts), doc, seed, steps);
+/**
+ * Assert that `engine` behaves exactly like the reference interpreter on one random run. With `hooks`, the engine logs
+ * its trace hook calls as decoded pseudo-calls (decodeHooks) and they are compared too.
+ */
+export function compareWithInterpreter(engine: Engine, doc: UfsmDocument, seed: number, steps: number, options: InterpreterOptions = {}, hooks = false): void {
+  const opts = { ...behaviourOptions(doc), maxMicrosteps: 300, ...options };
+  const a = drive((h) => new Interpreter(doc, h, hooks ? { ...opts, onTrace: interpreterHooks(h) } : opts), doc, seed, steps);
   const b = drive((h) => engine(doc, h, opts), doc, seed, steps);
   const i = a.findIndex((x, k) => x !== b[k]);
   assert.ok(i < 0 && a.length === b.length, `${doc.name}, seed ${seed}, step ${i}:\n  interpreter: ${a[i]}\n  engine:      ${b[i]}`);

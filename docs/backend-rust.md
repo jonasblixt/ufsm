@@ -37,7 +37,7 @@ model's `targets.rust` section and can be overridden on the command line:
 | `className` | `--class-name` | model name in PascalCase (`test_guard1` → `TestGuard1`) | Name of the machine struct |
 | `module` | | model name in snake_case (`New model` → `new_model`) | File name: `<module>.rs` |
 
-Unknown keys, and the options below, are reported as warnings and ignored there.
+Unknown keys, and the behaviour options below, are reported as warnings and ignored there.
 
 The model's [`options`](format-v1.md#options) section sets what every target
 shares; the flags override it for one run:
@@ -46,10 +46,13 @@ shares; the flags override it for one run:
 |---------------|------|---------|---------|
 | `signalQueue` | `--signal-queue` | 16 | Capacity of the signal queue (only generated if the model emits signals) |
 | `maxMicrosteps` | `--max-microsteps` | 10000 | Microsteps per `reset`/`process` call before a `Livelock` error; 0 removes the check |
+| `debugInfo` | `--debug-info` | false | Name lookup and an is-active query ([Debugging](#debugging)) |
+| `trace` | `--trace` | false | A trace hook the application implements ([Debugging](#debugging)) |
 
-These change behaviour, so they are set in `options` only, never per target: a
-model behaves the same in every language and in the simulator, queue overflows
-included.
+`signalQueue` and `maxMicrosteps` change behaviour, so they are set in
+`options` only, never per target: a model behaves the same in every language
+and in the simulator, queue overflows included. `debugInfo` and `trace` change
+only the generated API, so `targets.rust` may override them for this language.
 
 ## Generated API
 
@@ -121,6 +124,57 @@ impl<H: Handler> Dimmer<H> {
 - The machine derives `Debug` and `Clone` (when the handler does). Its
   fields and the private methods (`step_eButton`, `enter_r0`, ...) may
   change between uFSM versions.
+
+## Debugging
+
+Always generated: a state enum (normal and final states in document order,
+named after the states; a name that repeats is qualified with its parent
+states, and free text is made an identifier: `10%` becomes `s10_`) and the
+model's fingerprint, which identifies how events, signals, states and
+transitions are numbered (`ufsm info` prints it for a model file; see
+[Numbering and trace hooks](semantics.md#numbering-and-trace-hooks)). A host
+that decodes ids should check it.
+
+```rust
+pub enum State {
+    Off,
+    On,
+    s10_, // 10%
+    // ...
+}
+
+pub const FINGERPRINT: u32 = 0xc57a_c6ea;
+```
+
+With `debugInfo`, names as in the model and lookups by number on `Event`,
+`State` (and `Signal`, generated when the model has signals), and an is-active
+query (the names are strings in flash; nothing of this exists without the
+option):
+
+```rust
+impl State {
+    pub fn name(self) -> &'static str;          // "10%"
+    pub fn from_index(index: u16) -> Option<Self>;
+}
+impl<H> Dimmer<H> {
+    pub fn is_active(&self, state: State) -> bool;
+}
+```
+
+With `trace`, `TraceKind` (`Event`, `Signal`, `Transition`, `Enter`, `Exit`)
+and one more `Handler` method, called with ids only (the transition numbers are
+listed in a comment in the struct):
+
+```rust
+pub trait Handler {
+    // ... actions and guards ...
+    fn trace(&mut self, kind: TraceKind, id: u16);
+}
+```
+
+`trace` runs inside `reset()` and `process()`, so it must not block (the
+machine is borrowed, so it cannot call it). An action named `trace` clashes
+with it while `trace` is on.
 
 ## Example
 

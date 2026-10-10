@@ -25,6 +25,7 @@ import {
   type GuardTerm,
   type Id,
   type InternalTransition,
+  type ModelOptions,
   type Paper,
   type Region,
   type State,
@@ -169,7 +170,7 @@ export function setTitleField(doc: UfsmDocument, key: keyof TitleBlock, text: st
 }
 
 /** Set one option of the `options` section, or remove it with undefined (an empty section goes too). */
-export function setModelOption(doc: UfsmDocument, key: OptionKey, value: number | undefined): void {
+export function setModelOption<K extends OptionKey>(doc: UfsmDocument, key: K, value: ModelOptions[K] | undefined): void {
   if (value === undefined) {
     if (doc.options?.[key] === undefined) return;
     delete doc.options[key];

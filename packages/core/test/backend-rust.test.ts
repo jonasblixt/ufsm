@@ -25,7 +25,7 @@ import {
   type UfsmDocument,
   traceOptions,
 } from "../src/index";
-import { DIFF_QUEUE, assertMatchesInterpreter, expressionModel, joinAgreementModel, randomScript, replayResults, type BackendDiff, type ScriptStep } from "./harness";
+import { DIFF_QUEUE, assertMatchesInterpreter, hookDiffs, expressionModel, joinAgreementModel, randomScript, replayResults, type BackendDiff, type ScriptStep } from "./harness";
 import { removeTempDir } from "./c-harness";
 import { buildLib, CLIPPY_FLAGS, findRust, RUSTC_FLAGS, runRust, type RustUnit } from "./rust-harness";
 import { randomModel } from "./random-model";
@@ -51,14 +51,16 @@ const load = (path: string): UfsmDocument => loadModel(readFileSync(path, "utf8"
 const baseName = (f: string): string => f.replace(/^.*[\\/]/, "").replace(/\.ufsm$/, "");
 const MAX_STEPS = 300;
 
-async function compareAll(diffs: BackendDiff[]): Promise<void> {
-  const units: RustUnit[] = diffs.map((d) => ({
-    ir: ir(d.doc),
-    options: { maxMicrosteps: MAX_STEPS, signalQueue: d.signalQueue ?? DIFF_QUEUE },
+/** Differential runs; with `hooks`, generated with debugInfo and trace, comparing hook calls and is_active() too. */
+async function compareAll(diffs: BackendDiff[], hooks = false): Promise<void> {
+  const irs = diffs.map((d) => lowerToIr(flatten(d.doc), { trace: hooks }));
+  const units: RustUnit[] = diffs.map((d, k) => ({
+    ir: irs[k]!,
+    options: { maxMicrosteps: MAX_STEPS, signalQueue: d.signalQueue ?? DIFF_QUEUE, debugInfo: hooks },
     script: d.script,
     autoReset: true,
   }));
-  assertMatchesInterpreter(diffs, await runRust(tools, units), MAX_STEPS, "Rust");
+  assertMatchesInterpreter(diffs, await runRust(tools, units), MAX_STEPS, "Rust", hooks ? irs : undefined);
 }
 
 /** Every repo model as a module of one `#![no_std]` library crate; one of them through `include!`. */
@@ -73,6 +75,11 @@ function writeRepoCrate(dir: string): string[] {
     mods.push(out.fileName);
     if (mods.length === 1) lib.push("/// Included.", `pub mod ${name} {`, `    include!("${out.fileName}");`, "}");
     else lib.push("/// A machine.", `pub mod ${name};`);
+    // and with debugInfo and trace
+    const debug = generateRust(lowerToIr(flatten(doc), { trace: true }), { module: `${name}_debug`, debugInfo: true });
+    writeFileSync(join(dir, debug.fileName), debug.source);
+    mods.push(debug.fileName);
+    lib.push("/// A machine with debugInfo and trace.", `pub mod ${name}_debug;`);
   }
   writeFileSync(join(dir, "lib.rs"), `${lib.join("\n")}\n`);
   return mods;
@@ -135,6 +142,16 @@ describe("Rust backend matches the interpreter", { skip }, () => {
       );
     }
   });
+  it(`with debugInfo and trace: hooks, names and is_active() on every repo model, the keyword model and ${Math.ceil(count / 3)} random models`, async () => {
+    const keywords = keywordModel();
+    await compareAll(
+      [
+        ...hookDiffs(modelFiles.map((f) => ({ label: f.slice(repoRoot.length + 1), doc: load(f) })), Math.ceil(count / 3)),
+        ...[1, 2].map((seed) => ({ label: `keywords seed ${seed} (hooks)`, doc: keywords, script: randomScript(keywords, seed, 40) })),
+      ],
+      true,
+    );
+  });
   it("on random models with a small signal queue", async () => {
     await compareAll(
       Array.from({ length: 100 }, (_, i) => {
@@ -164,8 +181,11 @@ describe("Rust backend matches the interpreter", { skip }, () => {
       name: "tail",
       regions: 1,
       regionNames: ["root"],
-      states: [{ id: "a", name: "A", region: 0, slot: 1, final: false }, { id: "b", name: "B", region: 0, slot: 2, final: false }],
+      states: [{ id: "a", name: "A", ident: "A", label: "A", region: 0, slot: 1, final: false }, { id: "b", name: "B", ident: "B", label: "B", region: 0, slot: 2, final: false }],
       history: [],
+      transitions: [],
+      trace: false,
+      fingerprint: 0,
       events: [{ id: "ev1", name: "e1" }],
       signals: [],
       actions: [{ id: "act1", name: "moved" }],
@@ -357,8 +377,11 @@ function shapesModule(): IrModule {
     name: "shapes",
     regions: 1,
     regionNames: ["root"],
-    states: [{ id: "s1", name: "A", region: 0, slot: 1, final: false }],
+    states: [{ id: "s1", name: "A", ident: "A", label: "A", region: 0, slot: 1, final: false }],
     history: [],
+    transitions: [],
+    trace: false,
+    fingerprint: 0,
     events: SHAPES.map(([n]) => ({ id: `ev_${n}`, name: n })),
     signals: [],
     actions: [{ id: "act1", name: "hit" }],
@@ -390,8 +413,11 @@ function wideModule(): IrModule {
     name: "wide",
     regions: 1,
     regionNames: ["root"],
-    states: [{ id: "s1", name: "A", region: 0, slot: 1, final: false }],
+    states: [{ id: "s1", name: "A", ident: "A", label: "A", region: 0, slot: 1, final: false }],
     history: [],
+    transitions: [],
+    trace: false,
+    fingerprint: 0,
     events,
     signals: [],
     actions: [{ id: "act1", name: "hit" }, { id: "act2", name: "other" }],

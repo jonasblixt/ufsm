@@ -95,6 +95,10 @@ export function runPython(python: string[], units: PyUnit[]): StepResult[][] {
         actions: u.ir.actions.map((a) => [pythonName(a.name), a.name]),
         guards: u.ir.guards.map((g) => [pythonName(g.name), g.name]),
         states: u.ir.states.map((s) => [s.region, s.slot, s.id]),
+        // generated with debugInfo and trace: log the trace hook calls, read the state through is_active()
+        debug: u.ir.trace && u.options?.debugInfo === true,
+        labels: u.ir.states.map((s) => s.label),
+        fingerprint: u.ir.fingerprint,
       };
     });
     writeFileSync(join(dir, "units.json"), JSON.stringify(meta));
@@ -159,8 +163,23 @@ def guard(i, name):
     return guards.get(i, False)
 
 
-def make_handler(unit):
+def tracer(unit, cls):
+    def trace(kind, id):
+        if kind == 0:
+            calls.append("@event:" + cls.EVENT_NAMES[id])
+        elif kind == 1:
+            calls.append("@signal:" + cls.SIGNAL_NAMES[id])
+        else:
+            calls.append("@%s:%d" % (("t", "enter", "exit")[kind - 2], id))
+            if kind > 2 and cls.STATE_NAMES[id] != unit["labels"][id]:
+                calls.append("BAD_STATE_NAME")
+    return trace
+
+
+def make_handler(unit, cls):
     h = Handler()
+    if unit["debug"]:
+        h.trace = tracer(unit, cls)
     for py, name in unit["actions"]:
         setattr(h, py, (lambda n: lambda: action(n))(name))
     for i, (py, name) in enumerate(unit["guards"]):
@@ -185,7 +204,10 @@ for line in sys.stdin:
         unit = META[k]
         guards.clear()
         mod = __import__(unit["module"])
-        machine = getattr(mod, unit["cls"])(make_handler(unit))
+        cls = getattr(mod, unit["cls"])
+        if cls.FINGERPRINT != unit["fingerprint"]:
+            sys.exit("unit %d: FINGERPRINT %x, expected %x" % (k, cls.FINGERPRINT, unit["fingerprint"]))
+        machine = cls(make_handler(unit, cls))
         error = getattr(mod, unit["cls"] + "Error")
         out.append("#u %d" % k)
         continue
@@ -209,7 +231,10 @@ for line in sys.stdin:
         code = e.code
     except Raised:
         code = "raised"
-    active = [sid for (r, s, sid) in unit["states"] if machine._cfg[r] == s]
+    if unit["debug"]:
+        active = [sid for i, (r, s, sid) in enumerate(unit["states"]) if machine.is_active(i)]
+    else:
+        active = [sid for (r, s, sid) in unit["states"] if machine._cfg[r] == s]
     out.append("%s\\t%s\\t%s\\t%s" % (" ".join(calls), ",".join(active), code, step["nested"]))
     step.update({"raise": None, "reenter": None, "nested": "-"})
     if code != "-" and auto:

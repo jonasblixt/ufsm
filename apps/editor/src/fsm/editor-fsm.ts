@@ -70,6 +70,29 @@ export const EditorFsmEvent = {
 } as const;
 export type EditorFsmEvent = (typeof EditorFsmEvent)[keyof typeof EditorFsmEvent];
 
+/** States in document order. */
+export const EditorFsmState = {
+  Editor: 0,
+  Tools: 1,
+  Zoom: 2,
+  Jump: 3,
+  Add: 4,
+  Edit: 5,
+  Idle: 6,
+  Pressed: 7,
+  Lasso: 8,
+  PanPressed: 9,
+  Panning: 10,
+  Dragging: 11,
+  Sizing: 12,
+  Linking: 13,
+  Select: 14,
+  Armed: 15,
+  Place: 16,
+  Connect: 17,
+} as const;
+export type EditorFsmState = (typeof EditorFsmState)[keyof typeof EditorFsmState];
+
 /** Actions and guards the machine calls. Guards may be called more than once per event and in any order. */
 export interface EditorFsmHandler {
   openFile(): void;
@@ -182,6 +205,8 @@ export class EditorFsm {
   //   3 Editor.Tool: 1: Select, 2: Armed
   //   4 Armed.r4: 1: Place, 2: Connect
   // Signals: 0 sPlace, 1 sConnect, 2 sSelect, 3 sDone
+  /** Identifies the numbering of events, signals, states and transitions (`ufsm info` prints it for a model file). */
+  static readonly FINGERPRINT = 0xf9f0824a;
   private readonly h: EditorFsmHandler;
   private started = false;
   /** A reset()/process() call is running, or one did not finish. */

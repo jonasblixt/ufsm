@@ -19,12 +19,18 @@
  * runtime loop (reset/process/settle) is the one described in ir/ir.ts;
  * errors are returned as `Err`, and every function that can fail passes
  * them up with `?`. Only what the model uses is emitted, as in the C backend.
+ *
+ * Always: `State` (one variant per state, document order) and `FINGERPRINT`.
+ * With `debugInfo`: `name()` and `from_index()` on `Event`, `Signal` and
+ * `State`, and `is_active()` on the machine. With `trace` (decided by the
+ * IR): `TraceKind` and a `trace(kind, id)` method on `Handler`.
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
 import { OPTION_DEFAULTS, targetSection } from "../v1/options";
 import { UFSM_VERSION } from "../version";
 import type { Expr, IrFunction, IrModule, Stmt, SwitchOn } from "../ir/ir";
+import { hex32 } from "../ir/ids";
 import { CodegenError, OUTPUT_NOTICE, cIdentifier } from "./c";
 import { pythonClassName } from "./python";
 
@@ -37,6 +43,10 @@ export interface RustOptions {
   signalQueue?: number;
   /** Microsteps per reset()/process() call before a `Livelock` error; 0 disables the check. Default 10000. */
   maxMicrosteps?: number;
+  /** Name tables for events, signals and states, and `is_active()`. Default false. */
+  debugInfo?: boolean;
+  /** Must equal the IR's `trace` when given (the trace calls are emitted by the lowering). */
+  trace?: boolean;
 }
 
 export interface RustFiles {
@@ -57,7 +67,9 @@ export const RUST_KEYWORDS = new Set(
 const NOT_RAW = new Set(["self", "Self", "super", "crate", "_"]);
 
 /** Names the module itself defines or uses, which the machine struct cannot take. */
-const RUST_TAKEN = new Set(["Error", "Event", "Handler", "H", "Result", "Ok", "Err", "Option", "Some", "None", "core", "Self"]);
+const RUST_TAKEN = new Set([
+  "Error", "Event", "Handler", "H", "Result", "Ok", "Err", "Option", "Some", "None", "core", "Self", "State", "Signal", "TraceKind",
+]);
 
 /**
  * Name of a declaration in Rust: a keyword becomes a raw identifier (`type` -> `r#type`), except the few that cannot
@@ -159,6 +171,10 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   if (!/^[A-Za-z0-9_.-]+$/.test(module)) throw new CodegenError(`Rust module name '${module}' is not a plain file name`);
   const queueCap = options.signalQueue ?? OPTION_DEFAULTS.signalQueue;
   const maxSteps = options.maxMicrosteps ?? OPTION_DEFAULTS.maxMicrosteps;
+  if (options.trace !== undefined && options.trace !== ir.trace) throw new CodegenError("options.trace differs from the IR's: lower the model with { trace }");
+  const trace = ir.trace;
+  const debugInfo = options.debugInfo ?? false;
+  const publicSignals = (trace || debugInfo) && ir.signals.length > 0;
 
   // ------------------------------------------------------------ analysis
 
@@ -221,11 +237,14 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
 
   // Events are enum variants, actions and guards trait methods: each list must stay unique after renaming.
   const problems: string[] = [];
-  for (const [kind, list] of [["event", ir.events], ["handler method", [...ir.actions, ...ir.guards]]] as const) {
+  const methods = [...ir.actions, ...ir.guards, ...(trace ? [{ name: "trace" }] : [])];
+  const variants: [string, { name: string }[]][] = [["event", ir.events], ["handler method", methods], ["state", ir.states.map((st) => ({ name: st.ident }))]];
+  if (publicSignals) variants.push(["signal", ir.signals]);
+  for (const [kind, list] of variants) {
     const seen = new Map<string, string>();
     for (const d of list) {
       const n = rustName(d.name).replace(/^r#/, "");
-      if (seen.has(n)) problems.push(`${kind} '${d.name}' becomes '${rustName(d.name)}', like '${seen.get(n)}'`);
+      if (seen.has(n)) problems.push(`${kind} '${d.name}' becomes '${rustName(d.name)}', like '${seen.get(n)}'${kind === "handler method" && d.name === "trace" ? " (the trace hook)" : ""}`);
       seen.set(n, d.name);
     }
   }
@@ -456,6 +475,12 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
         case "microstep":
           if (countSteps) line(d, "self.microstep()?;");
           break;
+        case "trace": {
+          const kind = s.hook === "transition" ? "Transition" : s.hook === "enter" ? "Enter" : "Exit";
+          const what = s.hook === "transition" ? ir.transitions[s.index]!.label : ir.states[s.index]!.label;
+          line(d, `Handler::trace(&mut self.handler, TraceKind::${kind}, ${s.index}); // ${comment(what)}`);
+          break;
+        }
         case "terminate":
           line(d, "self.terminated = true;");
           break;
@@ -571,10 +596,90 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     line(0, "}");
   } else line(0, "pub enum Event {}");
   line(0, "");
+  /** `name()` and `from_index()` for an enum (debugInfo): the name as in the model, and the variant numbered `index`. */
+  const lookup = (en: string, what: string, items: { variant: string; name: string }[]): void => {
+    // one match arm per item: long for big models
+    line(0, "#[allow(dead_code, clippy::too_many_lines)]");
+    line(0, `impl ${en} {`);
+    line(1, `/// The ${what}'s name as in the model.`);
+    line(1, "#[must_use]");
+    line(1, "pub fn name(self) -> &'static str {");
+    if (!items.length) line(2, "match self {}");
+    else {
+      line(2, "match self {");
+      for (const it of items) arm(3, [`${en}::${it.variant}`], JSON.stringify(it.name));
+      line(2, "}");
+    }
+    line(1, "}");
+    line(0, "");
+    line(1, `/// The ${what} numbered \`index\` (its place in the model, as the trace hook reports it).`);
+    line(1, "#[must_use]");
+    line(1, "pub fn from_index(index: u16) -> Option<Self> {");
+    if (!items.length) line(2, "let _ = index;");
+    if (!items.length) line(2, "None");
+    else {
+      line(2, "match index {");
+      items.forEach((it, i) => arm(3, [String(i)], `Some(${en}::${it.variant})`));
+      line(3, "_ => None,");
+      line(2, "}");
+    }
+    line(1, "}");
+    line(0, "}");
+    line(0, "");
+  };
+  if (debugInfo) lookup("Event", "event", ir.events.map((e) => ({ variant: rustName(e.name), name: e.name })));
+  if (publicSignals) {
+    line(0, "/// The signals the machine emits to itself, named as in the model.");
+    line(0, "#[allow(non_camel_case_types, dead_code)]");
+    line(0, "#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]");
+    line(0, "pub enum Signal {");
+    for (const x of ir.signals) {
+      line(1, `/// Signal \`${x.name}\`.`);
+      line(1, `${rustName(x.name)},`);
+    }
+    line(0, "}");
+    line(0, "");
+    if (debugInfo) lookup("Signal", "signal", ir.signals.map((x) => ({ variant: rustName(x.name), name: x.name })));
+  }
+  line(0, "/// The states, in document order.");
+  line(0, "#[allow(non_camel_case_types, dead_code)]");
+  line(0, "#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]");
+  if (ir.states.length) {
+    line(0, "pub enum State {");
+    for (const st of ir.states) {
+      line(1, `/// State \`${comment(st.label).replace(/`/g, "'")}\`.`);
+      line(1, `${rustName(st.ident)},`);
+    }
+    line(0, "}");
+  } else line(0, "pub enum State {}");
+  line(0, "");
+  if (debugInfo) lookup("State", "state", ir.states.map((st) => ({ variant: rustName(st.ident), name: st.label })));
+  line(0, "/// Identifies the numbering of events, signals, states and transitions (`ufsm info` prints it for a model file).");
+  line(0, "#[allow(dead_code)]");
+  line(0, `pub const FINGERPRINT: u32 = ${hex32(ir.fingerprint).replace(/^(0x....)/, "$1_")};`);
+  line(0, "");
+  if (trace) {
+    line(0, "/// What `Handler::trace()` reports; the id is a number of the kind named here.");
+    line(0, "#[allow(dead_code)]");
+    line(0, "#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]");
+    line(0, "pub enum TraceKind {");
+    line(1, "/// `process()` accepted an event; id: the `Event`'s number.");
+    line(1, "Event,");
+    line(1, `/// A signal was taken from the queue; id: the ${publicSignals ? "`Signal`'s " : "signal "}number.`);
+    line(1, "Signal,");
+    line(1, "/// A transition is taken (before its actions); id: the transition number (see the machine struct).");
+    line(1, "Transition,");
+    line(1, "/// A state is entered (before its entry actions); id: the `State`'s number.");
+    line(1, "Enter,");
+    line(1, "/// A state is exited (before its exit actions); id: the `State`'s number.");
+    line(1, "Exit,");
+    line(0, "}");
+    line(0, "");
+  }
   line(0, "/// Actions and guards the machine calls. Guards return a `bool` and may be called more than once per event");
   line(0, "/// and in any order.");
   line(0, "#[allow(non_snake_case)]");
-  if (ir.actions.length || ir.guards.length) {
+  if (ir.actions.length || ir.guards.length || trace) {
     line(0, "pub trait Handler {");
     for (const a of ir.actions) {
       line(1, `/// Action \`${a.name}\`.`);
@@ -583,6 +688,10 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     for (const g of ir.guards) {
       line(1, `/// Guard \`${g.name}\`.`);
       line(1, `fn ${rustName(g.name)}(&mut self) -> bool;`);
+    }
+    if (trace) {
+      line(1, "/// Called inside `reset()` and `process()` with ids only; must not block or call the machine.");
+      line(1, "fn trace(&mut self, kind: TraceKind, id: u16);");
     }
     line(0, "}");
   } else line(0, "pub trait Handler {}");
@@ -600,6 +709,10 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     line(1, `//   ${r} ${comment(n)}: ${slots}${hd}`);
   });
   if (hasQueue) line(1, `// Signals: ${ir.signals.map((s, i) => `${i} ${s.name}`).join(", ")}`);
+  if (trace && ir.transitions.length) {
+    line(1, "// Transition numbers (trace):");
+    ir.transitions.forEach((t, i) => line(1, `//   ${i} ${comment(t.label)}`));
+  }
   const fields: [string, string, string][] = [["handler", "H", "handler"]];
   if (hasEvents) fields.push(["started", "bool", "false"]);
   // a call is running or did not finish (an error, or a caught panic); only process() reads it
@@ -647,6 +760,17 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   line(1, "pub fn into_handler(self) -> H {");
   line(2, "self.handler");
   line(1, "}");
+  if (debugInfo && ir.states.length) {
+    line(0, "");
+    line(1, "/// Whether `state` is active.");
+    line(1, "#[must_use]");
+    line(1, "#[allow(clippy::too_many_lines)]"); // one arm per state
+    line(1, "pub fn is_active(&self, state: State) -> bool {");
+    line(2, "match state {");
+    for (const st of ir.states) arm(3, [`State::${rustName(st.ident)}`], `${cfg(st.region)} == ${st.slot}`);
+    line(2, "}");
+    line(1, "}");
+  }
   line(0, "}");
   line(0, "");
 
@@ -702,8 +826,10 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     }
     line(2, "self.busy = true;");
     if (countSteps) line(2, "self.steps = 0;");
-    if (!eventSteps.length) line(2, "let _ = event;");
-    else {
+    if (trace) line(2, "Handler::trace(&mut self.handler, TraceKind::Event, event as u16);");
+    if (!eventSteps.length) {
+      if (!trace) line(2, "let _ = event;");
+    } else {
       // one arm per event: the step function's result (whether a microstep ran) is not needed here
       line(2, "match event {");
       for (const ev of eventSteps) arm(3, [variant(ev.name)], call(ir.onEvent[ev.id]!));
@@ -738,7 +864,18 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
         line(4, "continue;");
         line(3, "}");
       }
-      if (hasQueue) {
+      if (hasQueue && trace) {
+        line(3, "let Some(signal) = self.pop() else {");
+        line(4, "return Ok(());");
+        line(3, "};");
+        line(3, `Handler::trace(&mut self.handler, TraceKind::Signal, ${sigT === "u8" ? "u16::from(signal)" : "signal"});`);
+        if (signalSteps.length) {
+          line(3, "match signal {");
+          for (const sg of signalSteps) arm(4, [String(signalNo.get(sg.id))], call(ir.onSignal[sg.id]!));
+          line(4, "_ => false,");
+          line(3, "};");
+        }
+      } else if (hasQueue) {
         if (signalSteps.length) {
           line(3, "match self.pop() {");
           for (const sg of signalSteps) arm(4, [`Some(${signalNo.get(sg.id)})`], call(ir.onSignal[sg.id]!));

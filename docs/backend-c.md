@@ -32,7 +32,7 @@ model's `targets.c` section and can be overridden on the command line:
 "targets": { "c": { "prefix": "dimmer_" } }
 ```
 
-Unknown keys, and the options below, are reported as warnings and ignored there.
+Unknown keys, and the behaviour options below, are reported as warnings and ignored there.
 
 The model's [`options`](format-v1.md#options) section sets what every target
 shares; the flags override it for one run:
@@ -41,10 +41,13 @@ shares; the flags override it for one run:
 |---------------|------|---------|---------|
 | `signalQueue` | `--signal-queue` | 16 | Capacity of the signal queue (only generated if the model emits signals) |
 | `maxMicrosteps` | `--max-microsteps` | 10000 | Microsteps per `init`/`reset`/`process` call before `ERR_LIVELOCK`; 0 removes the check |
+| `debugInfo` | `--debug-info` | false | Name lookup and an is-active query ([Debugging](#debugging)) |
+| `trace` | `--trace` | false | A trace hook the application implements ([Debugging](#debugging)) |
 
-These change behaviour, so they are set in `options` only, never per target: a
-model behaves the same in every language and in the simulator, queue overflows
-included.
+`signalQueue` and `maxMicrosteps` change behaviour, so they are set in
+`options` only, never per target: a model behaves the same in every language
+and in the simulator, queue overflows included. `debugInfo` and `trace` change
+only the generated API, so `targets.c` may override them for this language.
 
 ## Generated API
 
@@ -112,6 +115,60 @@ compile, when a generated name clashes: an action called `init` with prefix
 `dimmer_` would become `dimmer_init`; with an empty prefix, names can also
 clash with C keywords or the generated file's internal helpers. Rename the
 declaration or choose another prefix.
+
+## Debugging
+
+Always generated: a state enum (normal and final states in document order,
+named after the states; a name that repeats is qualified with its parent
+states, and free text is made an identifier: `10%` becomes `s10_`) and the
+model's fingerprint, which identifies how events, signals, states and
+transitions are numbered (`ufsm info` prints it for a model file; see
+[Numbering and trace hooks](semantics.md#numbering-and-trace-hooks)). A host
+that decodes ids should check it.
+
+```c
+enum dimmer_state {
+    DIMMER_STATE_Off = 0,
+    DIMMER_STATE_On = 1,
+    DIMMER_STATE_s10_ = 2, /* 10% */
+    /* ... */
+};
+
+#define DIMMER_FINGERPRINT 0xc57ac6eau
+```
+
+With `debugInfo`, names as in the model and an is-active query (the names are
+strings in flash; nothing of this exists without the option):
+
+```c
+const char *dimmer_event_name(uint16_t event);   /* NULL for a number out of range */
+const char *dimmer_signal_name(uint16_t signal); /* only when the model has signals */
+const char *dimmer_state_name(uint16_t state);   /* "10%" */
+bool dimmer_is_active(const struct dimmer_machine *m, uint16_t state);
+```
+
+With `trace`, the machine calls one more function the application implements,
+with ids only (a signal enum `enum dimmer_signal` is public then too):
+
+```c
+enum dimmer_trace_kind {
+    DIMMER_TRACE_EVENT = 0,      /* id: enum dimmer_event; process() accepted it */
+    DIMMER_TRACE_SIGNAL = 1,     /* id: signal number; taken from the queue */
+    DIMMER_TRACE_TRANSITION = 2, /* id: transition number; before its actions */
+    DIMMER_TRACE_ENTER = 3,      /* id: enum dimmer_state; before its entry actions */
+    DIMMER_TRACE_EXIT = 4,       /* id: enum dimmer_state; before its exit actions */
+};
+
+void dimmer_trace(void *user, enum dimmer_trace_kind kind, uint16_t id);
+```
+
+The header lists the transition numbers in a comment. `dimmer_trace` runs
+inside `init`, `reset` and `process`, so it must not block or call the
+machine; it would typically put `kind` and `id` with a timestamp in a ring
+buffer that a host decodes with the model file. The two options are
+independent: ids alone are enough for a host, and with `debugInfo` the
+firmware can also print names itself. An action named `trace` clashes with the
+hook while `trace` is on.
 
 ## Example
 

@@ -21,7 +21,7 @@ import {
   type UfsmDocument,
   traceOptions,
 } from "../src/index";
-import { DIFF_QUEUE, assertMatchesInterpreter, expressionModel, joinAgreementModel, randomScript, replayResults, type BackendDiff } from "./harness";
+import { DIFF_QUEUE, assertMatchesInterpreter, expressionModel, hookDiffs, joinAgreementModel, randomScript, replayResults, type BackendDiff } from "./harness";
 import { findCompiler, removeTempDir, runC, strictFlags, type CUnit } from "./c-harness";
 import { randomModel } from "./random-model";
 
@@ -40,14 +40,16 @@ const load = (path: string): UfsmDocument => loadModel(readFileSync(path, "utf8"
 type Diff = BackendDiff;
 const MAX_STEPS = 300;
 
-async function compareAll(diffs: Diff[]): Promise<void> {
-  const units: CUnit[] = diffs.map((d) => ({
-    ir: ir(d.doc),
-    options: { maxMicrosteps: MAX_STEPS, signalQueue: d.signalQueue ?? DIFF_QUEUE },
+/** Differential runs; with `hooks`, generated with debugInfo and trace, comparing hook calls and is_active() too. */
+async function compareAll(diffs: Diff[], hooks = false): Promise<void> {
+  const irs = diffs.map((d) => lowerToIr(flatten(d.doc), { trace: hooks }));
+  const units: CUnit[] = diffs.map((d, k) => ({
+    ir: irs[k]!,
+    options: { maxMicrosteps: MAX_STEPS, signalQueue: d.signalQueue ?? DIFF_QUEUE, debugInfo: hooks },
     script: d.script,
     autoReset: true,
   }));
-  assertMatchesInterpreter(diffs, await runC(cc!, units), MAX_STEPS, "C");
+  assertMatchesInterpreter(diffs, await runC(cc!, units), MAX_STEPS, "C", hooks ? irs : undefined);
 }
 
 describe("C backend: conformance traces", { skip }, () => {
@@ -96,6 +98,9 @@ describe("C backend matches the interpreter", { skip }, () => {
       );
     }
   });
+  it(`with debugInfo and trace: hooks, names and is_active() on every repo model and ${Math.ceil(count / 3)} random models`, async () => {
+    await compareAll(hookDiffs(modelFiles.map((f) => ({ label: f.slice(repoRoot.length + 1), doc: load(f) })), Math.ceil(count / 3)), true);
+  });
   it("on random models with a small signal queue", async () => {
     await compareAll(
       Array.from({ length: 100 }, (_, i) => {
@@ -107,16 +112,19 @@ describe("C backend matches the interpreter", { skip }, () => {
 });
 
 describe("C backend: generated files", () => {
-  it("compile without warnings as freestanding C99", { skip }, () => {
+  it("compile without warnings as freestanding C99, also with debugInfo and trace", { skip }, () => {
     const dir = mkdtempSync(join(tmpdir(), "ufsm-c-"));
     try {
-      const sources = modelFiles.map((f) => {
+      const sources = modelFiles.flatMap((f) => {
         const doc = load(f);
         const name = f.replace(/^.*[\\/]/, "").replace(/\.ufsm$/, "");
-        const out = generateC(ir(doc), { file: name, prefix: `${name}_` });
-        writeFileSync(join(dir, out.headerName), out.header);
-        writeFileSync(join(dir, out.sourceName), out.source);
-        return out.sourceName;
+        return [false, true].map((debug) => {
+          const file = debug ? `${name}_debug` : name;
+          const out = generateC(lowerToIr(flatten(doc), { trace: debug }), { file, prefix: `${file}_`, debugInfo: debug });
+          writeFileSync(join(dir, out.headerName), out.header);
+          writeFileSync(join(dir, out.sourceName), out.source);
+          return out.sourceName;
+        });
       });
       for (const s of sources) execFileSync(cc!, [...strictFlags(cc!), "-ffreestanding", "-c", s, "-o", s.replace(/\.c$/, ".o")], { cwd: dir, stdio: "pipe" });
     } finally {
@@ -124,9 +132,9 @@ describe("C backend: generated files", () => {
     }
   });
 
-  it("include only stdint.h and stdbool.h", () => {
+  it("include only stdint.h and stdbool.h, also with debugInfo and trace", () => {
     for (const f of modelFiles) {
-      const out = generateC(ir(load(f)));
+      const out = generateC(lowerToIr(flatten(load(f)), { trace: true }), { debugInfo: true });
       const includes = `${out.header}${out.source}`.match(/#include\s+\S+/g) ?? [];
       for (const inc of includes) assert.match(inc, /<stdint\.h>|<stdbool\.h>|"[^"]+\.h"/, `${f}: ${inc}`);
     }

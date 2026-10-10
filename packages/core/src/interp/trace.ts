@@ -13,7 +13,7 @@
  */
 import { UfsmFormatError } from "../errors";
 import type { Id, ModelOptions, UfsmDocument } from "../v1/model";
-import { BEHAVIOUR_OPTIONS, defined, modelOptions, type OptionKey } from "../v1/options";
+import { BEHAVIOUR_OPTIONS, defined, isBehaviourOption, behaviourOptions, type BehaviourOption } from "../v1/options";
 import { Interpreter, InterpreterError, type InterpreterHost, type InterpreterOptions } from "./interpreter";
 
 /** What a trace drives: the interpreter, the flat runner, or a wrapper around generated code. */
@@ -64,7 +64,7 @@ export class TraceRaise extends Error {
 }
 
 /** A trace's `options`: they override the model's `options` (same keys) for this trace. */
-export type TraceOptions = ModelOptions;
+export type TraceOptions = Pick<ModelOptions, BehaviourOption>;
 
 export interface Trace {
   /** Model path relative to the trace file. */
@@ -98,7 +98,7 @@ export function parseTrace(text: string): Trace {
   if (typeof data["doc"] === "string") trace.doc = data["doc"];
   if (data["options"] !== undefined) {
     const o = data["options"];
-    const valid = isObj(o) && Object.entries(o).every(([k, v]) => BEHAVIOUR_OPTIONS.includes(k as OptionKey) && Number.isInteger(v) && (v as number) >= 0);
+    const valid = isObj(o) && Object.entries(o).every(([k, v]) => isBehaviourOption(k) && Number.isInteger(v) && (v as number) >= 0);
     if (!valid) throw new UfsmFormatError("options", "expected { signalQueue?: integer, maxMicrosteps?: integer }");
     const options: TraceOptions = {};
     for (const k of BEHAVIOUR_OPTIONS) if (o[k] !== undefined) options[k] = o[k] as number;
@@ -175,8 +175,8 @@ export function resolveStateRef(doc: UfsmDocument, ref: string): Id | string {
 }
 
 /** The options a trace runs with: the model's `options` (defaults filled in), overridden by the trace's. */
-export function traceOptions(doc: UfsmDocument, trace: Trace): Required<ModelOptions> {
-  return { ...modelOptions(doc), ...trace.options };
+export function traceOptions(doc: UfsmDocument, trace: Trace): ReturnType<typeof behaviourOptions> {
+  return { ...behaviourOptions(doc), ...trace.options };
 }
 
 /** Replay a trace against the reference interpreter (or another engine). Returns the failures (empty: passed). */
@@ -206,7 +206,7 @@ export function runTrace(doc: UfsmDocument, trace: Trace, options: InterpreterOp
       return guards.get(name) ?? false;
     },
   };
-  const m = make(doc, host, { ...modelOptions(doc), ...defined(options), ...trace.options });
+  const m = make(doc, host, { ...behaviourOptions(doc), ...defined(options), ...trace.options });
   const names = new Map<Id, string>();
   const walk = (states: UfsmDocument["machine"]["root"]["states"]): void => {
     for (const v of states) {

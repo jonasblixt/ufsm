@@ -23,14 +23,28 @@
  *   reset():      busy = true; clear cfg, hist, deep, queue, terminated;
  *                 steps = 0; run `start`; settle(); busy = false
  *   process(e):   if busy: fail "busy"; if terminated: return;
- *                 busy = true; steps = 0;
+ *                 busy = true; steps = 0; [trace(event, e)]
  *                 call events[e] (if any); settle(); busy = false
  *   settle():     loop {
  *                   if terminated: clear queue; return
  *                   if eventless && call eventless(): continue
  *                   if queue empty: return
- *                   s = pop(queue); call signals[s] (if any)
+ *                   s = pop(queue); [trace(signal, s)]
+ *                   call signals[s] (if any)
  *                 }
+ *
+ * The bracketed calls exist only when `trace` is set (the `trace` option);
+ * the lowering then also emits `trace` statements for transitions taken
+ * and states entered and exited. A trace hook is called just before the
+ * actions it introduces: an exit before the state's exit actions (its
+ * children are exited first), a transition after every exit of the
+ * microstep and before its own actions, an enter after the state became
+ * active and before its entry actions. Reset and terminate exit nothing.
+ *
+ * States are numbered by their index in `states` (document order) and
+ * transitions by their index in `transitions`. State s is active exactly
+ * when cfg[s.region] == s.slot: leaving a region clears the regions
+ * inside it.
  *
  * Step functions return whether a microstep ran. `microstep` and `emit`
  * may fail (livelock, full queue): the backend aborts the whole
@@ -41,6 +55,10 @@
  * the same way. Nothing catches the application's exceptions.
  */
 import type { Id } from "../v1/model";
+
+/** What the trace hook reports, in the order of the generated trace-kind enums (event = 0 ... exit = 4). */
+export const TRACE_KINDS = ["event", "signal", "transition", "enter", "exit"] as const;
+export type TraceKind = (typeof TRACE_KINDS)[number];
 
 export type Expr =
   | { op: "true" }
@@ -77,6 +95,8 @@ export type Stmt =
   | { op: "clearHistory"; region: number }
   /** deep[region] = copy of cfg[snapshotFrom .. snapshotTo) */
   | { op: "saveDeep"; region: number }
+  /** call the application's trace hook: a transition (index in `transitions`) or a state (index in `states`) */
+  | { op: "trace"; hook: "transition" | "enter" | "exit"; index: number }
   /** count a microstep; fails when the livelock limit is exceeded */
   | { op: "microstep" }
   /** set terminated: the runtime loop clears cfg and the queue */
@@ -101,6 +121,10 @@ export interface IrFunction {
 export interface IrState {
   id: Id;
   name: string;
+  /** Unique identifier for the state enum: the name made an identifier, qualified with its parent states' names when needed. */
+  ident: string;
+  /** Unique display name: the name, qualified with its parent states' names ("Door/Open") when needed. */
+  label: string;
   region: number;
   slot: number;
   final: boolean;
@@ -120,7 +144,10 @@ export interface IrModule {
   regions: number;
   /** Region names for comments and debugging: "root" or "<owner state>.<region>". */
   regionNames: string[];
+  /** Normal and final states in document order; the index is the state's number. */
   states: IrState[];
+  /** Transitions in document order; the index is the number the trace hook reports. */
+  transitions: IrTransition[];
   history: IrHistory[];
   events: { id: Id; name: string }[];
   signals: { id: Id; name: string }[];
@@ -135,4 +162,15 @@ export interface IrModule {
   eventless: string | undefined;
   /** In definition order: helpers first, then step functions. */
   functions: IrFunction[];
+  /** Whether the lowering emitted trace statements, and the runtime loop reports events and signals (`trace` option). */
+  trace: boolean;
+  /** 32-bit fingerprint of the numbering (ir/ids.ts): equal for models whose events, signals, states and transitions decode alike. */
+  fingerprint: number;
+}
+
+export interface IrTransition {
+  /** The model transition carrying the trigger (a join's outgoing one). */
+  id: Id;
+  /** For comments: "t3: Off -> On on eButton". */
+  label: string;
 }

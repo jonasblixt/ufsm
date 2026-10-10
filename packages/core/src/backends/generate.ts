@@ -43,32 +43,42 @@ export interface GenerateOverrides {
   signalQueue?: number;
   /** Overrides `options.maxMicrosteps` for this run. */
   maxMicrosteps?: number;
-}
-
-/** Check, flatten and lower a model: the IR every backend prints. Throws CodegenError when the model has errors. */
-export function modelIr(doc: UfsmDocument): IrModule {
-  const errors = checkV1(doc).filter((d) => d.severity === "error");
-  if (errors.length) throw new CodegenError(`the model has ${errors.length} error${errors.length > 1 ? "s" : ""}: ${errors.map((e) => e.message).join("; ")}`);
-  return lowerToIr(flatten(doc));
+  /** Overrides `options.debugInfo` and `targets.<name>.debugInfo` for this run. */
+  debugInfo?: boolean;
+  /** Overrides `options.trace` and `targets.<name>.trace` for this run. */
+  trace?: boolean;
 }
 
 /**
- * Generate the files of one target. `ir` may be passed when it is already at hand (it must be `modelIr(doc)`).
+ * Check, flatten and lower a model: the IR every backend prints. `trace` emits the trace hook calls (the target's
+ * resolved `trace` option). Throws CodegenError when the model has errors.
+ */
+export function modelIr(doc: UfsmDocument, trace = false): IrModule {
+  const errors = checkV1(doc).filter((d) => d.severity === "error");
+  if (errors.length) throw new CodegenError(`the model has ${errors.length} error${errors.length > 1 ? "s" : ""}: ${errors.map((e) => e.message).join("; ")}`);
+  return lowerToIr(flatten(doc), { trace });
+}
+
+/**
+ * Generate the files of one target. `ir` may be passed when it is already at hand (it must be `modelIr(doc)`; it is
+ * lowered again when the target's `trace` option differs from the IR's).
  * Throws CodegenError (model errors, name clashes in the generated code).
  */
-export function generateFiles(doc: UfsmDocument, target: CodeTarget, overrides: GenerateOverrides = {}, ir: IrModule = modelIr(doc)): GeneratedCode {
+export function generateFiles(doc: UfsmDocument, target: CodeTarget, overrides: GenerateOverrides = {}, ir?: IrModule): GeneratedCode {
   const { prefix, className, ...common } = defined(overrides);
   const model = defined(doc.options ?? {});
+  const lowered = (trace: boolean | undefined): IrModule => (ir && ir.trace === (trace ?? false) ? ir : modelIr(doc, trace ?? false));
   if (target === "c") {
     const { options, problems } = cOptionsFromTargets(doc);
     const o: COptions = { ...model, ...options, ...common };
     if (prefix !== undefined) o.prefix = prefix;
-    const out = generateC(ir, o);
+    const out = generateC(lowered(o.trace), o);
     return { files: [{ name: out.headerName, text: out.header }, { name: out.sourceName, text: out.source }], problems };
   }
   const { options, problems } = target === "ts" ? tsOptionsFromTargets(doc) : target === "rust" ? rustOptionsFromTargets(doc) : pythonOptionsFromTargets(doc);
   const o: TsOptions & PythonOptions & RustOptions = { ...model, ...options, ...common };
   if (className !== undefined) o.className = className;
-  const out = target === "ts" ? generateTypeScript(ir, o) : target === "rust" ? generateRust(ir, o) : generatePython(ir, o);
+  const tir = lowered(o.trace);
+  const out = target === "ts" ? generateTypeScript(tir, o) : target === "rust" ? generateRust(tir, o) : generatePython(tir, o);
   return { files: [{ name: out.fileName, text: out.source }], problems };
 }

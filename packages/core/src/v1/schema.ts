@@ -141,11 +141,19 @@ const defs = {
       maxMicrosteps: opt(
         Type.Integer({ minimum: 0, description: "Microsteps per reset/process call before a livelock error; 0: no check in generated code. Default 10000." }),
       ),
+      debugInfo: opt(
+        Type.Boolean({ description: "API option: name lookup for events, signals and states, and an is-active query in the generated code. Default false." }),
+      ),
+      trace: opt(
+        Type.Boolean({
+          description: "API option: the generated code calls a trace hook the application implements (event, signal, transition, enter, exit; ids only). Default false.",
+        }),
+      ),
     },
     {
       ...closed,
       description:
-        "Shared by every code generator, the interpreter and the simulator. Behaviour options (all of today's) are set here only, so a model behaves the same in every language.",
+        "Shared by every code generator, the interpreter and the simulator. Behaviour options (signalQueue, maxMicrosteps) are set here only, so a model behaves the same in every language; API options (debugInfo, trace) may be overridden in targets.<name>.",
     },
   ),
   document: Type.Object(

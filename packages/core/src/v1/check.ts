@@ -8,7 +8,7 @@
  */
 import { indexV1, regionChain, vertexName, type DocIndex } from "./doc-index";
 import { sheetFit, sheetFitMessage } from "./sheet";
-import { BEHAVIOUR_OPTIONS, type OptionKey } from "./options";
+import { isApiOption, isBehaviourOption } from "./options";
 import { IDENTIFIER, type Action, type DeclKind, type GuardTerm, type Id, type Transition, type UfsmDocument } from "./model";
 
 export type Severity = "error" | "warning";
@@ -239,8 +239,10 @@ export function checkV1(doc: UfsmDocument, prebuilt?: DocIndex): Diagnostic[] {
   if (emits && doc.options?.signalQueue === 0) err("signal-queue", "the model emits signals, so options.signalQueue must be at least 1");
   for (const [target, set] of Object.entries(doc.targets ?? {})) {
     for (const k of Object.keys(set)) {
-      if (BEHAVIOUR_OPTIONS.includes(k as OptionKey)) {
+      if (isBehaviourOption(k)) {
         warn("target-option", `targets.${target}.${k} is ignored: it changes behaviour, so it is set in options for every target`);
+      } else if (isApiOption(k) && typeof set[k] !== "boolean") {
+        warn("target-option", `targets.${target}.${k} is ignored: expected true or false`);
       }
     }
   }

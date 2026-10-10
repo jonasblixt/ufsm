@@ -508,3 +508,28 @@ Measured over the 21 valid legacy models (864 KB):
   semantics.md, the four backend docs. Browser check updated (Options section in the Project tab) but not run.
 - 2026-10-10: `test_model1.ufsm` added to `fixedByHand` in v1.test.ts (tidied up in the editor in 25c441d); the converter
   sync test now compares 18 files (floor lowered from 19).
+- 2026-10-11: State ids, `debugInfo` and `trace` (decisions log 2026-10-10, API approved by Jonas with one hook instead of
+  five, CLI flags and the fingerprint in `ufsm info`). IR: `IrState.ident`/`label` (`ir/ids.ts`: names qualified with
+  parent states only as far as needed, else the id appended), `IrModule.transitions` (numbered: `machine.transitions`
+  order, then internal ones in state post-order; initial transitions not numbered), `fingerprint` (FNV-1a 32 over a JSON
+  text of the numbering), `trace`; `lowerToIr(flat, { trace })` emits `{op: "trace"}` statements (enter after `set`, exit
+  after the children's exits and before the exit actions, transition after the microstep's exits and before its own
+  actions), the runtime loop reports event (after the terminated check) and signal (when popped). The interpreter's
+  existing `onTrace` already reported exactly these points, so it is the reference unchanged. Options: `debugInfo` and
+  `trace` in `API_OPTIONS` (`isApiOption`, `behaviourOptions()` for the interpreter, simulator and traces; trace files
+  keep behaviour options only), schema regenerated, design rule warning for a non-boolean override in `targets`.
+  `generateFiles` lowers again when the target's resolved `trace` differs from the IR passed in. Backends: always a state
+  enum and the fingerprint (C `enum <p>state`/`<P>FINGERPRINT`, Python `<C>State`/`<C>.FINGERPRINT`, TS
+  `<C>State`/`static FINGERPRINT`, Rust `State`/`FINGERPRINT`); debugInfo: C `*_name(uint16_t)` (NULL out of range) and
+  `is_active`, Python/TS `EVENT_NAMES`/`SIGNAL_NAMES`/`STATE_NAMES` and `is_active`/`isActive`, Rust `name()` and
+  `from_index()` on `Event`/`Signal`/`State` (matches, not arrays: rustfmt's array layout is not worth copying) and
+  `is_active`; trace: one hook `trace(kind, id)` (C `<p>trace(void *user, enum <p>trace_kind, uint16_t)`, a method on
+  the handler/trait elsewhere), a trace-kind enum, a public signal enum, the transition numbers as a comment; an action
+  named `trace` clashes. CLI: `--debug-info`, `--trace`, `ufsm info` prints the fingerprint. Project tab: two switches
+  with a short text in Options, a per-language select (As in Options / On / Off) and search entries. Tests: hooks.test.ts
+  (hand-derived hook order on the interpreter and the IR, naming, fingerprint with FNV test vectors, option resolution,
+  clashes); a differential pass per backend with both options (hook calls logged as pseudo-calls among the actions,
+  `decodeHooks`/`interpreterHooks` in harness.ts; names checked in the hook, active states read through is_active;
+  planted exit-hook-order bug caught); debug variants in pyright, tsc, freestanding C99 (+ clang++ by hand), rustc/clippy
+  /rustfmt crate checks. Windows, `CC` = LLVM clang: core 526/526, editor 68/68, browser check 356/356. Docs:
+  semantics.md "Numbering and trace hooks", format-v1.md Options, a Debugging section in each backend doc.

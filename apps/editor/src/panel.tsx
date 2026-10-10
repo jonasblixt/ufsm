@@ -11,7 +11,7 @@
  * Every change is one edit through `ops.edit` (one undo step) running core functions (v1/props.ts, v1/create.ts) on
  * the document. Pickers offer the declarations that fit and can create a new one in the same step (`ops.use`).
  */
-import { render, type ComponentChildren } from "preact";
+import { Fragment, render, type ComponentChildren } from "preact";
 import { Field, Section } from "./widgets";
 import { SimulatorTab, type SimProps } from "./simpanel";
 import { CodeTab, type CodeProps } from "./codepanel";
@@ -61,7 +61,8 @@ import {
   type DeclKind,
   type Diagnostic,
   type DocIndex,
-  type OptionKey,
+  type ApiOption,
+  type BehaviourOption,
   type GuardTerm,
   type Id,
   type InternalTransition,
@@ -823,10 +824,26 @@ export interface TargetOption {
   fallback(name: string, set: TargetSettings): string;
 }
 
-/** The `options` section, shared by every code generator and the simulator: shown once, defaults as placeholders. */
-export const MODEL_OPTIONS: { key: OptionKey; label: string }[] = [
+/** The behaviour options of the `options` section, shared by every code generator and the simulator: shown once, defaults as placeholders. */
+export const MODEL_OPTIONS: { key: BehaviourOption; label: string }[] = [
   { key: "signalQueue", label: "Signal queue" },
   { key: "maxMicrosteps", label: "Max microsteps" },
+];
+
+/** The API options of the `options` section (true/false; each code generator may override them). */
+export const API_OPTION_INFO: { key: ApiOption; label: string; text: string }[] = [
+  {
+    key: "debugInfo",
+    label: "Debug info",
+    text: "The generated code can name events, signals and states and tell whether a state is active. In C and Rust the names cost strings in flash.",
+  },
+  {
+    key: "trace",
+    label: "Trace hook",
+    text:
+      "The generated code calls trace(kind, id), which you implement, with ids only: event received, signal taken, transition taken, " +
+      "state entered and exited. It runs inside process(), so it must not block or call the machine; timestamps and transport are yours.",
+  },
 ];
 
 /** Code generator settings as stored in `targets`, with the generators' defaults shown as placeholders when unset. */
@@ -1042,6 +1059,25 @@ function Project({ doc, ops, highlight }: { doc: PanelDoc | undefined; ops: Pane
             />
           </Field>
         ))}
+        {API_OPTION_INFO.map((o) => (
+          <Fragment key={o.key}>
+            <Field label={o.label}>
+              <label class="check">
+                <input
+                  type="checkbox"
+                  aria-label={o.label}
+                  checked={d.options?.[o.key] === true}
+                  onChange={(e) => {
+                    const on = e.currentTarget.checked;
+                    ops.edit((x) => setModelOption(x, o.key, on ? true : undefined));
+                  }}
+                />
+                {d.options?.[o.key] === true ? "on" : "off"}
+              </label>
+            </Field>
+            <div class="snote">{o.text}</div>
+          </Fragment>
+        ))}
       </Section>
       {TARGETS.map((t) => {
         const set = d.targets?.[t.key] ?? {};
@@ -1060,6 +1096,26 @@ function Project({ doc, ops, highlight }: { doc: PanelDoc | undefined; ops: Pane
                 />
               </Field>
             ))}
+            {API_OPTION_INFO.map((o) => {
+              const own = set[o.key];
+              const model = d.options?.[o.key] === true ? "on" : "off";
+              return (
+                <Field label={o.label} key={o.key}>
+                  <select
+                    aria-label={`${t.title} ${o.label}`}
+                    value={own === true ? "on" : own === false ? "off" : ""}
+                    onChange={(e) => {
+                      const v = e.currentTarget.value;
+                      ops.edit((x) => setTargetOption(x, t.key, o.key, v === "" ? undefined : v === "on"));
+                    }}
+                  >
+                    <option value="">As in Options ({model})</option>
+                    <option value="on">On</option>
+                    <option value="off">Off</option>
+                  </select>
+                </Field>
+              );
+            })}
           </Section>
         );
       })}

@@ -46,7 +46,8 @@ packages/core/          @ufsm/core: model, v0 reader, v1 format, checks, semanti
                         flat-run.ts (runs the tables like generated code; must match the interpreter)
   src/interp/           reference interpreter (simulator + test oracle; wouldTake for the simulator) and traces
                         (parse, run, formatTrace)
-  src/ir/               IR every backend prints (ir.ts documents the runtime loop), lowering, evaluator, printer
+  src/ir/               IR every backend prints (ir.ts documents the runtime loop and trace hooks), lowering, evaluator, printer,
+                        ids.ts (state enum names, the numbering's fingerprint)
   src/backends/         code generators = IR printers: c.ts (C99 header + source), python.ts (one typed module),
                         ts.ts (one typed, erasable-syntax TypeScript module), rust.ts (one no_std Rust module, no heap,
                         rustfmt/clippy-clean); generate.ts (generateFiles: model + targets options -> files, the one entry
@@ -89,11 +90,11 @@ old/                    v0.5.x C/GTK editor, Python generator, C tests (referenc
 | `npm run ufsm -- trace tests/traces/*.json` | Replay conformance traces on the interpreter |
 | `npm run ufsm -- flatten <model> [--json]` | Show the flat tables (regions/slots, transitions, offers) |
 | `npm run ufsm -- ir <model> [--json]` | Show the IR as pseudo-code (what backends emit) |
-| `npm run ufsm -- generate c <model> -o <dir>` | Generate `<name>.h`/`<name>.c` (`--prefix`, `--signal-queue`, `--max-microsteps`) |
-| `npm run ufsm -- generate python <model> -o <dir>` | Generate `<name>.py` (`--class-name`, `--signal-queue`, `--max-microsteps`) |
-| `npm run ufsm -- generate ts <model> -o <dir>` | Generate `<name>.ts` (`--class-name`, `--signal-queue`, `--max-microsteps`) |
+| `npm run ufsm -- generate c <model> -o <dir>` | Generate `<name>.h`/`<name>.c` (`--prefix`, `--signal-queue`, `--max-microsteps`, `--debug-info`, `--trace`) |
+| `npm run ufsm -- generate python <model> -o <dir>` | Generate `<name>.py` (`--class-name`, `--signal-queue`, `--max-microsteps`, `--debug-info`, `--trace`) |
+| `npm run ufsm -- generate ts <model> -o <dir>` | Generate `<name>.ts` (`--class-name`, `--signal-queue`, `--max-microsteps`, `--debug-info`, `--trace`) |
 | `npm run gen:schema` | Regenerate `packages/core/schema/ufsm-v1.schema.json` from `src/v1/schema.ts` |
-| `npm run ufsm -- generate rust <model> -o <dir>` | Generate `<name>.rs` (`--class-name` names the struct, `--signal-queue`, `--max-microsteps`) |
+| `npm run ufsm -- generate rust <model> -o <dir>` | Generate `<name>.rs` (`--class-name` names the struct, `--signal-queue`, `--max-microsteps`, `--debug-info`, `--trace`) |
 
 Toolchain: Node 24 LTS (>= 22.18), Rust stable (MSVC on Windows, needs VS
 Build Tools "Desktop development with C++"), TypeScript 6, Vite 7, Tauri 2.

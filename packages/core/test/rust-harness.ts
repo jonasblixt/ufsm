@@ -95,20 +95,49 @@ const str = (s: string): string => JSON.stringify(s);
 
 /**
  * Test code appended to a generated module (inside it, so it can read the private configuration): which state is
- * active, an event by number, and the handler every unit uses.
+ * active, an event by number, and the handler every unit uses. With `debug` (generated with debugInfo and trace), the
+ * state is read through `is_active()`, the handler logs its trace hook calls (harness.ts: decodeHooks) and checks the
+ * state names, and the fingerprint is checked when the crate compiles.
  */
-function testCode(ir: IrModule): string {
+function testCode(ir: IrModule, debug: boolean): string {
   const events = ir.events.map((e, i) => `        ${i} => Some(Event::${rustName(e.name)}),`);
   const raise = (name: string): string => `        if self.raise.as_deref() == Some(${str(name)}) {\n            panic!("raised");\n        }\n`;
-  const actions = ir.actions.map((a) => `    fn ${rustName(a.name)}(&mut self) {\n        self.calls.push(${str(a.name)});\n${raise(a.name)}    }`);
+  const actions = ir.actions.map((a) => `    fn ${rustName(a.name)}(&mut self) {\n        self.calls.push(${str(a.name)}.to_string());\n${raise(a.name)}    }`);
   const guards = ir.guards.map((g, i) => `    fn ${rustName(g.name)}(&mut self) -> bool {\n${raise(g.name)}        self.guards[${i}]\n    }`);
+  const at = ir.states.map((st) => `(${st.region}, ${st.slot})`).join(", ");
+  const active = debug
+    ? "        u16::try_from(i).ok().and_then(State::from_index).is_some_and(|s| self.is_active(s))"
+    : `        const AT: &[(usize, u32)] = &[${at}];\n        u32::from(self.cfg[AT[i].0]) == AT[i].1`;
+  const trace = debug
+    ? [
+        "    fn trace(&mut self, kind: TraceKind, id: u16) {",
+        `        const LABELS: &[&str] = &[${ir.states.map((st) => str(st.label)).join(", ")}];`,
+        "        let call = match kind {",
+        '            TraceKind::Event => format!("@event:{}", Event::from_index(id).map_or("BAD_EVENT", Event::name)),',
+        ir.signals.length
+          ? '            TraceKind::Signal => format!("@signal:{}", Signal::from_index(id).map_or("BAD_SIGNAL", Signal::name)),'
+          : '            TraceKind::Signal => format!("@signal:{id}"),',
+        '            TraceKind::Transition => format!("@t:{id}"),',
+        "            TraceKind::Enter | TraceKind::Exit => {",
+        '                let what = if kind == TraceKind::Enter { "enter" } else { "exit" };',
+        "                let name = State::from_index(id).map(State::name);",
+        '                if name != LABELS.get(usize::from(id)).copied() {',
+        '                    self.calls.push("BAD_STATE_NAME".to_string());',
+        "                }",
+        '                format!("@{what}:{id}")',
+        "            }",
+        "        };",
+        "        self.calls.push(call);",
+        "    }",
+      ]
+    : [];
   return `
 // ---- test harness (not generated) ----
-
+${debug ? `\nconst _: () = assert!(FINGERPRINT == ${ir.fingerprint});\n` : ""}
 impl<H: Handler> Machine<H> {
-    /// Whether region \`r\` is in slot \`s\`.
-    pub fn test_active(&self, r: usize, s: u32) -> bool {
-        u32::from(self.cfg[r]) == s
+    /// Whether state number \`i\` is active.
+    pub fn test_active(&self, i: usize) -> bool {
+${active}
     }
 }
 
@@ -118,7 +147,7 @@ ${ir.events.length ? `    match i {\n${events.join("\n")}\n        _ => None,\n 
 }
 
 impl Handler for crate::TestHandler {
-${[...actions, ...guards].join("\n")}
+${[...actions, ...guards, ...trace].join("\n")}
 }
 `;
 }
@@ -133,7 +162,7 @@ export async function runRust(tools: RustTools, units: RustUnit[], options: { li
       "/// The handler every unit calls: records actions, returns preset guard values.",
       "pub struct TestHandler {",
       "    /// Actions called since the last clear.",
-      "    pub calls: Vec<&'static str>,",
+      "    pub calls: Vec<String>,",
       "    /// Guard values by guard number.",
       "    pub guards: [bool; 256],",
       "    /// The action or guard that panics when called (`x raise`).",
@@ -146,8 +175,8 @@ export async function runRust(tools: RustTools, units: RustUnit[], options: { li
       "    fn reset(&mut self) -> Result<(), &'static str>;",
       "    /// process() of event number `e`.",
       "    fn process(&mut self, e: i64) -> Result<(), &'static str>;",
-      "    /// Whether region `r` is in slot `s`.",
-      "    fn active(&self, r: usize, s: u32) -> bool;",
+      "    /// Whether state number `i` is active.",
+      "    fn active(&self, i: usize) -> bool;",
       "    /// The handler.",
       "    fn handler(&mut self) -> &mut TestHandler;",
       "}",
@@ -157,7 +186,7 @@ export async function runRust(tools: RustTools, units: RustUnit[], options: { li
     const states: string[] = [];
     units.forEach((u, k) => {
       const out = generateRust(u.ir, { ...u.options, className: "Machine", module: `u${k}` });
-      writeFileSync(join(dir, out.fileName), out.source + testCode(u.ir));
+      writeFileSync(join(dir, out.fileName), out.source + testCode(u.ir, u.ir.trace && u.options?.debugInfo === true));
       lib.push(`/// Unit ${k}.`, `pub mod u${k};`, "");
       lib.push(
         `impl Unit for u${k}::Machine<TestHandler> {`,
@@ -170,8 +199,8 @@ export async function runRust(tools: RustTools, units: RustUnit[], options: { li
         '            None => Err("unknown-event"),',
         "        }",
         "    }",
-        "    fn active(&self, r: usize, s: u32) -> bool {",
-        "        self.test_active(r, s)",
+        "    fn active(&self, i: usize) -> bool {",
+        "        self.test_active(i)",
         "    }",
         "    fn handler(&mut self) -> &mut TestHandler {",
         "        self.handler_mut()",
@@ -180,7 +209,7 @@ export async function runRust(tools: RustTools, units: RustUnit[], options: { li
         "",
       );
       makes.push(`        ${k} => Box::new(u${k}::Machine::new(TestHandler { calls: Vec::new(), guards: [false; 256], raise: None })),`);
-      states.push(`    &[${u.ir.states.map((s) => `(${s.region}, ${s.slot}, ${str(s.id)})`).join(", ")}],`);
+      states.push(`    &[${u.ir.states.map((s) => str(s.id)).join(", ")}],`);
     });
     lib.push(
       "/// A fresh, unstarted machine of unit `k`.",
@@ -192,8 +221,8 @@ export async function runRust(tools: RustTools, units: RustUnit[], options: { li
       "    }",
       "}",
       "",
-      "/// States of each unit: (region, slot, id).",
-      `pub static STATES: [&[(usize, u32, &str)]; ${units.length}] = [`,
+      "/// State ids of each unit, by number.",
+      `pub static STATES: [&[&str]; ${units.length}] = [`,
       ...states,
       "];",
     );
@@ -285,7 +314,7 @@ fn main() {
             Err(_) => (true, "raised"),
         };
         let nested = if std::mem::take(&mut reenter) { "busy" } else { "-" };
-        let active: Vec<&str> = units::STATES[index].iter().filter(|s| u.active(s.0, s.1)).map(|s| s.2).collect();
+        let active: Vec<&str> = units::STATES[index].iter().enumerate().filter(|(i, _)| u.active(*i)).map(|(_, s)| *s).collect();
         writeln!(out, "{}\\t{}\\t{}\\t{}", u.handler().calls.join(" "), active.join(","), error, nested).unwrap();
         if failed && auto_reset && u.reset().is_err() {
             dead = true;

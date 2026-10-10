@@ -10,7 +10,7 @@
  * action trace for the same inputs.
  */
 import { checkV1 } from "../v1/check";
-import { defined, modelOptions } from "../v1/options";
+import { defined, behaviourOptions } from "../v1/options";
 import type { Action, GuardTerm, Id, UfsmDocument } from "../v1/model";
 import {
   buildStructure,
@@ -93,7 +93,7 @@ export class Interpreter {
     }
     this.structure = buildStructure(doc);
     this.host = host;
-    this.options = { ...modelOptions(doc), ...defined(options) };
+    this.options = { ...behaviourOptions(doc), ...defined(options) };
   }
 
   /** True after the machine entered a terminate pseudo-state. */

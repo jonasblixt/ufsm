@@ -298,15 +298,22 @@ are optional; unknown keys are an error.
 |-----|---------|---------|
 | `signalQueue` | 16 | Capacity of the signal queue; emitting into a full queue is a `queue-overflow` error. At least 1 when the model emits signals |
 | `maxMicrosteps` | 10000 | Microsteps per reset/process call before a `livelock` error; in generated code 0 removes the check |
+| `debugInfo` | false | Generated code can look up event, signal and state names and ask whether a state is active (costs the name strings in flash in C and Rust) |
+| `trace` | false | Generated code calls a trace hook the application implements, with ids only: event received, signal taken, transition taken, state entered, state exited ([semantics](semantics.md#numbering-and-trace-hooks)) |
 
 There are two kinds of option:
 
 - **Behaviour options** change what the machine does: `signalQueue` and
-  `maxMicrosteps` (today's only options). They are set here and nowhere else,
-  so a model behaves the same in every language and in the simulator. A
-  behaviour option under `targets` is ignored (a design rule warning).
-- **API options** change only the shape of the generated code. They are set
-  here and may be overridden per target in `targets.<name>`. None exist yet.
+  `maxMicrosteps`. They are set here and nowhere else, so a model behaves the
+  same in every language and in the simulator. A behaviour option under
+  `targets` is ignored (a design rule warning).
+- **API options** change only the shape of the generated code: `debugInfo` and
+  `trace`, both `true`/`false`. They are set here and may be overridden per
+  target in `targets.<name>` (a value that is not `true`/`false` there is
+  ignored with a warning). Off, they generate nothing.
+
+Every generated file also has, with no option, a state enum (document order)
+and the model's fingerprint ([semantics](semantics.md#numbering-and-trace-hooks)).
 
 A code generator resolves an option from `options`, then `targets.<name>`
 (API options only), then its command line flags. A conformance trace's
@@ -319,7 +326,7 @@ Settings per code generator, keyed by target name: the target's own keys
 preserved.
 
 ```jsonc
-"targets": { "c": { "prefix": "dimmer_" } }
+"targets": { "c": { "prefix": "dimmer_", "trace": true } }
 ```
 
 Settings of the generators: [C](backend-c.md#generating) (`c`),
@@ -351,7 +358,7 @@ shadowed by an earlier transition of the same state with the same trigger
 and no guard; a state's outgoing transitions come before its internal ones),
 regions entered by default without an initial state,
 duplicate state names in a region, unused declarations, behaviour options
-under `targets`, stale or missing
+under `targets` and API options there that are not `true`/`false`, stale or missing
 layout, and drawings that do not fit their sheet (outside the drawing frame,
 or over the title block; see "Drawing frame and title block").
 

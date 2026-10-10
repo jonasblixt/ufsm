@@ -17,12 +17,19 @@
  * interpreter's error code. Exceptions from the handler are not caught: they
  * leave the machine busy until reset(), as the interpreter does. Only what
  * the model uses is emitted, as in the C backend.
+ *
+ * Always: `<Class>State` (an IntEnum, document order) and `<Class>.FINGERPRINT`.
+ * With `debugInfo`: `EVENT_NAMES`, `SIGNAL_NAMES`, `STATE_NAMES` and
+ * `is_active()` on the machine class. With `trace` (decided by the IR):
+ * `<Class>TraceKind` and a `trace(kind, id)` method on the handler.
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
 import { OPTION_DEFAULTS, targetSection } from "../v1/options";
 import { UFSM_VERSION } from "../version";
 import type { Expr, IrModule, Stmt, SwitchOn } from "../ir/ir";
+import { TRACE_KINDS } from "../ir/ir";
+import { hex32 } from "../ir/ids";
 import { BUSY_MESSAGE } from "../interp/interpreter";
 import { CodegenError, OUTPUT_NOTICE, cIdentifier } from "./c";
 
@@ -35,6 +42,10 @@ export interface PythonOptions {
   signalQueue?: number;
   /** Microsteps per reset()/process() call before a "livelock" error; 0 disables the check. Default 10000. */
   maxMicrosteps?: number;
+  /** Name tables for events, signals and states, and `is_active()`. Default false. */
+  debugInfo?: boolean;
+  /** Must equal the IR's `trace` when given (the trace calls are emitted by the lowering). */
+  trace?: boolean;
 }
 
 export interface PythonFiles {
@@ -101,6 +112,13 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   const errorCls = `${cls}Error`;
   const eventCls = `${cls}Event`;
   const handlerCls = `${cls}Handler`;
+  const stateCls = `${cls}State`;
+  const signalCls = `${cls}Signal`;
+  const kindCls = `${cls}TraceKind`;
+  if (options.trace !== undefined && options.trace !== ir.trace) throw new CodegenError("options.trace differs from the IR's: lower the model with { trace }");
+  const trace = ir.trace;
+  const debugInfo = options.debugInfo ?? false;
+  const publicSignals = (trace || debugInfo) && ir.signals.length > 0;
 
   // ------------------------------------------------------------ analysis
 
@@ -149,9 +167,11 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
       const what = `${kind} '${d.name}'`;
       if (d.name.startsWith("__")) problems.push(`${what} starts with '__' (Python would mangle it)`);
       else if (seen.has(py)) problems.push(`${what} becomes '${py}', like ${seen.get(py)}`);
+      else if (trace && py === "trace" && (kind === "action" || kind === "guard")) problems.push(`${what} is the name of the trace hook`);
       seen.set(py, what);
     }
   }
+  const stateMember = ir.states.map((st) => pythonName(st.ident));
   if (problems.length) throw new CodegenError(`names that cannot be used in the generated Python (rename them):\n  ${problems.join("\n  ")}`);
 
   const decl = new Map<string, string>();
@@ -294,6 +314,10 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
         case "microstep":
           if (checkSteps) line(d, "self._microstep()");
           break;
+        case "trace":
+          if (s.hook === "transition") line(d, `self._h.trace(${kindCls}.transition, ${s.index})  # ${comment(ir.transitions[s.index]!.label)}`);
+          else line(d, `self._h.trace(${kindCls}.${s.hook}, ${stateCls}.${stateMember[s.index]})`);
+          break;
         case "terminate":
           line(d, "self._terminated = True");
           break;
@@ -337,6 +361,33 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   else line(1, "pass");
   line(0, "");
   line(0, "");
+  if (publicSignals) {
+    line(0, `class ${signalCls}(IntEnum):`);
+    ir.signals.forEach((x, i) => line(1, `${pythonName(x.name)} = ${i}`));
+    line(0, "");
+    line(0, "");
+  }
+  line(0, `class ${stateCls}(IntEnum):`);
+  line(1, '"""States in document order."""');
+  if (ir.states.length) line(0, "");
+  ir.states.forEach((st, i) => line(1, `${stateMember[i]} = ${i}${st.label !== st.ident ? `  # ${comment(st.label)}` : ""}`));
+  line(0, "");
+  line(0, "");
+  if (trace) {
+    line(0, `class ${kindCls}(IntEnum):`);
+    line(1, `"""What ${handlerCls}.trace() reports; the id is a number of the type named here."""`);
+    line(0, "");
+    const what = {
+      event: `${eventCls}; process() accepted it`,
+      signal: `${publicSignals ? signalCls : "signal number"}; taken from the queue`,
+      transition: "transition number (see the machine class); before its actions",
+      enter: `${stateCls}; before its entry actions`,
+      exit: `${stateCls}; before its exit actions`,
+    };
+    TRACE_KINDS.forEach((k, i) => line(1, `${k} = ${i}  # ${what[k]}`));
+    line(0, "");
+    line(0, "");
+  }
   line(0, `class ${handlerCls}(Protocol):`);
   line(1, '"""Actions and guards the machine calls. Guards return a bool and may be called more than once per event."""');
   for (const a of ir.actions) {
@@ -346,6 +397,12 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   for (const g of ir.guards) {
     line(0, "");
     line(1, `def ${pythonName(g.name)}(self) -> bool: ...`);
+  }
+  if (trace) {
+    line(0, "");
+    line(1, `def trace(self, kind: ${kindCls}, id: int) -> None:`);
+    line(2, '"""Called inside reset() and process() with ids only; must not block or call the machine."""');
+    line(2, "...");
   }
   line(0, "");
   line(0, "");
@@ -358,6 +415,22 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
     line(1, `#   ${r} ${comment(n)}: ${slots}${hd}`);
   });
   if (hasQueue) line(1, `# Signals: ${ir.signals.map((s, i) => `${i} ${s.name}`).join(", ")}`);
+  if (trace && ir.transitions.length) {
+    line(1, "# Transition numbers (trace):");
+    ir.transitions.forEach((t, i) => line(1, `#   ${i} ${comment(t.label)}`));
+  }
+  line(0, "");
+  line(1, "# Identifies the numbering of events, signals, states and transitions (`ufsm info` prints it for a model file).");
+  line(1, `FINGERPRINT = ${hex32(ir.fingerprint)}`);
+  if (debugInfo) {
+    const tup = (items: string[]): string => `(${items.join(", ")}${items.length === 1 ? "," : ""})`;
+    const names = (list: string[]): string => tup(list.map((n) => JSON.stringify(n)));
+    line(1, "# Names as in the model, by number.");
+    line(1, `EVENT_NAMES: Tuple[str, ...] = ${names(ir.events.map((e) => e.name))}`);
+    line(1, `SIGNAL_NAMES: Tuple[str, ...] = ${names(ir.signals.map((x) => x.name))}`);
+    line(1, `STATE_NAMES: Tuple[str, ...] = ${names(ir.states.map((st) => st.label))}`);
+    if (ir.states.length) line(1, `_STATE_AT: Tuple[Tuple[int, int], ...] = ${tup(ir.states.map((st) => `(${st.region}, ${st.slot})`))}`);
+  }
   line(0, "");
   line(1, `def __init__(self, handler: ${handlerCls}) -> None:`);
   line(2, "self._h = handler");
@@ -409,6 +482,7 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   }
   line(2, "self._busy = True");
   if (checkSteps) line(2, "self._steps = 0");
+  if (trace) line(2, `self._h.trace(${kindCls}.event, event)`);
   if (ir.events.some((e) => ir.onEvent[e.id])) {
     line(2, "step = self._on_event[event]");
     line(2, "if step is not None:");
@@ -436,11 +510,17 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
     if (hasQueue) {
       line(3, "if not self._queue:");
       line(4, "return");
-      if (ir.signals.some((s) => ir.onSignal[s.id])) {
-        line(3, "step = self._on_signal[self._queue.pop(0)]");
+      const reacts = ir.signals.some((s) => ir.onSignal[s.id]);
+      if (trace) {
+        line(3, "signal = self._queue.pop(0)");
+        line(3, `self._h.trace(${kindCls}.signal, signal)`);
+      }
+      const popped = trace ? "signal" : "self._queue.pop(0)";
+      if (reacts) {
+        line(3, `step = self._on_signal[${popped}]`);
         line(3, "if step is not None:");
         line(4, "step()");
-      } else line(3, "self._queue.pop(0)");
+      } else if (!trace) line(3, popped);
     } else line(3, "return");
   }
   if (hasQueue) {
@@ -449,6 +529,12 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
     line(2, `if len(self._queue) >= ${queueCap}:`);
     line(3, `raise ${errorCls}("queue-overflow", "signal queue full (${queueCap})")`);
     line(2, "self._queue.append(signal)");
+  }
+  if (debugInfo && ir.states.length) {
+    line(0, "");
+    line(1, `def is_active(self, state: ${stateCls}) -> bool:`);
+    line(2, "region, slot = self._STATE_AT[state]");
+    line(2, "return self._cfg[region] == slot");
   }
   if (checkSteps) {
     line(0, "");

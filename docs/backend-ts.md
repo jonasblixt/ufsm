@@ -33,7 +33,7 @@ model's `targets.ts` section and can be overridden on the command line:
 | `className` | `--class-name` | model name in PascalCase (`test_guard1` → `TestGuard1`) | Machine class; also names `<Class>Event`, `<Class>Handler`, `<Class>Error`, `<Class>ErrorCode` |
 | `module` | | model name as an identifier | File name: `<module>.ts` |
 
-Unknown keys, and the options below, are reported as warnings and ignored there.
+Unknown keys, and the behaviour options below, are reported as warnings and ignored there.
 
 The model's [`options`](format-v1.md#options) section sets what every target
 shares; the flags override it for one run:
@@ -42,10 +42,13 @@ shares; the flags override it for one run:
 |---------------|------|---------|---------|
 | `signalQueue` | `--signal-queue` | 16 | Capacity of the signal queue (only generated if the model emits signals) |
 | `maxMicrosteps` | `--max-microsteps` | 10000 | Microsteps per `reset`/`process` call before a `livelock` error; 0 removes the check |
+| `debugInfo` | `--debug-info` | false | Name lookup and an is-active query ([Debugging](#debugging)) |
+| `trace` | `--trace` | false | A trace hook the application implements ([Debugging](#debugging)) |
 
-These change behaviour, so they are set in `options` only, never per target: a
-model behaves the same in every language and in the simulator, queue overflows
-included.
+`signalQueue` and `maxMicrosteps` change behaviour, so they are set in
+`options` only, never per target: a model behaves the same in every language
+and in the simulator, queue overflows included. `debugInfo` and `trace` change
+only the generated API, so `targets.ts` may override them for this language.
 
 ## Generated API
 
@@ -103,6 +106,51 @@ export class Dimmer {
   `reset()`.
 - Everything `private` (`cfg`, `step_eButton`, ...) is internal and may
   change between uFSM versions.
+
+## Debugging
+
+Always generated: a state enum (normal and final states in document order,
+named after the states; a name that repeats is qualified with its parent
+states, and free text is made an identifier: `10%` becomes `s10_`) and the
+model's fingerprint, which identifies how events, signals, states and
+transitions are numbered (`ufsm info` prints it for a model file; see
+[Numbering and trace hooks](semantics.md#numbering-and-trace-hooks)). A host
+that decodes ids should check it.
+
+```ts
+export const DimmerState = { Off: 0, On: 1, s10_: 2 /* 10% */, /* ... */ } as const;
+export type DimmerState = (typeof DimmerState)[keyof typeof DimmerState];
+
+export class Dimmer {
+  static readonly FINGERPRINT = 0xc57ac6ea;
+  // ...
+}
+```
+
+With `debugInfo`, the machine class gets the names as in the model, by number,
+and an is-active query:
+
+```ts
+  static readonly EVENT_NAMES: readonly string[] = ["eButton", "eOffButton"];
+  static readonly SIGNAL_NAMES: readonly string[] = [];
+  static readonly STATE_NAMES: readonly string[] = ["Off", "On", "10%", "30%", "50%", "100%"];
+  isActive(state: DimmerState): boolean;
+```
+
+With `trace`, `DimmerTraceKind` (`event`, `signal`, `transition`, `enter`,
+`exit`) and one more handler method, called with ids only (the transition
+numbers are listed in a comment in the class; a `DimmerSignal` object is
+generated when the model has signals):
+
+```ts
+export interface DimmerHandler {
+  // ... actions and guards ...
+  trace(kind: DimmerTraceKind, id: number): void;
+}
+```
+
+`trace` runs inside `reset()` and `process()`, so it must not block or call the
+machine. An action named `trace` clashes with it while `trace` is on.
 
 ## Example
 

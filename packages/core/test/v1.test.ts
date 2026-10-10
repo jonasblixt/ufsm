@@ -363,6 +363,20 @@ describe("design rule check", () => {
         ["warning", "target-option", "targets.go.signalQueue is ignored: it changes behaviour, so it is set in options for every target"],
       ],
     );
+    // API options may be overridden per target, with a true/false value
+    ok.targets = { c: { trace: true, debugInfo: false }, rust: { trace: "yes" } };
+    assert.deepEqual(
+      checkV1(ok).map((d) => [d.severity, d.code, d.message]),
+      [["warning", "target-option", "targets.rust.trace is ignored: expected true or false"]],
+    );
+  });
+
+  it("reads and writes the API options debugInfo and trace, and rejects other values", () => {
+    const doc = load("tests/models/test_options.ufsm");
+    doc.options = { ...doc.options, debugInfo: true, trace: false };
+    const text = serializeV1(doc);
+    assert.deepEqual(parseV1(text).options, doc.options);
+    assert.throws(() => parseV1(text.replace('"trace": false', '"trace": 1')), /trace/);
   });
 
   it("checks internal transitions: ids, references, trigger kind, shadowing", () => {

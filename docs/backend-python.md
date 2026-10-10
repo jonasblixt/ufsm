@@ -31,7 +31,7 @@ model's `targets.python` section and can be overridden on the command line:
 "targets": { "python": { "className": "Dimmer" } }
 ```
 
-Unknown keys, and the options below, are reported as warnings and ignored there.
+Unknown keys, and the behaviour options below, are reported as warnings and ignored there.
 
 The model's [`options`](format-v1.md#options) section sets what every target
 shares; the flags override it for one run:
@@ -40,10 +40,13 @@ shares; the flags override it for one run:
 |---------------|------|---------|---------|
 | `signalQueue` | `--signal-queue` | 16 | Capacity of the signal queue (only generated if the model emits signals) |
 | `maxMicrosteps` | `--max-microsteps` | 10000 | Microsteps per `reset`/`process` call before a `livelock` error; 0 removes the check |
+| `debugInfo` | `--debug-info` | false | Name lookup and an is-active query ([Debugging](#debugging)) |
+| `trace` | `--trace` | false | A trace hook the application implements ([Debugging](#debugging)) |
 
-These change behaviour, so they are set in `options` only, never per target: a
-model behaves the same in every language and in the simulator, queue overflows
-included.
+`signalQueue` and `maxMicrosteps` change behaviour, so they are set in
+`options` only, never per target: a model behaves the same in every language
+and in the simulator, queue overflows included. `debugInfo` and `trace` change
+only the generated API, so `targets.python` may override them for this language.
 
 ## Generated API
 
@@ -101,6 +104,52 @@ class Dimmer:
   `reset()`.
 - Everything else (`_cfg`, `_step_eButton`, ...) is internal and may change
   between uFSM versions.
+
+## Debugging
+
+Always generated: a state enum (normal and final states in document order,
+named after the states; a name that repeats is qualified with its parent
+states, and free text is made an identifier: `10%` becomes `s10_`) and the
+model's fingerprint, which identifies how events, signals, states and
+transitions are numbered (`ufsm info` prints it for a model file; see
+[Numbering and trace hooks](semantics.md#numbering-and-trace-hooks)). A host
+that decodes ids should check it.
+
+```python
+class DimmerState(IntEnum):
+    Off = 0
+    On = 1
+    s10_ = 2  # 10%
+    # ...
+
+class Dimmer:
+    FINGERPRINT = 0xc57ac6ea
+```
+
+With `debugInfo`, the machine class gets the names as in the model, by number,
+and an is-active query:
+
+```python
+    EVENT_NAMES: Tuple[str, ...] = ("eButton", "eOffButton")
+    SIGNAL_NAMES: Tuple[str, ...] = ()
+    STATE_NAMES: Tuple[str, ...] = ("Off", "On", "10%", "30%", "50%", "100%")
+
+    def is_active(self, state: DimmerState) -> bool: ...
+```
+
+With `trace`, `DimmerTraceKind` (`event`, `signal`, `transition`, `enter`,
+`exit`) and one more handler method, called with ids only (the transition
+numbers are listed in a comment in the class; a `DimmerSignal` enum is
+generated when the model has signals):
+
+```python
+class DimmerHandler(Protocol):
+    # ... actions and guards ...
+    def trace(self, kind: DimmerTraceKind, id: int) -> None: ...
+```
+
+`trace` runs inside `reset()` and `process()`, so it must not block or call the
+machine. An action named `trace` clashes with it while `trace` is on.
 
 ## Example
 

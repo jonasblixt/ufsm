@@ -6,6 +6,7 @@
  * language details. Used by `ufsm ir` and for reviewing the lowering.
  */
 import type { Expr, IrModule, Stmt, SwitchOn } from "./ir";
+import { hex32 } from "./ids";
 
 export function printIr(ir: IrModule): string {
   const name = new Map<string, string>();
@@ -77,6 +78,7 @@ export function printIr(ir: IrModule): string {
         case "clearHistory": line(d, `hist[r${s.region}] = none`); break;
         case "saveDeep": line(d, `deep[r${s.region}] = snapshot of the regions inside r${s.region}`); break;
         case "microstep": line(d, "microstep  // livelock check"); break;
+        case "trace": line(d, `trace ${s.hook} ${s.index}  // ${s.hook === "transition" ? ir.transitions[s.index]!.id : ir.states[s.index]!.label}`); break;
         case "terminate": line(d, "terminate"); break;
         case "return": line(d, `return ${s.value}`); break;
       }
@@ -84,6 +86,7 @@ export function printIr(ir: IrModule): string {
   };
 
   line(0, `// ${ir.name}: ${ir.regions} regions, ${ir.states.length} states, ${ir.functions.length} functions`);
+  line(0, `// fingerprint ${hex32(ir.fingerprint)}${ir.trace ? ", trace" : ""}`);
   ir.regionNames.forEach((n, r) => {
     const slots = ir.states.filter((s) => s.region === r).map((s) => `${s.slot}=${s.name}`).join(" ");
     const h = ir.history.find((x) => x.region === r);

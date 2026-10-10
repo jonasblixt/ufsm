@@ -24,7 +24,7 @@ import {
   type UfsmDocument,
   traceOptions,
 } from "../src/index";
-import { DIFF_QUEUE, assertMatchesInterpreter, expressionModel, joinAgreementModel, randomScript, replayResults, type BackendDiff } from "./harness";
+import { DIFF_QUEUE, assertMatchesInterpreter, expressionModel, hookDiffs, joinAgreementModel, randomScript, replayResults, type BackendDiff } from "./harness";
 import { removeTempDir } from "./c-harness";
 import { MIN_PYTHON, findPyright, findPython, runPyright, runPython } from "./py-harness";
 import { randomModel } from "./random-model";
@@ -46,12 +46,14 @@ const ir = (doc: UfsmDocument) => lowerToIr(flatten(doc));
 const load = (path: string): UfsmDocument => loadModel(readFileSync(path, "utf8")).doc;
 const MAX_STEPS = 300;
 
-function compareAll(diffs: BackendDiff[]): void {
+/** Differential runs; with `hooks`, generated with debugInfo and trace, comparing hook calls and is_active() too. */
+function compareAll(diffs: BackendDiff[], hooks = false): void {
+  const irs = diffs.map((d) => lowerToIr(flatten(d.doc), { trace: hooks }));
   const results = runPython(
     python!,
-    diffs.map((d) => ({ ir: ir(d.doc), options: { maxMicrosteps: MAX_STEPS, signalQueue: d.signalQueue ?? DIFF_QUEUE }, script: d.script, autoReset: true })),
+    diffs.map((d, k) => ({ ir: irs[k]!, options: { maxMicrosteps: MAX_STEPS, signalQueue: d.signalQueue ?? DIFF_QUEUE, debugInfo: hooks }, script: d.script, autoReset: true })),
   );
-  assertMatchesInterpreter(diffs, results, MAX_STEPS, "Python");
+  assertMatchesInterpreter(diffs, results, MAX_STEPS, "Python", hooks ? irs : undefined);
 }
 
 /** Run a Python snippet in a directory; returns stdout. */
@@ -103,6 +105,9 @@ describe("Python backend matches the interpreter", { skip }, () => {
       );
     }
   });
+  it(`with debugInfo and trace: hooks, names and is_active() on every repo model and ${Math.ceil(count / 3)} random models`, () => {
+    compareAll(hookDiffs(modelFiles.map((f) => ({ label: f.slice(repoRoot.length + 1), doc: load(f) })), Math.ceil(count / 3)), true);
+  });
   it("on expression shapes the models rarely or never produce (hand-built IR)", () => {
     // One step function per expression; it calls `hit` when the expression is true. Guards a, b, c take every true/false value.
     const g = (n: string): Expr => ({ op: "guard", guard: n });
@@ -123,8 +128,11 @@ describe("Python backend matches the interpreter", { skip }, () => {
       name: "precedence",
       regions: 1,
       regionNames: ["root"],
-      states: [{ id: "s1", name: "A", region: 0, slot: 1, final: false }],
+      states: [{ id: "s1", name: "A", ident: "A", label: "A", region: 0, slot: 1, final: false }],
       history: [],
+      transitions: [],
+      trace: false,
+      fingerprint: 0,
       events: cases.map(([n]) => ({ id: `ev_${n}`, name: n })),
       signals: [],
       actions: [{ id: "act1", name: "hit" }],
@@ -195,6 +203,9 @@ print(bad)`,
         if (written.has(out.fileName)) continue; // examples/ and tests/models/ both have a test_model1
         written.add(out.fileName);
         writeFileSync(join(dir, out.fileName), out.source);
+        // and with debugInfo and trace
+        const debug = generatePython(lowerToIr(flatten(load(f)), { trace: true }), { debugInfo: true, module: out.fileName.replace(/\.py$/, "_debug") });
+        writeFileSync(join(dir, debug.fileName), debug.source);
       }
       const docText = readFileSync(join(repoRoot, "docs/backend-python.md"), "utf8");
       writeFileSync(join(dir, "doc_example.py"), /## Example\n\n```python\n([\s\S]*?)```/.exec(docText)![1]!);

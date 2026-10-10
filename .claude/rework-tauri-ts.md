@@ -134,8 +134,14 @@ the generated code. Status refers to the new implementation.
       only there, API options overridable per target (resolution `options` -> `targets.<name>` -> CLI flags); interpreter,
       trace runner, simulator and `ufsm run` honour it; Project tab shows it once; design rules `signal-queue` and
       `target-option`; `test_options` model + two traces (2026-10-10)
-- [ ] API options `debugInfo` and `trace` in `options` (per-target override in `targets.<name>`; the resolution exists:
-      add the key to `API_OPTIONS` and `VALID` in `core/src/v1/options.ts`, the schema and model.ts)
+- [x] State ids, `debugInfo` and `trace` (decisions log 2026-10-10/11): state enum and fingerprint always; `debugInfo` and
+      `trace` API options in all four backends, decided in the lowering; hooks documented in semantics.md; differential
+      pass per backend with both on; Project tab, CLI flags, `ufsm info` fingerprint (2026-10-11)
+- [ ] Debug/trace follow-ups: Jonas to review the generated API (`npm run ufsm -- generate c examples/dimmer.ufsm -o build
+      --debug-info --trace`) and the Project tab in `npm run dev`; a host decoder (`ufsm decode <model> <log>`: kind/id
+      records -> names, checking the fingerprint), maybe with the simulator replaying a recorded log (docs/live-trace.md);
+      a `reset` trace kind (today a host infers a reset from enter reports at the root); a state `ident` override
+      (open question) instead of generated identifiers like `s10_` for "10%"
 - [ ] Options follow-ups: Jonas to try the Project tab's Options section and the Simulator's options (model's values,
       session overrides, saved traces) in `npm run dev`
 
@@ -296,6 +302,14 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
   call goes on with the new configuration. Rust cannot do it (borrow); the other languages document it.
 - The busy flag in C is a plain `bool`, not a lock: it detects a call from an interrupt handler on one core, not
   concurrent calls from two threads or cores.
+- State enum identifiers are generated from free-text names (`10%` -> `s10_`, repeated names qualified with parent states:
+  `Door_Open`, as a last resort the id appended); renaming a state renames its constant and changes the fingerprint.
+- Transition numbers follow `machine.transitions`, then internal transitions in state post-order (children first), not
+  strictly document order; stable for a given model, listed in a comment in every file generated with `trace`.
+- The trace hook reports no `reset` and no exits on reset or terminate (no exit actions run there either); a host sees a
+  reset only as enter reports for the root's states.
+- `generateFiles` lowers once per `trace` value; the editor's code preview passes its cached IR, which is lowered again
+  for a target whose resolved `trace` differs.
 - The sheet fit check does not measure transition labels (their size depends on the font), so a label can stick out of the
   frame or over the title block without a warning. The title block is drawn under the diagram, so a state over it hides it
   (and gets a `title-block` warning).

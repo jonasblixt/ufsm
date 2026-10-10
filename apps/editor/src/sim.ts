@@ -13,7 +13,7 @@ import {
   InterpreterError,
   defined,
   indexV1,
-  modelOptions,
+  behaviourOptions,
   resolveStateRef,
   type DocIndex,
   type Id,
@@ -79,7 +79,7 @@ export class Simulation {
   constructor(doc: UfsmDocument, guards: ReadonlyMap<string, boolean>, overrides: Partial<SimOptions> = {}) {
     this.doc = doc;
     this.index = indexV1(doc);
-    this.options = { ...modelOptions(doc), ...defined(overrides) };
+    this.options = { ...behaviourOptions(doc), ...defined(overrides) };
     this.guards = guards;
     this.interp = new Interpreter(
       doc,
@@ -137,7 +137,7 @@ export class Simulation {
   trace(model: string, opts: { active?: boolean; doc?: string } = {}): Trace {
     // A trace's options override the model's: only the ones this run changed.
     const options: TraceOptions = {};
-    const own = modelOptions(this.doc);
+    const own = behaviourOptions(this.doc);
     if (this.options.signalQueue !== own.signalQueue) options.signalQueue = this.options.signalQueue;
     if (this.options.maxMicrosteps !== own.maxMicrosteps) options.maxMicrosteps = this.options.maxMicrosteps;
     const trace: Trace = { model, steps: this.steps.map((s) => s.record) };

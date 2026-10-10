@@ -14,12 +14,19 @@
  * negative codes; every function that can fail returns its error upwards.
  * Only what the model uses is emitted: no queue without emits, no history
  * arrays without history, no terminated flag without terminate.
+ *
+ * Always in the header: the state enum (document order) and the model
+ * fingerprint. With `debugInfo`: name lookup for events, signals and states
+ * and `is_active()`. With `trace` (decided by the IR, see ir/ir.ts): calls to
+ * `<prefix>trace(user, kind, id)`, which the application implements.
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
 import { OPTION_DEFAULTS, targetSection } from "../v1/options";
 import { UFSM_VERSION } from "../version";
-import type { Expr, IrFunction, IrModule, Stmt, SwitchOn } from "../ir/ir";
+import type { Expr, IrFunction, IrModule, Stmt, SwitchOn, TraceKind } from "../ir/ir";
+import { TRACE_KINDS } from "../ir/ir";
+import { hex32, utf8 } from "../ir/ids";
 
 export interface COptions {
   /** Prefix of every public identifier. Default: the model name as an identifier, plus "_". */
@@ -30,6 +37,10 @@ export interface COptions {
   maxMicrosteps?: number;
   /** Base name of the files: `<file>.h` and `<file>.c`. Default: the prefix without its trailing "_". */
   file?: string;
+  /** Name lookup for events, signals and states, and `is_active()`. Default false. */
+  debugInfo?: boolean;
+  /** Must equal the IR's `trace` when given (the trace calls are emitted by the lowering). */
+  trace?: boolean;
 }
 
 export interface CFiles {
@@ -94,6 +105,19 @@ function uintType(max: number): string {
   return max <= 0xff ? "uint8_t" : max <= 0xffff ? "uint16_t" : "uint32_t";
 }
 
+/** A C string literal; `"`, `\`, control characters, non-ASCII bytes (UTF-8) and trigraph starts are escaped. */
+export function cString(text: string): string {
+  let out = "";
+  for (const b of utf8(text)) {
+    const c = String.fromCharCode(b);
+    if (c === '"' || c === "\\") out += `\\${c}`;
+    else if (c === "?" && out.endsWith("?")) out += "\\?";
+    else if (b < 0x20 || b >= 0x7f) out += `\\${b.toString(8).padStart(3, "0")}`;
+    else out += c;
+  }
+  return `"${out}"`;
+}
+
 /** Text that is safe inside a C block comment. */
 function comment(text: string): string {
   return text.replace(/\*\//g, "* /").replace(/[\r\n]+/g, " ");
@@ -113,6 +137,9 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   const queueCap = options.signalQueue ?? OPTION_DEFAULTS.signalQueue;
   const maxSteps = options.maxMicrosteps ?? OPTION_DEFAULTS.maxMicrosteps;
   const machine = `struct ${prefix}machine`;
+  if (options.trace !== undefined && options.trace !== ir.trace) throw new CodegenError("options.trace differs from the IR's: lower the model with { trace }");
+  const trace = ir.trace;
+  const debugInfo = options.debugInfo ?? false;
 
   // ------------------------------------------------------------ analysis
 
@@ -187,6 +214,10 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   const stateAt = new Map(ir.states.map((s) => [`${s.region}:${s.slot}`, s.name]));
   const stateName = (region: number, slot: number): string => comment(stateAt.get(`${region}:${slot}`) ?? `slot ${slot}`);
 
+  const stateConst = new Map(ir.states.map((st, i) => [i, `${P}STATE_${st.ident}`]));
+  const traceConst = (k: TraceKind): string => `${P}TRACE_${k.toUpperCase()}`;
+  // signals get a public enum when the application sees their numbers (trace hook, name lookup)
+  const publicSignals = (trace || debugInfo) && ir.signals.length > 0;
   const status = { ok: `${P}OK`, queue: `${P}ERR_QUEUE_FULL`, livelock: `${P}ERR_LIVELOCK`, event: `${P}ERR_EVENT`, busy: `${P}ERR_BUSY` };
   // the busy latch guards process(); without events there is no process()
   const hasBusy = ir.events.length > 0;
@@ -204,7 +235,19 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     [status.event, "a status code"],
     [status.busy, "a status code"],
     [`UFSM_${cIdentifier(file).toUpperCase()}_H`, "the include guard"],
-    ...["settle", "push_signal", "pop_signal", "m", "rc", "user", "event", "signal", "r", "uint8_t", "uint16_t", "uint32_t"].map(
+    [`${prefix}state`, "the state enum"],
+    [`${P}FINGERPRINT`, "the fingerprint"],
+    ...(publicSignals ? [[`${prefix}signal`, "the signal enum"] as [string, string]] : []),
+    ...(trace
+      ? ([[`${prefix}trace`, "the trace hook"], [`${prefix}trace_kind`, "the trace kind enum"], ...TRACE_KINDS.map((k) => [traceConst(k), "a trace kind"])] as [string, string][])
+      : []),
+    ...(debugInfo
+      ? ([`${prefix}event_name`, `${prefix}signal_name`, `${prefix}state_name`, `${prefix}is_active`].map((n) => [n, "a debugInfo function"]) as [string, string][])
+      : []),
+    ...[
+      "settle", "push_signal", "pop_signal", "m", "rc", "user", "event", "signal", "r", "uint8_t", "uint16_t", "uint32_t",
+      "sig", "kind", "id", "state", "event_names", "signal_names", "state_names", "state_region", "state_slot",
+    ].map(
       (n): [string, string] => [n, "an internal name"],
     ),
     ...functions.map((f): [string, string] => [f.name, "an internal function"]),
@@ -221,6 +264,12 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
       else if (seen.has(id)) problems.push(`${what} becomes '${id}', like ${seen.get(id)}`);
       seen.set(id, what);
     }
+  }
+  for (const [i, c] of stateConst) {
+    const what = `state '${ir.states[i]!.label}'`;
+    if (fixed.has(c)) problems.push(`${what} becomes '${c}', which is ${fixed.get(c)}`);
+    else if (seen.has(c)) problems.push(`${what} becomes '${c}', like ${seen.get(c)}`);
+    seen.set(c, what);
   }
   if (problems.length) throw new CodegenError(`name clash in the generated C (rename, or set targets.c.prefix):\n  ${problems.join("\n  ")}`);
 
@@ -360,6 +409,10 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
           line(d + 1, `return ${status.livelock};`);
           line(d, "}");
           break;
+        case "trace":
+          if (s.hook === "transition") line(d, `${prefix}trace(m->user, ${traceConst(s.hook)}, ${s.index}u); /* ${comment(ir.transitions[s.index]!.label)} */`);
+          else line(d, `${prefix}trace(m->user, ${traceConst(s.hook)}, ${stateConst.get(s.index)});`);
+          break;
         case "terminate":
           line(d, "m->terminated = true;");
           break;
@@ -383,7 +436,7 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   hl(`#define ${guard}`);
   hl();
   hl("#include <stdint.h>");
-  if (hasTerminate || hasBusy || ir.guards.length) hl("#include <stdbool.h>");
+  if (hasTerminate || hasBusy || ir.guards.length || (debugInfo && ir.states.length)) hl("#include <stdbool.h>");
   hl();
   hl("#ifdef __cplusplus");
   hl('extern "C" {');
@@ -398,8 +451,15 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     hl(" * called while another call runs (from an action or guard, or from an");
     hl(" * interrupt handler); such a call changes nothing and the event is lost.");
   }
-  hl(" * The application implements the actions and guards declared at the end");
+  hl(` * The application implements the actions and guards${trace ? " and the trace hook" : ""} declared at the end`);
   hl(` * of this file; each gets the user pointer passed to ${prefix}init().`);
+  if (trace) {
+    hl(` * ${prefix}trace() is called inside ${prefix}init(), ${prefix}reset() and ${prefix}process()`);
+    hl(" * with ids only (event, signal, transition, entered and exited state); it must");
+    hl(" * not block or call the machine. Timestamps and transport are up to it.");
+  }
+  hl(` * ${P}FINGERPRINT identifies the numbering of events, signals, states and`);
+  hl(" * transitions (`ufsm info` prints it for a model file).");
   hl(" */");
   hl();
   hl(`enum ${prefix}status {`);
@@ -415,6 +475,38 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     ir.events.forEach((e, i) => hl(`    ${name.get(e.id)} = ${i},`));
     hl("};");
     hl();
+  }
+  if (publicSignals) {
+    hl(`enum ${prefix}signal {`);
+    ir.signals.forEach((x, i) => hl(`    ${name.get(x.id)} = ${i},`));
+    hl("};");
+    hl();
+  }
+  if (ir.states.length) {
+    hl("/* States in document order. */");
+    hl(`enum ${prefix}state {`);
+    ir.states.forEach((st, i) => hl(`    ${stateConst.get(i)} = ${i},${st.label !== st.ident ? ` /* ${comment(st.label)} */` : ""}`));
+    hl("};");
+    hl();
+  }
+  hl(`#define ${P}FINGERPRINT ${hex32(ir.fingerprint)}u`);
+  hl();
+  if (trace) {
+    hl(`enum ${prefix}trace_kind {`);
+    hl(`    ${traceConst("event")} = 0, /* id: enum ${prefix}event; process() accepted it */`);
+    hl(`    ${traceConst("signal")} = 1, /* id: ${publicSignals ? `enum ${prefix}signal` : "signal number"}; taken from the queue */`);
+    hl(`    ${traceConst("transition")} = 2, /* id: transition number (below); before its actions */`);
+    hl(`    ${traceConst("enter")} = 3, /* id: enum ${prefix}state; before its entry actions */`);
+    hl(`    ${traceConst("exit")} = 4, /* id: enum ${prefix}state; before its exit actions */`);
+    hl("};");
+    hl();
+    if (ir.transitions.length) {
+      hl("/*");
+      hl(" * Transition numbers:");
+      ir.transitions.forEach((t, i) => hl(` *   ${i} ${comment(t.label)}`));
+      hl(" */");
+      hl();
+    }
   }
   hl(`/* Treat as opaque; zero-initialized storage is fine before ${prefix}init(). */`);
   hl(`${machine} {`);
@@ -435,11 +527,22 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   hl(`int ${prefix}init(${machine} *m, void *user);`);
   hl(`int ${prefix}reset(${machine} *m);`);
   if (ir.events.length) hl(`int ${prefix}process(${machine} *m, enum ${prefix}event event);`);
-  if (ir.actions.length || ir.guards.length) {
+  if (debugInfo && (ir.events.length || ir.signals.length || ir.states.length)) {
+    hl();
+    hl("/* Names as in the model; NULL for a number out of range. */");
+    if (ir.events.length) hl(`const char *${prefix}event_name(uint16_t event);`);
+    if (ir.signals.length) hl(`const char *${prefix}signal_name(uint16_t signal);`);
+    if (ir.states.length) {
+      hl(`const char *${prefix}state_name(uint16_t state);`);
+      hl(`bool ${prefix}is_active(const ${machine} *m, uint16_t state);`);
+    }
+  }
+  if (ir.actions.length || ir.guards.length || trace) {
     hl();
     hl("/* Implemented by the application */");
     for (const a of ir.actions) hl(`void ${name.get(a.id)}(void *user);`);
     for (const g of ir.guards) hl(`bool ${name.get(g.id)}(void *user);`);
+    if (trace) hl(`void ${prefix}trace(void *user, enum ${prefix}trace_kind kind, uint16_t id);`);
   }
   hl();
   hl("#ifdef __cplusplus");
@@ -466,7 +569,7 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     line(0, ` *   ${r} ${comment(n)}: ${slots}${hd}`);
   });
   line(0, " */");
-  if (hasQueue) {
+  if (hasQueue && !publicSignals) {
     line(0, "");
     line(0, "enum {");
     ir.signals.forEach((s, i) => line(1, `${name.get(s.id)} = ${i},`));
@@ -537,8 +640,14 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
       line(3, `return ${status.ok};`);
       line(2, "}");
       const reacting = ir.signals.filter((s) => ir.onSignal[s.id]);
+      let popped = "pop_signal(m)";
+      if (trace) {
+        line(2, `${sigT} sig = pop_signal(m);`);
+        line(2, `${prefix}trace(m->user, ${traceConst("signal")}, (uint16_t)sig);`);
+        popped = "sig";
+      }
       if (reacting.length) {
-        line(2, "switch (pop_signal(m)) {");
+        line(2, `switch (${popped}) {`);
         for (const s of reacting) {
           line(2, `case ${name.get(s.id)}:`);
           line(3, `rc = ${ir.onSignal[s.id]}(m);`);
@@ -551,7 +660,7 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
         line(2, "if (rc < 0) {");
         line(3, "return rc;");
         line(2, "}");
-      } else line(2, "(void)pop_signal(m);");
+      } else if (!trace) line(2, "(void)pop_signal(m);");
     } else {
       line(2, `return ${status.ok};`);
     }
@@ -623,6 +732,7 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     }
     line(1, "m->busy = true;");
     if (checkSteps) line(1, "m->steps = 0u;");
+    if (trace) line(1, `${prefix}trace(m->user, ${traceConst("event")}, (uint16_t)event);`);
     if (reacting.length) {
       line(1, "switch (event) {");
       for (const e of reacting) {
@@ -640,6 +750,33 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     }
     finish(1);
     line(0, "}");
+  }
+
+  if (debugInfo) {
+    const lookup = (fn: string, param: string, table: string, names: string[]): void => {
+      line(0, "");
+      line(0, `static const char *const ${table}[${names.length}] = {`);
+      for (const n of names) line(1, `${cString(n)},`);
+      line(0, "};");
+      line(0, "");
+      line(0, `const char *${prefix}${fn}(uint16_t ${param})`);
+      line(0, "{");
+      line(1, `return ${param} < ${names.length} ? ${table}[${param}] : (const char *)0;`);
+      line(0, "}");
+    };
+    if (ir.events.length) lookup("event_name", "event", "event_names", ir.events.map((e) => e.name));
+    if (ir.signals.length) lookup("signal_name", "signal", "signal_names", ir.signals.map((x) => x.name));
+    if (ir.states.length) {
+      lookup("state_name", "state", "state_names", ir.states.map((st) => st.label));
+      line(0, "");
+      line(0, `static const ${uintType(ir.regions - 1)} state_region[${ir.states.length}] = {${ir.states.map((st) => `${st.region}u`).join(", ")}};`);
+      line(0, `static const ${slotT} state_slot[${ir.states.length}] = {${ir.states.map((st) => `${st.slot}u`).join(", ")}};`);
+      line(0, "");
+      line(0, `bool ${prefix}is_active(const ${machine} *m, uint16_t state)`);
+      line(0, "{");
+      line(1, `return state < ${ir.states.length} && m->cfg[state_region[state]] == state_slot[state];`);
+      line(0, "}");
+    }
   }
 
   return { headerName, sourceName: `${file}.c`, header: `${h.join("\n")}\n`, source: `${out.join("\n")}\n` };

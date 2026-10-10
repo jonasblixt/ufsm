@@ -10,7 +10,7 @@
 import type { Id } from "../v1/model";
 import { OPTION_DEFAULTS } from "../v1/options";
 import { InterpreterError, busyError, type InterpreterHost, type InterpreterOptions } from "../interp/interpreter";
-import type { Expr, IrFunction, IrModule, Stmt, SwitchOn } from "./ir";
+import type { Expr, IrFunction, IrModule, Stmt, SwitchOn, TraceKind } from "./ir";
 
 class Return {
   constructor(readonly value: boolean) {}
@@ -28,6 +28,9 @@ export class IrRunner {
   private readonly names = new Map<Id, string>();
   private readonly eventByName = new Map<string, Id>();
   private readonly signalIndex = new Map<Id, number>();
+  private readonly eventIndex = new Map<Id, number>();
+  /** The trace hook of generated code (only called when the IR was lowered with `trace`). */
+  private readonly onHook: ((kind: TraceKind, index: number) => void) | undefined;
   private queue: Id[] = [];
   private terminatedFlag = false;
   private started = false;
@@ -35,9 +38,10 @@ export class IrRunner {
   private busy = false;
   private steps = 0;
 
-  constructor(ir: IrModule, host: InterpreterHost = {}, options: InterpreterOptions = {}) {
+  constructor(ir: IrModule, host: InterpreterHost = {}, options: InterpreterOptions = {}, onHook?: (kind: TraceKind, index: number) => void) {
     this.ir = ir;
     this.host = host;
+    this.onHook = ir.trace ? onHook : undefined;
     this.maxMicrosteps = options.maxMicrosteps ?? OPTION_DEFAULTS.maxMicrosteps;
     this.signalQueue = options.signalQueue ?? OPTION_DEFAULTS.signalQueue;
     this.cfg = new Int32Array(ir.regions);
@@ -49,6 +53,7 @@ export class IrRunner {
       this.eventByName.set(e.id, e.id);
     }
     ir.signals.forEach((s, i) => this.signalIndex.set(s.id, i));
+    ir.events.forEach((e, i) => this.eventIndex.set(e.id, i));
   }
 
   get terminated(): boolean {
@@ -86,6 +91,7 @@ export class IrRunner {
     if (this.terminatedFlag) return 0;
     this.busy = true;
     this.steps = 0;
+    this.onHook?.("event", this.eventIndex.get(id)!);
     const fn = this.ir.onEvent[id];
     if (fn) this.call(fn);
     this.settle();
@@ -103,6 +109,7 @@ export class IrRunner {
       if (this.ir.eventless && this.call(this.ir.eventless)) continue;
       const sig = this.queue.shift();
       if (sig === undefined) return;
+      this.onHook?.("signal", this.signalIndex.get(sig)!);
       const fn = this.ir.onSignal[sig];
       if (fn) this.call(fn);
     }
@@ -167,6 +174,9 @@ export class IrRunner {
           if (++this.steps > this.maxMicrosteps) {
             throw new InterpreterError("livelock", `more than ${this.maxMicrosteps} microsteps without becoming stable`);
           }
+          break;
+        case "trace":
+          this.onHook?.(s.hook, s.index);
           break;
         case "terminate":
           this.terminatedFlag = true;

@@ -246,6 +246,10 @@ export interface ModelOptions {
   signalQueue?: number;
   /** Microsteps per reset/process call before a livelock error; 0 disables the check in generated code. Default 10000. */
   maxMicrosteps?: number;
+  /** API option: name lookup for events, signals and states, and an "is this state active" query. Default false. */
+  debugInfo?: boolean;
+  /** API option: a trace hook the application implements (event, signal, transition, enter, exit; ids only). Default false. */
+  trace?: boolean;
 }
 
 // ---------------------------------------------------------------- document

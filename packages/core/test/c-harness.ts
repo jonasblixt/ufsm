@@ -15,13 +15,18 @@
  * (parseDriverOutput; error codes as numbers). With
  * autoReset, an error is followed by a reset; if that fails too, the unit
  * is dead and prints nothing more (like runScript in harness.ts).
+ *
+ * A unit generated with debugInfo from an IR lowered with trace logs its
+ * trace hook calls among the action calls (harness.ts: decodeHooks), checks
+ * the state names there, reads the configuration through is_active() and
+ * checks the fingerprint when it compiles.
  */
 import { execFile, execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { availableParallelism, tmpdir } from "node:os";
 import { promisify } from "node:util";
 import { join } from "node:path";
-import { generateC, type COptions, type IrModule } from "../src/index";
+import { cString, generateC, hex32, type COptions, type IrModule } from "../src/index";
 import { driverLines, parseDriverOutput, type ScriptStep, type StepResult } from "./harness";
 
 /**
@@ -121,14 +126,64 @@ export async function runC(cc: string, units: CUnit[]): Promise<StepResult[][]> 
       writeFileSync(join(dir, files.sourceName), files.source);
       sources.push(files.sourceName);
       const c: string[] = [];
+      const debug = u.ir.trace && u.options?.debugInfo === true;
+      const P = p.toUpperCase();
       c.push(`#include "${files.headerName}"`, '#include "driver.h"', "");
+      if (debug) {
+        const labels = u.ir.states.map((st) => cString(st.label));
+        const name = (fn: string, has: boolean, what: string): string =>
+          has ? `{ const char *n = ${p}${fn}(id); snprintf(buf, sizeof buf, "@${what}:%s", n ? n : "BAD_NAME"); }` : `snprintf(buf, sizeof buf, "@${what}:%u", (unsigned int)id);`;
+        c.push(
+          "#include <stdio.h>",
+          "#include <string.h>",
+          "",
+          `typedef char fingerprint_ok[(${P}FINGERPRINT == ${hex32(u.ir.fingerprint)}u) ? 1 : -1];`,
+          ...(labels.length ? [`static const char *const labels[] = { ${labels.join(", ")} };`] : []),
+          `void ${p}trace(void *user, enum ${p}trace_kind kind, uint16_t id)`,
+          "{",
+          "    char buf[512];",
+          "    switch (kind) {",
+          `    case ${P}TRACE_EVENT:`,
+          `        ${name("event_name", u.ir.events.length > 0, "event")}`,
+          "        break;",
+          `    case ${P}TRACE_SIGNAL:`,
+          `        ${name("signal_name", u.ir.signals.length > 0, "signal")}`,
+          "        break;",
+          `    case ${P}TRACE_TRANSITION:`,
+          '        snprintf(buf, sizeof buf, "@t:%u", (unsigned int)id);',
+          "        break;",
+          "    default:",
+          `        snprintf(buf, sizeof buf, "@%s:%u", kind == ${P}TRACE_ENTER ? "enter" : "exit", (unsigned int)id);`,
+          u.ir.states.length
+            ? `        if (id >= ${u.ir.states.length} || !${p}state_name(id) || strcmp(${p}state_name(id), labels[id]) != 0) test_call(user, "BAD_STATE_NAME");`
+            : '        test_call(user, "BAD_STATE_NAME");',
+          "        break;",
+          "    }",
+          "    test_call(user, buf);",
+          "}",
+          "",
+        );
+      }
       u.ir.actions.forEach((a) => c.push(`void ${p}${a.name}(void *user) { test_call(user, ${str(a.name)}); }`));
       u.ir.guards.forEach((g, i) => c.push(`bool ${p}${g.name}(void *user) { return test_guard(user, ${i}, ${str(g.name)}); }`));
       c.push(`static struct ${p}machine machine;`);
       c.push(`static int w_init(void *user) { return ${p}init(&machine, user); }`);
       c.push(`static int w_reset(void) { return ${p}reset(&machine); }`);
       if (u.ir.events.length) c.push(`static int w_process(int e) { return ${p}process(&machine, (enum ${p}event)e); }`);
-      c.push(`static int w_active(unsigned int r, unsigned int s) { return machine.cfg[r] == s; }`);
+      if (debug && u.ir.states.length) {
+        // through is_active(): find the state number of (region, slot)
+        c.push(
+          `static const unsigned int state_at[][2] = { ${u.ir.states.map((st) => `{ ${st.region}u, ${st.slot}u }`).join(", ")} };`,
+          "static int w_active(unsigned int r, unsigned int s)",
+          "{",
+          "    unsigned int i;",
+          `    for (i = 0u; i < ${u.ir.states.length}u; i++) {`,
+          `        if (state_at[i][0] == r && state_at[i][1] == s) return ${p}is_active(&machine, (uint16_t)i);`,
+          "    }",
+          "    return 0;",
+          "}",
+        );
+      } else c.push(`static int w_active(unsigned int r, unsigned int s) { return machine.cfg[r] == s; }`);
       c.push(`static void w_clear(void) { static const struct ${p}machine zero; machine = zero; }`);
       const states = u.ir.states.map((s) => `{ ${s.region}u, ${s.slot}u, ${str(s.id)} }`);
       c.push(`static const struct test_state states[] = { ${states.length ? states.join(", ") : "{ 0u, 0u, 0 }"} };`);
