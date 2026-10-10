@@ -167,7 +167,8 @@ describe("v0 -> v1 migration", { skip: v0Files.length === 0 && "old/ not present
   it("keeps the committed v1 conversions in sync with the converter", () => {
     // Fixed by hand after conversion: the draft's 'completion-event' trigger (no trigger-kind, B9) is now
     // `completion: true`, which is what it meant; the converter still turns it into an ordinary event.
-    const fixedByHand = new Set(["test_final_state_completion.ufsm"]);
+    // dimmer.ufsm was edited in the editor: t8 now returns to s4 on an S route.
+    const fixedByHand = new Set(["test_final_state_completion.ufsm", "dimmer.ufsm"]);
     const committed = new Map(v1Files.map((p) => [basename(p), p]));
     let compared = 0;
     for (const path of v0Files) {
@@ -177,7 +178,7 @@ describe("v0 -> v1 migration", { skip: v0Files.length === 0 && "old/ not present
       assert.equal(serializeV1(doc), readFileSync(target, "utf8").replace(/\r\n/g, "\n"), rel(target));
       compared++;
     }
-    assert.ok(compared >= 20, `compared ${compared}`);
+    assert.ok(compared >= 19, `compared ${compared}`);
   });
 
   it("turns v0 compare terms into calls of new boolean guards", () => {
