@@ -566,6 +566,7 @@ Measured over the 21 valid legacy models (864 KB):
   for outside/over the title block, Problems with sheet and zone, a bigger paper clearing them, `z f` on an empty page).
   487 core + 67 editor tests in the cloud workspace (nothing skipped), typecheck clean. A first attempt at this (in the
   cloud workspace earlier today) was lost before it reached the repository; this is a rebuild of it from what was left.
+- **2026-10-10** CI: actions/checkout, actions/setup-node and actions/upload-artifact v4 -> v7 (all run on Node 24; v4 targeted Node 20, which GitHub now forces onto Node 24 with a deprecation warning). No breaking change applies: checkout v7 only blocks fork PRs under pull_request_target/workflow_run, setup-node keeps the explicit `cache: npm`, upload-artifact still zips by default (`archive: false` is opt-in).
 
 ## 7. Tasks
 
