@@ -461,3 +461,8 @@ Measured over the 21 valid legacy models (864 KB):
   the same amount (the route is translated), otherwise only the first or last segment changes. `followOffset` moves a
   label by the blend of its segment's two points (stays between bend points, follows the end on a first/last segment).
   route/edit unit tests updated + new label test; browser check: dragging C keeps t5's bend points (347 checks).
+- 2026-10-10: The editor reads and writes files through `tauri-plugin-fs` (2.6.0, matching the Rust crate already in
+  Cargo.lock via the dialog plugin) instead of the shell's own `read_text_file`/`write_text_file`, which accepted any
+  path. No static fs scope: the dialog plugin adds each picked file, and a picked folder with its direct children, for
+  the rest of the run; capabilities grant only `fs:allow-read-text-file`/`fs:allow-write-text-file`. Settings keep their
+  two commands (fixed path, atomic write). Browser check stub gained the plugin's names (347 checks).

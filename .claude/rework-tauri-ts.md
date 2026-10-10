@@ -212,7 +212,13 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [ ] Mouse-button follow-ups: Jonas to try it in `npm run dev` (WebView2 reports the side buttons as 3/4; macOS WKWebView
       and Linux WebKitGTK not yet checked); forward button: enter the selected state (Enter), or a page history (back/forward
       through visited sheets, as VS Code's Alt+Left/Right) instead of the hierarchy?
-- [ ] E7 Polish: export SVG/PDF/print, Tauri hardening (dialog-picked paths only, CSP), autosave/recovery
+- [ ] E7 Polish: export SVG/PDF/print, Tauri hardening (CSP; dialog-picked paths only is done: fs plugin, 2026-10-10),
+      autosave/recovery
+- [x] File access through `tauri-plugin-fs` instead of own read/write commands: only paths picked in a dialog this run
+      (2026-10-10)
+- [ ] fs-plugin follow-ups: Jonas to try open, save, Save As, File › Generate into a folder and Save trace in `npm run dev`;
+      reopening files by path in a later run (recent files, restoring open machines) needs `tauri-plugin-persisted-scope`
+      or a static scope, since dialog grants last only until the app exits
 - [ ] Later: `"auto"` route via libavoid-js (trial on canvas.ufsm first; LGPL-2.1+, compatible with uFSM's GPL-3; keep its
       licence notice and source link)
 
@@ -234,7 +240,7 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
   test_nested_finals (A can never complete: region Ar2 has no final state of its own; the model must stay equal to
   the converter output, so it is not changed).
 - Traces without `options.signalQueue` must never have more than 16 signals waiting (the C default).
-- Tauri file commands accept any path; CSP is `null` (fine for local use, revisit before release).
+- CSP is `null` (fine for local use, revisit before release). File access is limited to dialog-picked paths (fs plugin).
 - `icon.ico` uses PNG entries for all sizes (works on modern Windows). Regenerate the set from `icons/icon.svg`
   (`npx tauri icon apps/editor/src-tauri/icons/icon.svg` resizes one render; the committed small sizes are rendered per size).
 - Tree view lists normal states only (pseudo-states omitted on purpose).

@@ -42,7 +42,7 @@ const stub = {
     b.onResolve({ filter: /^@tauri-apps\// }, (a) => ({ path: a.path, namespace: "stub" }));
     b.onLoad({ filter: /.*/, namespace: "stub" }, () => ({
       contents:
-        "export const invoke = async () => { throw new Error('no tauri'); }; export const open = async () => null; export const save = async () => null; export const ask = async () => false; export const getCurrentWindow = () => ({ setTitle: async () => {} }); export default {};",
+        "export const invoke = async () => { throw new Error('no tauri'); }; export const open = async () => null; export const save = async () => null; export const ask = async () => false; export const readTextFile = async () => { throw new Error('no tauri'); }; export const writeTextFile = readTextFile; export const getCurrentWindow = () => ({ setTitle: async () => {} }); export default {};",
       loader: "js",
     }));
   },

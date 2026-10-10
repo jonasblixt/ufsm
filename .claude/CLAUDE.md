@@ -58,7 +58,8 @@ packages/core/          @ufsm/core: model, v0 reader, v1 format, checks, semanti
 packages/cli/           @ufsm/cli: `ufsm` command (info, check, list, migrate, fmt, run, trace, flatten, ir, generate)
 apps/editor/            @ufsm/editor: Vite + TypeScript frontend laid out after VS Code (canvas, explorer, tabs,
                         panels, simulator, code preview, themes, settings); file map in .claude/rules/editor.md
-apps/editor/src-tauri/  Rust shell: window, dialog plugin, read/write file commands, read/write settings.json (app config dir), icons
+apps/editor/src-tauri/  Rust shell: window, dialog and fs plugins (fs reaches only dialog-picked paths), read/write settings.json
+                        (app config dir), icons
 docs/format-v1.md       file format specification (normative)
 docs/semantics.md       execution semantics (normative; every backend must match)
 docs/backend-c.md       C generator: options (`targets.c`), generated API, testing

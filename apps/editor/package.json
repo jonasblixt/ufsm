@@ -16,6 +16,7 @@
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-dialog": "^2.0.0",
+    "@tauri-apps/plugin-fs": "^2.6.0",
     "@ufsm/core": "*",
     "immer": "^11.1.21",
     "preact": "^11.0.1"

@@ -11,6 +11,8 @@
     "core:window:allow-toggle-maximize",
     "core:window:allow-close",
     "core:window:allow-destroy",
-    "dialog:default"
+    "dialog:default",
+    "fs:allow-read-text-file",
+    "fs:allow-write-text-file"
   ]
 }

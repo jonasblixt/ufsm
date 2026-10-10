@@ -7,18 +7,6 @@
 use std::path::PathBuf;
 use tauri::Manager;
 
-/// Read a model file chosen by the user through the native open dialog.
-#[tauri::command]
-fn read_text_file(path: PathBuf) -> Result<String, String> {
-    std::fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))
-}
-
-/// Write a model file chosen by the user through the native save dialog.
-#[tauri::command]
-fn write_text_file(path: PathBuf, contents: String) -> Result<(), String> {
-    std::fs::write(&path, contents).map_err(|e| format!("{}: {e}", path.display()))
-}
-
 /// `settings.json` in the app's config folder (Windows: %APPDATA%\se.blxt.ufsm, macOS: ~/Library/Application
 /// Support/se.blxt.ufsm, Linux: ~/.config/se.blxt.ufsm). The only file the settings commands touch.
 fn settings_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
@@ -64,12 +52,11 @@ fn write_settings(app: tauri::AppHandle, contents: String) -> Result<(), String>
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![
-            read_text_file,
-            write_text_file,
-            read_settings,
-            write_settings
-        ])
+        // Models, traces and generated code are read and written through the fs plugin. It has no static scope: a
+        // path is reachable only after the user picked it in a dialog (the dialog plugin adds files exactly, folders
+        // with their direct children), and only until the app exits.
+        .plugin(tauri_plugin_fs::init())
+        .invoke_handler(tauri::generate_handler![read_settings, write_settings])
         .run(tauri::generate_context!())
         .expect("error while running uFSM");
 }

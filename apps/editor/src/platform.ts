@@ -3,12 +3,14 @@
 
 /**
  * Thin seam between the editor and the host. Inside Tauri we use native
- * dialogs and the Rust file commands; in a plain browser (`npm run dev:web`)
- * we fall back to <input type=file> and downloads, handy for quick UI work.
+ * dialogs and the fs plugin, which only reaches paths the user picked in a
+ * dialog during this run; in a plain browser (`npm run dev:web`) we fall back
+ * to <input type=file> and downloads, handy for quick UI work.
  */
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ask, open, save } from "@tauri-apps/plugin-dialog";
+import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 
 export interface OpenedFile {
   /** Full path in Tauri, bare file name in the browser. */
@@ -35,7 +37,7 @@ export async function openModelFile(fileInput: HTMLInputElement): Promise<Opened
   if (inTauri) {
     const picked = await open({ multiple: false, directory: false, filters: FILTERS });
     if (typeof picked !== "string") return undefined;
-    const text = await invoke<string>("read_text_file", { path: picked });
+    const text = await readTextFile(picked);
     return { path: picked, name: baseName(picked), text };
   }
 
@@ -61,7 +63,7 @@ export async function saveModelFile(make: (path: string) => string, path: string
   if (inTauri) {
     const target = path ?? (await save({ defaultPath: suggestedName, filters: FILTERS }));
     if (!target) return undefined;
-    await invoke("write_text_file", { path: target, contents: make(target) });
+    await writeTextFile(target, make(target));
     return target;
   }
   // Browser: offer a download.
@@ -91,7 +93,7 @@ export async function saveTextFile(
   if (inTauri) {
     const target = await save({ defaultPath: suggestedName, filters: [filter] });
     if (!target) return undefined;
-    await invoke("write_text_file", { path: target, contents: make(target) });
+    await writeTextFile(target, make(target));
     return target;
   }
   download(make(suggestedName), suggestedName);
@@ -105,7 +107,7 @@ export async function saveFilesToFolder(files: readonly { name: string; text: st
     if (typeof dir !== "string") return undefined;
     const sep = dir.includes("\\") ? "\\" : "/";
     const base = dir.endsWith(sep) ? dir : dir + sep;
-    for (const f of files) await invoke("write_text_file", { path: base + f.name, contents: f.text });
+    for (const f of files) await writeTextFile(base + f.name, f.text);
     return dir;
   }
   for (const f of files) download(f.text, f.name);
