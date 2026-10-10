@@ -18,7 +18,7 @@ import { CodeTab, type CodeProps } from "./codepanel";
 import { SettingsTab, type SettingsProps } from "./settingspanel";
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import {
-  C_DEFAULTS,
+  OPTION_DEFAULTS,
   IDENTIFIER,
   actionLabel,
   addDecl,
@@ -49,6 +49,7 @@ import {
   locationText,
   TITLE_BLOCK_FIELDS,
   setStateActions,
+  setModelOption,
   setTargetOption,
   setTransitionActions,
   setTrigger,
@@ -60,6 +61,7 @@ import {
   type DeclKind,
   type Diagnostic,
   type DocIndex,
+  type OptionKey,
   type GuardTerm,
   type Id,
   type InternalTransition,
@@ -818,11 +820,16 @@ type TargetSettings = Record<string, unknown>;
 export interface TargetOption {
   key: string;
   label: string;
-  numeric?: boolean;
   fallback(name: string, set: TargetSettings): string;
 }
 
-/** Code generator options as stored in `targets`, with the generators' defaults shown as placeholders when unset. */
+/** The `options` section, shared by every code generator and the simulator: shown once, defaults as placeholders. */
+export const MODEL_OPTIONS: { key: OptionKey; label: string }[] = [
+  { key: "signalQueue", label: "Signal queue" },
+  { key: "maxMicrosteps", label: "Max microsteps" },
+];
+
+/** Code generator settings as stored in `targets`, with the generators' defaults shown as placeholders when unset. */
 export const TARGETS: { key: string; title: string; options: TargetOption[] }[] = [
   {
     key: "c",
@@ -834,8 +841,6 @@ export const TARGETS: { key: string; title: string; options: TargetOption[] }[] 
         label: "File",
         fallback: (n, set) => (typeof set["prefix"] === "string" ? set["prefix"].replace(/_+$/, "") : "") || cIdentifier(n),
       },
-      { key: "signalQueue", label: "Signal queue", numeric: true, fallback: () => String(C_DEFAULTS.signalQueue) },
-      { key: "maxMicrosteps", label: "Max microsteps", numeric: true, fallback: () => String(C_DEFAULTS.maxMicrosteps) },
     ],
   },
   {
@@ -844,8 +849,6 @@ export const TARGETS: { key: string; title: string; options: TargetOption[] }[] 
     options: [
       { key: "className", label: "Class", fallback: (n) => pythonClassName(n) },
       { key: "module", label: "Module", fallback: (n) => cIdentifier(n) },
-      { key: "signalQueue", label: "Signal queue", numeric: true, fallback: () => String(C_DEFAULTS.signalQueue) },
-      { key: "maxMicrosteps", label: "Max microsteps", numeric: true, fallback: () => String(C_DEFAULTS.maxMicrosteps) },
     ],
   },
   {
@@ -854,8 +857,6 @@ export const TARGETS: { key: string; title: string; options: TargetOption[] }[] 
     options: [
       { key: "className", label: "Class", fallback: (n) => pythonClassName(n) },
       { key: "module", label: "Module", fallback: (n) => cIdentifier(n) },
-      { key: "signalQueue", label: "Signal queue", numeric: true, fallback: () => String(C_DEFAULTS.signalQueue) },
-      { key: "maxMicrosteps", label: "Max microsteps", numeric: true, fallback: () => String(C_DEFAULTS.maxMicrosteps) },
     ],
   },
   {
@@ -864,8 +865,6 @@ export const TARGETS: { key: string; title: string; options: TargetOption[] }[] 
     options: [
       { key: "className", label: "Struct", fallback: (n) => pythonClassName(n) },
       { key: "module", label: "Module", fallback: (n) => rustModuleName(n) },
-      { key: "signalQueue", label: "Signal queue", numeric: true, fallback: () => String(C_DEFAULTS.signalQueue) },
-      { key: "maxMicrosteps", label: "Max microsteps", numeric: true, fallback: () => String(C_DEFAULTS.maxMicrosteps) },
     ],
   },
 ];
@@ -1024,6 +1023,26 @@ function Project({ doc, ops, highlight }: { doc: PanelDoc | undefined; ops: Pane
           <DeclList index={index} kind={k.kind} one={k.one} ops={ops} highlight={highlight} />
         </Section>
       ))}
+      <Section title="Options">
+        <div class="snote">
+          The same for every code generator and the simulator, so the machine behaves alike in every language. Max
+          microsteps: per reset or event before a livelock error (0: no check in generated code).
+        </div>
+        {MODEL_OPTIONS.map((o) => (
+          <Field label={o.label} key={o.key}>
+            <TextInput
+              label={o.label}
+              placeholder={String(OPTION_DEFAULTS[o.key])}
+              value={d.options?.[o.key] === undefined ? "" : String(d.options[o.key])}
+              validate={(v) => (v.trim() !== "" && !/^\d+$/.test(v.trim()) ? "A whole number, 0 or more" : undefined)}
+              onCommit={(v) => {
+                const s = v.trim();
+                ops.edit((x) => setModelOption(x, o.key, s === "" ? undefined : Number(s)));
+              }}
+            />
+          </Field>
+        ))}
+      </Section>
       {TARGETS.map((t) => {
         const set = d.targets?.[t.key] ?? {};
         return (
@@ -1034,10 +1053,9 @@ function Project({ doc, ops, highlight }: { doc: PanelDoc | undefined; ops: Pane
                   label={`${t.title} ${o.label}`}
                   placeholder={o.fallback(d.name, set)}
                   value={o.key in set ? String(set[o.key]) : ""}
-                  validate={(v) => (o.numeric && v.trim() !== "" && !/^\d+$/.test(v.trim()) ? "A whole number, 0 or more" : undefined)}
                   onCommit={(v) => {
                     const s = v.trim();
-                    ops.edit((x) => setTargetOption(x, t.key, o.key, s === "" ? undefined : o.numeric ? Number(s) : s));
+                    ops.edit((x) => setTargetOption(x, t.key, o.key, s === "" ? undefined : s));
                   }}
                 />
               </Field>

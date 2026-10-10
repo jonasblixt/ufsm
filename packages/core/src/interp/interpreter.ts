@@ -10,6 +10,7 @@
  * action trace for the same inputs.
  */
 import { checkV1 } from "../v1/check";
+import { defined, modelOptions } from "../v1/options";
 import type { Action, GuardTerm, Id, UfsmDocument } from "../v1/model";
 import {
   buildStructure,
@@ -37,10 +38,11 @@ export type TraceEntry =
   | { type: "reset" }
   | { type: "terminate" };
 
+/** Overrides of the model's `options` (unset: the model's value, else its default). */
 export interface InterpreterOptions {
-  /** Maximum number of queued signals; emitting more throws `queue-overflow`. Default: unbounded. */
+  /** Maximum number of queued signals; emitting more throws `queue-overflow`. Default: the model's (16). */
   signalQueue?: number;
-  /** Microsteps per process()/reset() call before giving up with `livelock`. Default 10000. */
+  /** Microsteps per process()/reset() call before giving up with `livelock`. Default: the model's (10000). */
   maxMicrosteps?: number;
   /** Receives every observable step, for simulators and debugging. */
   onTrace?: (entry: TraceEntry) => void;
@@ -73,7 +75,7 @@ type TriggerSel = { kind: "event"; id: Id } | { kind: "eventless" };
 export class Interpreter {
   readonly structure: Structure;
   private readonly host: InterpreterHost;
-  private readonly options: Required<Pick<InterpreterOptions, "maxMicrosteps">> & InterpreterOptions;
+  private readonly options: Required<Pick<InterpreterOptions, "signalQueue" | "maxMicrosteps">> & InterpreterOptions;
   private readonly active = new Set<SemVertex>();
   /** Recorded history per region id: the vertices to restore. */
   private readonly history = new Map<Id, SemVertex[]>();
@@ -91,7 +93,7 @@ export class Interpreter {
     }
     this.structure = buildStructure(doc);
     this.host = host;
-    this.options = { maxMicrosteps: 10000, ...options };
+    this.options = { ...modelOptions(doc), ...defined(options) };
   }
 
   /** True after the machine entered a terminate pseudo-state. */
@@ -379,7 +381,7 @@ export class Interpreter {
       } else {
         const d = this.structure.index.decls.get(a.emit)!.decl;
         const limit = this.options.signalQueue;
-        if (limit !== undefined && this.queue.length >= limit) {
+        if (this.queue.length >= limit) {
           throw new InterpreterError("queue-overflow", `signal queue full (${limit}) when emitting '${d.name}'`);
         }
         this.trace({ type: "emit", signal: d.name });

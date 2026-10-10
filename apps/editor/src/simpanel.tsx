@@ -8,7 +8,7 @@
 import { Component, type ComponentChildren } from "preact";
 import { useState } from "preact/hooks";
 import { vertexName, type DocIndex, type Id } from "@ufsm/core";
-import { SIM_DEFAULTS, type LogLine, type LogStep, type SimOptions, type Simulation } from "./sim";
+import { type LogLine, type LogStep, type SimOptions, type Simulation } from "./sim";
 import { Field, Section } from "./widgets";
 
 export interface SimOps {
@@ -38,7 +38,10 @@ export interface SimProps {
   /** Events that would take a transition now, with the transitions. */
   would: ReadonlyMap<string, readonly Id[]>;
   guards: ReadonlyMap<string, boolean>;
+  /** What the next start runs with: the model's options, with the session's overrides. */
   options: SimOptions;
+  /** The session's overrides (the rest are the model's). */
+  overridden: Partial<SimOptions>;
   recordActive: boolean;
   ops: SimOps;
 }
@@ -179,6 +182,11 @@ class Log extends Component<{ sim: Simulation; version: number; ops: SimOps }> {
       </div>
     );
   }
+}
+
+/** Where an option's value comes from, for the field's tooltip. */
+function optionTitle(p: SimProps, key: keyof SimOptions): string {
+  return key in p.overridden ? "Changed for this session; set it back to the model's value to follow the model again." : "The model's value (Project tab).";
 }
 
 function NumberInput({ value, min, onCommit, title }: { value: number; min?: number; onCommit(v: number): void; title?: string }) {
@@ -344,12 +352,15 @@ export function SimulatorTab(p: SimProps) {
       )}
       <Section title="Options" open={false}>
         <Field label="Signal queue">
-          <NumberInput value={p.options.signalQueue} min={1} onCommit={(v) => p.ops.setOption("signalQueue", v)} title={`Default ${SIM_DEFAULTS.signalQueue}, as in the generated code`} />
+          <NumberInput value={p.options.signalQueue} min={1} onCommit={(v) => p.ops.setOption("signalQueue", v)} title={optionTitle(p, "signalQueue")} />
         </Field>
         <Field label="Livelock limit">
-          <NumberInput value={p.options.maxMicrosteps} min={1} onCommit={(v) => p.ops.setOption("maxMicrosteps", v)} title={`Microsteps per event; default ${SIM_DEFAULTS.maxMicrosteps}`} />
+          <NumberInput value={p.options.maxMicrosteps} min={1} onCommit={(v) => p.ops.setOption("maxMicrosteps", v)} title={`Microsteps per event. ${optionTitle(p, "maxMicrosteps")}`} />
         </Field>
-        <div class="dim snote">Used from the next start.</div>
+        <div class="dim snote">
+          The model's options (Project tab) unless changed here for this session; a saved trace records what was changed.
+          Used from the next start.
+        </div>
       </Section>
     </>
   );

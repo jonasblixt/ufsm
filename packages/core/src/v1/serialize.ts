@@ -16,6 +16,7 @@ import {
   type EdgeLayout,
   type GuardTerm,
   type InternalTransition,
+  type ModelOptions,
   type Region,
   type RegionLayout,
   type StateLayout,
@@ -24,6 +25,7 @@ import {
   type UfsmDocument,
   type Vertex,
 } from "./model";
+import { OPTION_KEYS } from "./options";
 
 type Json = null | boolean | number | string | Json[] | { [k: string]: Json };
 
@@ -149,6 +151,11 @@ function titleBlockJ(tb: TitleBlock | undefined): Json | undefined {
   return Object.keys(o).length ? o : undefined;
 }
 
+function optionsJ(o: ModelOptions): Json | undefined {
+  const j = ordered(OPTION_KEYS.map((k) => [k, o[k]]));
+  return Object.keys(j).length ? j : undefined;
+}
+
 function diagramJ(d: Diagram, doc: UfsmDocument): Json {
   const order = documentOrder(doc.machine.root);
   return ordered([
@@ -189,6 +196,7 @@ export function toCanonicalJson(doc: UfsmDocument): Json {
     ],
     ["machine", { root: regionJ(doc.machine.root), transitions: doc.machine.transitions.map(transitionJ) }],
     ["diagram", doc.diagram ? diagramJ(doc.diagram, doc) : undefined],
+    ["options", doc.options && optionsJ(doc.options)],
     ["targets", doc.targets ? sortKeysDeep(doc.targets) : undefined],
   ]);
 }

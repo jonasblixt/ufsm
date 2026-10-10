@@ -489,3 +489,20 @@ Measured over the 21 valid legacy models (864 KB):
   regenerated. Backend docs updated. Tests on Windows: core 498 (C suites with `CC` = LLVM clang, which is installed but
   not on PATH), editor 67. Browser check not run.
 - 2026-10-10: Jonas reviewed the busy latch semantics (accepted); the simulator keeps Stop/Start and Reset as the way out.
+- 2026-10-10: Common `options` section (Jonas's decision): new `core/src/v1/options.ts` (defaults, behaviour vs API
+  options, `targetSection`), schema/model/canonical writer (`options` after `diagram`, closed), design rules
+  `signal-queue` (error: queue 0 while emitting) and `target-option` (warning: behaviour option under `targets`).
+  Backends read only their own keys from `targets.*`; `generateFiles` resolves `options` -> targets -> overrides. The
+  interpreter takes its defaults from the model (its queue is now bounded at 16 by default, like generated code); flat
+  runner and IR runner default to 16 too; trace runner: model, then caller, then trace options (`traceOptions` for the
+  backend runners). CLI `run` accepts `--signal-queue`/`--max-microsteps`. Editor: Project tab shows one Options section
+  (per-language sections keep prefix/class/module/file), search rows "Project: Options: ...", code preview cache keyed on
+  `options`; simulator runs with the model's options plus session overrides, a run is out of date when `options` change,
+  saved traces record only overrides. New `tests/models/test_options.ufsm` (queue 1, 2 microsteps) with
+  `test_options.json` (model's options apply) and `test_options_override.json` (a trace's override). Found and fixed:
+  generated Rust with a queue of 1 failed clippy (`modulo_one`); now no `queue_head` and slot 0. Fixed a latent flaw in
+  create.test's paste check (vertices nested inside an off-page region were compared across sheets; exposed because the
+  new model shifted the random selections). Generated code for all 38 repo models in all four languages is byte-identical
+  to HEAD. Tests on Windows: core 503 (501 pass, 1 skipped, 1 fail: `test_model1.ufsm` hand-edited in 25c441d, see
+  section 8), C suites with `CC` = LLVM clang 14/14, editor 68. Docs: format-v1.md (Options section, design rules),
+  semantics.md, the four backend docs. Browser check updated (Options section in the Project tab) but not run.

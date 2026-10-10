@@ -14,6 +14,7 @@ import {
   type InterpreterHost,
   type InterpreterOptions,
   type MachineFactory,
+  modelOptions,
   TraceRaise,
   type TraceMachine,
   type UfsmDocument,
@@ -168,7 +169,10 @@ export function replayResults(results: StepResult[], backend: string): MachineFa
   };
 }
 
-/** One differential unit for generated code: the interpreter has an unbounded queue unless one is given. */
+/** Signal queue of differential runs that set none: large, so random models rarely overflow it. */
+export const DIFF_QUEUE = 4096;
+
+/** One differential unit for generated code; the queue is DIFF_QUEUE unless one is given. */
 export interface BackendDiff {
   label: string;
   doc: UfsmDocument;
@@ -179,7 +183,7 @@ export interface BackendDiff {
 /** Assert that results recorded from generated code (one list per diff, autoReset on) equal the interpreter's. */
 export function assertMatchesInterpreter(diffs: BackendDiff[], results: StepResult[][], maxMicrosteps: number, backend: string): void {
   diffs.forEach((d, k) => {
-    const expected = runScript((h) => new Interpreter(d.doc, h, { maxMicrosteps, signalQueue: d.signalQueue }), d.script);
+    const expected = runScript((h) => new Interpreter(d.doc, h, { maxMicrosteps, signalQueue: d.signalQueue ?? DIFF_QUEUE }), d.script);
     const steps = d.script.filter((s) => s.reset || s.send !== undefined);
     const actual = (results[k] ?? []).map((r, i) => logLine(steps[i]!, r));
     const i = expected.findIndex((x, j) => x !== actual[j]);
@@ -194,7 +198,7 @@ export function drive(make: (host: InterpreterHost) => TraceMachine, doc: UfsmDo
 
 /** Assert that `engine` behaves exactly like the reference interpreter on one random run. */
 export function compareWithInterpreter(engine: Engine, doc: UfsmDocument, seed: number, steps: number, options: InterpreterOptions = {}): void {
-  const opts = { maxMicrosteps: 300, ...options };
+  const opts = { ...modelOptions(doc), maxMicrosteps: 300, ...options };
   const a = drive((h) => new Interpreter(doc, h, opts), doc, seed, steps);
   const b = drive((h) => engine(doc, h, opts), doc, seed, steps);
   const i = a.findIndex((x, k) => x !== b[k]);

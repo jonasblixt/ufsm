@@ -98,6 +98,26 @@ describe("simulation", () => {
     assert.equal(plain.trace("m", { active: false }).steps[0]!.active, undefined);
   });
 
+  it("runs with the model's options; a trace records only the ones the session overrides", () => {
+    const doc = load("tests/models/test_options.ufsm");
+    const sim = new Simulation(doc, new Map());
+    assert.deepEqual(sim.options, { signalQueue: 1, maxMicrosteps: 2 });
+    sim.reset();
+    assert.equal(sim.send("e1").error?.code, "queue-overflow", "the model's queue of 1");
+    assert.equal(sim.trace("m").options, undefined, "the model's own options are not written");
+    assert.deepEqual(runTrace(doc, sim.trace("m")), []);
+    const same = new Simulation(doc, new Map(), { signalQueue: 1 });
+    assert.equal(same.trace("m").options, undefined, "an override equal to the model's value is not written");
+    const wider = new Simulation(doc, new Map(), { signalQueue: 2 });
+    wider.reset();
+    assert.equal(wider.send("e1").error, undefined);
+    const t = wider.trace("m");
+    assert.deepEqual(t.options, { signalQueue: 2 });
+    assert.deepEqual(runTrace(doc, t), []);
+    assert.ok(!wider.staleFor(doc));
+    assert.ok(wider.staleFor({ ...doc, options: { signalQueue: 3 } }), "changing the model's options makes the run out of date");
+  });
+
   it("records no active states for a step that failed (the machine is undefined after an error)", () => {
     const doc = load("tests/models/test_eventless.ufsm");
     const guards = new Map<string, boolean>();

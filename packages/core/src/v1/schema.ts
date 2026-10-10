@@ -135,6 +135,19 @@ const defs = {
     },
     closed,
   ),
+  options: Type.Object(
+    {
+      signalQueue: opt(Type.Integer({ minimum: 0, description: "Capacity of the signal queue. Default 16." })),
+      maxMicrosteps: opt(
+        Type.Integer({ minimum: 0, description: "Microsteps per reset/process call before a livelock error; 0: no check in generated code. Default 10000." }),
+      ),
+    },
+    {
+      ...closed,
+      description:
+        "Shared by every code generator, the interpreter and the simulator. Behaviour options (all of today's) are set here only, so a model behaves the same in every language.",
+    },
+  ),
   document: Type.Object(
     {
       $schema: opt(str()),
@@ -145,9 +158,10 @@ const defs = {
       declarations: ref("declarations"),
       machine: ref("machine"),
       diagram: opt(ref("diagram")),
+      options: opt(ref("options")),
       targets: opt(
         Type.Record(str(), Type.Record(str(), Type.Unknown()), {
-          description: "Per code generator options, keyed by target name (c, python, ts, rust, ...).",
+          description: "Per code generator settings, keyed by target name (c, python, ts, rust, ...); behaviour options belong in options.",
         }),
       ),
     },
@@ -229,6 +243,7 @@ const agree: {
   sEdgeLayout: true,
   titleBlock: true,
   diagram: true,
+  options: true,
   document: true,
 };
 void agree;
@@ -252,5 +267,6 @@ interface Checked {
   sEdgeLayout: ["sEdgeLayout", M.SEdgeLayout];
   titleBlock: ["titleBlock", M.TitleBlock];
   diagram: ["diagram", M.Diagram];
+  options: ["options", M.ModelOptions];
   document: ["document", M.UfsmDocument & { $schema?: string }];
 }

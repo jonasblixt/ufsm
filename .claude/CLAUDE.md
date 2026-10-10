@@ -33,7 +33,8 @@ known issues) is imported below. Read these only when needed:
 packages/core/          @ufsm/core: model, v0 reader, v1 format, checks, semantics, interpreter, IR, backends
   src/v1/               current file format (model, schema (TypeBox: the reader's definition, the JSON Schema is
                         generated from it, model.ts is checked against it at compile time), parse, serialize, doc-index,
-                        geometry, route, labels, check, migrate, load) and edit.ts (layout edits the editor's drags make: move, resize, region split, ends, jog,
+                        geometry, route, labels, check, migrate, load, options (the `options` section: defaults, behaviour vs
+                        API options, what `targets.<name>` may override)) and edit.ts (layout edits the editor's drags make: move, resize, region split, ends, jog,
                         bend points, labels, S/free conversion; diagram-only, snapped, children kept inside, free routes
                         follow); structure edits: ids.ts (id allocation), create.ts (add vertex/region/transition with
                         validity checks, delete with cascade), clipboard.ts (copy/paste fragments); props.ts (property
@@ -84,7 +85,7 @@ old/                    v0.5.x C/GTK editor, Python generator, C tests (referenc
 | `npm test` | All unit tests (core and editor) |
 | `npm run typecheck` | `tsc` in every workspace |
 | `npm run ufsm -- <cmd> <file>` | CLI; paths are relative to where you run npm |
-| `npm run ufsm -- run <model> e1 e2 -g guard` | Simulate a model on the interpreter, printing every step (`-g name[=true\|false]`; guards start false) |
+| `npm run ufsm -- run <model> e1 e2 -g guard` | Simulate a model on the interpreter, printing every step (`-g name[=true\|false]`; guards start false; `--signal-queue`/`--max-microsteps` override the model's options) |
 | `npm run ufsm -- trace tests/traces/*.json` | Replay conformance traces on the interpreter |
 | `npm run ufsm -- flatten <model> [--json]` | Show the flat tables (regions/slots, transitions, offers) |
 | `npm run ufsm -- ir <model> [--json]` | Show the IR as pseudo-code (what backends emit) |
@@ -144,7 +145,10 @@ Build Tools "Desktop development with C++"), TypeScript 6, Vite 7, Tauri 2.
 ## v1 file format essentials (full spec: docs/format-v1.md)
 
 - Sections: `declarations` (events, signals, actions, guards), `machine`
-  (root region, transitions), `diagram` (layout keyed by id), `targets`.
+  (root region, transitions), `diagram` (layout keyed by id), `options`
+  (shared by every generator, the interpreter and the simulator: `signalQueue`,
+  `maxMicrosteps`; behaviour options are set only there, `core/src/v1/options.ts`),
+  `targets` (per-generator settings: prefix, className, ...).
 - All references are by id; ids unique per document; generated ids are
   `ev1`, `sig1`, `act1`, `grd1`, `r0`, `s1`, `t1`.
 - Coordinates are relative: state x/y to the owning state's top-left (or the

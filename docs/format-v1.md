@@ -40,7 +40,8 @@ The editor and the `ufsm` CLI read both this format and the legacy v0 format
   "declarations": { … },
   "machine": { … },
   "diagram": { … },          // optional
-  "targets": { … }           // optional, per code generator options
+  "options": { … },          // optional, shared by every generator and the simulator
+  "targets": { … }           // optional, per code generator settings
 }
 ```
 
@@ -284,16 +285,44 @@ without `h` fills the rest of the state.
 
 `orientation` applies to `fork`/`join` only (`vertical` by default).
 
-## Targets
+## Options
 
-Free-form options per code generator, keyed by target name. Unknown targets
-are preserved.
+Shared by every code generator, the interpreter and the simulator. All keys
+are optional; unknown keys are an error.
 
 ```jsonc
-"targets": { "c": { "prefix": "dimmer_", "signalQueue": 16 } }
+"options": { "signalQueue": 8, "maxMicrosteps": 1000 }
 ```
 
-Options of the generators: [C](backend-c.md#generating) (`c`),
+| Key | Default | Meaning |
+|-----|---------|---------|
+| `signalQueue` | 16 | Capacity of the signal queue; emitting into a full queue is a `queue-overflow` error. At least 1 when the model emits signals |
+| `maxMicrosteps` | 10000 | Microsteps per reset/process call before a `livelock` error; in generated code 0 removes the check |
+
+There are two kinds of option:
+
+- **Behaviour options** change what the machine does: `signalQueue` and
+  `maxMicrosteps` (today's only options). They are set here and nowhere else,
+  so a model behaves the same in every language and in the simulator. A
+  behaviour option under `targets` is ignored (a design rule warning).
+- **API options** change only the shape of the generated code. They are set
+  here and may be overridden per target in `targets.<name>`. None exist yet.
+
+A code generator resolves an option from `options`, then `targets.<name>`
+(API options only), then its command line flags. A conformance trace's
+`options` override the model's for that trace.
+
+## Targets
+
+Settings per code generator, keyed by target name: the target's own keys
+(`prefix`, `className`, ...) and overrides of API options. Unknown targets are
+preserved.
+
+```jsonc
+"targets": { "c": { "prefix": "dimmer_" } }
+```
+
+Settings of the generators: [C](backend-c.md#generating) (`c`),
 [Python](backend-python.md#generating) (`python`),
 [TypeScript](backend-ts.md#generating) (`ts`), [Rust](backend-rust.md#generating) (`rust`).
 
@@ -316,12 +345,13 @@ or duplicate declaration names, initial/history states without exactly one
 outgoing transition, more than one initializer in a region, triggers out of
 pseudo-states or into joins, transitions out of final/terminate, fork
 targets or join sources that are not in different orthogonal regions of one
-state. Warnings:
+state, `options.signalQueue` of 0 in a model that emits signals. Warnings:
 transitions and internal transitions that can never fire (no trigger, or
 shadowed by an earlier transition of the same state with the same trigger
 and no guard; a state's outgoing transitions come before its internal ones),
 regions entered by default without an initial state,
-duplicate state names in a region, unused declarations, stale or missing
+duplicate state names in a region, unused declarations, behaviour options
+under `targets`, stale or missing
 layout, and drawings that do not fit their sheet (outside the drawing frame,
 or over the title block; see "Drawing frame and title block").
 

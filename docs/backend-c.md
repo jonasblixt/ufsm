@@ -20,21 +20,31 @@ npm run ufsm -- generate c examples/dimmer.ufsm -o build/
 # wrote build/dimmer.c
 ```
 
-The model must pass `ufsm check` without errors. Options come from the
+The model must pass `ufsm check` without errors. Settings come from the
 model's `targets.c` section and can be overridden on the command line:
 
 | `targets.c` key | Flag | Default | Meaning |
 |-----------------|------|---------|---------|
 | `prefix` | `--prefix` | model name + `_` | Prefix of every public identifier |
 | `file` | | prefix without the trailing `_` | Base name of the files: `<file>.h`, `<file>.c` |
+
+```jsonc
+"targets": { "c": { "prefix": "dimmer_" } }
+```
+
+Unknown keys, and the options below, are reported as warnings and ignored there.
+
+The model's [`options`](format-v1.md#options) section sets what every target
+shares; the flags override it for one run:
+
+| `options` key | Flag | Default | Meaning |
+|---------------|------|---------|---------|
 | `signalQueue` | `--signal-queue` | 16 | Capacity of the signal queue (only generated if the model emits signals) |
 | `maxMicrosteps` | `--max-microsteps` | 10000 | Microsteps per `init`/`reset`/`process` call before `ERR_LIVELOCK`; 0 removes the check |
 
-```jsonc
-"targets": { "c": { "prefix": "dimmer_", "signalQueue": 8 } }
-```
-
-Unknown keys are reported as warnings and ignored.
+These change behaviour, so they are set in `options` only, never per target: a
+model behaves the same in every language and in the simulator, queue overflows
+included.
 
 ## Generated API
 

@@ -34,6 +34,7 @@ import {
   setTitleField,
   sheetFit,
   setStateActions,
+  setModelOption,
   setTargetOption,
   setTransitionActions,
   setTrigger,
@@ -195,17 +196,22 @@ describe("declarations", () => {
     roundTrips(doc);
   });
 
-  it("machine name, description and code generator options", () => {
+  it("machine name, description, options and code generator settings", () => {
     const doc = testDoc();
     setMachineName(doc, "lamp");
     setMachineDoc(doc, "A lamp.");
     setTargetOption(doc, "c", "prefix", "lamp_");
-    setTargetOption(doc, "c", "signalQueue", 4);
-    assert.deepEqual([doc.name, doc.doc, doc.targets], ["lamp", "A lamp.", { c: { prefix: "lamp_", signalQueue: 4 } }]);
+    setTargetOption(doc, "c", "file", "lamp");
+    setModelOption(doc, "signalQueue", 4);
+    assert.deepEqual([doc.name, doc.doc, doc.targets, doc.options], ["lamp", "A lamp.", { c: { prefix: "lamp_", file: "lamp" } }, { signalQueue: 4 }]);
+    roundTrips(doc);
     setTargetOption(doc, "c", "prefix", undefined);
-    setTargetOption(doc, "c", "signalQueue", undefined);
+    setTargetOption(doc, "c", "file", undefined);
+    setModelOption(doc, "signalQueue", undefined);
+    setModelOption(doc, "maxMicrosteps", undefined);
     setMachineDoc(doc, "");
     assert.equal(doc.targets, undefined, "empty targets are removed");
+    assert.equal(doc.options, undefined, "an empty options section is removed");
     assert.equal(doc.doc, undefined);
     roundTrips(doc);
   });

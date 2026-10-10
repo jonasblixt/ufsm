@@ -19,8 +19,9 @@ import {
   parseTrace,
   runTrace,
   type UfsmDocument,
+  traceOptions,
 } from "../src/index";
-import { assertMatchesInterpreter, expressionModel, joinAgreementModel, randomScript, replayResults, type BackendDiff } from "./harness";
+import { DIFF_QUEUE, assertMatchesInterpreter, expressionModel, joinAgreementModel, randomScript, replayResults, type BackendDiff } from "./harness";
 import { findCompiler, removeTempDir, runC, strictFlags, type CUnit } from "./c-harness";
 import { randomModel } from "./random-model";
 
@@ -42,7 +43,7 @@ const MAX_STEPS = 300;
 async function compareAll(diffs: Diff[]): Promise<void> {
   const units: CUnit[] = diffs.map((d) => ({
     ir: ir(d.doc),
-    options: { maxMicrosteps: MAX_STEPS, signalQueue: d.signalQueue ?? 4096 },
+    options: { maxMicrosteps: MAX_STEPS, signalQueue: d.signalQueue ?? DIFF_QUEUE },
     script: d.script,
     autoReset: true,
   }));
@@ -59,7 +60,7 @@ describe("C backend: conformance traces", { skip }, () => {
     });
     const results = await runC(
       cc!,
-      traces.map(({ trace, doc }) => ({ ir: ir(doc), options: trace.options ?? {}, script: trace.steps, autoReset: false })),
+      traces.map(({ trace, doc }) => ({ ir: ir(doc), options: traceOptions(doc, trace), script: trace.steps, autoReset: false })),
     );
     const failures = traces.flatMap(({ f, trace, doc }, k) => runTrace(doc, trace, {}, replayResults(results[k]!, "C driver")).map((x) => `${f}: ${formatFailure(trace, x)}`));
     assert.equal(failures.length, 0, failures.join("\n"));
@@ -175,11 +176,15 @@ describe("C backend: generated files", () => {
     assert.throws(() => generateC(ir(doc), { prefix: "9x" }), /not a C identifier/);
   });
 
-  it("read targets.c", () => {
+  it("read targets.c: its own settings, never behaviour options", () => {
     const doc = load(join(repoRoot, "tests/models/test_guard1.ufsm"));
-    doc.targets = { c: { prefix: "g1_", signalQueue: 8, maxMicrosteps: 50, colour: "red", file: 3 } };
+    doc.targets = { c: { prefix: "g1_", signalQueue: 8, colour: "red", file: 3 } };
     const { options, problems } = cOptionsFromTargets(doc);
-    assert.deepEqual(options, { prefix: "g1_", signalQueue: 8, maxMicrosteps: 50 });
-    assert.deepEqual(problems, ["targets.c.colour: unknown option (ignored)", "targets.c.file: expected a string"]);
+    assert.deepEqual(options, { prefix: "g1_" }, "behaviour options are not read from targets");
+    assert.deepEqual(problems, [
+      "targets.c.signalQueue: changes behaviour, so it is set in options for every target (ignored)",
+      "targets.c.colour: unknown option (ignored)",
+      "targets.c.file: expected a string",
+    ]);
   });
 });

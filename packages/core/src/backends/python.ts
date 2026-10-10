@@ -20,6 +20,7 @@
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
+import { OPTION_DEFAULTS, targetSection } from "../v1/options";
 import { UFSM_VERSION } from "../version";
 import type { Expr, IrModule, Stmt, SwitchOn } from "../ir/ir";
 import { BUSY_MESSAGE } from "../interp/interpreter";
@@ -40,8 +41,6 @@ export interface PythonFiles {
   fileName: string;
   source: string;
 }
-
-export const PYTHON_DEFAULTS = { signalQueue: 16, maxMicrosteps: 10000 } as const;
 
 export const PYTHON_KEYWORDS = new Set(
   (
@@ -64,20 +63,14 @@ export function pythonClassName(text: string): string {
 
 /** Read `targets.python`. Unknown keys and wrong types are reported, not fatal: the defaults are used instead. */
 export function pythonOptionsFromTargets(doc: UfsmDocument): { options: PythonOptions; problems: string[] } {
-  const t = doc.targets?.["python"] ?? {};
-  const options: PythonOptions = {};
-  const problems: string[] = [];
-  for (const [k, v] of Object.entries(t)) {
+  const { api, own, problems } = targetSection(doc, "python");
+  const options: PythonOptions = { ...api };
+  for (const [k, v] of own) {
     switch (k) {
       case "className":
       case "module":
         if (typeof v === "string") options[k] = v;
         else problems.push(`targets.python.${k}: expected a string`);
-        break;
-      case "signalQueue":
-      case "maxMicrosteps":
-        if (typeof v === "number" && Number.isInteger(v) && v >= 0) options[k] = v;
-        else problems.push(`targets.python.${k}: expected a whole number >= 0`);
         break;
       default:
         problems.push(`targets.python.${k}: unknown option (ignored)`);
@@ -103,8 +96,8 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   for (const [what, v] of [["class name", cls], ["module name", module]] as const) {
     if (!IDENTIFIER.test(v) || PYTHON_KEYWORDS.has(v)) throw new CodegenError(`Python ${what} '${v}' is not a Python identifier`);
   }
-  const queueCap = options.signalQueue ?? PYTHON_DEFAULTS.signalQueue;
-  const maxSteps = options.maxMicrosteps ?? PYTHON_DEFAULTS.maxMicrosteps;
+  const queueCap = options.signalQueue ?? OPTION_DEFAULTS.signalQueue;
+  const maxSteps = options.maxMicrosteps ?? OPTION_DEFAULTS.maxMicrosteps;
   const errorCls = `${cls}Error`;
   const eventCls = `${cls}Event`;
   const handlerCls = `${cls}Handler`;

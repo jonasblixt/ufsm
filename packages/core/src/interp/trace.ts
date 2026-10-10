@@ -12,7 +12,8 @@
  *       { "guards": { "g1": true }, "send": "e1", "expect": ["xA", "eB"], "active": ["B"] } ] }
  */
 import { UfsmFormatError } from "../errors";
-import type { Id, UfsmDocument } from "../v1/model";
+import type { Id, ModelOptions, UfsmDocument } from "../v1/model";
+import { BEHAVIOUR_OPTIONS, defined, modelOptions, type OptionKey } from "../v1/options";
 import { Interpreter, InterpreterError, type InterpreterHost, type InterpreterOptions } from "./interpreter";
 
 /** What a trace drives: the interpreter, the flat runner, or a wrapper around generated code. */
@@ -62,24 +63,19 @@ export class TraceRaise extends Error {
   }
 }
 
-export interface TraceOptions {
-  /** Bounded signal queue; emitting into a full queue is a `queue-overflow` error. */
-  signalQueue?: number;
-  /** Livelock limit: microsteps per reset()/process() call. */
-  maxMicrosteps?: number;
-}
+/** A trace's `options`: they override the model's `options` (same keys) for this trace. */
+export type TraceOptions = ModelOptions;
 
 export interface Trace {
   /** Model path relative to the trace file. */
   model: string;
   doc?: string;
-  /** Machine options the trace needs: a signal queue size, a smaller livelock limit. */
+  /** Machine options the trace needs (a signal queue size, a smaller livelock limit); override the model's. */
   options?: TraceOptions;
   steps: TraceStep[];
 }
 
 const STEP_KEYS = new Set(["reset", "send", "guards", "raise", "reenter", "expect", "active", "inactive", "error", "doc"]);
-const OPTION_KEYS = ["signalQueue", "maxMicrosteps"] as const;
 
 /** Parse and validate a trace file. Throws UfsmFormatError. */
 export function parseTrace(text: string): Trace {
@@ -102,10 +98,10 @@ export function parseTrace(text: string): Trace {
   if (typeof data["doc"] === "string") trace.doc = data["doc"];
   if (data["options"] !== undefined) {
     const o = data["options"];
-    const valid = isObj(o) && Object.entries(o).every(([k, v]) => (OPTION_KEYS as readonly string[]).includes(k) && Number.isInteger(v) && (v as number) >= 0);
+    const valid = isObj(o) && Object.entries(o).every(([k, v]) => BEHAVIOUR_OPTIONS.includes(k as OptionKey) && Number.isInteger(v) && (v as number) >= 0);
     if (!valid) throw new UfsmFormatError("options", "expected { signalQueue?: integer, maxMicrosteps?: integer }");
     const options: TraceOptions = {};
-    for (const k of OPTION_KEYS) if (o[k] !== undefined) options[k] = o[k] as number;
+    for (const k of BEHAVIOUR_OPTIONS) if (o[k] !== undefined) options[k] = o[k] as number;
     trace.options = options;
   }
   data["steps"].forEach((s: unknown, i: number) => {
@@ -178,6 +174,11 @@ export function resolveStateRef(doc: UfsmDocument, ref: string): Id | string {
   return found.length === 0 ? `no state named '${ref}'` : `state name '${ref}' is ambiguous; use its id`;
 }
 
+/** The options a trace runs with: the model's `options` (defaults filled in), overridden by the trace's. */
+export function traceOptions(doc: UfsmDocument, trace: Trace): Required<ModelOptions> {
+  return { ...modelOptions(doc), ...trace.options };
+}
+
 /** Replay a trace against the reference interpreter (or another engine). Returns the failures (empty: passed). */
 export function runTrace(doc: UfsmDocument, trace: Trace, options: InterpreterOptions = {}, make: MachineFactory = interpreterFactory): TraceFailure[] {
   const failures: TraceFailure[] = [];
@@ -205,7 +206,7 @@ export function runTrace(doc: UfsmDocument, trace: Trace, options: InterpreterOp
       return guards.get(name) ?? false;
     },
   };
-  const m = make(doc, host, { ...options, ...trace.options });
+  const m = make(doc, host, { ...modelOptions(doc), ...defined(options), ...trace.options });
   const names = new Map<Id, string>();
   const walk = (states: UfsmDocument["machine"]["root"]["states"]): void => {
     for (const v of states) {

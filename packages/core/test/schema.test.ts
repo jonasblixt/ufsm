@@ -31,6 +31,9 @@ const BROKEN: [string, string, (d: J) => void, string][] = [
   ["an unknown paper size", "test_guard1.ufsm", (d) => (d.diagram.paper = "A5"), "paper: expected one of A4, A3, A2, A1; got 'A5'"],
   ["an unknown route", "test_guard1.ufsm", (d) => (free(d).route = "curvy"), "route: expected one of free, s; got 'curvy'"],
   ["target options that are not an object", "test_guard1.ufsm", (d) => (d.targets = { c: 3 }), "targets.c: expected an object"],
+  ["a negative option", "test_guard1.ufsm", (d) => (d.options = { signalQueue: -1 }), "options.signalQueue: must be >= 0"],
+  ["an option that is not a whole number", "test_guard1.ufsm", (d) => (d.options = { maxMicrosteps: 1.5 }), "options.maxMicrosteps: expected an integer"],
+  ["an unknown option", "test_guard1.ufsm", (d) => (d.options = { prefix: "x_" }), "options.prefix: unknown field"],
   ["a flag set to false", "test_guard1.ufsm", (d) => (d.diagram.regions["r0"] = { offPage: false }), "offPage: expected true (omit the field for false)"],
 ];
 

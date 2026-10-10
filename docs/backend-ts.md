@@ -25,19 +25,27 @@ npm run ufsm -- generate ts examples/dimmer.ufsm -o build/
 # wrote build/dimmer.ts
 ```
 
-The model must pass `ufsm check` without errors. Options come from the
+The model must pass `ufsm check` without errors. Settings come from the
 model's `targets.ts` section and can be overridden on the command line:
 
 | `targets.ts` key | Flag | Default | Meaning |
 |------------------|------|---------|---------|
 | `className` | `--class-name` | model name in PascalCase (`test_guard1` → `TestGuard1`) | Machine class; also names `<Class>Event`, `<Class>Handler`, `<Class>Error`, `<Class>ErrorCode` |
 | `module` | | model name as an identifier | File name: `<module>.ts` |
+
+Unknown keys, and the options below, are reported as warnings and ignored there.
+
+The model's [`options`](format-v1.md#options) section sets what every target
+shares; the flags override it for one run:
+
+| `options` key | Flag | Default | Meaning |
+|---------------|------|---------|---------|
 | `signalQueue` | `--signal-queue` | 16 | Capacity of the signal queue (only generated if the model emits signals) |
 | `maxMicrosteps` | `--max-microsteps` | 10000 | Microsteps per `reset`/`process` call before a `livelock` error; 0 removes the check |
 
-The defaults are the C backend's, so a model behaves the same in every
-language, queue overflows included. Unknown keys are reported as warnings
-and ignored.
+These change behaviour, so they are set in `options` only, never per target: a
+model behaves the same in every language and in the simulator, queue overflows
+included.
 
 ## Generated API
 

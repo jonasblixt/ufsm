@@ -40,6 +40,7 @@ export * from "./v1/props";
 export * from "./v1/labels";
 export * from "./v1/sheet";
 export * from "./v1/check";
+export * from "./v1/options";
 export * from "./v1/migrate";
 export * from "./v1/load";
 export * from "./semantics/structure";

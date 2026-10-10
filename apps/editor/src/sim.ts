@@ -11,7 +11,9 @@
 import {
   Interpreter,
   InterpreterError,
+  defined,
   indexV1,
+  modelOptions,
   resolveStateRef,
   type DocIndex,
   type Id,
@@ -22,15 +24,13 @@ import {
   type UfsmDocument,
 } from "@ufsm/core";
 
+/** What the simulator runs with: the model's options, or the session's overrides of them. */
 export interface SimOptions {
   /** Signal queue capacity; emitting into a full queue is a `queue-overflow` error. */
   signalQueue: number;
   /** Microsteps per reset/event before a `livelock` error. */
   maxMicrosteps: number;
 }
-
-/** The defaults of the generated code (C, Python, TypeScript), so a recorded trace replays the same everywhere. */
-export const SIM_DEFAULTS: Readonly<SimOptions> = { signalQueue: 16, maxMicrosteps: 10000 };
 
 /** One line of the step log. */
 export type LogLine =
@@ -57,7 +57,7 @@ export interface LogStep {
 }
 
 export class Simulation {
-  /** The document simulated; the simulator is out of date once the machine or the declarations differ from it. */
+  /** The document simulated; the simulator is out of date once the machine, declarations or options differ from it. */
   readonly doc: UfsmDocument;
   readonly index: DocIndex;
   readonly options: Readonly<SimOptions>;
@@ -73,13 +73,13 @@ export class Simulation {
   private current: LogStep | undefined;
 
   /**
-   * `guards` is read live (by guard name) whenever the machine asks; the caller owns it. Throws InterpreterError
-   * `invalid-model` when the model has errors.
+   * `guards` is read live (by guard name) whenever the machine asks; the caller owns it. `overrides` replace the
+   * model's options for this run. Throws InterpreterError `invalid-model` when the model has errors.
    */
-  constructor(doc: UfsmDocument, guards: ReadonlyMap<string, boolean>, options: Partial<SimOptions> = {}) {
+  constructor(doc: UfsmDocument, guards: ReadonlyMap<string, boolean>, overrides: Partial<SimOptions> = {}) {
     this.doc = doc;
     this.index = indexV1(doc);
-    this.options = { ...SIM_DEFAULTS, ...options };
+    this.options = { ...modelOptions(doc), ...defined(overrides) };
     this.guards = guards;
     this.interp = new Interpreter(
       doc,
@@ -95,9 +95,9 @@ export class Simulation {
     return this.interp.terminated;
   }
 
-  /** True once the document's machine or declarations are not the ones simulated (layout edits do not count). */
+  /** True once the document's machine, declarations or options are not the ones simulated (layout edits do not count). */
   staleFor(doc: UfsmDocument): boolean {
-    return doc.machine !== this.doc.machine || doc.declarations !== this.doc.declarations;
+    return doc.machine !== this.doc.machine || doc.declarations !== this.doc.declarations || doc.options !== this.doc.options;
   }
 
   /** Start, or start over: the initial configuration, history and queue cleared. */
@@ -135,11 +135,11 @@ export class Simulation {
 
   /** The steps so far as a conformance trace. `active` records the innermost active states after each step. */
   trace(model: string, opts: { active?: boolean; doc?: string } = {}): Trace {
+    // A trace's options override the model's: only the ones this run changed.
     const options: TraceOptions = {};
-    const overflow = this.steps.some((s) => s.error?.code === "queue-overflow");
-    // The trace runner's interpreter has an unbounded queue; the generated code has 16 slots.
-    if (this.options.signalQueue !== SIM_DEFAULTS.signalQueue || overflow) options.signalQueue = this.options.signalQueue;
-    if (this.options.maxMicrosteps !== SIM_DEFAULTS.maxMicrosteps) options.maxMicrosteps = this.options.maxMicrosteps;
+    const own = modelOptions(this.doc);
+    if (this.options.signalQueue !== own.signalQueue) options.signalQueue = this.options.signalQueue;
+    if (this.options.maxMicrosteps !== own.maxMicrosteps) options.maxMicrosteps = this.options.maxMicrosteps;
     const trace: Trace = { model, steps: this.steps.map((s) => s.record) };
     if (opts.doc) trace.doc = opts.doc;
     if (Object.keys(options).length) trace.options = options;

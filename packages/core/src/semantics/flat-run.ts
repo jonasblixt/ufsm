@@ -8,13 +8,14 @@
  * interpreter step for step) and to document what backends emit.
  */
 import type { Action, Id } from "../v1/model";
+import { OPTION_DEFAULTS, defined } from "../v1/options";
 import { InterpreterError, busyError, type InterpreterHost, type InterpreterOptions } from "../interp/interpreter";
 import type { EntryOp, FlatGuard, FlatModel, FlatTransition, Offer, RegionOp } from "./flatten";
 
 export class FlatRunner {
   readonly model: FlatModel;
   private readonly host: InterpreterHost;
-  private readonly options: InterpreterOptions & { maxMicrosteps: number };
+  private readonly options: InterpreterOptions & { signalQueue: number; maxMicrosteps: number };
   /** Active slot per region; 0 = none. */
   private readonly cfg: Int32Array;
   /** Shallow history: recorded slot per region (0 = none). Deep history: snapshot of cfg for the region's subtree. */
@@ -34,7 +35,7 @@ export class FlatRunner {
   constructor(model: FlatModel, host: InterpreterHost = {}, options: InterpreterOptions = {}) {
     this.model = model;
     this.host = host;
-    this.options = { maxMicrosteps: 10000, ...options };
+    this.options = { ...OPTION_DEFAULTS, ...defined(options) };
     this.cfg = new Int32Array(model.regions.length);
     this.hist = new Int32Array(model.regions.length);
     for (const e of model.events) {
@@ -253,7 +254,7 @@ export class FlatRunner {
         this.host.call?.(this.actionName.get(a.call)!, a.call);
       } else {
         const limit = this.options.signalQueue;
-        if (limit !== undefined && this.queue.length >= limit) {
+        if (this.queue.length >= limit) {
           throw new InterpreterError("queue-overflow", `signal queue full (${limit})`);
         }
         this.queue.push(this.signalIds.indexOf(a.emit));

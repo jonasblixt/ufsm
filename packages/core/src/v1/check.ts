@@ -8,6 +8,7 @@
  */
 import { indexV1, regionChain, vertexName, type DocIndex } from "./doc-index";
 import { sheetFit, sheetFitMessage } from "./sheet";
+import { BEHAVIOUR_OPTIONS, type OptionKey } from "./options";
 import { IDENTIFIER, type Action, type DeclKind, type GuardTerm, type Id, type Transition, type UfsmDocument } from "./model";
 
 export type Severity = "error" | "warning";
@@ -73,10 +74,14 @@ export function checkV1(doc: UfsmDocument, prebuilt?: DocIndex): Diagnostic[] {
     if (!info) err("dangling-ref", `${where}: unknown ${kind} '${id}'`, owner);
     else if (info.kind !== kind) err("wrong-ref", `${where}: '${info.decl.name}' is a ${info.kind}, not a ${kind}`, owner);
   };
+  let emits = false;
   const checkActions = (list: Action[] | undefined, where: string, owner: Id): void => {
     for (const a of list ?? []) {
       if ("call" in a) expectDecl(a.call, "action", where, owner);
-      else expectDecl(a.emit, "signal", where, owner);
+      else {
+        expectDecl(a.emit, "signal", where, owner);
+        emits = true;
+      }
     }
   };
   const checkGuards = (list: GuardTerm[] | undefined, where: string, owner: Id): void => {
@@ -228,6 +233,16 @@ export function checkV1(doc: UfsmDocument, prebuilt?: DocIndex): Diagnostic[] {
   for (const { decl, kind } of index.decls.values()) {
     if (kind === "event") continue; // events may be accepted and ignored on purpose
     if (!used.has(decl.id)) warn("unused", `${kind} '${decl.name}' is never used`, decl.id);
+  }
+
+  // ---- options: behaviour options are the same for every target
+  if (emits && doc.options?.signalQueue === 0) err("signal-queue", "the model emits signals, so options.signalQueue must be at least 1");
+  for (const [target, set] of Object.entries(doc.targets ?? {})) {
+    for (const k of Object.keys(set)) {
+      if (BEHAVIOUR_OPTIONS.includes(k as OptionKey)) {
+        warn("target-option", `targets.${target}.${k} is ignored: it changes behaviour, so it is set in options for every target`);
+      }
+    }
   }
 
   // ---- diagram consistency

@@ -28,6 +28,7 @@ import {
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const schema = JSON.parse(readFileSync(join(repoRoot, "packages/core/schema/ufsm-v1.schema.json"), "utf8"));
+const load = (f: string): UfsmDocument => loadModel(readFileSync(join(repoRoot, f), "utf8")).doc;
 
 function ufsmFiles(dir: string, exclude: string[] = []): string[] {
   if (!existsSync(dir)) return [];
@@ -342,6 +343,25 @@ describe("design rule check", () => {
     const c = codes(doc);
     assert.ok(c.includes("duplicate-id"));
     assert.ok(c.includes("bad-name"));
+  });
+
+  it("checks options: a queue for emitted signals, behaviour options only in options", () => {
+    const doc = load("tests/models/test_options.ufsm");
+    assert.deepEqual(codes(doc), []);
+    doc.options = { signalQueue: 0 };
+    assert.deepEqual(codes(doc), ["signal-queue"], "the model emits signals");
+    doc.declarations.signals = [];
+    doc.machine.transitions = doc.machine.transitions.filter((t) => !t.do);
+    assert.ok(!codes(doc).includes("signal-queue"), "a queue of 0 is fine when nothing is emitted");
+    const ok = load("tests/models/test_options.ufsm");
+    ok.targets = { c: { prefix: "o_", maxMicrosteps: 5 }, go: { signalQueue: 2 } };
+    assert.deepEqual(
+      checkV1(ok).map((d) => [d.severity, d.code, d.message]),
+      [
+        ["warning", "target-option", "targets.c.maxMicrosteps is ignored: it changes behaviour, so it is set in options for every target"],
+        ["warning", "target-option", "targets.go.signalQueue is ignored: it changes behaviour, so it is set in options for every target"],
+      ],
+    );
   });
 
   it("checks internal transitions: ids, references, trigger kind, shadowing", () => {

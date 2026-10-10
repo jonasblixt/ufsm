@@ -16,6 +16,7 @@ import { commonRegion, indexV1, type DocIndex } from "./doc-index";
 import { diagramOf, regionLayoutOf } from "./edit";
 import { regionBoxes, stateLayout, vertexBox } from "./geometry";
 import { DECL_PREFIX, ID_PREFIX, IdAllocator } from "./ids";
+import type { OptionKey } from "./options";
 import {
   IDENTIFIER,
   type Action,
@@ -167,7 +168,18 @@ export function setTitleField(doc: UfsmDocument, key: keyof TitleBlock, text: st
   if (d.titleBlock?.[key] !== v) (d.titleBlock ??= {})[key] = v;
 }
 
-/** Set one code generator option (`targets[target][key]`), or remove it with undefined (empty targets go too). */
+/** Set one option of the `options` section, or remove it with undefined (an empty section goes too). */
+export function setModelOption(doc: UfsmDocument, key: OptionKey, value: number | undefined): void {
+  if (value === undefined) {
+    if (doc.options?.[key] === undefined) return;
+    delete doc.options[key];
+    if (Object.keys(doc.options).length === 0) delete doc.options;
+    return;
+  }
+  if (doc.options?.[key] !== value) (doc.options ??= {})[key] = value;
+}
+
+/** Set one code generator setting (`targets[target][key]`), or remove it with undefined (empty targets go too). */
 export function setTargetOption(doc: UfsmDocument, target: string, key: string, value: string | number | boolean | undefined): void {
   if (value === undefined) {
     const t = doc.targets?.[target];

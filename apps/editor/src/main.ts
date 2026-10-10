@@ -70,6 +70,8 @@ import {
   TITLE_BLOCK_FIELDS,
   locate,
   locationText,
+  modelOptions,
+  OPTION_DEFAULTS,
   paperOf,
   sheetFrame,
 } from "@ufsm/core";
@@ -97,7 +99,7 @@ import {
 import { boxSelect, hitTest, hitTransition, pageBounds, renderPage, vertexBounds, type BoxMode, type Bounds, type SimHighlight, type View } from "./render";
 import { C, FALLBACK_THEME, THEMES, canvasAlpha, findTheme, modifierHasEffect, resolveTheme, setCanvasTheme, themeInfo, type ResolvedTheme } from "./theme";
 import { parseSettings, serializeSettings, zoomStep, ZOOM_MAX, ZOOM_MIN, ZOOM_STEPS, type AppearanceChoice, type Settings, type ThemeSetting } from "./settings";
-import { SIM_DEFAULTS, Simulation, relativePath, type SimOptions } from "./sim";
+import { Simulation, relativePath, type SimOptions } from "./sim";
 import type { SimOps, SimProps } from "./simpanel";
 import type { CodeOps } from "./codepanel";
 import { generatedCode } from "./code";
@@ -108,7 +110,7 @@ import { TOOL_KEYS, TOOL_NAMES, buildPalette, type ToolId } from "./palette";
 import { drawGhost, drawLink, drawLinkRoute } from "./preview";
 import { buildTree, type Tree } from "./tree";
 import { explorerEntry, type ExplorerEntry } from "./explorer";
-import { TARGETS, TITLE_FIELD_LABELS, TITLE_FIELD_NAMES, renderPanel, type FocusField, type PanelOps, type PanelTab } from "./panel";
+import { MODEL_OPTIONS, TARGETS, TITLE_FIELD_LABELS, TITLE_FIELD_NAMES, renderPanel, type FocusField, type PanelOps, type PanelTab } from "./panel";
 import { attachSash } from "./sash";
 import { autoHideScrollbars, wheelScrollsHorizontally } from "./scrollbars";
 import { renderTabs } from "./tabs";
@@ -178,7 +180,8 @@ interface Doc {
   /** Guard values by guard name, kept across simulations; bumped `guardsVersion` on every change. */
   guards: Map<string, boolean>;
   guardsVersion: number;
-  simOptions: SimOptions;
+  /** The session's overrides of the model's options for the simulator (the Simulator tab's Options). */
+  simOptions: Partial<SimOptions>;
   /** Record the innermost active states in saved traces. */
   recordActive: boolean;
   /** Event under the pointer in the Simulator tab: its transitions are shown on the canvas. */
@@ -681,7 +684,7 @@ function showModel(loaded: LoadedModel, fileName: string, path: string | undefin
     simError: undefined,
     guards: new Map<string, boolean>(),
     guardsVersion: 0,
-    simOptions: { ...SIM_DEFAULTS },
+    simOptions: {},
     recordActive: true,
     hoverEvent: undefined,
     would: undefined,
@@ -1108,7 +1111,7 @@ function settingItems(): SearchItem[] {
   return out;
 }
 
-/** The focused machine's file-level settings (the Project tab) as search rows: paper, name, description, generator options. */
+/** The focused machine's file-level settings (the Project tab) as search rows: paper, name, description, options, generator settings. */
 function projectItems(d: Doc): SearchItem[] {
   const x = d.index.doc;
   const paper = x.diagram?.paper ?? "A4";
@@ -1126,6 +1129,16 @@ function projectItems(d: Doc): SearchItem[] {
   for (const k of TITLE_BLOCK_FIELDS) {
     const label = TITLE_FIELD_LABELS[k];
     out.push({ key: `proj:title:${k}`, kind: "setting", label: `Project: Title Block: ${TITLE_FIELD_NAMES[k]}`, detail: x.diagram?.titleBlock?.[k] ?? "", keywords: "title block sheet frame", run: () => focusProjectField(label) });
+  }
+  for (const o of MODEL_OPTIONS) {
+    out.push({
+      key: `proj:options:${o.key}`,
+      kind: "setting",
+      label: `Project: Options: ${o.label}`,
+      detail: x.options?.[o.key] !== undefined ? String(x.options[o.key]) : `${OPTION_DEFAULTS[o.key]} (default)`,
+      keywords: "generator simulator option",
+      run: () => focusProjectField(o.label),
+    });
   }
   for (const t of TARGETS) {
     const set = x.targets?.[t.key] ?? {};
@@ -1343,7 +1356,9 @@ const simOps: SimOps = {
   },
   setOption: (key, value) => {
     if (!doc) return;
-    doc.simOptions = { ...doc.simOptions, [key]: value };
+    const { [key]: _, ...rest } = doc.simOptions;
+    // The model's own value is no override: the run follows the model again when its options change.
+    doc.simOptions = value === modelOptions(doc.history.current)[key] ? rest : { ...rest, [key]: value };
     renderShell();
   },
   hover: (event) => {
@@ -1370,7 +1385,8 @@ function simProps(d: Doc): SimProps {
     error: d.simError,
     would: wouldMap(d),
     guards: d.guards,
-    options: d.simOptions,
+    options: { ...modelOptions(d.history.current), ...d.simOptions },
+    overridden: d.simOptions,
     recordActive: d.recordActive,
     ops: simOps,
   };

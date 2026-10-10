@@ -22,6 +22,7 @@
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
+import { OPTION_DEFAULTS, targetSection } from "../v1/options";
 import { UFSM_VERSION } from "../version";
 import type { Expr, IrFunction, IrModule, Stmt, SwitchOn } from "../ir/ir";
 import { CodegenError, OUTPUT_NOTICE, cIdentifier } from "./c";
@@ -42,8 +43,6 @@ export interface RustFiles {
   fileName: string;
   source: string;
 }
-
-export const RUST_DEFAULTS = { signalQueue: 16, maxMicrosteps: 10000 } as const;
 
 /** Strict and reserved keywords of every edition up to 2024; declaration names that are keywords are printed as raw identifiers. */
 export const RUST_KEYWORDS = new Set(
@@ -77,20 +76,14 @@ export function rustModuleName(text: string): string {
 
 /** Read `targets.rust`. Unknown keys and wrong types are reported, not fatal: the defaults are used instead. */
 export function rustOptionsFromTargets(doc: UfsmDocument): { options: RustOptions; problems: string[] } {
-  const t = doc.targets?.["rust"] ?? {};
-  const options: RustOptions = {};
-  const problems: string[] = [];
-  for (const [k, v] of Object.entries(t)) {
+  const { api, own, problems } = targetSection(doc, "rust");
+  const options: RustOptions = { ...api };
+  for (const [k, v] of own) {
     switch (k) {
       case "className":
       case "module":
         if (typeof v === "string") options[k] = v;
         else problems.push(`targets.rust.${k}: expected a string`);
-        break;
-      case "signalQueue":
-      case "maxMicrosteps":
-        if (typeof v === "number" && Number.isInteger(v) && v >= 0) options[k] = v;
-        else problems.push(`targets.rust.${k}: expected a whole number >= 0`);
         break;
       default:
         problems.push(`targets.rust.${k}: unknown option (ignored)`);
@@ -164,8 +157,8 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   const module = options.module ?? rustModuleName(ir.name);
   if (!IDENTIFIER.test(ty) || RUST_KEYWORDS.has(ty) || RUST_TAKEN.has(ty)) throw new CodegenError(`Rust type name '${ty}' is not a usable identifier`);
   if (!/^[A-Za-z0-9_.-]+$/.test(module)) throw new CodegenError(`Rust module name '${module}' is not a plain file name`);
-  const queueCap = options.signalQueue ?? RUST_DEFAULTS.signalQueue;
-  const maxSteps = options.maxMicrosteps ?? RUST_DEFAULTS.maxMicrosteps;
+  const queueCap = options.signalQueue ?? OPTION_DEFAULTS.signalQueue;
+  const maxSteps = options.maxMicrosteps ?? OPTION_DEFAULTS.maxMicrosteps;
 
   // ------------------------------------------------------------ analysis
 
@@ -616,7 +609,8 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   for (const dh of deepRegions) fields.push([`deep_r${dh.region}`, `[${slotT}; ${dh.snapshotTo! - dh.snapshotFrom!}]`, zeros(dh.snapshotTo! - dh.snapshotFrom!)]);
   if (hasQueue) {
     fields.push(["queue", `[${sigT}; ${queueCap}]`, zeros(queueCap)]);
-    fields.push(["queue_head", "usize", "0"]);
+    // A queue of one has its only slot at 0: no head to move (and clippy denies `% 1`).
+    if (queueCap > 1) fields.push(["queue_head", "usize", "0"]);
     fields.push(["queue_len", "usize", "0"]);
   }
   if (countSteps) fields.push(["steps", stepsT, "0"]);
@@ -767,7 +761,7 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
       line(2, `if self.queue_len == ${queueCap} {`);
       line(3, "return Err(Error::QueueOverflow);");
       line(2, "}");
-      line(2, `self.queue[(self.queue_head + self.queue_len) % ${queueCap}] = signal;`);
+      line(2, queueCap === 1 ? "self.queue[0] = signal;" : `self.queue[(self.queue_head + self.queue_len) % ${queueCap}] = signal;`);
       line(2, "self.queue_len += 1;");
       line(2, "Ok(())");
       line(1, "}");
@@ -777,8 +771,8 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
       line(2, "if self.queue_len == 0 {");
       line(3, "return None;");
       line(2, "}");
-      line(2, "let signal = self.queue[self.queue_head];");
-      line(2, `self.queue_head = (self.queue_head + 1) % ${queueCap};`);
+      line(2, `let signal = self.queue[${queueCap > 1 ? "self.queue_head" : "0"}];`);
+      if (queueCap > 1) line(2, `self.queue_head = (self.queue_head + 1) % ${queueCap};`);
       line(2, "self.queue_len -= 1;");
       line(2, "Some(signal)");
       line(1, "}");

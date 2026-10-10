@@ -238,6 +238,16 @@ export interface Diagram {
   transitions: Record<Id, EdgeLayout>;
 }
 
+// ---------------------------------------------------------------- options
+
+/** The `options` section, shared by every code generator, the interpreter and the simulator (`v1/options.ts`). */
+export interface ModelOptions {
+  /** Capacity of the signal queue; emitting into a full queue is an error. Default 16. */
+  signalQueue?: number;
+  /** Microsteps per reset/process call before a livelock error; 0 disables the check in generated code. Default 10000. */
+  maxMicrosteps?: number;
+}
+
 // ---------------------------------------------------------------- document
 
 export interface UfsmDocument {
@@ -248,7 +258,8 @@ export interface UfsmDocument {
   declarations: Declarations;
   machine: Machine;
   diagram?: Diagram;
-  /** Per code generator options, e.g. { "c": { "prefix": "dimmer_", "signalQueue": 16 } }. */
+  options?: ModelOptions;
+  /** Per code generator settings, e.g. { "c": { "prefix": "dimmer_" } }; API options from `options` may be overridden here. */
   targets?: Record<string, Record<string, unknown>>;
 }
 

@@ -8,6 +8,7 @@
  * faithfully matches it too.
  */
 import type { Id } from "../v1/model";
+import { OPTION_DEFAULTS } from "../v1/options";
 import { InterpreterError, busyError, type InterpreterHost, type InterpreterOptions } from "../interp/interpreter";
 import type { Expr, IrFunction, IrModule, Stmt, SwitchOn } from "./ir";
 
@@ -19,7 +20,7 @@ export class IrRunner {
   readonly ir: IrModule;
   private readonly host: InterpreterHost;
   private readonly maxMicrosteps: number;
-  private readonly signalQueue: number | undefined;
+  private readonly signalQueue: number;
   private readonly cfg: Int32Array;
   private readonly hist: Int32Array;
   private readonly deep = new Map<number, Int32Array>();
@@ -37,8 +38,8 @@ export class IrRunner {
   constructor(ir: IrModule, host: InterpreterHost = {}, options: InterpreterOptions = {}) {
     this.ir = ir;
     this.host = host;
-    this.maxMicrosteps = options.maxMicrosteps ?? 10000;
-    this.signalQueue = options.signalQueue;
+    this.maxMicrosteps = options.maxMicrosteps ?? OPTION_DEFAULTS.maxMicrosteps;
+    this.signalQueue = options.signalQueue ?? OPTION_DEFAULTS.signalQueue;
     this.cfg = new Int32Array(ir.regions);
     this.hist = new Int32Array(ir.regions);
     for (const f of ir.functions) this.fns.set(f.name, f);
@@ -139,7 +140,7 @@ export class IrRunner {
           this.host.call?.(this.names.get(s.action)!, s.action);
           break;
         case "emit":
-          if (this.signalQueue !== undefined && this.queue.length >= this.signalQueue) {
+          if (this.queue.length >= this.signalQueue) {
             throw new InterpreterError("queue-overflow", `signal queue full (${this.signalQueue})`);
           }
           this.queue.push(s.signal);

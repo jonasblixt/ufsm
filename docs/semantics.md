@@ -57,9 +57,9 @@ true in the meantime fires then.
 running exit actions, enters the root region by default (see
 [Entering](#entering)) and settles.
 
-A macrostep that runs more microsteps than a fixed limit (10 000 in the
-interpreter) is a **livelock** error, e.g. two `auto` transitions that
-undo each other.
+A macrostep that runs more microsteps than the model's
+`options.maxMicrosteps` (default 10 000) is a **livelock** error, e.g. two
+`auto` transitions that undo each other.
 
 ### Failed and nested calls
 
@@ -150,8 +150,8 @@ its actions in step 2.
 
 `{emit}` actions append the signal to the queue; it is processed in the
 settle phase, never in the middle of a microstep. Signals are processed one
-at a time, oldest first. A bounded queue (C target option `signalQueue`)
-reports an overflow error when full.
+at a time, oldest first. The queue holds the model's `options.signalQueue`
+signals (default 16); emitting into a full queue is a `queue-overflow` error.
 
 ## Internal transitions
 
@@ -253,13 +253,12 @@ and the action calls each step must produce, by name:
 | `reenter` | This action (by name) calls `process()` with the step's event (`send` steps only); that nested call must fail with `busy` |
 | `doc` | Free text, e.g. why an expectation differs from v0.5 |
 
-`options` sets what the machine is built with for the whole trace:
-`signalQueue` (queue capacity; without it the interpreter is unbounded and
-generated code uses its default, 16 for C, so such a trace must never have
-more signals waiting) and
-`maxMicrosteps` (livelock limit per `reset()`/`process()` call; default
-10 000). Both are non-negative integers; a backend runner passes them to
-its generator (the C, Python, TypeScript and Rust options of the same name).
+`options` overrides the model's `options` for the whole trace (same keys):
+`signalQueue` (queue capacity) and `maxMicrosteps` (livelock limit per
+`reset()`/`process()` call). Both are non-negative integers. What is not set
+in either comes from the defaults (16 and 10 000), so the interpreter and the
+generated code always run with the same values; a backend runner passes the
+resolved values to its generator.
 
 `ufsm trace tests/traces/*.json` replays them on the interpreter; each
 backend gets a runner that replays the same files against generated code

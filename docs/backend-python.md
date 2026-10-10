@@ -19,23 +19,31 @@ npm run ufsm -- generate python examples/dimmer.ufsm -o build/
 # wrote build/dimmer.py
 ```
 
-The model must pass `ufsm check` without errors. Options come from the
+The model must pass `ufsm check` without errors. Settings come from the
 model's `targets.python` section and can be overridden on the command line:
 
 | `targets.python` key | Flag | Default | Meaning |
 |----------------------|------|---------|---------|
 | `className` | `--class-name` | model name in PascalCase (`test_guard1` → `TestGuard1`) | Machine class; also names `<Class>Event`, `<Class>Handler` and `<Class>Error` |
 | `module` | | model name as an identifier | File name: `<module>.py` |
+
+```jsonc
+"targets": { "python": { "className": "Dimmer" } }
+```
+
+Unknown keys, and the options below, are reported as warnings and ignored there.
+
+The model's [`options`](format-v1.md#options) section sets what every target
+shares; the flags override it for one run:
+
+| `options` key | Flag | Default | Meaning |
+|---------------|------|---------|---------|
 | `signalQueue` | `--signal-queue` | 16 | Capacity of the signal queue (only generated if the model emits signals) |
 | `maxMicrosteps` | `--max-microsteps` | 10000 | Microsteps per `reset`/`process` call before a `livelock` error; 0 removes the check |
 
-```jsonc
-"targets": { "python": { "className": "Dimmer", "signalQueue": 8 } }
-```
-
-The defaults are the C backend's, so a model behaves the same in both
-languages, queue overflows included. Unknown keys are reported as warnings
-and ignored.
+These change behaviour, so they are set in `options` only, never per target: a
+model behaves the same in every language and in the simulator, queue overflows
+included.
 
 ## Generated API
 

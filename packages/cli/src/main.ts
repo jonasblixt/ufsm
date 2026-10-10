@@ -43,21 +43,22 @@ Usage:
   ufsm fmt <model.ufsm>...               Rewrite files in canonical v1 form
   ufsm run <model.ufsm> [event...]       Simulate: reset, then process the events
          [-g guard[=true|false]]...      (guards are false unless set; -g name sets it true)
+         [--signal-queue n] [--max-microsteps n]  (override the model's options)
   ufsm trace <trace.json>...             Replay conformance traces (exit 2 on failure)
   ufsm flatten <model.ufsm> [--json]     Show the static tables code generators work from
   ufsm ir <model.ufsm> [--json]          Show the IR every backend prints, as pseudo-code
   ufsm generate c <model.ufsm> [-o dir]  Generate <name>.h and <name>.c (default: current directory)
          [--prefix p] [--signal-queue n] [--max-microsteps n]
-                                         (override targets.c in the model; see docs/backend-c.md)
+                                         (override targets.c and options in the model; see docs/backend-c.md)
   ufsm generate python <model.ufsm> [-o dir]
          [--class-name C] [--signal-queue n] [--max-microsteps n]
-                                         Generate <name>.py (overrides targets.python; docs/backend-python.md)
+                                         Generate <name>.py (overrides targets.python, options; docs/backend-python.md)
   ufsm generate ts <model.ufsm> [-o dir]
          [--class-name C] [--signal-queue n] [--max-microsteps n]
-                                         Generate <name>.ts (overrides targets.ts; docs/backend-ts.md)
+                                         Generate <name>.ts (overrides targets.ts, options; docs/backend-ts.md)
   ufsm generate rust <model.ufsm> [-o dir]
          [--class-name C] [--signal-queue n] [--max-microsteps n]
-                                         Generate <name>.rs (overrides targets.rust; docs/backend-rust.md)
+                                         Generate <name>.rs (overrides targets.rust, options; docs/backend-rust.md)
   ufsm schema [-o file]                  The JSON Schema of format v1 (stdout without -o)
   ufsm --version
 
@@ -95,6 +96,18 @@ function main(argv: string[]): number {
       "max-microsteps": { type: "string" },
     },
   });
+
+  /** --signal-queue and --max-microsteps: overrides of the model's options for `run` and `generate`. */
+  const optionFlags = (): { signalQueue?: number; maxMicrosteps?: number } => {
+    const out: { signalQueue?: number; maxMicrosteps?: number } = {};
+    for (const [flag, key] of [["signal-queue", "signalQueue"], ["max-microsteps", "maxMicrosteps"]] as const) {
+      const v = values[flag];
+      if (v === undefined) continue;
+      if (!/^\d+$/.test(v)) throw new CodegenError(`--${flag}: expected a whole number, got '${v}'`);
+      out[key] = Number(v);
+    }
+    return out;
+  };
 
   if (values.version) {
     console.log(UFSM_VERSION);
@@ -205,6 +218,7 @@ function main(argv: string[]): number {
       }
       const name = (id: string): string => vertexName(index, id);
       const m = new Interpreter(doc, { guard: (g) => guards.get(g) ?? false }, {
+        ...optionFlags(),
         onTrace: (e) => {
           switch (e.type) {
             case "reset": console.log("-> reset"); break;
@@ -295,19 +309,10 @@ function main(argv: string[]): number {
         console.error(`${model}: ${errors.length} error(s); run 'ufsm check ${model}'`);
         return 2;
       }
-      const count = (flag: "signal-queue" | "max-microsteps"): number | undefined => {
-        const v = values[flag];
-        if (v === undefined) return undefined;
-        if (!/^\d+$/.test(v)) throw new CodegenError(`--${flag}: expected a whole number, got '${v}'`);
-        return Number(v);
-      };
       const overrides: GenerateOverrides = {};
       if (values.prefix !== undefined) overrides.prefix = values.prefix;
       if (values["class-name"] !== undefined) overrides.className = values["class-name"];
-      const q = count("signal-queue");
-      if (q !== undefined) overrides.signalQueue = q;
-      const s = count("max-microsteps");
-      if (s !== undefined) overrides.maxMicrosteps = s;
+      Object.assign(overrides, optionFlags());
       const out = generateFiles(m.doc, target, overrides);
       for (const p of out.problems) console.error(`warning: ${p}`);
       const written = out.files.map((f) => [f.name, f.text] as const);

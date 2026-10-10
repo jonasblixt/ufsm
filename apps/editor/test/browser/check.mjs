@@ -748,13 +748,20 @@ await pick("gSpare");
 await page.fill('input[aria-label="C Prefix"]', "lamp_");
 await page.keyboard.press("Enter");
 check("code generator options are set...", (await P()).targets?.c?.prefix === "lamp_");
-await page.fill('input[aria-label="C Signal queue"]', "x");
-await page.keyboard.press("Enter");
-check("...checked (numbers where numbers belong)...", /whole number/.test(await $text(".perror")) && (await P()).targets?.c?.signalQueue === undefined);
-await page.keyboard.press("Escape");
 await page.fill('input[aria-label="C Prefix"]', "");
 await page.keyboard.press("Enter");
 check("...and cleared back to the default", (await P()).targets === undefined);
+check("the common options are shown once, not per language", (await $count('input[aria-label="Signal queue"]')) === 1 && (await $count('input[aria-label="C Signal queue"]')) === 0);
+await page.fill('input[aria-label="Signal queue"]', "x");
+await page.keyboard.press("Enter");
+check("options are checked (a whole number)...", /whole number/.test(await $text(".perror")) && (await P()).options === undefined);
+await page.keyboard.press("Escape");
+await page.fill('input[aria-label="Signal queue"]', "4");
+await page.keyboard.press("Enter");
+check("...set in the options section...", (await P()).options?.signalQueue === 4 && (await P()).targets === undefined);
+await page.fill('input[aria-label="Signal queue"]', "");
+await page.keyboard.press("Enter");
+check("...and cleared back to the default", (await P()).options === undefined);
 
 // Problems
 await page.click("#panel-tab-problems");

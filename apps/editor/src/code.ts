@@ -3,7 +3,7 @@
 
 /**
  * Live code preview: the generated files of the active machine, regenerated only when something the generators read
- * changed (machine, declarations, name, targets; not the layout), and a small syntax highlighter for C, Python,
+ * changed (machine, declarations, name, options, targets; not the layout), and a small syntax highlighter for C, Python,
  * TypeScript and Rust. No DOM here.
  */
 import { CodegenError, generateFiles, modelIr, type CodeTarget, type GeneratedCode, type IrModule, type UfsmDocument } from "@ufsm/core";
@@ -29,6 +29,7 @@ export type CodeResult = GeneratedCode | { error: string };
 interface Entry {
   name: string;
   declarations: UfsmDocument["declarations"];
+  options: UfsmDocument["options"];
   targets: UfsmDocument["targets"];
   ir: IrModule | { error: string } | undefined;
   out: Map<CodeTarget, CodeResult>;
@@ -39,8 +40,8 @@ const cache = new WeakMap<UfsmDocument["machine"], Entry>();
 /** The files of `target` for `doc`, from the cache when nothing they depend on changed. Errors come back as text. */
 export function generatedCode(doc: UfsmDocument, target: CodeTarget): CodeResult {
   let e = cache.get(doc.machine);
-  if (!e || e.name !== doc.name || e.declarations !== doc.declarations || e.targets !== doc.targets) {
-    e = { name: doc.name, declarations: doc.declarations, targets: doc.targets, ir: undefined, out: new Map() };
+  if (!e || e.name !== doc.name || e.declarations !== doc.declarations || e.options !== doc.options || e.targets !== doc.targets) {
+    e = { name: doc.name, declarations: doc.declarations, options: doc.options, targets: doc.targets, ir: undefined, out: new Map() };
     cache.set(doc.machine, e);
   }
   const hit = e.out.get(target);

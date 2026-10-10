@@ -17,6 +17,7 @@
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
+import { OPTION_DEFAULTS, targetSection } from "../v1/options";
 import { UFSM_VERSION } from "../version";
 import type { Expr, IrFunction, IrModule, Stmt, SwitchOn } from "../ir/ir";
 
@@ -51,8 +52,6 @@ export class CodegenError extends Error {
  */
 export const OUTPUT_NOTICE = "May be used, modified and distributed under any terms (uFSM output exception).";
 
-export const C_DEFAULTS = { signalQueue: 16, maxMicrosteps: 10000 } as const;
-
 const C_KEYWORDS = new Set(
   (
     "auto break case char const continue default do double else enum extern float for goto if inline int long register " +
@@ -74,20 +73,14 @@ export function cIdentifier(text: string): string {
  * not fatal: the defaults are used instead.
  */
 export function cOptionsFromTargets(doc: UfsmDocument): { options: COptions; problems: string[] } {
-  const t = doc.targets?.["c"] ?? {};
-  const options: COptions = {};
-  const problems: string[] = [];
-  for (const [k, v] of Object.entries(t)) {
+  const { api, own, problems } = targetSection(doc, "c");
+  const options: COptions = { ...api };
+  for (const [k, v] of own) {
     switch (k) {
       case "prefix":
       case "file":
         if (typeof v === "string") options[k] = v;
         else problems.push(`targets.c.${k}: expected a string`);
-        break;
-      case "signalQueue":
-      case "maxMicrosteps":
-        if (typeof v === "number" && Number.isInteger(v) && v >= 0) options[k] = v;
-        else problems.push(`targets.c.${k}: expected a whole number >= 0`);
         break;
       default:
         problems.push(`targets.c.${k}: unknown option (ignored)`);
@@ -117,8 +110,8 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   if (prefix !== "" && !IDENTIFIER.test(prefix)) throw new CodegenError(`C prefix '${prefix}' is not a C identifier`);
   const file = options.file ?? (prefix.replace(/_+$/, "") || cIdentifier(ir.name));
   const P = prefix.toUpperCase();
-  const queueCap = options.signalQueue ?? C_DEFAULTS.signalQueue;
-  const maxSteps = options.maxMicrosteps ?? C_DEFAULTS.maxMicrosteps;
+  const queueCap = options.signalQueue ?? OPTION_DEFAULTS.signalQueue;
+  const maxSteps = options.maxMicrosteps ?? OPTION_DEFAULTS.maxMicrosteps;
   const machine = `struct ${prefix}machine`;
 
   // ------------------------------------------------------------ analysis

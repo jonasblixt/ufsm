@@ -130,6 +130,14 @@ the generated code. Status refers to the new implementation.
 - [x] `ufsm generate ts` (2026-10-09)
 - [x] `ufsm generate rust` (2026-10-09)
 - [ ] Single-binary CLI build
+- [x] Common `options` section (format v1): `signalQueue`/`maxMicrosteps` moved out of `targets.*`; behaviour options
+      only there, API options overridable per target (resolution `options` -> `targets.<name>` -> CLI flags); interpreter,
+      trace runner, simulator and `ufsm run` honour it; Project tab shows it once; design rules `signal-queue` and
+      `target-option`; `test_options` model + two traces (2026-10-10)
+- [ ] API options `debugInfo` and `trace` in `options` (per-target override in `targets.<name>`; the resolution exists:
+      add the key to `API_OPTIONS` and `VALID` in `core/src/v1/options.ts`, the schema and model.ts)
+- [ ] Options follow-ups: Jonas to try the Project tab's Options section and the Simulator's options (model's values,
+      session overrides, saved traces) in `npm run dev`
 
 ### Phase E — editor (plan agreed 2026-10-09)
 Principles: the document is the only state (every edit is a command with an inverse: undo/redo); geometry is derived
@@ -250,7 +258,6 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
   (would show LIFO order), `X -s1-> X2` in test_terminate (the queue is dropped), and `A -completion-> End` in
   test_nested_finals (A can never complete: region Ar2 has no final state of its own; the model must stay equal to
   the converter output, so it is not changed).
-- Traces without `options.signalQueue` must never have more than 16 signals waiting (the C default).
 - CSP is `null` (fine for local use, revisit before release). File access is limited to dialog-picked paths (fs plugin).
 - The published schema no longer requires declaration names to be identifiers (it did, the reader never did); the design
   rule check reports them (`bad-name`), so such a file still opens.
@@ -279,8 +286,14 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - Putting a region back inline keeps its contents where they were relative to the band; a band smaller than its contents
   then shows them sticking out until the state or band is resized.
 
-- `maxMicrosteps: 0` means "no livelock check" to the generators but makes the interpreter fail at the first microstep,
-  and the trace format accepts 0; no trace uses it. The simulator only allows 1 and up. Decide one meaning (semantics.md).
+- `maxMicrosteps: 0` means "no livelock check" to the generators but makes the interpreter fail at the first microstep;
+  `options` and the trace format accept 0; no model or trace uses it. The simulator only allows 1 and up. Decide one
+  meaning (semantics.md).
+- Differential runs of generated code against the interpreter set a queue of 4096 (`DIFF_QUEUE` in test/harness.ts) on
+  both sides unless a test sets one; the interpreter no longer has an unbounded queue (it takes the model's options).
+- `tests/models/test_model1.ufsm` was edited by hand in 25c441d ("tidy up": t1 on an S route, s1/s8/s20/s21 moved), so
+  `v1.test.ts` "keeps the committed v1 conversions in sync with the converter" fails since then. Revert the file, or add
+  it to `fixedByHand` (2026-10-10).
 - The simulator log shows the last 400 steps (the recorded trace keeps all of them).
 - `reset()` called from inside an action or guard is not detected (only `process()` is refused while busy): the outer
   call goes on with the new configuration. Rust cannot do it (borrow); the other languages document it.

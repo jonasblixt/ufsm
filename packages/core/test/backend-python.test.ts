@@ -22,8 +22,9 @@ import {
   type Expr,
   type IrModule,
   type UfsmDocument,
+  traceOptions,
 } from "../src/index";
-import { assertMatchesInterpreter, expressionModel, joinAgreementModel, randomScript, replayResults, type BackendDiff } from "./harness";
+import { DIFF_QUEUE, assertMatchesInterpreter, expressionModel, joinAgreementModel, randomScript, replayResults, type BackendDiff } from "./harness";
 import { removeTempDir } from "./c-harness";
 import { MIN_PYTHON, findPyright, findPython, runPyright, runPython } from "./py-harness";
 import { randomModel } from "./random-model";
@@ -48,7 +49,7 @@ const MAX_STEPS = 300;
 function compareAll(diffs: BackendDiff[]): void {
   const results = runPython(
     python!,
-    diffs.map((d) => ({ ir: ir(d.doc), options: { maxMicrosteps: MAX_STEPS, signalQueue: d.signalQueue ?? 4096 }, script: d.script, autoReset: true })),
+    diffs.map((d) => ({ ir: ir(d.doc), options: { maxMicrosteps: MAX_STEPS, signalQueue: d.signalQueue ?? DIFF_QUEUE }, script: d.script, autoReset: true })),
   );
   assertMatchesInterpreter(diffs, results, MAX_STEPS, "Python");
 }
@@ -67,7 +68,7 @@ describe("Python backend: conformance traces", { skip }, () => {
       const trace = parseTrace(readFileSync(path, "utf8"));
       return { f, trace, doc: load(resolve(dirname(path), trace.model)) };
     });
-    const results = runPython(python!, traces.map(({ trace, doc }) => ({ ir: ir(doc), options: trace.options ?? {}, script: trace.steps, autoReset: false })));
+    const results = runPython(python!, traces.map(({ trace, doc }) => ({ ir: ir(doc), options: traceOptions(doc, trace), script: trace.steps, autoReset: false })));
     const failures = traces.flatMap(({ f, trace, doc }, k) => runTrace(doc, trace, {}, replayResults(results[k]!, "Python driver")).map((x) => `${f}: ${formatFailure(trace, x)}`));
     assert.equal(failures.length, 0, failures.join("\n"));
   });
@@ -277,11 +278,15 @@ print(bad)`,
     assert.throws(() => generatePython(ir(doc), { module: "my-fsm" }), /not a Python identifier/);
   });
 
-  it("read targets.python", () => {
+  it("read targets.python: its own settings, never behaviour options", () => {
     const doc = load(join(repoRoot, "tests/models/test_guard1.ufsm"));
-    doc.targets = { python: { className: "G", signalQueue: 8, maxMicrosteps: 50, colour: "red", module: 3 } };
+    doc.targets = { python: { className: "G", signalQueue: 8, colour: "red", module: 3 } };
     const { options, problems } = pythonOptionsFromTargets(doc);
-    assert.deepEqual(options, { className: "G", signalQueue: 8, maxMicrosteps: 50 });
-    assert.deepEqual(problems, ["targets.python.colour: unknown option (ignored)", "targets.python.module: expected a string"]);
+    assert.deepEqual(options, { className: "G" }, "behaviour options are not read from targets");
+    assert.deepEqual(problems, [
+      "targets.python.signalQueue: changes behaviour, so it is set in options for every target (ignored)",
+      "targets.python.colour: unknown option (ignored)",
+      "targets.python.module: expected a string",
+    ]);
   });
 });

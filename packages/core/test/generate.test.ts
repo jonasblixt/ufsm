@@ -24,18 +24,32 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..")
 const load = (f: string): UfsmDocument => loadModel(readFileSync(join(repoRoot, f), "utf8")).doc;
 
 describe("generateFiles", () => {
-  it("gives what the backends give, with the options from targets", () => {
+  it("gives what the backends give, with the options and the settings from targets", () => {
     const doc = load("examples/dimmer.ufsm");
-    doc.targets = { c: { prefix: "dim_" }, python: { className: "Dim" }, ts: { maxMicrosteps: 7 }, rust: { module: "dim" } };
+    doc.options = { maxMicrosteps: 7 };
+    doc.targets = { c: { prefix: "dim_" }, python: { className: "Dim" }, rust: { module: "dim" } };
     const ir = lowerToIr(flatten(doc));
-    const c = generateC(ir, { prefix: "dim_" });
+    const c = generateC(ir, { prefix: "dim_", maxMicrosteps: 7 });
     assert.deepEqual(generateFiles(doc, "c").files, [{ name: c.headerName, text: c.header }, { name: c.sourceName, text: c.source }]);
-    const py = generatePython(ir, { className: "Dim" });
+    const py = generatePython(ir, { className: "Dim", maxMicrosteps: 7 });
     assert.deepEqual(generateFiles(doc, "python", {}, ir).files, [{ name: py.fileName, text: py.source }]);
     const ts = generateTypeScript(ir, { maxMicrosteps: 7 });
     assert.deepEqual(generateFiles(doc, "ts").files, [{ name: ts.fileName, text: ts.source }]);
-    const rs = generateRust(ir, { module: "dim" });
+    const rs = generateRust(ir, { module: "dim", maxMicrosteps: 7 });
     assert.deepEqual(generateFiles(doc, "rust").files, [{ name: "dim.rs", text: rs.source }]);
+  });
+
+  it("resolves options, then targets (never behaviour options there), then overrides", () => {
+    const doc = load("tests/models/test_chained_signals.ufsm");
+    const ir = lowerToIr(flatten(doc));
+    const text = (o: { signalQueue?: number; maxMicrosteps?: number }): string => generateTypeScript(ir, o).source;
+    doc.options = { signalQueue: 5, maxMicrosteps: 9 };
+    doc.targets = { ts: { signalQueue: 3 } };
+    const fromModel = generateFiles(doc, "ts", {}, ir);
+    assert.equal(fromModel.files[0]!.text, text({ signalQueue: 5, maxMicrosteps: 9 }), "the model's options, not the target's");
+    assert.deepEqual(fromModel.problems, ["targets.ts.signalQueue: changes behaviour, so it is set in options for every target (ignored)"]);
+    assert.equal(generateFiles(doc, "ts", { signalQueue: 2 }, ir).files[0]!.text, text({ signalQueue: 2, maxMicrosteps: 9 }), "a flag overrides the model");
+    assert.notEqual(text({ signalQueue: 5 }), text({}), "the queue size shows in the code");
   });
 
   it("applies overrides only where they belong and reports ignored options", () => {

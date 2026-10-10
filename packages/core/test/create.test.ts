@@ -22,7 +22,6 @@ import {
   edgeGeometry,
   indexV1,
   insertBendPoint,
-  isOffPage,
   loadModel,
   newVertexBox,
   parseV1,
@@ -549,7 +548,8 @@ describe("structure edits on every repository model and random models", () => {
         };
         frag.vertices.forEach((v, i) => walkPair(v.id, ids[i]!));
         for (const [a, b] of pairs) {
-          if (isOffPage(index0, index0.vertices.get(a)!.region.id)) continue;
+          // drawn on another sheet (inside an off-page region at any depth): its box is relative to that sheet
+          if (sheetOfVertex(index0, a) !== page) continue;
           const x = vertexBox(index0, a), y = vertexBox(index, b);
           assert.deepEqual(y, { ...x, x: x.x + dx, y: x.y + dy }, `${name}: ${a} -> ${b}`);
         }
@@ -558,7 +558,7 @@ describe("structure edits on every repository model and random models", () => {
           assert.equal(index.transitions.get(tid)!.from, pairs.get(t.from));
           assert.equal(index.transitions.get(tid)!.to, pairs.get(t.to));
           if (index0.doc.diagram?.transitions[t.id]?.route === "s") return;
-          if (isOffPage(index0, index0.vertices.get(t.from)!.region.id)) return;
+          if (sheetOfVertex(index0, t.from) !== page) return;
           const g0 = edgeGeometry(index0, t.id), g1 = edgeGeometry(index, tid);
           if (!g0 || !g1) return;
           const near = (p: { x: number; y: number }, q: { x: number; y: number }): boolean => Math.abs(p.x + dx - q.x) < 1e-6 && Math.abs(p.y + dy - q.y) < 1e-6;

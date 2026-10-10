@@ -22,8 +22,9 @@ import {
   type Expr,
   type IrModule,
   type UfsmDocument,
+  traceOptions,
 } from "../src/index";
-import { compareWithInterpreter, expressionModel, joinAgreementModel, randomScript, runScript } from "./harness";
+import { DIFF_QUEUE, compareWithInterpreter, expressionModel, joinAgreementModel, randomScript, runScript } from "./harness";
 import { removeTempDir } from "./c-harness";
 import { loadTs } from "./ts-harness";
 import { randomModel } from "./random-model";
@@ -70,10 +71,10 @@ function typeCheck(files: string[], lib: string[]): { file: string; line: number
 
 /** Differential runs: every doc gets a generated machine with the interpreter's limits. */
 async function compareAll(cases: { doc: UfsmDocument; seeds: number[]; steps: number; signalQueue?: number }[]): Promise<void> {
-  const { units, cleanup } = await loadTs(cases.map((c) => ({ ir: ir(c.doc), options: { maxMicrosteps: MAX_STEPS, signalQueue: c.signalQueue ?? 4096 } })));
+  const { units, cleanup } = await loadTs(cases.map((c) => ({ ir: ir(c.doc), options: { maxMicrosteps: MAX_STEPS, signalQueue: c.signalQueue ?? DIFF_QUEUE } })));
   try {
     cases.forEach((c, k) => {
-      for (const seed of c.seeds) compareWithInterpreter((_doc, host) => units[k]!.make(host), c.doc, seed, c.steps, c.signalQueue ? { signalQueue: c.signalQueue } : {});
+      for (const seed of c.seeds) compareWithInterpreter((_doc, host) => units[k]!.make(host), c.doc, seed, c.steps, { signalQueue: c.signalQueue ?? DIFF_QUEUE });
     });
   } finally {
     cleanup();
@@ -88,7 +89,7 @@ describe("TypeScript backend: conformance traces", () => {
       const trace = parseTrace(readFileSync(path, "utf8"));
       return { f, trace, doc: load(resolve(dirname(path), trace.model)) };
     });
-    const { units, cleanup } = await loadTs(traces.map(({ trace, doc }) => ({ ir: ir(doc), options: trace.options ?? {} })));
+    const { units, cleanup } = await loadTs(traces.map(({ trace, doc }) => ({ ir: ir(doc), options: traceOptions(doc, trace) })));
     try {
       const failures = traces.flatMap(({ f, trace, doc }, k) => runTrace(doc, trace, {}, (_d, host) => units[k]!.make(host)).map((x) => `${f}: ${formatFailure(trace, x)}`));
       assert.equal(failures.length, 0, failures.join("\n"));
@@ -254,12 +255,16 @@ describe("TypeScript backend: generated files", () => {
     assert.throws(() => generateTypeScript(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), { className: "class" }), /not a usable identifier/);
   });
 
-  it("read targets.ts", () => {
+  it("read targets.ts: its own settings, never behaviour options", () => {
     const doc = load(join(repoRoot, "tests/models/test_guard1.ufsm"));
-    doc.targets = { ts: { className: "G", signalQueue: 8, maxMicrosteps: 50, colour: "red", module: 3 } };
+    doc.targets = { ts: { className: "G", signalQueue: 8, colour: "red", module: 3 } };
     const { options, problems } = tsOptionsFromTargets(doc);
-    assert.deepEqual(options, { className: "G", signalQueue: 8, maxMicrosteps: 50 });
-    assert.deepEqual(problems, ["targets.ts.colour: unknown option (ignored)", "targets.ts.module: expected a string"]);
+    assert.deepEqual(options, { className: "G" }, "behaviour options are not read from targets");
+    assert.deepEqual(problems, [
+      "targets.ts.signalQueue: changes behaviour, so it is set in options for every target (ignored)",
+      "targets.ts.colour: unknown option (ignored)",
+      "targets.ts.module: expected a string",
+    ]);
   });
 });
 

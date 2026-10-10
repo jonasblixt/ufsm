@@ -21,6 +21,7 @@
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
+import { OPTION_DEFAULTS, targetSection } from "../v1/options";
 import { UFSM_VERSION } from "../version";
 import type { Expr, IrModule, Stmt, SwitchOn } from "../ir/ir";
 import { BUSY_MESSAGE } from "../interp/interpreter";
@@ -43,8 +44,6 @@ export interface TsFiles {
   source: string;
 }
 
-export const TS_DEFAULTS = { signalQueue: 16, maxMicrosteps: 10000 } as const;
-
 /** Words that cannot name the class (declaration names are only used as properties, where any identifier works). */
 const TS_RESERVED = new Set(
   (
@@ -62,20 +61,14 @@ const OBJECT_MEMBERS = new Set([
 
 /** Read `targets.ts`. Unknown keys and wrong types are reported, not fatal: the defaults are used instead. */
 export function tsOptionsFromTargets(doc: UfsmDocument): { options: TsOptions; problems: string[] } {
-  const t = doc.targets?.["ts"] ?? {};
-  const options: TsOptions = {};
-  const problems: string[] = [];
-  for (const [k, v] of Object.entries(t)) {
+  const { api, own, problems } = targetSection(doc, "ts");
+  const options: TsOptions = { ...api };
+  for (const [k, v] of own) {
     switch (k) {
       case "className":
       case "module":
         if (typeof v === "string") options[k] = v;
         else problems.push(`targets.ts.${k}: expected a string`);
-        break;
-      case "signalQueue":
-      case "maxMicrosteps":
-        if (typeof v === "number" && Number.isInteger(v) && v >= 0) options[k] = v;
-        else problems.push(`targets.ts.${k}: expected a whole number >= 0`);
         break;
       default:
         problems.push(`targets.ts.${k}: unknown option (ignored)`);
@@ -101,8 +94,8 @@ export function generateTypeScript(ir: IrModule, options: TsOptions = {}): TsFil
   const module = options.module ?? cIdentifier(ir.name);
   if (!IDENTIFIER.test(cls) || TS_RESERVED.has(cls)) throw new CodegenError(`TypeScript class name '${cls}' is not a usable identifier`);
   if (!/^[A-Za-z0-9_.-]+$/.test(module)) throw new CodegenError(`TypeScript module name '${module}' is not a plain file name`);
-  const queueCap = options.signalQueue ?? TS_DEFAULTS.signalQueue;
-  const maxSteps = options.maxMicrosteps ?? TS_DEFAULTS.maxMicrosteps;
+  const queueCap = options.signalQueue ?? OPTION_DEFAULTS.signalQueue;
+  const maxSteps = options.maxMicrosteps ?? OPTION_DEFAULTS.maxMicrosteps;
   const errorCls = `${cls}Error`;
   const codeT = `${cls}ErrorCode`;
   const eventCls = `${cls}Event`;

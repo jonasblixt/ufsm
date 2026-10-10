@@ -14,8 +14,9 @@
     "declarations": { "$ref": "#/definitions/declarations" },
     "machine": { "$ref": "#/definitions/machine" },
     "diagram": { "$ref": "#/definitions/diagram" },
+    "options": { "$ref": "#/definitions/options" },
     "targets": {
-      "description": "Per code generator options, keyed by target name (c, python, ts, rust, ...).",
+      "description": "Per code generator settings, keyed by target name (c, python, ts, rust, ...); behaviour options belong in options.",
       "type": "object",
       "additionalProperties": { "type": "object", "additionalProperties": {} }
     }
@@ -317,6 +318,23 @@
           "description": "Keyed by transition id. route absent or \"free\": from/to required, via bend points. route \"s\": derived orthogonal route; from/to optional (absent = automatic), jog = position of the movable segment. via, jog and free labels are relative to the innermost region containing both endpoints; S labels to the route's label anchor.",
           "type": "object",
           "additionalProperties": { "$ref": "#/definitions/edgeLayout" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "options": {
+      "description": "Shared by every code generator, the interpreter and the simulator. Behaviour options (all of today's) are set here only, so a model behaves the same in every language.",
+      "type": "object",
+      "properties": {
+        "signalQueue": {
+          "description": "Capacity of the signal queue. Default 16.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxMicrosteps": {
+          "description": "Microsteps per reset/process call before a livelock error; 0: no check in generated code. Default 10000.",
+          "type": "integer",
+          "minimum": 0
         }
       },
       "additionalProperties": false
