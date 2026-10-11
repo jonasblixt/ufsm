@@ -19,6 +19,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - name: Formatting (Prettier; npm run format fixes it)
+        run: npm run format:check
       - name: Type checker for the generated Python
         run: npm install --global pyright@1.1.414
       - name: Rust for the generated Rust (rustc, clippy, rustfmt)
