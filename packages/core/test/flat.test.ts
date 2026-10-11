@@ -6,16 +6,9 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  FlatRunner,
-  flatten,
-  formatFailure,
-  loadModel,
-  parseTrace,
-  runTrace,
-  type MachineFactory,
-  type UfsmDocument,
-} from "../src/index";
+import { formatFailure, loadModel, parseTrace, runTrace, type MachineFactory, type UfsmDocument } from "../src";
+import { flatten } from "../src/pipeline";
+import { FlatRunner } from "../src/verify/flat-run";
 import { checkJoinAgreement, compareWithInterpreter } from "./harness";
 import { randomModel } from "./random-model";
 

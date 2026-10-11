@@ -3,22 +3,9 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import {
-  ACTION_MIN_H,
-  HEADER_H,
-  actionBlock,
-  checkV1,
-  indexV1,
-  parseV1,
-  regionBoxes,
-  resetActionsHeight,
-  serializeV1,
-  setActionsHeight,
-  vertexBox,
-  type ActionBlock,
-  type State,
-  type UfsmDocument,
-} from "../src/index";
+import { checkV1, indexV1, parseV1, serializeV1, type State, type UfsmDocument } from "../src";
+import { resetActionsHeight, setActionsHeight } from "../src/edit";
+import { ACTION_MIN_H, HEADER_H, actionBlock, regionBoxes, vertexBox, type ActionBlock } from "../src/diagram";
 
 /**
  * P (100,100, 300 wide) with six entry actions, four exit actions, three timers and two internal transitions, and two

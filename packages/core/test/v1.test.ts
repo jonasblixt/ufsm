@@ -10,23 +10,20 @@ import Ajv from "ajv";
 import {
   UfsmFormatError,
   checkV1,
-  edgeGeometry,
   indexV1,
   loadModel,
   migrateV0,
-  newDocument,
   generateFiles,
   CODE_TARGETS,
-  addVertex,
   parseV1,
   serializeV1,
   v0,
-  vertexBox,
-  actionBlockHeight,
   timerLabel,
   timerMs,
   type UfsmDocument,
-} from "../src/index";
+} from "../src";
+import { newDocument, addVertex } from "../src/edit";
+import { edgeGeometry, vertexBox, actionBlockHeight } from "../src/diagram";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const schema = JSON.parse(readFileSync(join(repoRoot, "packages/core/schema/ufsm-v1.schema.json"), "utf8"));

@@ -8,22 +8,8 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } fro
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  CodegenError,
-  flatten,
-  formatFailure,
-  generatePython,
-  loadModel,
-  lowerToIr,
-  parseTrace,
-  pascalCase,
-  pythonOptionsFromTargets,
-  runTrace,
-  type Expr,
-  type IrModule,
-  type UfsmDocument,
-  traceOptions,
-} from "../src/index";
+import { CodegenError, formatFailure, loadModel, parseTrace, pascalCase, runTrace, type UfsmDocument, traceOptions } from "../src";
+import { flatten, generatePython, lowerToIr, pythonOptionsFromTargets, type Expr, type IrModule } from "../src/pipeline";
 import { DIFF_QUEUE, assertMatchesInterpreter, expressionModel, hookDiffs, joinAgreementModel, randomScript, replayResults, type BackendDiff } from "./harness";
 import { removeTempDir } from "./c-harness";
 import { MIN_PYTHON, findPyright, findPython, runPyright, runPython } from "./py-harness";

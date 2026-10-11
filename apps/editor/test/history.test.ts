@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { indexV1, loadModel, serializeV1, type UfsmDocument } from "@ufsm/core";
 import {
   addDecl,
   addInternal,
@@ -15,21 +16,17 @@ import {
   copyFragment,
   deleteDecl,
   deleteElements,
-  indexV1,
   insertBendPoint,
-  loadModel,
   moveVertices,
   pasteFragment,
   renameDecl,
   renameVertex,
   resizeVertex,
-  serializeV1,
   setGuard,
   setStateActions,
   setTargetOption,
   setTrigger,
-  type UfsmDocument,
-} from "@ufsm/core";
+} from "@ufsm/core/edit";
 import { History } from "../src/history";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");

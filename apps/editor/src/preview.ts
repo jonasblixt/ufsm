@@ -7,7 +7,7 @@
  * route the click would give it, S or straight). World coordinates;
  * line widths and dashes are scaled so they look the same at every zoom.
  */
-import type { Box, Point } from "@ufsm/core";
+import type { Box, Point } from "@ufsm/core/diagram";
 import { C } from "./render";
 
 function outline(ctx: CanvasRenderingContext2D, b: Box, round: boolean, scale: number, color: string, dashed: boolean): void {

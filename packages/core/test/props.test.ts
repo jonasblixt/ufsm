@@ -6,24 +6,18 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { checkV1, indexV1, internalTransitionLabel, loadModel, parseV1, serializeV1, transitionLabel, timerLabel, type State, type UfsmDocument } from "../src";
 import {
   addDecl,
   addInternal,
   cannotOffPage,
-  checkV1,
   declNameProblem,
   declUses,
   deleteDecl,
   deleteElements,
-  edgeGeometry,
-  indexV1,
-  internalTransitionLabel,
-  loadModel,
-  parseV1,
   renameDecl,
   renameRegion,
   renameVertex,
-  serializeV1,
   setBarOrientation,
   setDocText,
   setGuard,
@@ -32,23 +26,19 @@ import {
   setOffPage,
   setPaper,
   setTitleField,
-  sheetFit,
   setStateActions,
   setModelOption,
   setTargetOption,
   setTransitionActions,
   setTrigger,
-  transitionLabel,
   addTimer,
   setTimer,
   timerNameProblem,
   timerDurationProblem,
-  timerLabel,
   copyFragment,
   pasteFragment,
-  type State,
-  type UfsmDocument,
-} from "../src/index";
+} from "../src/edit";
+import { edgeGeometry, sheetFit } from "../src/diagram";
 import { randomModel, rng } from "./random-model";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");

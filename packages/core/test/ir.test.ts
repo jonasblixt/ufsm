@@ -6,7 +6,10 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { IrRunner, analyzeIr, flatten, formatFailure, loadModel, lowerToIr, parseTrace, runTrace, simplify, someStmt, walkStmts, type Expr, type IrModule, type Stmt, type UfsmDocument } from "../src/index";
+import { formatFailure, loadModel, parseTrace, runTrace, type UfsmDocument } from "../src";
+import { analyzeIr, flatten, lowerToIr, someStmt, walkStmts, type Expr, type IrModule, type Stmt } from "../src/pipeline";
+import { simplify } from "../src/ir/simplify";
+import { IrRunner } from "../src/verify/ir-run";
 import { checkJoinAgreement, compareWithInterpreter, type Engine } from "./harness";
 import { randomModel } from "./random-model";
 

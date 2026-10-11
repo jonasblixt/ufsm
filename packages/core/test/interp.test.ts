@@ -6,18 +6,7 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  Interpreter,
-  MachineError,
-  formatFailure,
-  formatTrace,
-  indexV1,
-  loadModel,
-  parseTrace,
-  runTrace,
-  type StepEvent,
-  type UfsmDocument,
-} from "../src/index";
+import { Interpreter, MachineError, formatFailure, formatTrace, indexV1, loadModel, parseTrace, runTrace, type StepEvent, type UfsmDocument } from "../src";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const traceDir = join(repoRoot, "tests/traces");

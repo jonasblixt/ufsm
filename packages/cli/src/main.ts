@@ -11,17 +11,10 @@ import {
   Interpreter,
   MachineError,
   checkV1,
-  locate,
-  locationText,
-  sheets,
-  flatten,
   generateFiles,
   formatFailure,
   indexV1,
   loadModel,
-  lowerToIr,
-  printIr,
-  hex32,
   modelIr,
   parseTrace,
   runTrace,
@@ -35,6 +28,8 @@ import {
   type GenerateOverrides,
   type LoadedModel,
 } from "@ufsm/core";
+import { locate, locationText, sheets } from "@ufsm/core/diagram";
+import { flatten, lowerToIr, printIr, hex32 } from "@ufsm/core/pipeline";
 
 const USAGE = `ufsm ${UFSM_VERSION}
 

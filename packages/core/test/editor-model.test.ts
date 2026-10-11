@@ -12,7 +12,8 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { checkV1, flatten, generateTypeScript, loadModel, lowerToIr, tsOptionsFromTargets } from "../src/index";
+import { checkV1, loadModel } from "../src";
+import { flatten, generateTypeScript, lowerToIr, tsOptionsFromTargets } from "../src/pipeline";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const dir = join(repoRoot, "apps/editor/src/fsm");

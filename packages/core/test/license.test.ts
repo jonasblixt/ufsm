@@ -12,7 +12,8 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { OUTPUT_NOTICE, flatten, generateC, generatePython, generateRust, generateTypeScript, loadModel, lowerToIr } from "../src/index";
+import { OUTPUT_NOTICE, loadModel } from "../src";
+import { flatten, generateC, generatePython, generateRust, generateTypeScript, lowerToIr } from "../src/pipeline";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const SPDX = "SPDX-License-Identifier: GPL-3.0-or-later";

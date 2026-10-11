@@ -6,7 +6,8 @@
  * changed (machine, declarations, name, options, targets; not the layout), and a small syntax highlighter for C, Python,
  * TypeScript and Rust. No DOM here.
  */
-import { CodegenError, generateFiles, modelIr, type CodeTarget, type GeneratedCode, type IrModule, type UfsmDocument } from "@ufsm/core";
+import { CodegenError, generateFiles, modelIr, type CodeTarget, type GeneratedCode, type UfsmDocument } from "@ufsm/core";
+import { type IrModule } from "@ufsm/core/pipeline";
 
 /** A file of the preview: which target, and which of its files. */
 export interface CodeView {

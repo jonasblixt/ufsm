@@ -5,7 +5,7 @@
  * Random but valid models for differential testing (interpreter vs flat
  * rules vs generated code). Deterministic for a given seed.
  */
-import type { Action, GuardTerm, InternalTransition, Region, State, Timer, TimerUnit, Transition, UfsmDocument, Vertex } from "../src/index";
+import type { Action, GuardTerm, InternalTransition, Region, State, Timer, TimerUnit, Transition, UfsmDocument, Vertex } from "../src";
 
 export interface RandomModelOptions {
   maxDepth?: number;

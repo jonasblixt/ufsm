@@ -15,16 +15,7 @@
  *
  * No DOM: the title bar renders the matches (quickpick.tsx), main.ts supplies the commands and runs the pick.
  */
-import {
-  actionLabel,
-  ancestors,
-  internalTransitionLabel,
-  timerLabel,
-  transitionLabel,
-  vertexName,
-  type DeclKind,
-  type DocIndex,
-} from "@ufsm/core";
+import { actionLabel, ancestors, internalTransitionLabel, timerLabel, transitionLabel, vertexName, type DeclKind, type DocIndex } from "@ufsm/core";
 
 export type ItemKind =
   | "command"

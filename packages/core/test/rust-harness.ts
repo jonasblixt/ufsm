@@ -21,7 +21,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
-import { generateRust, rustName, type IrModule, type RustOptions } from "../src/index";
+import { generateRust, rustName, type IrModule, type RustOptions } from "../src/pipeline";
 import { removeTempDir } from "./c-harness";
 import { driverLines, parseDriverOutput, type ScriptStep, type StepResult } from "./harness";
 

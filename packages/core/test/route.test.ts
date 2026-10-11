@@ -7,26 +7,20 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv from "ajv";
+import { UfsmFormatError, indexV1, loadModel, parseV1, serializeV1, type Side, type UfsmDocument } from "../src";
 import {
-  UfsmFormatError,
   attachPoint,
   autoSides,
   edgeGeometry,
   followOffset,
   followPolyline,
-  indexV1,
   labelAnchor,
-  loadModel,
-  parseV1,
   routeInfo,
   sRoute,
-  serializeV1,
   vertexBox,
   type Box,
   type Pt,
-  type Side,
-  type UfsmDocument,
-} from "../src/index";
+} from "../src/diagram";
 import { rng } from "./random-model";
 
 const ZERO: Pt = { x: 0, y: 0 };

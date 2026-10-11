@@ -117,7 +117,9 @@ Build Tools "Desktop development with C++"), TypeScript 6, Vite 7, Tauri 2.
   unchanged in the editor, the CLI and tests. Node APIs only in `test/` and
   `packages/cli`.
 - Workspace packages are consumed as TypeScript source (`exports` points at
-  `src/index.ts`); no build step between packages.
+  the source files); no build step between packages. `@ufsm/core` has four entry points: `@ufsm/core` (format,
+  queries, check, runtime, interpreter, traces, generateFiles), `/diagram`, `/edit`, `/pipeline` (structure, flat
+  tables, IR, printers); the oracles in `verify/` and `ir/simplify.ts` are imported by path in tests only.
 - TypeScript: strict, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`,
   `moduleResolution: bundler`, extensionless relative imports. 2-space
   indent, LF line endings, double quotes.

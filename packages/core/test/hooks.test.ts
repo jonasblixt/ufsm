@@ -12,23 +12,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  CODE_TARGETS,
-  CodegenError,
-  Interpreter,
-  IrRunner,
-  fingerprint,
-  flatten,
-  fnv1a32,
-  generateFiles,
-  loadModel,
-  lowerToIr,
-  stateIdentifier,
-  stateNames,
-  type IrModule,
-  type TraceKind,
-  type UfsmDocument,
-} from "../src/index";
+import { CODE_TARGETS, CodegenError, Interpreter, generateFiles, loadModel, type UfsmDocument } from "../src";
+import { fingerprint, flatten, fnv1a32, lowerToIr, stateIdentifier, stateNames, type IrModule, type TraceKind } from "../src/pipeline";
+import { IrRunner } from "../src/verify/ir-run";
 import { decodeHooks, interpreterHooks } from "./harness";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");

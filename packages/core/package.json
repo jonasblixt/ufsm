@@ -7,6 +7,9 @@
   "license": "GPL-3.0-or-later",
   "exports": {
     ".": "./src/index.ts",
+    "./diagram": "./src/diagram/index.ts",
+    "./edit": "./src/edit/index.ts",
+    "./pipeline": "./src/pipeline.ts",
     "./schema/v1.json": "./schema/ufsm-v1.schema.json"
   },
   "scripts": {

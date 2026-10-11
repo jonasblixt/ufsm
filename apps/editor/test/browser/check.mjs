@@ -47,13 +47,20 @@ const stub = {
     }));
   },
 };
+// @ufsm/core and its subpath entries, as packages/core/package.json maps them to source files
+const coreExports = JSON.parse(readFileSync(join(repo, "packages/core/package.json"), "utf8")).exports;
+const core = {
+  name: "ufsm-core",
+  setup(b) {
+    b.onResolve({ filter: /^@ufsm\/core(\/.*)?$/ }, (a) => ({ path: join(repo, "packages/core", coreExports[`.${a.path.slice("@ufsm/core".length)}`]) }));
+  },
+};
 await build({
   entryPoints: [join(repo, "apps/editor/src/main.ts")],
   bundle: true,
   format: "esm",
   outfile: join(web, "main.js"),
-  plugins: [stub],
-  alias: { "@ufsm/core": join(repo, "packages/core/src/index.ts") },
+  plugins: [stub, core],
   nodePaths: [join(repo, "node_modules")],
   logLevel: "warning",
 });

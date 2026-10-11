@@ -8,20 +8,9 @@
  * dragged, and a vertex moves the selection (a composite state only by its header and action block unless it is
  * selected, so a rubber band can still start inside it). The edits themselves are in @ufsm/core (edit/layout.ts).
  */
-import {
-  HEADER_H,
-  actionBlock,
-  edgeGeometry,
-  regionBoxes,
-  resizableEdges,
-  routeInfo,
-  type DocIndex,
-  type Edge,
-  type EdgeEndName,
-  type Id,
-  type Point,
-  type Region,
-} from "@ufsm/core";
+import { type DocIndex, type Id, type Region } from "@ufsm/core";
+import { resizableEdges, type Edge, type EdgeEndName } from "@ufsm/core/edit";
+import { HEADER_H, actionBlock, edgeGeometry, regionBoxes, routeInfo, type Point } from "@ufsm/core/diagram";
 import { drawnBox, forEachVisible, hitTest, hitTransition } from "./render";
 
 export type Grip =

@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import Ajv from "ajv";
-import { formatJson, parseV1, v1JsonSchema, UfsmFormatError } from "../src/index";
+import { formatJson, parseV1, v1JsonSchema, UfsmFormatError } from "../src";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../..");
 const schemaFile = join(repoRoot, "packages/core/schema/ufsm-v1.schema.json");

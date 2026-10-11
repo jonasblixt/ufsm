@@ -26,7 +26,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { availableParallelism, tmpdir } from "node:os";
 import { promisify } from "node:util";
 import { join } from "node:path";
-import { cString, generateC, hex32, type COptions, type IrModule } from "../src/index";
+import { cString, generateC, hex32, type COptions, type IrModule } from "../src/pipeline";
 import { driverLines, parseDriverOutput, type ScriptStep, type StepResult } from "./harness";
 
 /**

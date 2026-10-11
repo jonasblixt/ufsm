@@ -6,19 +6,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  CodegenError,
-  flatten,
-  generateC,
-  generateFiles,
-  generatePython,
-  generateRust,
-  generateTypeScript,
-  loadModel,
-  lowerToIr,
-  modelIr,
-  type UfsmDocument,
-} from "../src/index";
+import { CodegenError, generateFiles, loadModel, modelIr, type UfsmDocument } from "../src";
+import { flatten, generateC, generatePython, generateRust, generateTypeScript, lowerToIr } from "../src/pipeline";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const load = (f: string): UfsmDocument => loadModel(readFileSync(join(repoRoot, f), "utf8")).doc;

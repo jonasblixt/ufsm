@@ -6,35 +6,23 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { indexV1, loadModel, parseV1, serializeV1, type DocIndex, type FreeEdgeLayout, type SEdgeLayout, type UfsmDocument } from "../src";
 import {
-  edgeGeometry,
-  indexV1,
-  isOffPage,
-  loadModel,
   moveRegionSplit,
   moveVertices,
-  parseV1,
   regionBand,
-  regionBoxes,
   resetJog,
   resetLabel,
   resizableEdges,
   resizeVertex,
-  routeInfo,
-  serializeV1,
   setBendPoint,
   setEdgeEnd,
   setJog,
   setLabel,
   snap,
   unpinEdgeEnd,
-  vertexBox,
-  type Box,
-  type DocIndex,
-  type FreeEdgeLayout,
-  type SEdgeLayout,
-  type UfsmDocument,
-} from "../src/index";
+} from "../src/edit";
+import { edgeGeometry, isOffPage, regionBoxes, routeInfo, vertexBox, type Box } from "../src/diagram";
 import { rng } from "./random-model";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");

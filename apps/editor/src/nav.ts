@@ -6,7 +6,8 @@
  * region, or an off-page region drawn on a sheet of its own. Regions that
  * are not off-page are drawn inline on their nearest sheet.
  */
-import { sheetOfRegion, sheetOfVertex, type DocIndex, type Region, type State } from "@ufsm/core";
+import { type DocIndex, type Region, type State } from "@ufsm/core";
+import { sheetOfRegion, sheetOfVertex } from "@ufsm/core/diagram";
 
 export { ancestors } from "@ufsm/core";
 

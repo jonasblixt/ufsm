@@ -7,17 +7,8 @@ import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { produce } from "immer";
-import {
-  MachineError,
-  formatFailure,
-  formatTrace,
-  loadModel,
-  moveVertices,
-  parseTrace,
-  renameDecl,
-  runTrace,
-  type UfsmDocument,
-} from "@ufsm/core";
+import { MachineError, formatFailure, formatTrace, loadModel, parseTrace, runTrace, type UfsmDocument } from "@ufsm/core";
+import { moveVertices, renameDecl } from "@ufsm/core/edit";
 import { Simulation, relativePath } from "../src/sim";
 import { CODE_VIEWS, generatedCode, highlight } from "../src/code";
 

@@ -13,7 +13,6 @@ import {
   type MachineErrorCode,
   type MachineHost,
   type RunOptions,
-  type IrModule,
   type MachineFactory,
   type StepEvent,
   behaviourOptions,
@@ -22,7 +21,8 @@ import {
   type UfsmDocument,
   timerStartCall,
   timerStopCall,
-} from "../src/index";
+} from "../src";
+import { type IrModule } from "../src/pipeline";
 import { randomModel, rng } from "./random-model";
 
 export type Engine = (doc: UfsmDocument, host: MachineHost, options: RunOptions) => RunningMachine;

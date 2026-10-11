@@ -8,7 +8,7 @@
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { CODE_TARGETS, CodegenError, Interpreter, MachineError, checkV1, generateFiles, indexV1, type State, type UfsmDocument } from "../src/index";
+import { CODE_TARGETS, CodegenError, Interpreter, MachineError, checkV1, generateFiles, indexV1, type State, type UfsmDocument } from "../src";
 import { randomModel, rng } from "./random-model";
 
 function baseDoc(): UfsmDocument {

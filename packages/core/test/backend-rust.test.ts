@@ -8,23 +8,8 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } fro
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  CodegenError,
-  flatten,
-  formatFailure,
-  generateFiles,
-  generateRust,
-  loadModel,
-  lowerToIr,
-  parseTrace,
-  runTrace,
-  rustModuleName,
-  rustOptionsFromTargets,
-  type Expr,
-  type IrModule,
-  type UfsmDocument,
-  traceOptions,
-} from "../src/index";
+import { CodegenError, formatFailure, generateFiles, loadModel, parseTrace, runTrace, type UfsmDocument, traceOptions } from "../src";
+import { flatten, generateRust, lowerToIr, rustModuleName, rustOptionsFromTargets, type Expr, type IrModule } from "../src/pipeline";
 import { DIFF_QUEUE, assertMatchesInterpreter, hookDiffs, expressionModel, joinAgreementModel, randomScript, replayResults, type BackendDiff, type ScriptStep } from "./harness";
 import { removeTempDir } from "./c-harness";
 import { buildLib, CLIPPY_FLAGS, findRust, RUSTC_FLAGS, runRust, type RustUnit } from "./rust-harness";

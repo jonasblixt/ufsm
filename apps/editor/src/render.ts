@@ -6,6 +6,7 @@
  * (old/compose/src/render.c) so existing diagrams look the same; geometry
  * comes from @ufsm/core (relative layout -> absolute sheet coordinates).
  */
+import { actionLabel, guardLabel, triggerLabel, type DocIndex, type Region, type State, type Transition, type Vertex } from "@ufsm/core";
 import {
   ACTION_CHAR_W,
   ACTION_ICON,
@@ -17,9 +18,7 @@ import {
   HEADER_H,
   TITLE_CAPTION_SIZE,
   actionBlock,
-  actionLabel,
   edgeGeometry,
-  guardLabel,
   isOffPage,
   paperOf,
   regionBoxes,
@@ -28,19 +27,13 @@ import {
   sheetInfo,
   stateLayout,
   titleBlockCells,
-  triggerLabel,
   vertexBox,
   zoneRowLabel,
   type ActionBlock,
   type HiddenMarker,
   type ActionSegment,
   type Box,
-  type DocIndex,
-  type Region,
-  type State,
-  type Transition,
-  type Vertex,
-} from "@ufsm/core";
+} from "@ufsm/core/diagram";
 import type { Handle } from "./handles";
 import { drawIcon } from "./icons";
 import { C, canvasAlpha } from "./theme";

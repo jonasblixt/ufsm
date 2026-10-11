@@ -274,8 +274,8 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
       `RunningMachine`) (2026-10-11)
 - [x] R4 Shared backend layer (`ir/analyze.ts`, `backends/common.ts`, resolved options, printers in named parts)
       (2026-10-11)
-- [ ] R5 Public surface of core (subpath exports; oracles out of the main entry)
-- [ ] R6 Core folders by domain
+- [x] R5 Public surface of core (subpath exports; oracles out of the main entry) (2026-10-11)
+- [x] R6 Core folders by domain (2026-10-11)
 - [ ] R7 Transition label layout in core
 - [ ] R8 Split the editor's `main.ts`
 - [ ] R9 Key map generated from editor.ufsm

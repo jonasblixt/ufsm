@@ -7,7 +7,7 @@
  * The outlines are Tabler Icons (https://github.com/tabler/tabler-icons), MIT License,
  * Copyright (c) 2020-2026 Paweł Kuna: 24 × 24 units, stroked 2 units wide with round caps and joins.
  */
-import type { ActionKind } from "@ufsm/core";
+import type { ActionKind } from "@ufsm/core/diagram";
 
 export type IconName = ActionKind | "chevron-down" | "chevron-right";
 

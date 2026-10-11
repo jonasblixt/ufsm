@@ -12,7 +12,8 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { MachineError, generateTypeScript, type MachineErrorCode, type MachineHost, type IrModule, type RunningMachine, type TsOptions } from "../src/index";
+import { MachineError, type MachineErrorCode, type MachineHost, type RunningMachine } from "../src";
+import { generateTypeScript, type IrModule, type TsOptions } from "../src/pipeline";
 import { removeTempDir } from "./c-harness";
 import { decodeHooks } from "./harness";
 

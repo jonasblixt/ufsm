@@ -9,21 +9,8 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
-import {
-  CodegenError,
-  flatten,
-  formatFailure,
-  generateTypeScript,
-  loadModel,
-  lowerToIr,
-  parseTrace,
-  runTrace,
-  tsOptionsFromTargets,
-  type Expr,
-  type IrModule,
-  type UfsmDocument,
-  traceOptions,
-} from "../src/index";
+import { CodegenError, formatFailure, loadModel, parseTrace, runTrace, type UfsmDocument, traceOptions } from "../src";
+import { flatten, generateTypeScript, lowerToIr, tsOptionsFromTargets, type Expr, type IrModule } from "../src/pipeline";
 import { DIFF_QUEUE, compareWithInterpreter, expressionModel, joinAgreementModel, randomScript, runScript } from "./harness";
 import { removeTempDir } from "./c-harness";
 import { loadTs } from "./ts-harness";

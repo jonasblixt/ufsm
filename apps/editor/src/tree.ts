@@ -5,7 +5,8 @@
  * Model tree sidebar: states and regions as a collapsible outline.
  * Clicking a label navigates; the disclosure arrow only expands/collapses.
  */
-import { ancestors, isOffPage, type DocIndex, type Region, type State, type Vertex } from "@ufsm/core";
+import { ancestors, type DocIndex, type Region, type State, type Vertex } from "@ufsm/core";
+import { isOffPage } from "@ufsm/core/diagram";
 
 export interface TreeCallbacks {
   onState(state: State): void;

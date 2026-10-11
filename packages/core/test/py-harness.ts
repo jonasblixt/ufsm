@@ -18,7 +18,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { generatePython, pythonName, type IrModule, type PythonOptions } from "../src/index";
+import { generatePython, pythonName, type IrModule, type PythonOptions } from "../src/pipeline";
 import { removeTempDir } from "./c-harness";
 import { driverLines, parseDriverOutput, type ScriptStep, type StepResult } from "./harness";
 

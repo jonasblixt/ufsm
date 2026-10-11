@@ -603,3 +603,13 @@ Measured over the 21 valid legacy models (864 KB):
   `cExpressions`, `cStatements`, `cHeader`, `cSourceTop`, `cFunctions`, `cSettle`, `cEntryPoints`, `cDebugInfo`; `py*`,
   `ts*`, `rs*` likewise); backends no longer import each other. Generated code byte-identical: every repo model and 150
   random models x 4 targets x (default, debugInfo+trace, queue 0, queue 3 + 5 microsteps), before and after each step.
+- 2026-10-11: **Review R6 + R5, core folders and entry points.** `v1/` is gone: `format/` (model, schema, parse,
+  serialize, options, ids, migrate, load, errors), `model/` (doc-index, labels), `diagram/` (geometry, route,
+  action-block, sheet; the one `segmentDistance`, the editor's copy is gone), `edit/` (layout = old edit.ts, now also
+  setOffPage/cannotOffPage/setBarOrientation from props.ts; create, clipboard, props), `check/` (semantic.ts: every
+  error; diagram.ts: layout warnings; index.ts: `checkV1` = both; the interpreter and `modelIr` use `checkSemantics`),
+  `verify/` (flat-run, ir-run = old ir/eval.ts), `ir/simplify.ts` out of lower.ts. One commit per folder with
+  `git mv`. Entry points in packages/core/package.json: `@ufsm/core`, `/diagram`, `/edit`, `/pipeline`; the editor's
+  70-name import is three imports, the CLI takes `flatten`/`lowerToIr`/`printIr`/`hex32` from `/pipeline`, tests import
+  oracles by path. The browser check resolves the subpaths from package.json (an esbuild plugin instead of an alias).
+  Tests 566/566 + 70/70, browser check 386/386, golden output unchanged.

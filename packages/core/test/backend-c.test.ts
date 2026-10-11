@@ -8,19 +8,8 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } fro
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  CodegenError,
-  cOptionsFromTargets,
-  flatten,
-  formatFailure,
-  generateC,
-  loadModel,
-  lowerToIr,
-  parseTrace,
-  runTrace,
-  type UfsmDocument,
-  traceOptions,
-} from "../src/index";
+import { CodegenError, formatFailure, loadModel, parseTrace, runTrace, type UfsmDocument, traceOptions } from "../src";
+import { cOptionsFromTargets, flatten, generateC, lowerToIr } from "../src/pipeline";
 import { DIFF_QUEUE, assertMatchesInterpreter, expressionModel, hookDiffs, joinAgreementModel, randomScript, replayResults, type BackendDiff } from "./harness";
 import { findCompiler, removeTempDir, runC, strictFlags, type CUnit } from "./c-harness";
 import { randomModel } from "./random-model";

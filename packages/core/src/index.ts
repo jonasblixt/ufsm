@@ -2,66 +2,44 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 /**
- * @ufsm/core: everything that is not UI.
+ * @ufsm/core: everything that is not UI. Platform neutral: no Node or DOM APIs, so it runs unchanged in the editor, the
+ * CLI and tests. Four entry points, by purpose (docs/architecture.md has the layers and their import rules):
  *
- *   v1/        the current file format: model, reader, canonical writer,
- *              index, geometry, routes, layout edits (what the editor's drags
- *              do), structure edits (add, delete, copy/paste, ids), property
- *              edits (names, actions, triggers, guards, declarations), labels,
- *              design rule check, v0 migration
- *   v0/        legacy reader (exported as the `v0` namespace)
+ *   @ufsm/core           read, write and check a model, simulate it, generate code: the stable API
+ *   @ufsm/core/diagram   derived layout: geometry, S routes, action blocks, sheets (what the editor draws)
+ *   @ufsm/core/edit      edits the editor runs on a draft: layout (drags), create/delete, clipboard, properties
+ *   @ufsm/core/pipeline  the stages between a model and generated code: structure, flat tables, IR, the printers
  *
- *   semantics/ static structure (document order, compound transitions),
- *              flattening into tables, and a runner for those tables
- *   runtime/   the run-time contract every executable form shares: host, options, errors, busy
- *   interp/    reference interpreter and conformance trace runner
- *   ir/        the IR backends print, lowered from the flat tables, and an evaluator for it
- *
- *   backends/  code generators: IR printers (c, python, ts, rust) and generateFiles, the one entry point
- *
- * Rule: no Node or DOM APIs in this package, so it runs unchanged in the
- * editor, the CLI and tests.
+ * Test oracles (verify/: the flat-table runner, the IR runner) and the IR simplifier are in no entry point; tests
+ * import them by path.
  */
 
 export { UFSM_VERSION } from "./version";
 
+// The file format: model types, reader, canonical writer, JSON Schema, options, id allocation, v0 conversion
 export { UfsmFormatError } from "./format/errors";
 export * from "./format/model";
 export * from "./format/parse";
 export * from "./format/schema";
 export * from "./format/serialize";
-export * from "./model/doc-index";
-export * from "./diagram/action-block";
-export * from "./diagram/geometry";
-export * from "./diagram/route";
-export * from "./edit/layout";
-export * from "./format/ids";
-export * from "./edit/create";
-export * from "./edit/clipboard";
-export * from "./edit/props";
-export * from "./model/labels";
-export * from "./diagram/sheet";
-export * from "./check/index";
 export * from "./format/options";
+export * from "./format/ids";
 export * from "./format/migrate";
 export * from "./format/load";
-export * from "./semantics/structure";
-export * from "./semantics/flatten";
-export * from "./verify/flat-run";
-export * from "./ir/ir";
-export * from "./ir/lower";
-export * from "./ir/simplify";
-export * from "./ir/analyze";
-export * from "./ir/ids";
-export * from "./verify/ir-run";
-export * from "./ir/print";
-export * from "./backends/common";
-export * from "./backends/c";
-export * from "./backends/python";
-export * from "./backends/ts";
-export * from "./backends/rust";
-export * from "./backends/generate";
+export * as v0 from "./v0/index";
+
+// Queries over a document: the index every query takes, and the text of labels
+export * from "./model/doc-index";
+export * from "./model/labels";
+
+// The design rule check: the one validity gate
+export * from "./check/index";
+
+// Running a machine: the contract every executable form shares, the reference interpreter, conformance traces
 export * from "./runtime/contract";
 export * from "./interp/interpreter";
 export * from "./interp/trace";
-export * as v0 from "./v0/index";
+
+// Generating code: one entry point for every language
+export * from "./backends/common";
+export * from "./backends/generate";

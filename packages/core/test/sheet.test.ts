@@ -7,33 +7,24 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv from "ajv";
+import { PAPER_SIZES, checkV1, indexV1, loadModel, migrateV0, parseV1, serializeV1, v0, type Paper, type UfsmDocument } from "../src";
+import { newDocument } from "../src/edit";
 import {
   FRAME_BORDER,
   FRAME_MARGIN,
-  PAPER_SIZES,
   TITLE_BLOCK_H,
   TITLE_BLOCK_W,
   ZONES,
-  checkV1,
-  indexV1,
   isSheet,
-  loadModel,
   locate,
   locationText,
-  migrateV0,
-  newDocument,
-  parseV1,
-  serializeV1,
   sheetFit,
   sheetFrame,
   sheetInfo,
   sheets,
   titleBlockCells,
-  v0,
   zoneOf,
-  type Paper,
-  type UfsmDocument,
-} from "../src/index";
+} from "../src/diagram";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const PAPERS = Object.keys(PAPER_SIZES) as Paper[];
