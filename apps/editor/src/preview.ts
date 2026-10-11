@@ -10,7 +10,14 @@
 import type { Box, Point } from "@ufsm/core/diagram";
 import { C } from "./render";
 
-function outline(ctx: CanvasRenderingContext2D, b: Box, round: boolean, scale: number, color: string, dashed: boolean): void {
+function outline(
+  ctx: CanvasRenderingContext2D,
+  b: Box,
+  round: boolean,
+  scale: number,
+  color: string,
+  dashed: boolean,
+): void {
   ctx.save();
   ctx.strokeStyle = color;
   ctx.lineWidth = 2 / scale;
@@ -78,7 +85,8 @@ export function drawLinkRoute(
   for (const p of points.slice(1)) ctx.lineTo(p.x, p.y);
   ctx.stroke();
   ctx.setLineDash([]);
-  const end = points[points.length - 1]!, prev = points[points.length - 2]!;
+  const end = points[points.length - 1]!,
+    prev = points[points.length - 2]!;
   const a = Math.atan2(end.y - prev.y, end.x - prev.x) + Math.PI;
   const len = 12 / Math.max(scale, 0.5);
   ctx.beginPath();

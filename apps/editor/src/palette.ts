@@ -38,9 +38,21 @@ const arrow = (x: number, y: number): string => `<path d="M${x - 4} ${y - 3}L${x
 
 /** Groups are separated in the palette. */
 const GROUPS: ToolDef[][] = [
-  [{ id: "select", name: "Select", keys: "Esc", icon: `<path d="M5 3L5 16L8.5 12.5L11 17.5L13 16.5L10.5 11.5L15 11.5Z" ${S}/>` }],
   [
-    { id: "state", name: "State", keys: "A S", icon: `<rect x="2.5" y="4" width="15" height="12" rx="2.5" ${S}/><path d="M2.5 8H17.5" ${S}/>` },
+    {
+      id: "select",
+      name: "Select",
+      keys: "Esc",
+      icon: `<path d="M5 3L5 16L8.5 12.5L11 17.5L13 16.5L10.5 11.5L15 11.5Z" ${S}/>`,
+    },
+  ],
+  [
+    {
+      id: "state",
+      name: "State",
+      keys: "A S",
+      icon: `<rect x="2.5" y="4" width="15" height="12" rx="2.5" ${S}/><path d="M2.5 8H17.5" ${S}/>`,
+    },
     {
       id: "region",
       name: "Region",
@@ -49,11 +61,21 @@ const GROUPS: ToolDef[][] = [
     },
     // an orthogonal S: out, one jog, in (the shape the S route derives)
     { id: "transition", name: "S transition", keys: "A T", icon: `<path d="M2.5 15H9.5V5H17" ${S}/>${arrow(17, 5)}` },
-    { id: "straight", name: "Straight transition", keys: "A L", icon: `<path d="M3 17L16.5 3.5" ${S}/><path d="M10.5 3.5H16.5V9.5" ${S}/>` },
+    {
+      id: "straight",
+      name: "Straight transition",
+      keys: "A L",
+      icon: `<path d="M3 17L16.5 3.5" ${S}/><path d="M10.5 3.5H16.5V9.5" ${S}/>`,
+    },
   ],
   [
     { id: "initial", name: "Initial state", keys: "A I", icon: `<circle cx="10" cy="10" r="5" ${F}/>` },
-    { id: "final", name: "Final state", keys: "A F", icon: `<circle cx="10" cy="10" r="6" ${S}/><circle cx="10" cy="10" r="3.5" ${F}/>` },
+    {
+      id: "final",
+      name: "Final state",
+      keys: "A F",
+      icon: `<circle cx="10" cy="10" r="6" ${S}/><circle cx="10" cy="10" r="3.5" ${F}/>`,
+    },
     {
       id: "shallow-history",
       name: "Shallow history",
@@ -78,12 +100,21 @@ const GROUPS: ToolDef[][] = [
       keys: "A J",
       icon: `<rect x="8.5" y="3" width="2.5" height="14" ${F}/><path d="M2 6H8.5M2 14H8.5" ${S}/><path d="M11 10H17" ${S}/>${arrow(17, 10)}`,
     },
-    { id: "terminate", name: "Terminate", keys: "A Shift+T", icon: `<path d="M4.5 4.5L15.5 15.5M15.5 4.5L4.5 15.5" ${S} stroke-width="2"/>` },
+    {
+      id: "terminate",
+      name: "Terminate",
+      keys: "A Shift+T",
+      icon: `<path d="M4.5 4.5L15.5 15.5M15.5 4.5L4.5 15.5" ${S} stroke-width="2"/>`,
+    },
   ],
 ];
 
-export const TOOL_NAMES: Readonly<Record<ToolId, string>> = Object.fromEntries(GROUPS.flat().map((d) => [d.id, d.name])) as Record<ToolId, string>;
-export const TOOL_KEYS: Readonly<Partial<Record<ToolId, string>>> = Object.fromEntries(GROUPS.flat().map((d) => [d.id, d.keys])) as Partial<Record<ToolId, string>>;
+export const TOOL_NAMES: Readonly<Record<ToolId, string>> = Object.fromEntries(
+  GROUPS.flat().map((d) => [d.id, d.name]),
+) as Record<ToolId, string>;
+export const TOOL_KEYS: Readonly<Partial<Record<ToolId, string>>> = Object.fromEntries(
+  GROUPS.flat().map((d) => [d.id, d.keys]),
+) as Partial<Record<ToolId, string>>;
 
 export interface Palette {
   readonly active: ToolId;

@@ -91,7 +91,10 @@ export function createShell(app: App): Shell {
     }
     const errors = d.diagnostics.filter((x) => x.severity === "error").length;
     const warnings = d.diagnostics.length - errors;
-    const lines = [...d.notes.map((n) => `converted: ${n.message}`), ...d.diagnostics.map((x) => `${x.severity}: ${x.message}`)];
+    const lines = [
+      ...d.notes.map((n) => `converted: ${n.message}`),
+      ...d.diagnostics.map((x) => `${x.severity}: ${x.message}`),
+    ];
     problemsEl.hidden = lines.length === 0;
     problemsEl.textContent = [
       errors ? `${errors} error${errors > 1 ? "s" : ""}` : "",
@@ -127,7 +130,13 @@ export function createShell(app: App): Shell {
       onClose: () => void windowControls.close(),
     });
     renderTabs(tabsEl, {
-      tabs: ws.sessions.map((x) => ({ key: x.key, name: x.fileName, title: x.path ?? x.fileName, dirty: x.dirty, active: x === d })),
+      tabs: ws.sessions.map((x) => ({
+        key: x.key,
+        name: x.fileName,
+        title: x.path ?? x.fileName,
+        dirty: x.dirty,
+        active: x === d,
+      })),
       onActivate: (key) => ws.activate(ws.byKey(key)),
       onClose: (key) => void app.files.closeDoc(ws.byKey(key)),
     });
@@ -209,7 +218,11 @@ export function createShell(app: App): Shell {
       let states = 0;
       for (const id of d.selection) if (index.vertices.has(id)) states++;
       const ts = nSel - states;
-      return [states ? `${states} state${states > 1 ? "s" : ""}` : "", ts ? `${ts} transition${ts > 1 ? "s" : ""}` : ""].filter(Boolean).join(" · ") + " selected";
+      return (
+        [states ? `${states} state${states > 1 ? "s" : ""}` : "", ts ? `${ts} transition${ts > 1 ? "s" : ""}` : ""]
+          .filter(Boolean)
+          .join(" · ") + " selected"
+      );
     }
     if (nSel === 1 && !v) {
       const t = index.transitions.get(d.selection.values().next().value!);
@@ -221,7 +234,8 @@ export function createShell(app: App): Shell {
       if (v.kind === "state") {
         const regions = v.regions?.length ?? 0;
         if (regions) parts.push(`${regions} region${regions > 1 ? "s" : ""}`);
-        if (v.regions?.some((r) => index.doc.diagram?.regions[r.id]?.offPage)) parts.push("double-click or Enter to open");
+        if (v.regions?.some((r) => index.doc.diagram?.regions[r.id]?.offPage))
+          parts.push("double-click or Enter to open");
       } else {
         parts.push(v.kind);
       }

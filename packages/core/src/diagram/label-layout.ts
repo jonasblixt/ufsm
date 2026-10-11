@@ -78,11 +78,18 @@ export function layoutTransitionLabel(
     x += w + LABEL_GAP;
     return item;
   });
-  return { items, box: { x: at.x, y: at.y + LABEL_TOP, w: Math.max(right - at.x, LABEL_GAP), h: LABEL_LINE_H * line + LABEL_LINE_H } };
+  return {
+    items,
+    box: { x: at.x, y: at.y + LABEL_TOP, w: Math.max(right - at.x, LABEL_GAP), h: LABEL_LINE_H * line + LABEL_LINE_H },
+  };
 }
 
 /** The text box of a transition's label (undefined when it has none). */
-export function transitionLabelBox(index: DocIndex, t: Transition, measure: MeasureText = estimateLabelWidth): Box | undefined {
+export function transitionLabelBox(
+  index: DocIndex,
+  t: Transition,
+  measure: MeasureText = estimateLabelWidth,
+): Box | undefined {
   const label = edgeGeometry(index, t.id)?.label;
   return label && layoutTransitionLabel(index, t, label, measure).box;
 }

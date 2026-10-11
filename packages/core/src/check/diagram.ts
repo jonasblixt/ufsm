@@ -22,16 +22,22 @@ export function checkDiagram(doc: UfsmDocument, index: DocIndex, duplicateIds: b
   // ---- diagram consistency
   const dia = doc.diagram;
   if (dia) {
-    for (const id of Object.keys(dia.states)) if (!index.vertices.has(id)) warn("stale-layout", `diagram has layout for unknown state '${id}'`, id);
-    for (const id of Object.keys(dia.regions)) if (!index.regions.has(id)) warn("stale-layout", `diagram has layout for unknown region '${id}'`, id);
-    for (const id of Object.keys(dia.transitions)) if (!index.transitions.has(id)) warn("stale-layout", `diagram has layout for unknown transition '${id}'`, id);
-    for (const id of index.vertices.keys()) if (!dia.states[id]) warn("missing-layout", `state '${vertexName(index, id)}' has no diagram position`, id);
+    for (const id of Object.keys(dia.states))
+      if (!index.vertices.has(id)) warn("stale-layout", `diagram has layout for unknown state '${id}'`, id);
+    for (const id of Object.keys(dia.regions))
+      if (!index.regions.has(id)) warn("stale-layout", `diagram has layout for unknown region '${id}'`, id);
+    for (const id of Object.keys(dia.transitions))
+      if (!index.transitions.has(id)) warn("stale-layout", `diagram has layout for unknown transition '${id}'`, id);
+    for (const id of index.vertices.keys())
+      if (!dia.states[id]) warn("missing-layout", `state '${vertexName(index, id)}' has no diagram position`, id);
     // ---- fit on the sheet (needs every position and both ends of every transition)
     const geometry =
-      !duplicateIds && !out.some((d) => d.code === "missing-layout") &&
+      !duplicateIds &&
+      !out.some((d) => d.code === "missing-layout") &&
       doc.machine.transitions.every((t) => index.vertices.has(t.from) && index.vertices.has(t.to));
     if (geometry) {
-      for (const p of sheetFit(index)) warn(p.problem === "outside" ? "outside-frame" : "title-block", sheetFitMessage(index, p), p.id);
+      for (const p of sheetFit(index))
+        warn(p.problem === "outside" ? "outside-frame" : "title-block", sheetFitMessage(index, p), p.id);
       // ---- action blocks fit their states. Lines hidden by a height the user set are not reported: the block marks them.
       for (const { vertex } of index.vertices.values()) {
         if (vertex.kind !== "state") continue;
@@ -39,15 +45,27 @@ export function checkDiagram(doc: UfsmDocument, index: DocIndex, duplicateIds: b
         if (block.auto === 0) continue;
         const b = vertexBox(index, vertex.id);
         const shown = block.summary ? [block.summaryRow] : block.rows.slice(0, block.visible).map((r) => r.segments);
-        const right = Math.max(...shown.flat().map((g) => g.x + (g.icon ? ACTION_ICON + ACTION_ICON_GAP : 0) + g.text.length * ACTION_CHAR_W));
+        const right = Math.max(
+          ...shown
+            .flat()
+            .map((g) => g.x + (g.icon ? ACTION_ICON + ACTION_ICON_GAP : 0) + g.text.length * ACTION_CHAR_W),
+        );
         if (HEADER_H + block.height > b.h || right > b.w) {
-          warn("actions-clipped", `state '${vertexName(index, vertex.id)}' is too small to show its actions, timers and internal transitions`, vertex.id);
+          warn(
+            "actions-clipped",
+            `state '${vertexName(index, vertex.id)}' is too small to show its actions, timers and internal transitions`,
+            vertex.id,
+          );
         }
         const first = vertex.regions?.[0];
         if (!first || isOffPage(index, first.id)) continue;
         const covered = first.states.find((c) => vertexBox(index, c.id).y < b.y + HEADER_H + block.height);
         if (covered) {
-          warn("actions-overlap", `the actions of state '${vertexName(index, vertex.id)}' are drawn over '${vertexName(index, covered.id)}'`, vertex.id);
+          warn(
+            "actions-overlap",
+            `the actions of state '${vertexName(index, vertex.id)}' are drawn over '${vertexName(index, covered.id)}'`,
+            vertex.id,
+          );
         }
       }
     }

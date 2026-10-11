@@ -23,7 +23,14 @@ import { Project } from "./project";
 import { Problems } from "./problems";
 
 export type { PanelTab, FocusField, Choice, PanelOps, PanelDoc } from "./types";
-export { API_OPTION_INFO, MODEL_OPTIONS, TARGETS, TITLE_FIELD_LABELS, TITLE_FIELD_NAMES, type TargetOption } from "./project";
+export {
+  API_OPTION_INFO,
+  MODEL_OPTIONS,
+  TARGETS,
+  TITLE_FIELD_LABELS,
+  TITLE_FIELD_NAMES,
+  type TargetOption,
+} from "./project";
 
 export interface PanelProps {
   tab: PanelTab;
@@ -47,13 +54,22 @@ function Panel(p: PanelProps) {
   const tabs: { id: PanelTab; label: ComponentChildren }[] = [
     { id: "properties", label: "Properties" },
     { id: "project", label: "Project" },
-    { id: "problems", label: <>Problems{count > 0 && <span class={`badge${errors ? " errors" : ""}`}>{count}</span>}</> },
-    { id: "simulator", label: <>Simulator{p.sim?.sim && !p.sim.stale && <span class="badge running" title="Running" />}</> },
+    {
+      id: "problems",
+      label: <>Problems{count > 0 && <span class={`badge${errors ? " errors" : ""}`}>{count}</span>}</>,
+    },
+    {
+      id: "simulator",
+      label: <>Simulator{p.sim?.sim && !p.sim.stale && <span class="badge running" title="Running" />}</>,
+    },
     { id: "code", label: "Code" },
     { id: "settings", label: "Settings" },
   ];
   // The tab strip scrolls sideways when the panel is narrow: keep the active tab in view.
-  useLayoutEffect(() => document.getElementById(`panel-tab-${p.tab}`)?.scrollIntoView({ block: "nearest", inline: "nearest" }), [p.tab]);
+  useLayoutEffect(
+    () => document.getElementById(`panel-tab-${p.tab}`)?.scrollIntoView({ block: "nearest", inline: "nearest" }),
+    [p.tab],
+  );
   return (
     <>
       <div class="panel-tabs" role="tablist">

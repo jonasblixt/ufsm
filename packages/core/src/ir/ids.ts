@@ -39,11 +39,15 @@ export function stateNames(states: NamedState[]): { ident: string; label: string
   const suffix = states.map(() => false);
   const parts = (i: number): number[] => path[i]!.slice(-depth[i]!);
   const ident = (i: number): string => {
-    const base = parts(i).map((k) => stateIdentifier(states[k]!.name)).join("_");
+    const base = parts(i)
+      .map((k) => stateIdentifier(states[k]!.name))
+      .join("_");
     return suffix[i] ? `${base}_${stateIdentifier(states[i]!.id)}` : base;
   };
   const label = (i: number): string => {
-    const base = parts(i).map((k) => states[k]!.name).join("/");
+    const base = parts(i)
+      .map((k) => states[k]!.name)
+      .join("/");
     return suffix[i] ? `${base} (${states[i]!.id})` : base;
   };
   // Qualify the states of a clashing group (same identifier or label) one level further, those that have a parent

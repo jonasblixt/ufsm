@@ -91,7 +91,16 @@ export function simplify(stmts: Stmt[], facts: Facts = new Map()): Stmt[] {
     let s = s0;
     if (s.op === "switch") {
       const on = s.on;
-      s = { ...s, cases: s.cases.map((c) => ({ slot: c.slot, body: simplify(c.body, on.kind === "cfg" ? assume(known, { op: "active", region: on.region, slot: c.slot }, true) : known) })) };
+      s = {
+        ...s,
+        cases: s.cases.map((c) => ({
+          slot: c.slot,
+          body: simplify(
+            c.body,
+            on.kind === "cfg" ? assume(known, { op: "active", region: on.region, slot: c.slot }, true) : known,
+          ),
+        })),
+      };
     }
     if (s.op === "if") {
       const cond = simplifyExpr(s.cond, known);
@@ -186,10 +195,17 @@ function mergeSlotTerms(xs: Expr[]): Expr[] | undefined {
     if (c.pos) {
       const allowed = [...c.pos].filter((v) => !c.neg.has(v)).sort((a, b) => a - b);
       if (allowed.length === 0) return undefined;
-      out.push(allowed.length === 1 ? { op: "active", region: t.region, slot: allowed[0]! } : { op: "activeIn", region: t.region, slots: allowed });
+      out.push(
+        allowed.length === 1
+          ? { op: "active", region: t.region, slot: allowed[0]! }
+          : { op: "activeIn", region: t.region, slots: allowed },
+      );
     } else {
       const not = [...c.neg].sort((a, b) => a - b);
-      const inner: Expr = not.length === 1 ? { op: "active", region: t.region, slot: not[0]! } : { op: "activeIn", region: t.region, slots: not };
+      const inner: Expr =
+        not.length === 1
+          ? { op: "active", region: t.region, slot: not[0]! }
+          : { op: "activeIn", region: t.region, slots: not };
       out.push({ op: "not", expr: inner });
     }
   }
@@ -200,7 +216,10 @@ function simplifyExpr(e: Expr, facts: Facts = new Map()): Expr {
   const d = decide(e, facts);
   if (d !== undefined) return d ? { op: "true" } : FALSE;
   if (e.op === "and") {
-    const flat = e.exprs.map((x) => simplifyExpr(x, facts)).flatMap((x) => (x.op === "and" ? x.exprs : [x])).filter((x) => x.op !== "true");
+    const flat = e.exprs
+      .map((x) => simplifyExpr(x, facts))
+      .flatMap((x) => (x.op === "and" ? x.exprs : [x]))
+      .filter((x) => x.op !== "true");
     // Guard calls before a false term are skipped too: guards may be called any number of times (backend-c.md).
     if (flat.some(isFalse)) return FALSE;
     const xs = mergeSlotTerms(flat);
@@ -208,7 +227,10 @@ function simplifyExpr(e: Expr, facts: Facts = new Map()): Expr {
     return xs.length === 0 ? { op: "true" } : xs.length === 1 ? xs[0]! : { op: "and", exprs: xs };
   }
   if (e.op === "or") {
-    const xs = e.exprs.map((x) => simplifyExpr(x, facts)).flatMap((x) => (x.op === "or" ? x.exprs : [x])).filter((x) => !isFalse(x));
+    const xs = e.exprs
+      .map((x) => simplifyExpr(x, facts))
+      .flatMap((x) => (x.op === "or" ? x.exprs : [x]))
+      .filter((x) => !isFalse(x));
     if (xs.some((x) => x.op === "true")) return { op: "true" };
     return xs.length === 0 ? FALSE : xs.length === 1 ? xs[0]! : { op: "or", exprs: xs };
   }

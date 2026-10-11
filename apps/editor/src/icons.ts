@@ -13,8 +13,16 @@ export type IconName = ActionKind | "chevron-down" | "chevron-right";
 
 /** SVG path data per icon (Tabler: login, logout, hourglass, repeat, bolt, chevron-down, chevron-right). */
 const PATHS: Record<IconName, string[]> = {
-  entry: ["M15 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2", "M21 12h-13l3 -3", "M11 15l-3 -3"],
-  exit: ["M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2", "M9 12h12l-3 -3", "M18 15l3 -3"],
+  entry: [
+    "M15 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2",
+    "M21 12h-13l3 -3",
+    "M11 15l-3 -3",
+  ],
+  exit: [
+    "M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2",
+    "M9 12h12l-3 -3",
+    "M18 15l3 -3",
+  ],
   after: [
     "M6.5 7h11",
     "M6.5 17h11",

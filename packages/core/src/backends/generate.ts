@@ -55,7 +55,10 @@ export interface GenerateOverrides {
  */
 export function modelIr(doc: UfsmDocument, trace = false): IrModule {
   const errors = checkSemantics(doc).filter((d) => d.severity === "error");
-  if (errors.length) throw new CodegenError(`the model has ${errors.length} error${errors.length > 1 ? "s" : ""}: ${errors.map((e) => e.message).join("; ")}`);
+  if (errors.length)
+    throw new CodegenError(
+      `the model has ${errors.length} error${errors.length > 1 ? "s" : ""}: ${errors.map((e) => e.message).join("; ")}`,
+    );
   return lowerToIr(flatten(doc), { trace });
 }
 
@@ -64,7 +67,12 @@ export function modelIr(doc: UfsmDocument, trace = false): IrModule {
  * lowered again when the target's `trace` option differs from the IR's).
  * Throws CodegenError (model errors, name clashes in the generated code).
  */
-export function generateFiles(doc: UfsmDocument, target: CodeTarget, overrides: GenerateOverrides = {}, ir?: IrModule): GeneratedCode {
+export function generateFiles(
+  doc: UfsmDocument,
+  target: CodeTarget,
+  overrides: GenerateOverrides = {},
+  ir?: IrModule,
+): GeneratedCode {
   const { prefix, className, ...common } = overrides;
   const lowered = (trace: boolean): IrModule => (ir && ir.trace === trace ? ir : modelIr(doc, trace));
   if (target === "c") {
@@ -73,13 +81,25 @@ export function generateFiles(doc: UfsmDocument, target: CodeTarget, overrides: 
     const o: COptions = { ...options, ...resolved };
     if (prefix !== undefined) o.prefix = prefix;
     const out = generateC(lowered(resolved.trace), o);
-    return { files: [{ name: out.headerName, text: out.header }, { name: out.sourceName, text: out.source }], problems };
+    return {
+      files: [
+        { name: out.headerName, text: out.header },
+        { name: out.sourceName, text: out.source },
+      ],
+      problems,
+    };
   }
-  const { options, problems } = target === "ts" ? tsOptionsFromTargets(doc) : target === "rust" ? rustOptionsFromTargets(doc) : pythonOptionsFromTargets(doc);
+  const { options, problems } =
+    target === "ts"
+      ? tsOptionsFromTargets(doc)
+      : target === "rust"
+        ? rustOptionsFromTargets(doc)
+        : pythonOptionsFromTargets(doc);
   const resolved = resolveOptions(doc, options, common);
   const o: TsOptions | PythonOptions | RustOptions = { ...options, ...resolved };
   if (className !== undefined) o.className = className;
   const tir = lowered(resolved.trace);
-  const out = target === "ts" ? generateTypeScript(tir, o) : target === "rust" ? generateRust(tir, o) : generatePython(tir, o);
+  const out =
+    target === "ts" ? generateTypeScript(tir, o) : target === "rust" ? generateRust(tir, o) : generatePython(tir, o);
   return { files: [{ name: out.fileName, text: out.source }], problems };
 }

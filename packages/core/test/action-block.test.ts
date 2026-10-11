@@ -12,7 +12,21 @@ import { ACTION_MIN_H, HEADER_H, actionBlock, regionBoxes, vertexBox, type Actio
  * regions: r1 (h 200) with A at y 300 (absolute 400), r2 (fill) with B. `w` and `actionsHeight` vary per test.
  */
 function testDoc(w = 300, actionsHeight?: number): UfsmDocument {
-  const names = ["initMotor", "ledOn", "startLog", "armWatchdog", "openValve", "clearFault", "stopMotor", "ledOff", "stopLog", "closeValve", "aInt", "poll", "count"];
+  const names = [
+    "initMotor",
+    "ledOn",
+    "startLog",
+    "armWatchdog",
+    "openValve",
+    "clearFault",
+    "stopMotor",
+    "ledOff",
+    "stopLog",
+    "closeValve",
+    "aInt",
+    "poll",
+    "count",
+  ];
   return parseV1(
     JSON.stringify({
       format: "ufsm",
@@ -75,7 +89,8 @@ function testDoc(w = 300, actionsHeight?: number): UfsmDocument {
 
 const P = (doc: UfsmDocument): State => doc.machine.root.states[0] as State;
 const block = (doc: UfsmDocument): ActionBlock => actionBlock(indexV1(doc), P(doc));
-const texts = (b: ActionBlock): string[] => b.rows.map((r) => r.segments.map((g) => `${g.icon ?? "-"}:${g.text}`).join(" | "));
+const texts = (b: ActionBlock): string[] =>
+  b.rows.map((r) => r.segments.map((g) => `${g.icon ?? "-"}:${g.text}`).join(" | "));
 
 describe("action block layout", () => {
   it("wraps entry and exit lists to the state's width, packs timers, one internal transition per line", () => {
@@ -92,7 +107,10 @@ describe("action block layout", () => {
       "internal:eInt / aInt()",
       "internal:eTick [gReady()] / poll(), count()",
     ]);
-    assert.deepEqual(b.rows.map((r) => r.continued), [false, true, true, false, true, false, false, false, false]);
+    assert.deepEqual(
+      b.rows.map((r) => r.continued),
+      [false, true, true, false, true, false, false, false, false],
+    );
     assert.deepEqual(b.counts, { entry: 6, exit: 4, after: 2, every: 1, internal: 2 });
     assert.equal(b.auto, 10 + 20 * 9);
     assert.equal(b.height, b.auto);
@@ -100,9 +118,18 @@ describe("action block layout", () => {
     assert.ok(!b.limited && !b.summary && !b.cut && b.hiddenMarker === undefined);
     assert.deepEqual(b.hidden, { entry: 0, exit: 0, after: 0, every: 0, internal: 0 });
     // icons at the margin, continuation lines under the first action, the second timer after the first and a gap
-    assert.deepEqual(b.rows[0]!.segments.map((g) => g.x), [10]);
-    assert.deepEqual(b.rows[1]!.segments.map((g) => g.x), [30]);
-    assert.deepEqual(b.rows[5]!.segments.map((g) => g.x), [10, 10 + 20 + 14 * 7 + 16]);
+    assert.deepEqual(
+      b.rows[0]!.segments.map((g) => g.x),
+      [10],
+    );
+    assert.deepEqual(
+      b.rows[1]!.segments.map((g) => g.x),
+      [30],
+    );
+    assert.deepEqual(
+      b.rows[5]!.segments.map((g) => g.x),
+      [10, 10 + 20 + 14 * 7 + 16],
+    );
   });
   it("uses fewer lines in a wider state and more in a narrower one; a word that is too long keeps its line", () => {
     const wide = block(testDoc(800));
@@ -132,7 +159,10 @@ describe("action block with a stored height", () => {
     assert.ok(b.cut, "the exit list goes on in the first hidden line");
     assert.deepEqual(b.hidden, { entry: 0, exit: 1, after: 2, every: 1, internal: 2 });
     assert.ok(b.hiddenMarker);
-    assert.deepEqual(b.hiddenMarker.parts.map((p) => `${p.icon}:${p.text}`), ["exit:1", "after:2", "every:1", "internal:2"]);
+    assert.deepEqual(
+      b.hiddenMarker.parts.map((p) => `${p.icon}:${p.text}`),
+      ["exit:1", "after:2", "every:1", "internal:2"],
+    );
     assert.equal(b.hiddenMarker.x + b.hiddenMarker.w, 300 - 10, "right-aligned inside the margin");
     assert.equal(b.hiddenMarker.y + b.hiddenMarker.h / 2, HEADER_H + 90, "centred on the block's bottom line");
     const five = block(testDoc(300, 110));
@@ -150,7 +180,10 @@ describe("action block with a stored height", () => {
     assert.ok(b.summary && b.limited);
     assert.equal(b.visible, 0);
     assert.equal(b.hiddenMarker, undefined);
-    assert.deepEqual(b.summaryRow.map((g) => `${g.icon}:${g.text}`), ["entry:6", "exit:4", "after:2", "every:1", "internal:2"]);
+    assert.deepEqual(
+      b.summaryRow.map((g) => `${g.icon}:${g.text}`),
+      ["entry:6", "exit:4", "after:2", "every:1", "internal:2"],
+    );
     assert.deepEqual(b.hidden, b.counts);
   });
   it("has no effect when it is at least as tall as the lines", () => {
@@ -228,7 +261,10 @@ describe("resizing the action block", () => {
 });
 
 describe("design rules for the action block", () => {
-  const codes = (doc: UfsmDocument): string[] => checkV1(doc).filter((d) => d.code.startsWith("actions-")).map((d) => `${d.code} ${d.id}: ${d.message}`);
+  const codes = (doc: UfsmDocument): string[] =>
+    checkV1(doc)
+      .filter((d) => d.code.startsWith("actions-"))
+      .map((d) => `${d.code} ${d.id}: ${d.message}`);
   it("accept a block that fits, also with lines hidden by a stored height", () => {
     assert.deepEqual(codes(testDoc()), []);
     assert.deepEqual(codes(testDoc(300, 50)), []);
@@ -237,12 +273,23 @@ describe("design rules for the action block", () => {
   it("warn when the state is too low or too narrow for what the block shows", () => {
     const low = testDoc();
     low.diagram!.states["s1"]!.h = 150;
-    assert.deepEqual(codes(low).filter((c) => c.startsWith("actions-clipped")), ["actions-clipped s1: state 'P' is too small to show its actions, timers and internal transitions"]);
+    assert.deepEqual(
+      codes(low).filter((c) => c.startsWith("actions-clipped")),
+      ["actions-clipped s1: state 'P' is too small to show its actions, timers and internal transitions"],
+    );
     const narrow = testDoc(100);
-    assert.equal(codes(narrow).filter((c) => c.startsWith("actions-clipped")).length, 1, "initMotor(), is wider than the state");
+    assert.equal(
+      codes(narrow).filter((c) => c.startsWith("actions-clipped")).length,
+      1,
+      "initMotor(), is wider than the state",
+    );
     const hiddenInstead = testDoc(300, 50);
     hiddenInstead.diagram!.states["s1"]!.h = 150;
-    assert.deepEqual(codes(hiddenInstead).filter((c) => c.startsWith("actions-clipped")), [], "two lines fit in 150");
+    assert.deepEqual(
+      codes(hiddenInstead).filter((c) => c.startsWith("actions-clipped")),
+      [],
+      "two lines fit in 150",
+    );
   });
   it("warn when the block is drawn over the first region's contents", () => {
     const doc = testDoc();

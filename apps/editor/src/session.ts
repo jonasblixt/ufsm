@@ -10,7 +10,15 @@
  * (an interactive edit, previewed from its start). After either, `index` is a new object, so caches keyed by it
  * (WeakMaps in core and the editor) never see a stale document.
  */
-import { checkV1, indexV1, type Diagnostic, type DocIndex, type LoadedModel, type Region, type UfsmDocument } from "@ufsm/core";
+import {
+  checkV1,
+  indexV1,
+  type Diagnostic,
+  type DocIndex,
+  type LoadedModel,
+  type Region,
+  type UfsmDocument,
+} from "@ufsm/core";
 import type { View } from "./hit";
 import { History } from "./history";
 import type { SimHighlight } from "./render";

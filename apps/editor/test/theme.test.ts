@@ -6,8 +6,31 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { contrastRatio, cssColor, joinPath, luminance, parseColor, resolveTokens, resolverInfo, TokenError, type TokenFiles } from "../src/tokens";
-import { C, CSS_COLORS, FALLBACK_THEME, THEME_FILES, THEMES, canvasAlpha, findTheme, modifierHasEffect, resolveTheme, setCanvasTheme, themeInfo, type ResolvedTheme } from "../src/theme";
+import {
+  contrastRatio,
+  cssColor,
+  joinPath,
+  luminance,
+  parseColor,
+  resolveTokens,
+  resolverInfo,
+  TokenError,
+  type TokenFiles,
+} from "../src/tokens";
+import {
+  C,
+  CSS_COLORS,
+  FALLBACK_THEME,
+  THEME_FILES,
+  THEMES,
+  canvasAlpha,
+  findTheme,
+  modifierHasEffect,
+  resolveTheme,
+  setCanvasTheme,
+  themeInfo,
+  type ResolvedTheme,
+} from "../src/theme";
 import {
   DEFAULT_THEME,
   ZOOM_MAX,
@@ -34,14 +57,49 @@ describe("gruvbox theme files", () => {
   it("hold the palette of colors/gruvbox.vim exactly", () => {
     // From gruvbox (morhetz/gruvbox, colors/gruvbox.vim, "Palette" section), the *_256 duplicates left out.
     const expected: Record<string, string> = {
-      dark0_hard: "#1d2021", dark0: "#282828", dark0_soft: "#32302f", dark1: "#3c3836", dark2: "#504945", dark3: "#665c54", dark4: "#7c6f64",
-      gray_245: "#928374", gray_244: "#928374",
-      light0_hard: "#f9f5d7", light0: "#fbf1c7", light0_soft: "#f2e5bc", light1: "#ebdbb2", light2: "#d5c4a1", light3: "#bdae93", light4: "#a89984",
-      bright_red: "#fb4934", bright_green: "#b8bb26", bright_yellow: "#fabd2f", bright_blue: "#83a598", bright_purple: "#d3869b", bright_aqua: "#8ec07c", bright_orange: "#fe8019",
-      neutral_red: "#cc241d", neutral_green: "#98971a", neutral_yellow: "#d79921", neutral_blue: "#458588", neutral_purple: "#b16286", neutral_aqua: "#689d6a", neutral_orange: "#d65d0e",
-      faded_red: "#9d0006", faded_green: "#79740e", faded_yellow: "#b57614", faded_blue: "#076678", faded_purple: "#8f3f71", faded_aqua: "#427b58", faded_orange: "#af3a03",
+      dark0_hard: "#1d2021",
+      dark0: "#282828",
+      dark0_soft: "#32302f",
+      dark1: "#3c3836",
+      dark2: "#504945",
+      dark3: "#665c54",
+      dark4: "#7c6f64",
+      gray_245: "#928374",
+      gray_244: "#928374",
+      light0_hard: "#f9f5d7",
+      light0: "#fbf1c7",
+      light0_soft: "#f2e5bc",
+      light1: "#ebdbb2",
+      light2: "#d5c4a1",
+      light3: "#bdae93",
+      light4: "#a89984",
+      bright_red: "#fb4934",
+      bright_green: "#b8bb26",
+      bright_yellow: "#fabd2f",
+      bright_blue: "#83a598",
+      bright_purple: "#d3869b",
+      bright_aqua: "#8ec07c",
+      bright_orange: "#fe8019",
+      neutral_red: "#cc241d",
+      neutral_green: "#98971a",
+      neutral_yellow: "#d79921",
+      neutral_blue: "#458588",
+      neutral_purple: "#b16286",
+      neutral_aqua: "#689d6a",
+      neutral_orange: "#d65d0e",
+      faded_red: "#9d0006",
+      faded_green: "#79740e",
+      faded_yellow: "#b57614",
+      faded_blue: "#076678",
+      faded_purple: "#8f3f71",
+      faded_aqua: "#427b58",
+      faded_orange: "#af3a03",
     };
-    const palette = (THEME_FILES["gruvbox/gruvbox.tokens.json"] as { gruvbox: Record<string, { $value: { components: number[]; hex: string } }> }).gruvbox;
+    const palette = (
+      THEME_FILES["gruvbox/gruvbox.tokens.json"] as {
+        gruvbox: Record<string, { $value: { components: number[]; hex: string } }>;
+      }
+    ).gruvbox;
     const names = Object.keys(palette).filter((k) => !k.startsWith("$"));
     assert.deepEqual(names.sort(), Object.keys(expected).sort());
     for (const n of names) {
@@ -79,7 +137,16 @@ describe("gruvbox theme files", () => {
       const t = variant(appearance, contrast);
       assert.equal(t.appearance, appearance, key);
       assert.deepEqual(t.inputs, { appearance, contrast }, key);
-      const got = [t.canvas.paper, t.canvas.background, t.canvas.grid, t.css["--fg"], t.css["--fg4"], t.css["--orange"], t.css["--chrome"], t.css["--card-edge"]];
+      const got = [
+        t.canvas.paper,
+        t.canvas.background,
+        t.canvas.grid,
+        t.css["--fg"],
+        t.css["--fg4"],
+        t.css["--orange"],
+        t.css["--chrome"],
+        t.css["--card-edge"],
+      ];
       assert.deepEqual(got, want, key);
       assert.equal(t.css["--card"], t.canvas.paper, `${key}: cards and the sheet share bg0`);
       assert.notEqual(t.canvas.background, t.canvas.paper, `${key}: the sheet stands out from its surround`);
@@ -93,8 +160,19 @@ describe("gruvbox theme files", () => {
     assert.deepEqual(
       { ...t.canvas },
       {
-        background: "#1d2021", paper: "#282828", grid: "#32302f", stateFill: "#282828", ink: "#a89984", selection: "#fe8019",
-        touching: "#83a598", ok: "#b8bb26", refuse: "#fb4934", warning: "#fabd2f", badgeMark: "#1d2021", active: "#b8bb26", would: "#8ec07c",
+        background: "#1d2021",
+        paper: "#282828",
+        grid: "#32302f",
+        stateFill: "#282828",
+        ink: "#a89984",
+        selection: "#fe8019",
+        touching: "#83a598",
+        ok: "#b8bb26",
+        refuse: "#fb4934",
+        warning: "#fabd2f",
+        badgeMark: "#1d2021",
+        active: "#b8bb26",
+        would: "#8ec07c",
       },
     );
     assert.equal(t.css["--shadow"], "rgb(0 0 0 / 0.45)");
@@ -105,7 +183,8 @@ describe("gruvbox theme files", () => {
     for (const appearance of ["dark", "light"] as const) {
       for (const contrast of ["hard", "medium", "soft"]) {
         const t = variant(appearance, contrast);
-        const css = (k: string): ReturnType<typeof parseColor> => parseColor({ colorSpace: "srgb", components: t.css[`--${k}-rgb`]!.split(" ").map((x) => Number(x) / 255) });
+        const css = (k: string): ReturnType<typeof parseColor> =>
+          parseColor({ colorSpace: "srgb", components: t.css[`--${k}-rgb`]!.split(" ").map((x) => Number(x) / 255) });
         const key = `${appearance} ${contrast}`;
         assert.ok(contrastRatio(css("fg"), css("card")) >= 7, `${key}: text on cards`);
         assert.ok(contrastRatio(css("fg4"), css("card")) >= 3.5, `${key}: secondary text on cards`);
@@ -169,17 +248,28 @@ describe("everforest, solarized and catppuccin theme files", () => {
       ladder(v).forEach((hex, i) => (want[`everforest.${k}.${keys[i]}`] = hex));
     }
     // Solarized: the README's table (altercation/solarized).
-    const sol = "base03 #002b36 base02 #073642 base01 #586e75 base00 #657b83 base0 #839496 base1 #93a1a1 base2 #eee8d5 base3 #fdf6e3 yellow #b58900 orange #cb4b16 red #dc322f magenta #d33682 violet #6c71c4 blue #268bd2 cyan #2aa198 green #859900".split(" ");
+    const sol =
+      "base03 #002b36 base02 #073642 base01 #586e75 base00 #657b83 base0 #839496 base1 #93a1a1 base2 #eee8d5 base3 #fdf6e3 yellow #b58900 orange #cb4b16 red #dc322f magenta #d33682 violet #6c71c4 blue #268bd2 cyan #2aa198 green #859900".split(
+        " ",
+      );
     for (let i = 0; i < sol.length; i += 2) want[`solarized.${sol[i]}`] = sol[i + 1]!;
     // Catppuccin: palette.json v1.8.0 (catppuccin/palette), colors in its order.
-    const ctpKeys = "rosewater flamingo pink mauve red maroon peach yellow green teal sky sapphire blue lavender text subtext1 subtext0 overlay2 overlay1 overlay0 surface2 surface1 surface0 base mantle crust".split(" ");
+    const ctpKeys =
+      "rosewater flamingo pink mauve red maroon peach yellow green teal sky sapphire blue lavender text subtext1 subtext0 overlay2 overlay1 overlay0 surface2 surface1 surface0 base mantle crust".split(
+        " ",
+      );
     const ctp: Record<string, string> = {
-      latte: "#dc8a78 #dd7878 #ea76cb #8839ef #d20f39 #e64553 #fe640b #df8e1d #40a02b #179299 #04a5e5 #209fb5 #1e66f5 #7287fd #4c4f69 #5c5f77 #6c6f85 #7c7f93 #8c8fa1 #9ca0b0 #acb0be #bcc0cc #ccd0da #eff1f5 #e6e9ef #dce0e8",
-      frappe: "#f2d5cf #eebebe #f4b8e4 #ca9ee6 #e78284 #ea999c #ef9f76 #e5c890 #a6d189 #81c8be #99d1db #85c1dc #8caaee #babbf1 #c6d0f5 #b5bfe2 #a5adce #949cbb #838ba7 #737994 #626880 #51576d #414559 #303446 #292c3c #232634",
-      macchiato: "#f4dbd6 #f0c6c6 #f5bde6 #c6a0f6 #ed8796 #ee99a0 #f5a97f #eed49f #a6da95 #8bd5ca #91d7e3 #7dc4e4 #8aadf4 #b7bdf8 #cad3f5 #b8c0e0 #a5adcb #939ab7 #8087a2 #6e738d #5b6078 #494d64 #363a4f #24273a #1e2030 #181926",
-      mocha: "#f5e0dc #f2cdcd #f5c2e7 #cba6f7 #f38ba8 #eba0ac #fab387 #f9e2af #a6e3a1 #94e2d5 #89dceb #74c7ec #89b4fa #b4befe #cdd6f4 #bac2de #a6adc8 #9399b2 #7f849c #6c7086 #585b70 #45475a #313244 #1e1e2e #181825 #11111b",
+      latte:
+        "#dc8a78 #dd7878 #ea76cb #8839ef #d20f39 #e64553 #fe640b #df8e1d #40a02b #179299 #04a5e5 #209fb5 #1e66f5 #7287fd #4c4f69 #5c5f77 #6c6f85 #7c7f93 #8c8fa1 #9ca0b0 #acb0be #bcc0cc #ccd0da #eff1f5 #e6e9ef #dce0e8",
+      frappe:
+        "#f2d5cf #eebebe #f4b8e4 #ca9ee6 #e78284 #ea999c #ef9f76 #e5c890 #a6d189 #81c8be #99d1db #85c1dc #8caaee #babbf1 #c6d0f5 #b5bfe2 #a5adce #949cbb #838ba7 #737994 #626880 #51576d #414559 #303446 #292c3c #232634",
+      macchiato:
+        "#f4dbd6 #f0c6c6 #f5bde6 #c6a0f6 #ed8796 #ee99a0 #f5a97f #eed49f #a6da95 #8bd5ca #91d7e3 #7dc4e4 #8aadf4 #b7bdf8 #cad3f5 #b8c0e0 #a5adcb #939ab7 #8087a2 #6e738d #5b6078 #494d64 #363a4f #24273a #1e2030 #181926",
+      mocha:
+        "#f5e0dc #f2cdcd #f5c2e7 #cba6f7 #f38ba8 #eba0ac #fab387 #f9e2af #a6e3a1 #94e2d5 #89dceb #74c7ec #89b4fa #b4befe #cdd6f4 #bac2de #a6adc8 #9399b2 #7f849c #6c7086 #585b70 #45475a #313244 #1e1e2e #181825 #11111b",
     };
-    for (const [f, v] of Object.entries(ctp)) ladder(v).forEach((hex, i) => (want[`catppuccin.${f}.${ctpKeys[i]}`] = hex));
+    for (const [f, v] of Object.entries(ctp))
+      ladder(v).forEach((hex, i) => (want[`catppuccin.${f}.${ctpKeys[i]}`] = hex));
     // Every absolute color of the three palette files, path -> { components, hex }.
     const got: Record<string, { components: number[]; hex: string }> = {};
     const walk = (node: Record<string, unknown>, path: string): void => {
@@ -190,7 +280,8 @@ describe("everforest, solarized and catppuccin theme files", () => {
         else walk(child, `${path}.${k}`);
       }
     };
-    for (const id of ["everforest", "solarized", "catppuccin"]) walk((THEME_FILES[`${id}/${id}.tokens.json`] as Record<string, Record<string, unknown>>)[id]!, id);
+    for (const id of ["everforest", "solarized", "catppuccin"])
+      walk((THEME_FILES[`${id}/${id}.tokens.json`] as Record<string, Record<string, unknown>>)[id]!, id);
     assert.deepEqual(Object.keys(got).sort(), Object.keys(want).sort());
     for (const [path, v] of Object.entries(got)) {
       assert.equal(v.hex, want[path], path);
@@ -200,11 +291,25 @@ describe("everforest, solarized and catppuccin theme files", () => {
 
   it("the resolvers offer their upstream variants", () => {
     const mods = (id: string) => themeInfo(findTheme(id)!).modifiers.map((m) => [m.name, m.contexts, m.default]);
-    assert.deepEqual(THEMES.map((t) => [t.id, themeInfo(t).name]), [["catppuccin", "Catppuccin"], ["everforest", "Everforest"], ["gruvbox", "Gruvbox"], ["solarized", "Solarized"]]);
+    assert.deepEqual(
+      THEMES.map((t) => [t.id, themeInfo(t).name]),
+      [
+        ["catppuccin", "Catppuccin"],
+        ["everforest", "Everforest"],
+        ["gruvbox", "Gruvbox"],
+        ["solarized", "Solarized"],
+      ],
+    );
     assert.equal(FALLBACK_THEME.id, "gruvbox");
-    assert.deepEqual(mods("everforest"), [["appearance", ["dark", "light"], "dark"], ["contrast", ["hard", "medium", "soft"], "medium"]]);
+    assert.deepEqual(mods("everforest"), [
+      ["appearance", ["dark", "light"], "dark"],
+      ["contrast", ["hard", "medium", "soft"], "medium"],
+    ]);
     assert.deepEqual(mods("solarized"), [["appearance", ["dark", "light"], "dark"]]);
-    assert.deepEqual(mods("catppuccin"), [["appearance", ["dark", "light"], "dark"], ["flavor", ["frappe", "macchiato", "mocha"], "mocha"]]);
+    assert.deepEqual(mods("catppuccin"), [
+      ["appearance", ["dark", "light"], "dark"],
+      ["flavor", ["frappe", "macchiato", "mocha"], "mocha"],
+    ]);
   });
 
   it("resolve every variant to the roles chosen for it", () => {
@@ -230,7 +335,17 @@ describe("everforest, solarized and catppuccin theme files", () => {
       for (const t of allVariants(id)) {
         const key = [id, ...Object.values(t.inputs)].join(" ");
         seen.push(key);
-        const got = [t.canvas.paper, t.canvas.background, t.canvas.grid, t.css["--fg"], t.css["--fg4"], t.css["--orange"], t.css["--chrome"], t.css["--card-edge"], t.canvas.ink];
+        const got = [
+          t.canvas.paper,
+          t.canvas.background,
+          t.canvas.grid,
+          t.css["--fg"],
+          t.css["--fg4"],
+          t.css["--orange"],
+          t.css["--chrome"],
+          t.css["--card-edge"],
+          t.canvas.ink,
+        ];
         assert.deepEqual(got, ladder(table[key] ?? ""), key);
         assert.equal(t.css["--card"], t.canvas.paper, `${key}: cards and the sheet share bg0`);
       }
@@ -239,8 +354,10 @@ describe("everforest, solarized and catppuccin theme files", () => {
   });
 
   it("code colors follow each scheme's own syntax rules", () => {
-    const syn = (t: ResolvedTheme) => ["comment", "string", "number", "keyword", "preprocessor"].map((k) => t.css[`--syntax-${k}`]).join(" ");
-    const pick = (id: string, appearance: "dark" | "light", inputs = {}) => resolveTheme({ name: id, appearance, inputs }, true).theme;
+    const syn = (t: ResolvedTheme) =>
+      ["comment", "string", "number", "keyword", "preprocessor"].map((k) => t.css[`--syntax-${k}`]).join(" ");
+    const pick = (id: string, appearance: "dark" | "light", inputs = {}) =>
+      resolveTheme({ name: id, appearance, inputs }, true).theme;
     // everforest.vim: Comment grey1, String green, Number purple, Keyword red, PreProc purple.
     assert.equal(syn(pick("everforest", "dark")), "#859289 #a7c080 #d699b6 #e67e80 #d699b6");
     // vim-colors-solarized: Comment base01 (base1 when light), Constant cyan, Statement green, PreProc orange.
@@ -254,7 +371,10 @@ describe("everforest, solarized and catppuccin theme files", () => {
 
 describe("every bundled theme", () => {
   it("is laid out like the others in every variant", () => {
-    const L = (t: ResolvedTheme, k: string) => luminance(parseColor({ colorSpace: "srgb", components: t.css[`--${k}-rgb`]!.split(" ").map((x) => Number(x) / 255) }));
+    const L = (t: ResolvedTheme, k: string) =>
+      luminance(
+        parseColor({ colorSpace: "srgb", components: t.css[`--${k}-rgb`]!.split(" ").map((x) => Number(x) / 255) }),
+      );
     for (const entry of THEMES) {
       for (const t of allVariants(entry.id)) {
         const key = [entry.id, ...Object.values(t.inputs)].join(" ");
@@ -262,7 +382,11 @@ describe("every bundled theme", () => {
         for (const k of CSS_COLORS) assert.ok(t.css[`--${k}`], `${key}: --${k}`);
         const dark = t.appearance === "dark";
         assert.equal(L(t, "fg") > L(t, "card"), dark, `${key}: text against the cards`);
-        assert.equal(luminance(t.canvasRgba.background) < luminance(t.canvasRgba.paper), true, `${key}: the sheet lies on something darker`);
+        assert.equal(
+          luminance(t.canvasRgba.background) < luminance(t.canvasRgba.paper),
+          true,
+          `${key}: the sheet lies on something darker`,
+        );
         assert.notEqual(t.canvas.grid, t.canvas.paper, `${key}: the grid is visible`);
         assert.ok(L(t, "chrome") < L(t, "card"), `${key}: the window background is darker than the cards`);
         assert.notEqual(t.css["--card-edge"], t.css["--card"], `${key}: card edge`);
@@ -275,7 +399,8 @@ describe("every bundled theme", () => {
 
   it("keeps the upstream palettes' contrast (the weakest pairs are Solarized light and Everforest light soft)", () => {
     const ratio = (t: ResolvedTheme, a: string, b: string) => {
-      const c = (k: string) => parseColor({ colorSpace: "srgb", components: t.css[`--${k}-rgb`]!.split(" ").map((x) => Number(x) / 255) });
+      const c = (k: string) =>
+        parseColor({ colorSpace: "srgb", components: t.css[`--${k}-rgb`]!.split(" ").map((x) => Number(x) / 255) });
       return contrastRatio(c(a), c(b));
     };
     const weakest: Record<string, number> = {};
@@ -283,19 +408,32 @@ describe("every bundled theme", () => {
     for (const entry of THEMES) {
       for (const t of allVariants(entry.id)) {
         const key = [entry.id, ...Object.values(t.inputs)].join(" ");
-        const text = ratio(t, "fg", "card"), secondary = ratio(t, "fg4", "card"), onOrange = ratio(t, "bg-dark", "orange");
-        const ink = contrastRatio(t.canvasRgba.ink, t.canvasRgba.paper), selection = contrastRatio(t.canvasRgba.selection, t.canvasRgba.paper);
+        const text = ratio(t, "fg", "card"),
+          secondary = ratio(t, "fg4", "card"),
+          onOrange = ratio(t, "bg-dark", "orange");
+        const ink = contrastRatio(t.canvasRgba.ink, t.canvasRgba.paper),
+          selection = contrastRatio(t.canvasRgba.selection, t.canvasRgba.paper);
         // A role mapped to the wrong palette color (a background as text, say) falls far below these.
         assert.ok(text >= 4, `${key}: text on cards ${text.toFixed(2)}`);
         assert.ok(ink >= 3.75, `${key}: diagram on the sheet ${ink.toFixed(2)}`);
         assert.ok(secondary >= 2.4, `${key}: secondary text ${secondary.toFixed(2)}`);
         assert.ok(selection >= 2.2, `${key}: selection on the sheet ${selection.toFixed(2)}`);
         assert.ok(onOrange >= 1.95, `${key}: text on orange ${onOrange.toFixed(2)}`);
-        note("text", text), note("ink", ink), note("secondary", secondary), note("selection", selection), note("onOrange", onOrange);
+        (note("text", text),
+          note("ink", ink),
+          note("secondary", secondary),
+          note("selection", selection),
+          note("onOrange", onOrange));
       }
     }
     // The floors are tight: each is within 0.25 of the weakest variant, so a theme that gets worse is noticed.
-    for (const [what, floor] of Object.entries({ text: 4, ink: 3.75, secondary: 2.4, selection: 2.2, onOrange: 1.95 })) {
+    for (const [what, floor] of Object.entries({
+      text: 4,
+      ink: 3.75,
+      secondary: 2.4,
+      selection: 2.2,
+      onOrange: 1.95,
+    })) {
       assert.ok(weakest[what]! - floor < 0.25, `${what}: weakest ${weakest[what]!.toFixed(2)}, floor ${floor}`);
     }
   });
@@ -303,10 +441,19 @@ describe("every bundled theme", () => {
   it("the Settings tab knows which options make no difference", () => {
     const ctp = findTheme("catppuccin")!;
     assert.equal(modifierHasEffect(ctp, { appearance: "dark", flavor: "mocha" }, "flavor"), true);
-    assert.equal(modifierHasEffect(ctp, { appearance: "light", flavor: "mocha" }, "flavor"), false, "light is always Latte");
+    assert.equal(
+      modifierHasEffect(ctp, { appearance: "light", flavor: "mocha" }, "flavor"),
+      false,
+      "light is always Latte",
+    );
     assert.equal(modifierHasEffect(ctp, { appearance: "light", flavor: "frappe" }, "appearance"), true);
     for (const id of ["gruvbox", "everforest"]) {
-      for (const appearance of ["dark", "light"]) assert.equal(modifierHasEffect(findTheme(id)!, { appearance, contrast: "soft" }, "contrast"), true, `${id} ${appearance}`);
+      for (const appearance of ["dark", "light"])
+        assert.equal(
+          modifierHasEffect(findTheme(id)!, { appearance, contrast: "soft" }, "contrast"),
+          true,
+          `${id} ${appearance}`,
+        );
     }
   });
 });
@@ -347,16 +494,28 @@ describe("resolveTheme", () => {
 });
 
 describe("design tokens (DTCG 2025.10)", () => {
-  const resolver = (order: unknown[], extra: Record<string, unknown> = {}): Record<string, unknown> => ({ version: "2025.10", resolutionOrder: order, ...extra });
-  const tokens = (files: TokenFiles, inputs?: Record<string, string>) => resolveTokens(files, "t/r.resolver.json", inputs);
+  const resolver = (order: unknown[], extra: Record<string, unknown> = {}): Record<string, unknown> => ({
+    version: "2025.10",
+    resolutionOrder: order,
+    ...extra,
+  });
+  const tokens = (files: TokenFiles, inputs?: Record<string, string>) =>
+    resolveTokens(files, "t/r.resolver.json", inputs);
   const inline = (doc: unknown) => ({ type: "set", name: "inline", sources: [doc] });
-  const color = (hex: string) => ({ colorSpace: "srgb", components: [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255), hex });
+  const color = (hex: string) => ({
+    colorSpace: "srgb",
+    components: [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255),
+    hex,
+  });
 
   it("aliases, chains, group types and later sources winning", () => {
     const files = {
       "t/r.resolver.json": resolver([
         inline({ base: { $type: "color", a: { $value: color("#112233") }, b: { $value: "{base.a}" } } }),
-        inline({ base: { a: { $value: color("#445566") } }, sem: { c: { $value: "{base.b}" }, n: { $type: "number", $value: 3 } } }),
+        inline({
+          base: { a: { $value: color("#445566") } },
+          sem: { c: { $value: "{base.b}" }, n: { $type: "number", $value: 3 } },
+        }),
         inline({ sizes: { $type: "number", ref: { $value: "{base.a}" } } }),
       ]),
     };
@@ -370,10 +529,23 @@ describe("design tokens (DTCG 2025.10)", () => {
 
   it("$root tokens, JSON pointers into files and inline modifiers", () => {
     const files = {
-      "t/r.resolver.json": resolver([{ $ref: "#/sets/base" }, { type: "modifier", name: "mode", contexts: { a: [{ $ref: "m.json#/modes/a" }], b: [{ $ref: "m.json#/modes/b" }] }, default: "a" }], {
-        sets: { base: { sources: [{ $ref: "../shared/base.json" }] } },
-      }),
-      "shared/base.json": { accent: { $type: "color", $root: { $value: color("#000000") }, light: { $value: color("#ffffff") } } },
+      "t/r.resolver.json": resolver(
+        [
+          { $ref: "#/sets/base" },
+          {
+            type: "modifier",
+            name: "mode",
+            contexts: { a: [{ $ref: "m.json#/modes/a" }], b: [{ $ref: "m.json#/modes/b" }] },
+            default: "a",
+          },
+        ],
+        {
+          sets: { base: { sources: [{ $ref: "../shared/base.json" }] } },
+        },
+      ),
+      "shared/base.json": {
+        accent: { $type: "color", $root: { $value: color("#000000") }, light: { $value: color("#ffffff") } },
+      },
       "t/m.json": { modes: { a: { accent: { $root: { $value: "{accent.light}" } } }, b: {} } },
     };
     assert.equal(hexOf(tokens(files).get("accent")!.value), "#ffffff");
@@ -381,25 +553,56 @@ describe("design tokens (DTCG 2025.10)", () => {
   });
 
   it("rejects what it cannot resolve", () => {
-    const one = (doc: unknown, inputs?: Record<string, string>) => tokens({ "t/r.resolver.json": resolver([inline(doc)]) }, inputs);
+    const one = (doc: unknown, inputs?: Record<string, string>) =>
+      tokens({ "t/r.resolver.json": resolver([inline(doc)]) }, inputs);
     assert.throws(() => one({ a: { $value: "{b}" } }), /unknown token "b"/);
     assert.throws(() => one({ a: { $value: "{b}" }, b: { $value: "{a}" } }), /cycle/);
-    assert.throws(() => one({ a: { $type: "color", $value: color("#000000") }, b: { $type: "number", $value: "{a}" } }), /is a number but aliases a color/);
+    assert.throws(
+      () => one({ a: { $type: "color", $value: color("#000000") }, b: { $type: "number", $value: "{a}" } }),
+      /is a number but aliases a color/,
+    );
     assert.throws(() => one({ "a.b": { $value: 1 } }), /invalid token or group name/);
     assert.throws(() => one({ a: 1 }), /neither a token nor a group/);
     assert.throws(() => one({ g: { $extends: "{x}" } }), /\$extends/);
     assert.throws(() => one({}, { mode: "x" }), /no modifier "mode"/);
     assert.throws(() => tokens({ "t/r.resolver.json": { version: "1.0", resolutionOrder: [] } }), /version/);
     assert.throws(() => tokens({ "t/r.resolver.json": resolver([{ $ref: "#/sets/nope" }]) }), /no set "nope"/);
-    assert.throws(() => tokens({ "t/r.resolver.json": resolver([{ $ref: "#/modifiers/m" }], { modifiers: { m: { contexts: { a: [], b: [] } } } }) }), /needs an input/);
-    assert.throws(() => tokens({ "t/r.resolver.json": resolver([{ $ref: "#/modifiers/m" }], { modifiers: { m: { contexts: { a: [], b: [] } } } }) }, { m: "c" }), /no context "c"/);
-    assert.throws(() => tokens({ "t/r.resolver.json": resolver([{ type: "set", sources: [{ $ref: "missing.json" }] }]) }), /file "t\/missing.json" not found/);
+    assert.throws(
+      () =>
+        tokens({
+          "t/r.resolver.json": resolver([{ $ref: "#/modifiers/m" }], {
+            modifiers: { m: { contexts: { a: [], b: [] } } },
+          }),
+        }),
+      /needs an input/,
+    );
+    assert.throws(
+      () =>
+        tokens(
+          {
+            "t/r.resolver.json": resolver([{ $ref: "#/modifiers/m" }], {
+              modifiers: { m: { contexts: { a: [], b: [] } } },
+            }),
+          },
+          { m: "c" },
+        ),
+      /no context "c"/,
+    );
+    assert.throws(
+      () => tokens({ "t/r.resolver.json": resolver([{ type: "set", sources: [{ $ref: "missing.json" }] }]) }),
+      /file "t\/missing.json" not found/,
+    );
     assert.throws(() => joinPath("r.json", "../x.json"), /leaves the theme folder/);
     assert.equal(joinPath("a/b/r.json", "../c/./d.json"), "a/c/d.json");
   });
 
   it("colors: srgb, hsl, alpha, none, hex fallback", () => {
-    assert.deepEqual(parseColor({ colorSpace: "srgb", components: [1, 0.5, "none"], alpha: 0.25 }), { r: 255, g: 128, b: 0, a: 0.25 });
+    assert.deepEqual(parseColor({ colorSpace: "srgb", components: [1, 0.5, "none"], alpha: 0.25 }), {
+      r: 255,
+      g: 128,
+      b: 0,
+      a: 0.25,
+    });
     assert.equal(hexOf({ colorSpace: "hsl", components: [120, 100, 25] }), "#008000");
     assert.equal(hexOf({ colorSpace: "oklch", components: [0.5, 0.1, 30], hex: "#abcdef" }), "#abcdef");
     assert.throws(() => parseColor({ colorSpace: "oklch", components: [0.5, 0.1, 30] }), TokenError);
@@ -426,28 +629,43 @@ describe("settings.json", () => {
     assert.deepEqual(problems, []);
     assert.deepEqual(settings.theme, { name: "gruvbox", appearance: "light", inputs: { contrast: "hard" } });
     const out = serializeSettings(settings);
-    assert.equal(out, '{\n  "theme": {\n    "name": "gruvbox",\n    "appearance": "light",\n    "contrast": "hard"\n  },\n  "later": {\n    "x": 1\n  }\n}\n');
+    assert.equal(
+      out,
+      '{\n  "theme": {\n    "name": "gruvbox",\n    "appearance": "light",\n    "contrast": "hard"\n  },\n  "later": {\n    "x": 1\n  }\n}\n',
+    );
     assert.deepEqual(parseSettings(out).settings, settings);
   });
 
   it("reports values of the wrong kind and keeps the rest", () => {
-    const { settings, problems } = parseSettings('{"theme": {"name": "", "appearance": "dim", "contrast": 2, "accent": "x"}}');
+    const { settings, problems } = parseSettings(
+      '{"theme": {"name": "", "appearance": "dim", "contrast": 2, "accent": "x"}}',
+    );
     assert.deepEqual(settings.theme, { name: "gruvbox", appearance: "system", inputs: { accent: "x" } });
     assert.equal(problems.length, 3);
   });
 
   it("reads the window zoom, writes it only when it is not 100, keeps it in range", () => {
     assert.equal(defaultSettings().zoom, 100);
-    const { settings, problems } = parseSettings('{"zoom": 125, "theme": {"name": "gruvbox", "appearance": "dark"}, "later": 1}');
+    const { settings, problems } = parseSettings(
+      '{"zoom": 125, "theme": {"name": "gruvbox", "appearance": "dark"}, "later": 1}',
+    );
     assert.deepEqual(problems, []);
     assert.equal(settings.zoom, 125);
     assert.deepEqual(settings.other, { later: 1 }, "zoom is a known key, not kept as unknown");
     const out = serializeSettings(settings);
-    assert.equal(out, '{\n  "theme": {\n    "name": "gruvbox",\n    "appearance": "dark"\n  },\n  "zoom": 125,\n  "later": 1\n}\n');
+    assert.equal(
+      out,
+      '{\n  "theme": {\n    "name": "gruvbox",\n    "appearance": "dark"\n  },\n  "zoom": 125,\n  "later": 1\n}\n',
+    );
     assert.deepEqual(parseSettings(out).settings, settings);
     assert.doesNotMatch(serializeSettings({ ...settings, zoom: 100 }), /zoom/);
     assert.equal(parseSettings('{"zoom": 112.6}').settings.zoom, 113, "whole percents");
-    for (const [text, zoom] of [['{"zoom": 20}', ZOOM_MIN], ['{"zoom": 1000}', ZOOM_MAX], ['{"zoom": "125"}', 100], ['{"zoom": null}', 100]] as const) {
+    for (const [text, zoom] of [
+      ['{"zoom": 20}', ZOOM_MIN],
+      ['{"zoom": 1000}', ZOOM_MAX],
+      ['{"zoom": "125"}', 100],
+      ['{"zoom": null}', 100],
+    ] as const) {
       const r = parseSettings(text);
       assert.equal(r.settings.zoom, zoom, text);
       assert.equal(r.problems.length, 1, text);
@@ -460,7 +678,10 @@ describe("settings.json", () => {
     assert.equal(ZOOM_STEPS[0], ZOOM_MIN);
     assert.equal(ZOOM_STEPS[ZOOM_STEPS.length - 1], ZOOM_MAX);
     assert.ok(ZOOM_STEPS.includes(100));
-    assert.ok(ZOOM_STEPS.every((z, i) => i === 0 || z > ZOOM_STEPS[i - 1]!), "ascending");
+    assert.ok(
+      ZOOM_STEPS.every((z, i) => i === 0 || z > ZOOM_STEPS[i - 1]!),
+      "ascending",
+    );
     assert.equal(zoomStep(100, 1), 110);
     assert.equal(zoomStep(100, -1), 90);
     assert.equal(zoomStep(110, 1), 125);

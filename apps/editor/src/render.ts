@@ -123,7 +123,9 @@ function drawActionBlock(ctx: CanvasRenderingContext2D, block: ActionBlock, x: n
 
 /** The marker for hidden lines on the block's bottom line; (x, y) is the state's top-left corner. */
 function drawHiddenMarker(ctx: CanvasRenderingContext2D, marker: HiddenMarker, x: number, y: number): void {
-  const px = x + marker.x, py = y + marker.y, yc = py + marker.h / 2;
+  const px = x + marker.x,
+    py = y + marker.y,
+    yc = py + marker.h / 2;
   ctx.save();
   ctx.lineWidth = 1;
   ctx.strokeStyle = C.ink;
@@ -209,7 +211,13 @@ function drawState(ctx: CanvasRenderingContext2D, index: DocIndex, s: State, loo
     ctx.font = `18px ${FONT}`;
     if (region.name) {
       ctx.save();
-      clipRect(ctx, Math.max(box.x, x) + 2, Math.max(box.y, y), Math.min(box.x + box.w, x + w) - Math.max(box.x, x) - 4, Math.min(box.y + box.h, y + h - 2) - Math.max(box.y, y));
+      clipRect(
+        ctx,
+        Math.max(box.x, x) + 2,
+        Math.max(box.y, y),
+        Math.min(box.x + box.w, x + w) - Math.max(box.x, x) - 4,
+        Math.min(box.y + box.h, y + h - 2) - Math.max(box.y, y),
+      );
       ctx.fillText(region.name, box.x + 10, box.y + 25);
       ctx.restore();
     }
@@ -340,7 +348,8 @@ function drawTransition(ctx: CanvasRenderingContext2D, index: DocIndex, t: Trans
   ctx.fill();
 
   if (!g.label) return;
-  for (const item of layoutTransitionLabel(index, t, g.label, labelFont(ctx)).items) ctx.fillText(item.text, item.x, item.y);
+  for (const item of layoutTransitionLabel(index, t, g.label, labelFont(ctx)).items)
+    ctx.fillText(item.text, item.x, item.y);
   ctx.fillStyle = C.ink;
 }
 
@@ -416,7 +425,12 @@ function drawSheet(ctx: CanvasRenderingContext2D, index: DocIndex, region: Regio
 }
 
 /** Title block: a caption in the top-left of every cell, the value along its bottom (clipped to the cell). */
-function drawTitleBlock(ctx: CanvasRenderingContext2D, index: DocIndex, sheet: Region, fileName: string | undefined): void {
+function drawTitleBlock(
+  ctx: CanvasRenderingContext2D,
+  index: DocIndex,
+  sheet: Region,
+  fileName: string | undefined,
+): void {
   const tb = sheetFrame(paperOf(index)).titleBlock;
   ctx.save();
   ctx.fillStyle = C.paper;
@@ -522,7 +536,13 @@ function drawTransitionSelection(ctx: CanvasRenderingContext2D, index: DocIndex,
 }
 
 /** Problem badges, a constant size on screen: red for errors, yellow for warnings. */
-function drawMarks(ctx: CanvasRenderingContext2D, index: DocIndex, sheet: Region, marks: ReadonlyMap<string, "error" | "warning">, scale: number): void {
+function drawMarks(
+  ctx: CanvasRenderingContext2D,
+  index: DocIndex,
+  sheet: Region,
+  marks: ReadonlyMap<string, "error" | "warning">,
+  scale: number,
+): void {
   const r = 6 / scale;
   const badge = (x: number, y: number, sev: "error" | "warning"): void => {
     ctx.fillStyle = sev === "error" ? C.refuse : C.warning;
@@ -582,7 +602,8 @@ export function renderSheet(
     if (sel?.has(t.id)) selectedT.push(t);
     drawTransition(ctx, index, t, sim?.fired.has(t.id));
   });
-  if (sim?.would.size) forEachVisibleTransition(index, sheet, (t) => void (sim.would.has(t.id) && drawWould(ctx, index, t, view.scale)));
+  if (sim?.would.size)
+    forEachVisibleTransition(index, sheet, (t) => void (sim.would.has(t.id) && drawWould(ctx, index, t, view.scale)));
   for (const t of selectedT) {
     drawTransitionSelection(ctx, index, t, view.scale);
     drawLabelOutline(ctx, index, t, view.scale);

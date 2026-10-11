@@ -23,9 +23,27 @@ export interface SettingsProps {
 const capital = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** A row of mutually exclusive buttons. */
-function Segmented<T extends string>({ label, value, options, onPick, disabled }: { label: string; value: T; options: readonly { value: T; text: string; title?: string }[]; onPick(v: T): void; disabled?: string }) {
+function Segmented<T extends string>({
+  label,
+  value,
+  options,
+  onPick,
+  disabled,
+}: {
+  label: string;
+  value: T;
+  options: readonly { value: T; text: string; title?: string }[];
+  onPick(v: T): void;
+  disabled?: string;
+}) {
   return (
-    <div class="segmented" role="radiogroup" aria-label={label} aria-disabled={disabled ? "true" : undefined} title={disabled}>
+    <div
+      class="segmented"
+      role="radiogroup"
+      aria-label={label}
+      aria-disabled={disabled ? "true" : undefined}
+      title={disabled}
+    >
       {options.map((o) => (
         <button
           type="button"
@@ -74,7 +92,11 @@ export function SettingsTab(p: SettingsProps) {
                 value={t.appearance}
                 onPick={(appearance) => set({ appearance })}
                 options={[
-                  { value: "system", text: "System", title: `Follow the operating system (now ${p.systemDark ? "dark" : "light"})` },
+                  {
+                    value: "system",
+                    text: "System",
+                    title: `Follow the operating system (now ${p.systemDark ? "dark" : "light"})`,
+                  },
                   { value: "dark", text: "Dark" },
                   { value: "light", text: "Light" },
                 ]}
@@ -85,7 +107,9 @@ export function SettingsTab(p: SettingsProps) {
             .filter((m) => m.name !== "appearance")
             .map((m) => {
               const others = Object.entries(p.theme.inputs).filter(([k]) => k !== m.name);
-              const idle = modifierHasEffect(entry, p.theme.inputs, m.name) ? undefined : `No effect with ${others.map(([k, v]) => `${k} ${v}`).join(", ")}`;
+              const idle = modifierHasEffect(entry, p.theme.inputs, m.name)
+                ? undefined
+                : `No effect with ${others.map(([k, v]) => `${k} ${v}`).join(", ")}`;
               return (
                 <Field label={capital(m.name)} key={m.name}>
                   <Segmented<string>
@@ -110,26 +134,53 @@ export function SettingsTab(p: SettingsProps) {
         <div class="settings-fields">
           <Field label="Interface">
             <div class="segmented zoom-control" role="group" aria-label="UI zoom">
-              <button type="button" class="zoom-out" title="Zoom out (Ctrl+-)" aria-label="Zoom out" disabled={p.settings.zoom <= ZOOM_MIN} onClick={() => p.onZoom(zoomStep(p.settings.zoom, -1))}>
+              <button
+                type="button"
+                class="zoom-out"
+                title="Zoom out (Ctrl+-)"
+                aria-label="Zoom out"
+                disabled={p.settings.zoom <= ZOOM_MIN}
+                onClick={() => p.onZoom(zoomStep(p.settings.zoom, -1))}
+              >
                 −
               </button>
               <span class="zoom-value" aria-live="polite">
                 {p.settings.zoom}%
               </span>
-              <button type="button" class="zoom-in" title="Zoom in (Ctrl++)" aria-label="Zoom in" disabled={p.settings.zoom >= ZOOM_MAX} onClick={() => p.onZoom(zoomStep(p.settings.zoom, 1))}>
+              <button
+                type="button"
+                class="zoom-in"
+                title="Zoom in (Ctrl++)"
+                aria-label="Zoom in"
+                disabled={p.settings.zoom >= ZOOM_MAX}
+                onClick={() => p.onZoom(zoomStep(p.settings.zoom, 1))}
+              >
                 +
               </button>
-              <button type="button" class="zoom-reset" title="Back to 100% (Ctrl+0)" disabled={p.settings.zoom === 100} onClick={() => p.onZoom(100)}>
+              <button
+                type="button"
+                class="zoom-reset"
+                title="Back to 100% (Ctrl+0)"
+                disabled={p.settings.zoom === 100}
+                onClick={() => p.onZoom(100)}
+              >
                 Reset
               </button>
             </div>
           </Field>
         </div>
-        <div class="dim zoom-about">Text and controls around the canvas; the diagram keeps its own zoom. Ctrl++ / Ctrl+- / Ctrl+0 or the View menu.</div>
+        <div class="dim zoom-about">
+          Text and controls around the canvas; the diagram keeps its own zoom. Ctrl++ / Ctrl+- / Ctrl+0 or the View
+          menu.
+        </div>
       </Section>
       <Section title="Settings file">
         <div class="dim settings-location" title={p.location}>
-          {p.location === undefined ? "Loading…" : p.location === "browser storage" ? "Kept in this browser's storage (desktop app: settings.json)." : p.location}
+          {p.location === undefined
+            ? "Loading…"
+            : p.location === "browser storage"
+              ? "Kept in this browser's storage (desktop app: settings.json)."
+              : p.location}
         </div>
         {p.problems.length > 0 && (
           <ul class="plist settings-problems">

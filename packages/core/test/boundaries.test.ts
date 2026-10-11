@@ -28,7 +28,11 @@ function walk(dir: string, out: string[] = []): string[] {
 /** Every import and re-export specifier of a file (static and dynamic). */
 function imports(file: string): string[] {
   const text = readFileSync(file, "utf8");
-  return [...text.matchAll(/(?:^|\n)\s*(?:import|export)\b[^"';]*?from\s*"([^"]+)"|import\(\s*"([^"]+)"\s*\)|(?:^|\n)\s*import\s+"([^"]+)"/g)].map((m) => m[1] ?? m[2] ?? m[3]!);
+  return [
+    ...text.matchAll(
+      /(?:^|\n)\s*(?:import|export)\b[^"';]*?from\s*"([^"]+)"|import\(\s*"([^"]+)"\s*\)|(?:^|\n)\s*import\s+"([^"]+)"/g,
+    ),
+  ].map((m) => m[1] ?? m[2] ?? m[3]!);
 }
 
 /** The folder of core a source file lies in ("format", "ir", ...; "version" for version.ts, "" for the entry files). */
@@ -55,7 +59,10 @@ const ALLOWED: Record<string, string[]> = {
 
 /** Files allowed one more folder than their folder is, with the reason. */
 const EXCEPTIONS: Record<string, { folders: string[]; why: string }> = {
-  "format/migrate.ts": { folders: ["v0", "model", "diagram"], why: "the v0 converter picks the paper the drawing fits on" },
+  "format/migrate.ts": {
+    folders: ["v0", "model", "diagram"],
+    why: "the v0 converter picks the paper the drawing fits on",
+  },
   "format/load.ts": { folders: ["v0"], why: "reading a file of either version" },
   "check/diagram.ts": { folders: ["diagram"], why: "the diagram rules measure the layout" },
 };
@@ -84,7 +91,9 @@ describe("import boundaries", () => {
     const problems: string[] = [];
     for (const file of coreFiles) {
       const rel = relative(coreSrc, file);
-      for (const spec of imports(file)) if (!spec.startsWith(".") && spec !== "typebox" && !spec.startsWith("typebox/")) problems.push(`${rel} imports ${spec}`);
+      for (const spec of imports(file))
+        if (!spec.startsWith(".") && spec !== "typebox" && !spec.startsWith("typebox/"))
+          problems.push(`${rel} imports ${spec}`);
       const text = readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, "");
       if (/\b(?:window|document|navigator|localStorage)\s*\./.test(text)) problems.push(`${rel} uses a DOM global`);
     }
@@ -98,7 +107,8 @@ describe("import boundaries", () => {
       const file = join(coreSrc, "backends", `${p}.ts`);
       for (const spec of imports(file)) {
         const target = normalize(join(dirname(file), spec));
-        if (printers.some((q) => target === join(coreSrc, "backends", q))) problems.push(`backends/${p}.ts imports ${spec}`);
+        if (printers.some((q) => target === join(coreSrc, "backends", q)))
+          problems.push(`backends/${p}.ts imports ${spec}`);
       }
     }
     assert.deepEqual(problems, []);
@@ -108,15 +118,31 @@ describe("import boundaries", () => {
     const editor = join(repoRoot, "apps/editor/src");
     const problems = walk(editor)
       .filter((f) => !f.endsWith(`${sep}platform.ts`))
-      .flatMap((f) => imports(f).filter((s) => s.startsWith("@tauri-apps/")).map((s) => `${relative(editor, f)} imports ${s}`));
+      .flatMap((f) =>
+        imports(f)
+          .filter((s) => s.startsWith("@tauri-apps/"))
+          .map((s) => `${relative(editor, f)} imports ${s}`),
+      );
     assert.deepEqual(problems, []);
   });
 
   it("the editor and the CLI use core through its entry points", () => {
-    const entries = new Set(Object.keys(JSON.parse(readFileSync(join(repoRoot, "packages/core/package.json"), "utf8")).exports).map((k) => `@ufsm/core${k.slice(1)}`));
-    const problems = [join(repoRoot, "apps/editor/src"), join(repoRoot, "apps/editor/test"), join(repoRoot, "packages/cli/src")]
+    const entries = new Set(
+      Object.keys(JSON.parse(readFileSync(join(repoRoot, "packages/core/package.json"), "utf8")).exports).map(
+        (k) => `@ufsm/core${k.slice(1)}`,
+      ),
+    );
+    const problems = [
+      join(repoRoot, "apps/editor/src"),
+      join(repoRoot, "apps/editor/test"),
+      join(repoRoot, "packages/cli/src"),
+    ]
       .flatMap((d) => walk(d))
-      .flatMap((f) => imports(f).filter((s) => s.startsWith("@ufsm/core") && !entries.has(s)).map((s) => `${relative(repoRoot, f)} imports ${s}`));
+      .flatMap((f) =>
+        imports(f)
+          .filter((s) => s.startsWith("@ufsm/core") && !entries.has(s))
+          .map((s) => `${relative(repoRoot, f)} imports ${s}`),
+      );
     assert.deepEqual(problems, []);
   });
 });

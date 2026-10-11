@@ -111,9 +111,7 @@ export type Stmt =
   | { op: "return"; value: boolean };
 
 export type SwitchOn =
-  | { kind: "cfg"; region: number }
-  | { kind: "hist"; region: number }
-  | { kind: "deep"; history: number; index: number };
+  { kind: "cfg"; region: number } | { kind: "hist"; region: number } | { kind: "deep"; history: number; index: number };
 
 export interface IrFunction {
   name: string;

@@ -16,7 +16,18 @@
  * the same structure.
  */
 import { indexV1, type DocIndex } from "../model/doc-index";
-import { timerMs, type Action, type GuardTerm, type Id, type PseudoKind, type Region, type State, type Transition, type UfsmDocument, type Vertex } from "../format/model";
+import {
+  timerMs,
+  type Action,
+  type GuardTerm,
+  type Id,
+  type PseudoKind,
+  type Region,
+  type State,
+  type Transition,
+  type UfsmDocument,
+  type Vertex,
+} from "../format/model";
 
 export interface SemRegion {
   id: Id;
@@ -146,7 +157,14 @@ export class SemanticsError extends Error {
 }
 
 const INITIALIZER_KINDS = new Set<string>(["initial", "shallow-history", "deep-history"]);
-const ENTRY_TARGET_KINDS = new Set<string>(["state", "final", "initial", "shallow-history", "deep-history", "terminate"]);
+const ENTRY_TARGET_KINDS = new Set<string>([
+  "state",
+  "final",
+  "initial",
+  "shallow-history",
+  "deep-history",
+  "terminate",
+]);
 
 /**
  * Build the structure of a document. The document must pass checkV1
@@ -161,7 +179,12 @@ export function buildStructure(doc: UfsmDocument): Structure {
   const timers: SemTimer[] = [];
   let order = 0;
 
-  const visitRegion = (region: Region, owner: SemVertex | undefined, within: ReadonlySet<Id>, depth: number): SemRegion => {
+  const visitRegion = (
+    region: Region,
+    owner: SemVertex | undefined,
+    within: ReadonlySet<Id>,
+    depth: number,
+  ): SemRegion => {
     const inner = new Set(within).add(region.id);
     const r: SemRegion = {
       id: region.id,
@@ -191,7 +214,15 @@ export function buildStructure(doc: UfsmDocument): Structure {
         timers: [],
       };
       for (const t of v.kind === "state" ? (v.timers ?? []) : []) {
-        const timer: SemTimer = { id: t.id, name: t.name, index: timers.length, state: sv, ms: timerMs(t), periodic: t.every !== undefined, event: t.event };
+        const timer: SemTimer = {
+          id: t.id,
+          name: t.name,
+          index: timers.length,
+          state: sv,
+          ms: timerMs(t),
+          periodic: t.every !== undefined,
+          event: t.event,
+        };
         sv.timers.push(timer);
         timers.push(timer);
       }
@@ -225,7 +256,10 @@ export function buildStructure(doc: UfsmDocument): Structure {
   }
 
   /** Follow forks from `t`'s target; returns the parts and entry targets. */
-  const resolveTargets = (t: Transition, seen: Set<Id> = new Set()): { parts: Transition[]; targets: SemVertex[]; via: SemVertex[] } => {
+  const resolveTargets = (
+    t: Transition,
+    seen: Set<Id> = new Set(),
+  ): { parts: Transition[]; targets: SemVertex[]; via: SemVertex[] } => {
     const to = vertex(t.to);
     if (to.kind === "fork") {
       if (seen.has(to.id)) throw new SemanticsError(`fork '${to.name}' is part of a cycle`, to.id);
@@ -243,7 +277,8 @@ export function buildStructure(doc: UfsmDocument): Structure {
       }
       return { parts, targets, via };
     }
-    if (!ENTRY_TARGET_KINDS.has(to.kind)) throw new SemanticsError(`a transition cannot end in a ${to.kind} here`, t.id);
+    if (!ENTRY_TARGET_KINDS.has(to.kind))
+      throw new SemanticsError(`a transition cannot end in a ${to.kind} here`, t.id);
     return { parts: [t], targets: [to], via: [] };
   };
 
@@ -257,7 +292,8 @@ export function buildStructure(doc: UfsmDocument): Structure {
   const triggerOf = (t: Transition): Trigger => {
     if (t.on !== undefined) {
       const info = index.decls.get(t.on);
-      if (!info || (info.kind !== "event" && info.kind !== "signal")) throw new SemanticsError(`unknown trigger '${t.on}'`, t.id);
+      if (!info || (info.kind !== "event" && info.kind !== "signal"))
+        throw new SemanticsError(`unknown trigger '${t.on}'`, t.id);
       return { kind: "event", id: t.on, name: info.decl.name, signal: info.kind === "signal" };
     }
     if (t.auto) return { kind: "auto" };
@@ -285,7 +321,9 @@ export function buildStructure(doc: UfsmDocument): Structure {
         compounds = [];
         for (const out of outgoing(to.id)) {
           const sources = ins.map((i) => vertex(i.from));
-          for (const s of sources) if (s.kind !== "state") throw new SemanticsError(`transitions into join '${to.name}' must come from states`, to.id);
+          for (const s of sources)
+            if (s.kind !== "state")
+              throw new SemanticsError(`transitions into join '${to.name}' must come from states`, to.id);
           const r = resolveTargets(out);
           const parts = [...ins, ...r.parts];
           const c: CompoundTransition = {
@@ -334,7 +372,8 @@ export function buildStructure(doc: UfsmDocument): Structure {
       if (it.guard) part.guard = it.guard;
       if (it.do) part.do = it.do;
       const trigger = triggerOf(part);
-      if (trigger.kind !== "event") throw new SemanticsError("an internal transition needs an event or signal trigger", it.id);
+      if (trigger.kind !== "event")
+        throw new SemanticsError("an internal transition needs an event or signal trigger", it.id);
       const c: CompoundTransition = {
         id: it.id,
         parts: [part],
@@ -357,20 +396,39 @@ export function buildStructure(doc: UfsmDocument): Structure {
     const pseudo = r.initializer;
     if (!pseudo) continue;
     const outs = outgoing(pseudo.id);
-    if (outs.length !== 1) throw new SemanticsError(`${pseudo.kind} must have exactly one outgoing transition`, pseudo.id);
+    if (outs.length !== 1)
+      throw new SemanticsError(`${pseudo.kind} must have exactly one outgoing transition`, pseudo.id);
     const res = resolveTargets(outs[0]!);
     for (const tgt of res.targets) {
       if (!tgt.within.has(r.id) || tgt.id === pseudo.id) {
         throw new SemanticsError(`the ${pseudo.kind} transition of a region must lead into that region`, outs[0]!.id);
       }
     }
-    initializers.set(r.id, { pseudo, parts: res.parts, actions: res.parts.flatMap((p) => p.do ?? []), targets: res.targets });
+    initializers.set(r.id, {
+      pseudo,
+      parts: res.parts,
+      actions: res.parts.flatMap((p) => p.do ?? []),
+      targets: res.targets,
+    });
   }
 
   const triggers = new Map<string, Id>();
   for (const e of [...doc.declarations.events, ...doc.declarations.signals]) triggers.set(e.name, e.id);
 
-  return { doc, index, root, regions, vertices, ordered, postOrder, transitions, bySource, initializers, triggers, timers };
+  return {
+    doc,
+    index,
+    root,
+    regions,
+    vertices,
+    ordered,
+    postOrder,
+    transitions,
+    bySource,
+    initializers,
+    triggers,
+    timers,
+  };
 }
 
 /** Proper ancestor states of a vertex, innermost first. */

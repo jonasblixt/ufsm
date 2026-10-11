@@ -32,7 +32,19 @@ import type { Expr, IrHistory, IrModule, Stmt, SwitchOn } from "../ir/ir";
 import { TRACE_KINDS } from "../ir/ir";
 import { hex32 } from "../ir/ids";
 import { BUSY_MESSAGE } from "../runtime/contract";
-import { CodegenError, OUTPUT_NOTICE, identifier, lines, pascalCase, prepare, readTargetOptions, type CommonOptions, type Lines, type Prepared, type Printed } from "./common";
+import {
+  CodegenError,
+  OUTPUT_NOTICE,
+  identifier,
+  lines,
+  pascalCase,
+  prepare,
+  readTargetOptions,
+  type CommonOptions,
+  type Lines,
+  type Prepared,
+  type Printed,
+} from "./common";
 
 export interface PythonOptions extends CommonOptions {
   /** Name of the machine class; also the prefix of `<Class>Event`, `<Class>Handler` and `<Class>Error`. Default: the model name in PascalCase. */
@@ -110,8 +122,12 @@ interface PyContext extends Prepared {
 function pyContext(ir: IrModule, options: PythonOptions): PyContext {
   const cls = options.className ?? pascalCase(ir.name);
   const module = options.module ?? identifier(ir.name);
-  for (const [what, v] of [["class name", cls], ["module name", module]] as const) {
-    if (!IDENTIFIER.test(v) || PYTHON_KEYWORDS.has(v)) throw new CodegenError(`Python ${what} '${v}' is not a Python identifier`);
+  for (const [what, v] of [
+    ["class name", cls],
+    ["module name", module],
+  ] as const) {
+    if (!IDENTIFIER.test(v) || PYTHON_KEYWORDS.has(v))
+      throw new CodegenError(`Python ${what} '${v}' is not a Python identifier`);
   }
   const prepared = prepare(ir, options);
   const { trace, debugInfo, hasQueue, hasTerminate, hasTimers } = prepared;
@@ -129,13 +145,19 @@ function pyContext(ir: IrModule, options: PythonOptions): PyContext {
   // a leading "__" cannot be used, Python would mangle it inside the class body.
   const problems: string[] = [];
   const seen = new Map<string, string>();
-  for (const [kind, list] of [["event", ir.events], ["signal", ir.signals], ["action", ir.actions], ["guard", ir.guards]] as const) {
+  for (const [kind, list] of [
+    ["event", ir.events],
+    ["signal", ir.signals],
+    ["action", ir.actions],
+    ["guard", ir.guards],
+  ] as const) {
     for (const d of list) {
       const py = pythonName(d.name);
       const what = `${kind} '${d.name}'`;
       if (d.name.startsWith("__")) problems.push(`${what} starts with '__' (Python would mangle it)`);
       else if (seen.has(py)) problems.push(`${what} becomes '${py}', like ${seen.get(py)}`);
-      else if (trace && py === "trace" && (kind === "action" || kind === "guard")) problems.push(`${what} is the name of the trace hook`);
+      else if (trace && py === "trace" && (kind === "action" || kind === "guard"))
+        problems.push(`${what} is the name of the trace hook`);
       else if (hasTimers && (py === "timer_start" || py === "timer_stop") && (kind === "action" || kind === "guard")) {
         problems.push(`${what} is the name of a timer function of the handler`);
       }
@@ -144,8 +166,12 @@ function pyContext(ir: IrModule, options: PythonOptions): PyContext {
   }
   const stateMember = ir.states.map((st) => pythonName(st.ident));
   const timerMember = ir.timers.map((t) => pythonName(t.name));
-  for (const t of ir.timers) if (t.name.startsWith("__")) problems.push(`timer '${t.name}' starts with '__' (Python would mangle it)`);
-  if (problems.length) throw new CodegenError(`names that cannot be used in the generated Python (rename them):\n  ${problems.join("\n  ")}`);
+  for (const t of ir.timers)
+    if (t.name.startsWith("__")) problems.push(`timer '${t.name}' starts with '__' (Python would mangle it)`);
+  if (problems.length)
+    throw new CodegenError(
+      `names that cannot be used in the generated Python (rename them):\n  ${problems.join("\n  ")}`,
+    );
 
   const decl = new Map<string, string>();
   for (const d of [...ir.events, ...ir.signals, ...ir.actions, ...ir.guards]) decl.set(d.id, pythonName(d.name));
@@ -153,12 +179,27 @@ function pyContext(ir: IrModule, options: PythonOptions): PyContext {
   const histIndex = new Map(ir.history.map((h, k) => [h.region, k]));
   const deepRegions = ir.history.filter((h) => h.kind === "deep" && h.snapshotTo! > h.snapshotFrom!);
   const stateAt = new Map(ir.states.map((s) => [`${s.region}:${s.slot}`, s.name]));
-  const stateName = (region: number, slot: number): string => comment(stateAt.get(`${region}:${slot}`) ?? `slot ${slot}`);
+  const stateName = (region: number, slot: number): string =>
+    comment(stateAt.get(`${region}:${slot}`) ?? `slot ${slot}`);
   const method = (fn: string): string => `_${fn}`;
   const eventNames = ir.events.map((e) => pythonName(e.name));
   return {
     ...prepared,
-    ...{ ir, cls, module, errorCls, eventCls, handlerCls, stateCls, signalCls, kindCls, timerCls, timerEventFn, publicSignals, stateMember },
+    ...{
+      ir,
+      cls,
+      module,
+      errorCls,
+      eventCls,
+      handlerCls,
+      stateCls,
+      signalCls,
+      kindCls,
+      timerCls,
+      timerEventFn,
+      publicSignals,
+      stateMember,
+    },
     ...{ timerMember, decl, signalNo, histIndex, deepRegions, stateName, method, eventNames },
     settleBody: hasTerminate || ir.eventless !== undefined || hasQueue,
   };
@@ -245,13 +286,29 @@ interface PyStatements {
 /** The statement printer, writing into `w`. */
 function pyStatements(ctx: PyContext, w: Lines): PyStatements {
   const {
-    ir, stateCls, kindCls, timerCls, stateMember, timerMember, decl, signalNo, histIndex, stateName, method, checkSteps,
+    ir,
+    stateCls,
+    kindCls,
+    timerCls,
+    stateMember,
+    timerMember,
+    decl,
+    signalNo,
+    histIndex,
+    stateName,
+    method,
+    checkSteps,
   } = ctx;
   const { line } = w;
   const { expr, notExpr } = pyExpressions(ctx);
   const switchOn = (o: SwitchOn): string =>
-    o.kind === "cfg" ? `self._cfg[${o.region}]` : o.kind === "hist" ? `self._hist[${histIndex.get(o.region)}]` : `self._deep_r${o.history}[${o.index}]`;
-  const caseRegion = (o: SwitchOn): number => (o.kind === "deep" ? ir.history.find((h) => h.region === o.history)!.snapshotFrom! + o.index : o.region);
+    o.kind === "cfg"
+      ? `self._cfg[${o.region}]`
+      : o.kind === "hist"
+        ? `self._hist[${histIndex.get(o.region)}]`
+        : `self._deep_r${o.history}[${o.index}]`;
+  const caseRegion = (o: SwitchOn): number =>
+    o.kind === "deep" ? ir.history.find((h) => h.region === o.history)!.snapshotFrom! + o.index : o.region;
 
   /** Print a block; a block that prints nothing gets `pass`. */
   const block = (list: Stmt[], d: number): void => {
@@ -299,7 +356,12 @@ function pyStatements(ctx: PyContext, w: Lines): PyStatements {
           break;
         }
         case "set":
-          line(d, s.slot === 0 ? `self._cfg[${s.region}] = 0` : `self._cfg[${s.region}] = ${s.slot}  # ${stateName(s.region, s.slot)}`);
+          line(
+            d,
+            s.slot === 0
+              ? `self._cfg[${s.region}] = 0`
+              : `self._cfg[${s.region}] = ${s.slot}  # ${stateName(s.region, s.slot)}`,
+          );
           break;
         case "call":
           line(d, `self._h.${decl.get(s.action)}()`);
@@ -321,19 +383,24 @@ function pyStatements(ctx: PyContext, w: Lines): PyStatements {
           break;
         case "saveDeep": {
           const h = ir.history.find((x) => x.region === s.region)!;
-          if (h.snapshotTo! > h.snapshotFrom!) line(d, `self._deep_r${s.region} = self._cfg[${h.snapshotFrom}:${h.snapshotTo}]`);
+          if (h.snapshotTo! > h.snapshotFrom!)
+            line(d, `self._deep_r${s.region} = self._cfg[${h.snapshotFrom}:${h.snapshotTo}]`);
           break;
         }
         case "microstep":
           if (checkSteps) line(d, "self._microstep()");
           break;
         case "trace":
-          if (s.hook === "transition") line(d, `self._h.trace(${kindCls}.transition, ${s.index})  # ${comment(ir.transitions[s.index]!.label)}`);
+          if (s.hook === "transition")
+            line(d, `self._h.trace(${kindCls}.transition, ${s.index})  # ${comment(ir.transitions[s.index]!.label)}`);
           else line(d, `self._h.trace(${kindCls}.${s.hook}, ${stateCls}.${stateMember[s.index]})`);
           break;
         case "timerStart": {
           const t = ir.timers[s.timer]!;
-          line(d, `self._h.timer_start(${timerCls}.${timerMember[s.timer]}, ${t.ms}, ${t.periodic ? "True" : "False"})`);
+          line(
+            d,
+            `self._h.timer_start(${timerCls}.${timerMember[s.timer]}, ${t.ms}, ${t.periodic ? "True" : "False"})`,
+          );
           break;
         }
         case "timerStop":
@@ -354,8 +421,22 @@ function pyStatements(ctx: PyContext, w: Lines): PyStatements {
 /** Usage, imports, the error class and the enums (events, signals, states, timers, trace kinds). */
 function pyPreamble(ctx: PyContext, w: Lines): void {
   const {
-    ir, cls, errorCls, eventCls, handlerCls, stateCls, signalCls, kindCls, timerCls, timerEventFn, publicSignals,
-    stateMember, timerMember, eventNames, trace, hasTimers,
+    ir,
+    cls,
+    errorCls,
+    eventCls,
+    handlerCls,
+    stateCls,
+    signalCls,
+    kindCls,
+    timerCls,
+    timerEventFn,
+    publicSignals,
+    stateMember,
+    timerMember,
+    eventNames,
+    trace,
+    hasTimers,
   } = ctx;
   const { line } = w;
   line(0, `# Generated by uFSM ${UFSM_VERSION} from model "${comment(ir.name)}". Do not edit.`);
@@ -396,17 +477,27 @@ function pyPreamble(ctx: PyContext, w: Lines): void {
   line(0, `class ${stateCls}(IntEnum):`);
   line(1, '"""States in document order."""');
   if (ir.states.length) line(0, "");
-  ir.states.forEach((st, i) => line(1, `${stateMember[i]} = ${i}${st.label !== st.ident ? `  # ${comment(st.label)}` : ""}`));
+  ir.states.forEach((st, i) =>
+    line(1, `${stateMember[i]} = ${i}${st.label !== st.ident ? `  # ${comment(st.label)}` : ""}`),
+  );
   line(0, "");
   line(0, "");
   if (hasTimers) {
     line(0, `class ${timerCls}(IntEnum):`);
     line(1, '"""Timers: started when their state is entered, stopped when it is left."""');
     line(0, "");
-    ir.timers.forEach((t, i) => line(1, `${timerMember[i]} = ${i}  # ${t.periodic ? "every" : "after"} ${t.ms} ms -> ${comment(ir.events[t.event]!.name)}`));
+    ir.timers.forEach((t, i) =>
+      line(
+        1,
+        `${timerMember[i]} = ${i}  # ${t.periodic ? "every" : "after"} ${t.ms} ms -> ${comment(ir.events[t.event]!.name)}`,
+      ),
+    );
     line(0, "");
     line(0, "");
-    line(0, `_TIMER_EVENTS: Tuple[${eventCls}, ...] = (${ir.timers.map((t) => `${eventCls}.${eventNames[t.event]}`).join(", ")}${ir.timers.length === 1 ? "," : ""})`);
+    line(
+      0,
+      `_TIMER_EVENTS: Tuple[${eventCls}, ...] = (${ir.timers.map((t) => `${eventCls}.${eventNames[t.event]}`).join(", ")}${ir.timers.length === 1 ? "," : ""})`,
+    );
     line(0, "");
     line(0, "");
     line(0, `def ${timerEventFn}(timer: ${timerCls}) -> ${eventCls}:`);
@@ -437,7 +528,10 @@ function pyHandler(ctx: PyContext, w: Lines): void {
   const { ir, handlerCls, kindCls, timerCls, timerEventFn, trace, hasTimers } = ctx;
   const { line } = w;
   line(0, `class ${handlerCls}(Protocol):`);
-  line(1, '"""Actions and guards the machine calls. Guards return a bool and may be called more than once per event."""');
+  line(
+    1,
+    '"""Actions and guards the machine calls. Guards return a bool and may be called more than once per event."""',
+  );
   for (const a of ir.actions) {
     line(0, "");
     line(1, `def ${pythonName(a.name)}(self) -> None: ...`);
@@ -470,7 +564,17 @@ function pyHandler(ctx: PyContext, w: Lines): void {
 /** The machine class: the region map, the fingerprint, name tables and __init__. */
 function pyMachineClass(ctx: PyContext, w: Lines): void {
   const {
-    ir, cls, handlerCls, histIndex, deepRegions, method, debugInfo, trace, hasQueue, hasTerminate, hasTimers,
+    ir,
+    cls,
+    handlerCls,
+    histIndex,
+    deepRegions,
+    method,
+    debugInfo,
+    trace,
+    hasQueue,
+    hasTerminate,
+    hasTimers,
     checkSteps,
   } = ctx;
   const { line } = w;
@@ -479,7 +583,10 @@ function pyMachineClass(ctx: PyContext, w: Lines): void {
   line(0, `class ${cls}:`);
   line(1, "# Regions and their states (cfg value: state):");
   ir.regionNames.forEach((n, r) => {
-    const slots = ir.states.filter((s) => s.region === r).map((s) => `${s.slot}: ${comment(s.name)}`).join(", ");
+    const slots = ir.states
+      .filter((s) => s.region === r)
+      .map((s) => `${s.slot}: ${comment(s.name)}`)
+      .join(", ");
     const hk = histIndex.get(r);
     const hd = hk === undefined ? "" : ` [${ir.history[hk]!.kind} history: hist[${hk}]]`;
     line(1, `#   ${r} ${comment(n)}: ${slots}${hd}`);
@@ -490,7 +597,10 @@ function pyMachineClass(ctx: PyContext, w: Lines): void {
     ir.transitions.forEach((t, i) => line(1, `#   ${i} ${comment(t.label)}`));
   }
   line(0, "");
-  line(1, "# Identifies the numbering of events, signals, states and transitions (`ufsm info` prints it for a model file).");
+  line(
+    1,
+    "# Identifies the numbering of events, signals, states and transitions (`ufsm info` prints it for a model file).",
+  );
   line(1, `FINGERPRINT = ${hex32(ir.fingerprint)}`);
   if (debugInfo) {
     const tup = (items: string[]): string => `(${items.join(", ")}${items.length === 1 ? "," : ""})`;
@@ -500,7 +610,8 @@ function pyMachineClass(ctx: PyContext, w: Lines): void {
     line(1, `SIGNAL_NAMES: Tuple[str, ...] = ${names(ir.signals.map((x) => x.name))}`);
     line(1, `STATE_NAMES: Tuple[str, ...] = ${names(ir.states.map((st) => st.label))}`);
     if (hasTimers) line(1, `TIMER_NAMES: Tuple[str, ...] = ${names(ir.timers.map((t) => t.name))}`);
-    if (ir.states.length) line(1, `_STATE_AT: Tuple[Tuple[int, int], ...] = ${tup(ir.states.map((st) => `(${st.region}, ${st.slot})`))}`);
+    if (ir.states.length)
+      line(1, `_STATE_AT: Tuple[Tuple[int, int], ...] = ${tup(ir.states.map((st) => `(${st.region}, ${st.slot})`))}`);
   }
   line(0, "");
   line(1, `def __init__(self, handler: ${handlerCls}) -> None:`);
@@ -509,7 +620,8 @@ function pyMachineClass(ctx: PyContext, w: Lines): void {
   line(2, "self._busy = False  # a reset()/process() call is running, or one did not finish");
   line(2, `self._cfg: List[int] = [0] * ${ir.regions}`);
   if (ir.history.length) line(2, `self._hist: List[int] = [0] * ${ir.history.length}`);
-  for (const dh of deepRegions) line(2, `self._deep_r${dh.region}: List[int] = [0] * ${dh.snapshotTo! - dh.snapshotFrom!}`);
+  for (const dh of deepRegions)
+    line(2, `self._deep_r${dh.region}: List[int] = [0] * ${dh.snapshotTo! - dh.snapshotFrom!}`);
   if (hasQueue) line(2, "self._queue: List[int] = []");
   if (checkSteps) line(2, "self._steps = 0");
   if (hasTerminate) line(2, "self._terminated = False");
@@ -570,8 +682,19 @@ function pyResetProcess(ctx: PyContext, w: Lines, { stmts }: PyStatements): void
 /** _settle(), _push(), is_active() and _microstep(). */
 function pyRuntime(ctx: PyContext, w: Lines): void {
   const {
-    ir, errorCls, stateCls, kindCls, method, settleBody, signalQueue, maxMicrosteps, debugInfo, trace, hasQueue,
-    hasTerminate, checkSteps,
+    ir,
+    errorCls,
+    stateCls,
+    kindCls,
+    method,
+    settleBody,
+    signalQueue,
+    maxMicrosteps,
+    debugInfo,
+    trace,
+    hasQueue,
+    hasTerminate,
+    checkSteps,
   } = ctx;
   const { line } = w;
   // runtime helpers

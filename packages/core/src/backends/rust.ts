@@ -33,7 +33,18 @@ import { UFSM_VERSION } from "../version";
 import type { Expr, IrFunction, IrHistory, IrModule, Stmt, SwitchOn } from "../ir/ir";
 import { walkStmts } from "../ir/analyze";
 import { hex32 } from "../ir/ids";
-import { CodegenError, OUTPUT_NOTICE, identifier, lines, pascalCase, prepare, readTargetOptions, type CommonOptions, type Lines, type Prepared } from "./common";
+import {
+  CodegenError,
+  OUTPUT_NOTICE,
+  identifier,
+  lines,
+  pascalCase,
+  prepare,
+  readTargetOptions,
+  type CommonOptions,
+  type Lines,
+  type Prepared,
+} from "./common";
 
 export interface RustOptions extends CommonOptions {
   /** Name of the machine struct. Default: the model name in PascalCase. */
@@ -61,7 +72,22 @@ const NOT_RAW = new Set(["self", "Self", "super", "crate", "_"]);
 
 /** Names the module itself defines or uses, which the machine struct cannot take. */
 const RUST_TAKEN = new Set([
-  "Error", "Event", "Handler", "H", "Result", "Ok", "Err", "Option", "Some", "None", "core", "Self", "State", "Signal", "TraceKind", "Timer",
+  "Error",
+  "Event",
+  "Handler",
+  "H",
+  "Result",
+  "Ok",
+  "Err",
+  "Option",
+  "Some",
+  "None",
+  "core",
+  "Self",
+  "State",
+  "Signal",
+  "TraceKind",
+  "Timer",
 ]);
 
 /**
@@ -118,7 +144,11 @@ interface Printed {
 }
 
 const atom = (s: string, p: number): Printed => ({ s, p });
-const paren = (x: Printed, prefix: "(" | "!(" = "("): Printed => ({ s: `${prefix}${x.s})`, p: 3, paren: { prefix, inner: x } });
+const paren = (x: Printed, prefix: "(" | "!(" = "("): Printed => ({
+  s: `${prefix}${x.s})`,
+  p: 3,
+  paren: { prefix, inner: x },
+});
 
 /** `a op b op c`; operands that are chains of the same operator are flattened, as the text reads. */
 function chain(op: "&&" | "||", items: Printed[]): Printed {
@@ -218,15 +248,23 @@ interface RsContext extends Prepared {
 function rsContext(ir: IrModule, options: RustOptions): RsContext {
   const ty = options.className ?? pascalCase(ir.name);
   const module = options.module ?? rustModuleName(ir.name);
-  if (!IDENTIFIER.test(ty) || RUST_KEYWORDS.has(ty) || RUST_TAKEN.has(ty)) throw new CodegenError(`Rust type name '${ty}' is not a usable identifier`);
-  if (!/^[A-Za-z0-9_.-]+$/.test(module)) throw new CodegenError(`Rust module name '${module}' is not a plain file name`);
+  if (!IDENTIFIER.test(ty) || RUST_KEYWORDS.has(ty) || RUST_TAKEN.has(ty))
+    throw new CodegenError(`Rust type name '${ty}' is not a usable identifier`);
+  if (!/^[A-Za-z0-9_.-]+$/.test(module))
+    throw new CodegenError(`Rust module name '${module}' is not a plain file name`);
   const prepared = prepare(ir, options);
-  const { signalQueue, maxMicrosteps, trace, debugInfo, hasQueue, hasTerminate, hasTimers, countSteps, fallible } = prepared;
+  const { signalQueue, maxMicrosteps, trace, debugInfo, hasQueue, hasTerminate, hasTimers, countSteps, fallible } =
+    prepared;
   const publicSignals = (trace || debugInfo) && ir.signals.length > 0;
 
   // Events are enum variants, actions and guards trait methods: each list must stay unique after renaming.
   const problems: string[] = [];
-  const methods = [...ir.actions, ...ir.guards, ...(trace ? [{ name: "trace" }] : []), ...(hasTimers ? [{ name: "timer_start" }, { name: "timer_stop" }] : [])];
+  const methods = [
+    ...ir.actions,
+    ...ir.guards,
+    ...(trace ? [{ name: "trace" }] : []),
+    ...(hasTimers ? [{ name: "timer_start" }, { name: "timer_stop" }] : []),
+  ];
   const variants: [string, { name: string }[]][] = [
     ["event", ir.events],
     ["handler method", methods],
@@ -238,12 +276,21 @@ function rsContext(ir: IrModule, options: RustOptions): RsContext {
     const seen = new Map<string, string>();
     for (const d of list) {
       const n = rustName(d.name).replace(/^r#/, "");
-      const builtIn = kind !== "handler method" ? "" : d.name === "trace" ? " (the trace hook)" : d.name === "timer_start" || d.name === "timer_stop" ? " (a timer function)" : "";
-      if (seen.has(n)) problems.push(`${kind} '${d.name}' becomes '${rustName(d.name)}', like '${seen.get(n)}'${builtIn}`);
+      const builtIn =
+        kind !== "handler method"
+          ? ""
+          : d.name === "trace"
+            ? " (the trace hook)"
+            : d.name === "timer_start" || d.name === "timer_stop"
+              ? " (a timer function)"
+              : "";
+      if (seen.has(n))
+        problems.push(`${kind} '${d.name}' becomes '${rustName(d.name)}', like '${seen.get(n)}'${builtIn}`);
       seen.set(n, d.name);
     }
   }
-  if (problems.length) throw new CodegenError(`name clash in the generated Rust (rename them):\n  ${problems.join("\n  ")}`);
+  if (problems.length)
+    throw new CodegenError(`name clash in the generated Rust (rename them):\n  ${problems.join("\n  ")}`);
 
   const decl = new Map<string, string>();
   for (const d of [...ir.events, ...ir.signals, ...ir.actions, ...ir.guards]) decl.set(d.id, d.name);
@@ -255,7 +302,8 @@ function rsContext(ir: IrModule, options: RustOptions): RsContext {
   const sigT = uintType(Math.max(0, ir.signals.length - 1));
   const stepsT = uintType(maxMicrosteps + 1);
   const stateAt = new Map(ir.states.map((s) => [`${s.region}:${s.slot}`, s.name]));
-  const stateName = (region: number, slot: number): string => comment(stateAt.get(`${region}:${slot}`) ?? `slot ${slot}`);
+  const stateName = (region: number, slot: number): string =>
+    comment(stateAt.get(`${region}:${slot}`) ?? `slot ${slot}`);
   const settleBody = hasTerminate || ir.eventless !== undefined || hasQueue;
   const settleFails = ir.eventless !== undefined || hasQueue;
   const hasEvents = ir.events.length > 0;
@@ -266,7 +314,12 @@ function rsContext(ir: IrModule, options: RustOptions): RsContext {
   if (hasEvents) fields.push(["busy", "bool", "false"]);
   fields.push(["cfg", `[${slotT}; ${ir.regions}]`, zeros(ir.regions)]);
   if (ir.history.length) fields.push(["hist", `[${slotT}; ${ir.history.length}]`, zeros(ir.history.length)]);
-  for (const dh of deepRegions) fields.push([`deep_r${dh.region}`, `[${slotT}; ${dh.snapshotTo! - dh.snapshotFrom!}]`, zeros(dh.snapshotTo! - dh.snapshotFrom!)]);
+  for (const dh of deepRegions)
+    fields.push([
+      `deep_r${dh.region}`,
+      `[${slotT}; ${dh.snapshotTo! - dh.snapshotFrom!}]`,
+      zeros(dh.snapshotTo! - dh.snapshotFrom!),
+    ]);
   if (hasQueue) {
     fields.push(["queue", `[${sigT}; ${signalQueue}]`, zeros(signalQueue)]);
     // A queue of one has its only slot at 0: no head to move (and clippy denies `% 1`).
@@ -334,10 +387,22 @@ function rsExpressions(ctx: RsContext): RsExpressions {
         return notExpr(e.expr);
       case "and":
         // `||` inside `&&` needs parentheses; comparisons do not
-        return chain("&&", e.exprs.map((x) => { const y = expr(x); return y.p < 1 ? paren(y) : y; }));
+        return chain(
+          "&&",
+          e.exprs.map((x) => {
+            const y = expr(x);
+            return y.p < 1 ? paren(y) : y;
+          }),
+        );
       case "or":
         // `&&` inside `||` gets parentheses for the reader
-        return chain("||", e.exprs.map((x) => { const y = expr(x); return y.p === 1 ? paren(y) : y; }));
+        return chain(
+          "||",
+          e.exprs.map((x) => {
+            const y = expr(x);
+            return y.p === 1 ? paren(y) : y;
+          }),
+        );
     }
   };
   const notExpr = (e: Expr): Printed => {
@@ -394,8 +459,13 @@ function rsStatements(ctx: RsContext, w: Lines): RsStatements {
     line(d, ");");
   };
   const switchOn = (o: SwitchOn): string =>
-    o.kind === "cfg" ? cfg(o.region) : o.kind === "hist" ? `self.hist[${histIndex.get(o.region)}]` : `self.deep_r${o.history}[${o.index}]`;
-  const caseRegion = (o: SwitchOn): number => (o.kind === "deep" ? ir.history.find((h) => h.region === o.history)!.snapshotFrom! + o.index : o.region);
+    o.kind === "cfg"
+      ? cfg(o.region)
+      : o.kind === "hist"
+        ? `self.hist[${histIndex.get(o.region)}]`
+        : `self.deep_r${o.history}[${o.index}]`;
+  const caseRegion = (o: SwitchOn): number =>
+    o.kind === "deep" ? ir.history.find((h) => h.region === o.history)!.snapshotFrom! + o.index : o.region;
 
   /** Flags of the function being printed that are read somewhere; setting any other flag prints nothing. */
   let liveFlags = new Set<string>();
@@ -442,7 +512,10 @@ function rsStatements(ctx: RsContext, w: Lines): RsStatements {
     while (!els && then.length === 1 && then[0]!.op === "if") {
       const inner = shape(then[0] as If);
       if (inner.else) break;
-      cond = chain("&&", [cond, inner.cond].map((y) => (y.p < 1 ? paren(y) : y)));
+      cond = chain(
+        "&&",
+        [cond, inner.cond].map((y) => (y.p < 1 ? paren(y) : y)),
+      );
       then = inner.then;
     }
     return { cond, then, else: els };
@@ -499,7 +572,10 @@ function rsStatements(ctx: RsContext, w: Lines): RsStatements {
           break;
         }
         case "set":
-          line(d, s.slot === 0 ? `${cfg(s.region)} = 0;` : `${cfg(s.region)} = ${s.slot}; // ${stateName(s.region, s.slot)}`);
+          line(
+            d,
+            s.slot === 0 ? `${cfg(s.region)} = 0;` : `${cfg(s.region)} = ${s.slot}; // ${stateName(s.region, s.slot)}`,
+          );
           break;
         case "call":
           line(d, `Handler::${rustName(decl.get(s.action)!)}(&mut self.handler);`);
@@ -521,7 +597,8 @@ function rsStatements(ctx: RsContext, w: Lines): RsStatements {
           break;
         case "saveDeep": {
           const h = ir.history.find((x) => x.region === s.region)!;
-          if (h.snapshotTo! > h.snapshotFrom!) line(d, `self.deep_r${s.region}.copy_from_slice(&self.cfg[${h.snapshotFrom}..${h.snapshotTo}]);`);
+          if (h.snapshotTo! > h.snapshotFrom!)
+            line(d, `self.deep_r${s.region}.copy_from_slice(&self.cfg[${h.snapshotFrom}..${h.snapshotTo}]);`);
           break;
         }
         case "microstep":
@@ -535,7 +612,12 @@ function rsStatements(ctx: RsContext, w: Lines): RsStatements {
         }
         case "timerStart": {
           const t = ir.timers[s.timer]!;
-          callStmt(d, "Handler::timer_start", ["&mut self.handler", `Timer::${rustName(t.name)}`, rustInt(t.ms), String(t.periodic)]);
+          callStmt(d, "Handler::timer_start", [
+            "&mut self.handler",
+            `Timer::${rustName(t.name)}`,
+            rustInt(t.ms),
+            String(t.periodic),
+          ]);
           break;
         }
         case "timerStop":
@@ -607,7 +689,12 @@ function rsPreamble(ctx: RsContext, w: Lines): void {
   line(1, "NotStarted,");
   line(1, `/// More than ${signalQueue} signals were waiting at once.`);
   line(1, "QueueOverflow,");
-  line(1, checkSteps ? `/// More than ${maxMicrosteps} microsteps in one call.` : "/// Too many microsteps in one call (not checked in this build).");
+  line(
+    1,
+    checkSteps
+      ? `/// More than ${maxMicrosteps} microsteps in one call.`
+      : "/// Too many microsteps in one call (not checked in this build).",
+  );
   line(1, "Livelock,");
   line(1, "/// `process()` after a call that did not finish (an error, or a caught panic) and before `reset()`.");
   line(1, "Busy,");
@@ -689,7 +776,12 @@ function rsEnums(ctx: RsContext, w: Lines): void {
     line(0, "}");
     line(0, "");
   };
-  if (debugInfo) lookup("Event", "event", ir.events.map((e) => ({ variant: rustName(e.name), name: e.name })));
+  if (debugInfo)
+    lookup(
+      "Event",
+      "event",
+      ir.events.map((e) => ({ variant: rustName(e.name), name: e.name })),
+    );
   if (publicSignals) {
     line(0, "/// The signals the machine emits to itself, named as in the model.");
     line(0, "#[allow(non_camel_case_types, dead_code)]");
@@ -701,7 +793,12 @@ function rsEnums(ctx: RsContext, w: Lines): void {
     }
     line(0, "}");
     line(0, "");
-    if (debugInfo) lookup("Signal", "signal", ir.signals.map((x) => ({ variant: rustName(x.name), name: x.name })));
+    if (debugInfo)
+      lookup(
+        "Signal",
+        "signal",
+        ir.signals.map((x) => ({ variant: rustName(x.name), name: x.name })),
+      );
   }
   line(0, "/// The states, in document order.");
   line(0, "#[allow(non_camel_case_types, dead_code)]");
@@ -715,14 +812,22 @@ function rsEnums(ctx: RsContext, w: Lines): void {
     line(0, "}");
   } else line(0, "pub enum State {}");
   line(0, "");
-  if (debugInfo) lookup("State", "state", ir.states.map((st) => ({ variant: rustName(st.ident), name: st.label })));
+  if (debugInfo)
+    lookup(
+      "State",
+      "state",
+      ir.states.map((st) => ({ variant: rustName(st.ident), name: st.label })),
+    );
   if (hasTimers) {
     line(0, "/// Timers: started when their state is entered, stopped when it is left. `Handler` runs them.");
     line(0, "#[allow(non_camel_case_types, dead_code)]");
     line(0, "#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]");
     line(0, "pub enum Timer {");
     for (const t of ir.timers) {
-      line(1, `/// Timer \`${t.name}\`: ${t.periodic ? "every" : "after"} ${t.ms} ms, then \`Event::${rustName(ir.events[t.event]!.name)}\`.`);
+      line(
+        1,
+        `/// Timer \`${t.name}\`: ${t.periodic ? "every" : "after"} ${t.ms} ms, then \`Event::${rustName(ir.events[t.event]!.name)}\`.`,
+      );
       line(1, `${rustName(t.name)},`);
     }
     line(0, "}");
@@ -747,9 +852,17 @@ function rsEnums(ctx: RsContext, w: Lines): void {
     line(1, "}");
     line(0, "}");
     line(0, "");
-    if (debugInfo) lookup("Timer", "timer", ir.timers.map((t) => ({ variant: rustName(t.name), name: t.name })));
+    if (debugInfo)
+      lookup(
+        "Timer",
+        "timer",
+        ir.timers.map((t) => ({ variant: rustName(t.name), name: t.name })),
+      );
   }
-  line(0, "/// Identifies the numbering of events, signals, states and transitions (`ufsm info` prints it for a model file).");
+  line(
+    0,
+    "/// Identifies the numbering of events, signals, states and transitions (`ufsm info` prints it for a model file).",
+  );
   line(0, "#[allow(dead_code)]");
   line(0, `pub const FINGERPRINT: u32 = ${hex32(ir.fingerprint).replace(/^(0x....)/, "$1_")};`);
   line(0, "");
@@ -777,7 +890,10 @@ function rsEnums(ctx: RsContext, w: Lines): void {
 function rsHandler(ctx: RsContext, w: Lines): void {
   const { ir, trace, hasTimers } = ctx;
   const { line } = w;
-  line(0, "/// Actions and guards the machine calls. Guards return a `bool` and may be called more than once per event");
+  line(
+    0,
+    "/// Actions and guards the machine calls. Guards return a `bool` and may be called more than once per event",
+  );
   line(0, "/// and in any order.");
   line(0, "#[allow(non_snake_case)]");
   if (ir.actions.length || ir.guards.length || trace || hasTimers) {
@@ -791,8 +907,14 @@ function rsHandler(ctx: RsContext, w: Lines): void {
       line(1, `fn ${rustName(g.name)}(&mut self) -> bool;`);
     }
     if (hasTimers) {
-      line(1, "/// Start `timer`: it expires once after `ms`, or (periodic) every `ms` until stopped, re-armed here. On");
-      line(1, "/// expiry, process `timer.event()`. Called inside `reset()` and `process()`: must not block or call the machine.");
+      line(
+        1,
+        "/// Start `timer`: it expires once after `ms`, or (periodic) every `ms` until stopped, re-armed here. On",
+      );
+      line(
+        1,
+        "/// expiry, process `timer.event()`. Called inside `reset()` and `process()`: must not block or call the machine.",
+      );
       line(1, "fn timer_start(&mut self, timer: Timer, ms: u32, periodic: bool);");
       line(1, "/// Stop `timer`; does nothing if it is not running. No expiry of the earlier start should follow.");
       line(1, "fn timer_stop(&mut self, timer: Timer);");
@@ -811,12 +933,18 @@ function rsStruct(ctx: RsContext, w: Lines): void {
   const { ir, ty, histIndex, fields, trace, hasQueue } = ctx;
   const { line } = w;
   // struct
-  line(0, `/// The state machine \`${comment(ir.name).replace(/`/g, "'")}\`. \`new()\` stores the handler; \`reset()\` starts the machine.`);
+  line(
+    0,
+    `/// The state machine \`${comment(ir.name).replace(/`/g, "'")}\`. \`new()\` stores the handler; \`reset()\` starts the machine.`,
+  );
   line(0, "#[derive(Debug, Clone)]");
   line(0, `pub struct ${ty}<H> {`);
   line(1, "// Regions and their states (cfg value: state):");
   ir.regionNames.forEach((n, r) => {
-    const slots = ir.states.filter((s) => s.region === r).map((s) => `${s.slot}: ${comment(s.name)}`).join(", ");
+    const slots = ir.states
+      .filter((s) => s.region === r)
+      .map((s) => `${s.slot}: ${comment(s.name)}`)
+      .join(", ");
     const hk = histIndex.get(r);
     const hd = hk === undefined ? "" : ` [${ir.history[hk]!.kind} history: hist[${hk}]]`;
     line(1, `//   ${r} ${comment(n)}: ${slots}${hd}`);
@@ -881,14 +1009,27 @@ function rsApi(ctx: RsContext, w: Lines): void {
 /** reset() and process(). */
 function rsResetProcess(ctx: RsContext, w: Lines, { stmts }: RsStatements): void {
   const {
-    ir, ty, eventSteps, settleBody, settleFails, hasEvents, call, fields, trace, hasQueue, hasTerminate, countSteps,
+    ir,
+    ty,
+    eventSteps,
+    settleBody,
+    settleFails,
+    hasEvents,
+    call,
+    fields,
+    trace,
+    hasQueue,
+    hasTerminate,
+    countSteps,
   } = ctx;
   const { line } = w;
   // reset and process
   line(0, `impl<H: Handler> ${ty}<H> {`);
   const errorsDoc = (notStarted: boolean): void => {
     const kinds = [
-      ...(notStarted ? ["`Error::NotStarted` before the first `reset()`", "`Error::Busy` after a call that did not finish"] : []),
+      ...(notStarted
+        ? ["`Error::NotStarted` before the first `reset()`", "`Error::Busy` after a call that did not finish"]
+        : []),
       ...(hasQueue ? ["`Error::QueueOverflow`"] : []),
       ...(countSteps ? ["`Error::Livelock`"] : []),
     ];
@@ -919,7 +1060,10 @@ function rsResetProcess(ctx: RsContext, w: Lines, { stmts }: RsStatements): void
   finish();
   line(1, "}");
   line(0, "");
-  line(1, "/// Process one event, then everything it causes (eventless transitions, signals), until the machine is stable.");
+  line(
+    1,
+    "/// Process one event, then everything it causes (eventless transitions, signals), until the machine is stable.",
+  );
   errorsDoc(hasEvents);
   line(1, "pub fn process(&mut self, event: Event) -> Result<(), Error> {");
   if (!hasEvents) line(2, "match event {}");
@@ -945,7 +1089,13 @@ function rsResetProcess(ctx: RsContext, w: Lines, { stmts }: RsStatements): void
       line(2, "match event {");
       for (const ev of eventSteps) arm(w, 3, [variant(ev.name)], call(ir.onEvent[ev.id]!));
       const idle = ir.events.filter((ev) => !eventSteps.includes(ev));
-      if (idle.length) arm(w, 3, idle.map((ev) => variant(ev.name)), "false");
+      if (idle.length)
+        arm(
+          w,
+          3,
+          idle.map((ev) => variant(ev.name)),
+          "false",
+        );
       line(2, "};");
     }
     finish();
@@ -958,8 +1108,21 @@ function rsResetProcess(ctx: RsContext, w: Lines, { stmts }: RsStatements): void
 /** settle(), the signal queue, microstep() and one method per IR function. */
 function rsInternals(ctx: RsContext, w: Lines, { body, flagUse, setLiveFlags }: RsStatements): void {
   const {
-    ir, ty, signalNo, sigT, signalSteps, settleBody, settleFails, call, signalQueue, maxMicrosteps, trace, hasQueue,
-    hasTerminate, countSteps, fallible,
+    ir,
+    ty,
+    signalNo,
+    sigT,
+    signalSteps,
+    settleBody,
+    settleFails,
+    call,
+    signalQueue,
+    maxMicrosteps,
+    trace,
+    hasQueue,
+    hasTerminate,
+    countSteps,
+    fallible,
   } = ctx;
   const { line } = w;
   // internals: step functions are named after events (step_eButton), flags after transitions (take_t1, take_t2)
@@ -996,7 +1159,10 @@ function rsInternals(ctx: RsContext, w: Lines, { body, flagUse, setLiveFlags }: 
         line(3, "let Some(signal) = self.pop() else {");
         line(4, "return Ok(());");
         line(3, "};");
-        line(3, `Handler::trace(&mut self.handler, TraceKind::Signal, ${sigT === "u8" ? "u16::from(signal)" : "signal"});`);
+        line(
+          3,
+          `Handler::trace(&mut self.handler, TraceKind::Signal, ${sigT === "u8" ? "u16::from(signal)" : "signal"});`,
+        );
         if (signalSteps.length) {
           line(3, "match signal {");
           for (const sg of signalSteps) arm(w, 4, [String(signalNo.get(sg.id))], call(ir.onSignal[sg.id]!));
@@ -1026,7 +1192,12 @@ function rsInternals(ctx: RsContext, w: Lines, { body, flagUse, setLiveFlags }: 
       line(2, `if self.queue_len == ${signalQueue} {`);
       line(3, "return Err(Error::QueueOverflow);");
       line(2, "}");
-      line(2, signalQueue === 1 ? "self.queue[0] = signal;" : `self.queue[(self.queue_head + self.queue_len) % ${signalQueue}] = signal;`);
+      line(
+        2,
+        signalQueue === 1
+          ? "self.queue[0] = signal;"
+          : `self.queue[(self.queue_head + self.queue_len) % ${signalQueue}] = signal;`,
+      );
       line(2, "self.queue_len += 1;");
       line(2, "Ok(())");
       line(1, "}");
@@ -1057,7 +1228,14 @@ function rsInternals(ctx: RsContext, w: Lines, { body, flagUse, setLiveFlags }: 
   for (const f of ir.functions) {
     blocks.push(() => {
       const result = fallible.has(f.name);
-      const ret = f.returns === "bool" ? (result ? " -> Result<bool, Error>" : " -> bool") : result ? " -> Result<(), Error>" : "";
+      const ret =
+        f.returns === "bool"
+          ? result
+            ? " -> Result<bool, Error>"
+            : " -> bool"
+          : result
+            ? " -> Result<(), Error>"
+            : "";
       if (f.doc) line(1, `// ${comment(f.doc)}`);
       line(1, `fn ${f.name}(&mut self)${ret} {`);
       const use = flagUse(f);

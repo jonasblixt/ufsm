@@ -32,7 +32,13 @@ export function openQuickPick(text = ""): void {
   opener?.(text);
 }
 
-const S = { fill: "none", stroke: "currentColor", "stroke-width": "1.3", "stroke-linecap": "round", "stroke-linejoin": "round" } as const;
+const S = {
+  fill: "none",
+  stroke: "currentColor",
+  "stroke-width": "1.3",
+  "stroke-linecap": "round",
+  "stroke-linejoin": "round",
+} as const;
 
 /** Small symbol per kind, like VS Code's symbol icons (colored by CSS per kind). */
 function KindIcon({ kind }: { kind: ItemKind }) {
@@ -75,7 +81,10 @@ function KindIcon({ kind }: { kind: ItemKind }) {
       body = (
         <>
           <circle cx="8" cy="8" r="2" {...S} />
-          <path d="M8 2V4M8 12V14M2 8H4M12 8H14M3.8 3.8L5.2 5.2M10.8 10.8L12.2 12.2M3.8 12.2L5.2 10.8M10.8 5.2L12.2 3.8" {...S} />
+          <path
+            d="M8 2V4M8 12V14M2 8H4M12 8H14M3.8 3.8L5.2 5.2M10.8 10.8L12.2 12.2M3.8 12.2L5.2 10.8M10.8 5.2L12.2 3.8"
+            {...S}
+          />
         </>
       );
       break;
@@ -147,7 +156,8 @@ export function QuickPick(p: QuickPickProps) {
   const current = rows[Math.min(active, rows.length - 1)];
 
   const show = (t: string): void => {
-    if (!isOpen.current && document.activeElement instanceof HTMLElement && document.activeElement !== input.current) before.current = document.activeElement;
+    if (!isOpen.current && document.activeElement instanceof HTMLElement && document.activeElement !== input.current)
+      before.current = document.activeElement;
     isOpen.current = true;
     setItems(props.current.items());
     setRecent(props.current.recent());
@@ -314,7 +324,11 @@ export function QuickPick(p: QuickPickProps) {
                     )}
                   </span>
                   {m.group && <span class="qp-group">{m.group}</span>}
-                  {it.checked && <span class="qp-check" title="In use">✓</span>}
+                  {it.checked && (
+                    <span class="qp-check" title="In use">
+                      ✓
+                    </span>
+                  )}
                   {other && it.docName && it.kind !== "machine" && <span class="qp-doc">{it.docName}</span>}
                   {it.keys && <Keys keys={it.keys} />}
                 </li>

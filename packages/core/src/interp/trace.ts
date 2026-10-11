@@ -13,7 +13,13 @@
  */
 import { UfsmFormatError } from "../format/errors";
 import type { Id, ModelOptions, UfsmDocument } from "../format/model";
-import { BEHAVIOUR_OPTIONS, defined, isBehaviourOption, behaviourOptions, type BehaviourOption } from "../format/options";
+import {
+  BEHAVIOUR_OPTIONS,
+  defined,
+  isBehaviourOption,
+  behaviourOptions,
+  type BehaviourOption,
+} from "../format/options";
 import { MachineError, type MachineHost, type RunOptions, type RunningMachine } from "../runtime/contract";
 import { Interpreter } from "./interpreter";
 
@@ -78,7 +84,18 @@ export interface Trace {
   steps: TraceStep[];
 }
 
-const STEP_KEYS = new Set(["reset", "send", "guards", "raise", "reenter", "expect", "active", "inactive", "error", "doc"]);
+const STEP_KEYS = new Set([
+  "reset",
+  "send",
+  "guards",
+  "raise",
+  "reenter",
+  "expect",
+  "active",
+  "inactive",
+  "error",
+  "doc",
+]);
 
 /** Parse and validate a trace file. Throws UfsmFormatError. */
 export function parseTrace(text: string): Trace {
@@ -90,18 +107,22 @@ export function parseTrace(text: string): Trace {
   }
   const isObj = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
   const strings = (x: unknown, path: string): string[] => {
-    if (!Array.isArray(x) || !x.every((s) => typeof s === "string")) throw new UfsmFormatError(path, "expected a list of strings");
+    if (!Array.isArray(x) || !x.every((s) => typeof s === "string"))
+      throw new UfsmFormatError(path, "expected a list of strings");
     return x as string[];
   };
   if (!isObj(data)) throw new UfsmFormatError("", "expected an object");
-  for (const k of Object.keys(data)) if (!["model", "doc", "options", "steps"].includes(k)) throw new UfsmFormatError(k, "unknown key");
+  for (const k of Object.keys(data))
+    if (!["model", "doc", "options", "steps"].includes(k)) throw new UfsmFormatError(k, "unknown key");
   if (typeof data["model"] !== "string") throw new UfsmFormatError("model", "expected a string");
   if (!Array.isArray(data["steps"])) throw new UfsmFormatError("steps", "expected a list");
   const trace: Trace = { model: data["model"], steps: [] };
   if (typeof data["doc"] === "string") trace.doc = data["doc"];
   if (data["options"] !== undefined) {
     const o = data["options"];
-    const valid = isObj(o) && Object.entries(o).every(([k, v]) => isBehaviourOption(k) && Number.isInteger(v) && (v as number) >= 0);
+    const valid =
+      isObj(o) &&
+      Object.entries(o).every(([k, v]) => isBehaviourOption(k) && Number.isInteger(v) && (v as number) >= 0);
     if (!valid) throw new UfsmFormatError("options", "expected { signalQueue?: integer, maxMicrosteps?: integer }");
     const options: TraceOptions = {};
     for (const k of BEHAVIOUR_OPTIONS) if (o[k] !== undefined) options[k] = o[k] as number;
@@ -137,16 +158,25 @@ export function parseTrace(text: string): Trace {
     }
     for (const k of ["raise", "reenter"] as const) {
       if (s[k] === undefined) continue;
-      if (typeof s[k] !== "string") throw new UfsmFormatError(`${p}.${k}`, k === "raise" ? "expected an action or guard name" : "expected an action name");
+      if (typeof s[k] !== "string")
+        throw new UfsmFormatError(
+          `${p}.${k}`,
+          k === "raise" ? "expected an action or guard name" : "expected an action name",
+        );
       step[k] = s[k];
     }
     if (typeof s["doc"] === "string") step.doc = s["doc"];
     const acts = step.reset || step.send !== undefined;
-    if (step.raise !== undefined && (!acts || step.error !== undefined)) throw new UfsmFormatError(`${p}.raise`, "needs a reset or send, and no `error`");
-    if (step.reenter !== undefined && step.send === undefined) throw new UfsmFormatError(`${p}.reenter`, "needs a send (the nested call sends the same event)");
-    if (step.raise !== undefined && step.raise === step.reenter) throw new UfsmFormatError(p, "an action either raises or reenters, not both");
-    if (acts && step.expect === undefined && step.error === undefined) throw new UfsmFormatError(p, "a reset or send step needs `expect` (or `error`)");
-    if (!acts && (step.expect !== undefined || step.error !== undefined)) throw new UfsmFormatError(p, "`expect`/`error` need a reset or send");
+    if (step.raise !== undefined && (!acts || step.error !== undefined))
+      throw new UfsmFormatError(`${p}.raise`, "needs a reset or send, and no `error`");
+    if (step.reenter !== undefined && step.send === undefined)
+      throw new UfsmFormatError(`${p}.reenter`, "needs a send (the nested call sends the same event)");
+    if (step.raise !== undefined && step.raise === step.reenter)
+      throw new UfsmFormatError(p, "an action either raises or reenters, not both");
+    if (acts && step.expect === undefined && step.error === undefined)
+      throw new UfsmFormatError(p, "a reset or send step needs `expect` (or `error`)");
+    if (!acts && (step.expect !== undefined || step.error !== undefined))
+      throw new UfsmFormatError(p, "`expect`/`error` need a reset or send");
     if (!acts && !step.guards && !step.active && !step.inactive) throw new UfsmFormatError(p, "empty step");
     trace.steps.push(step);
   });
@@ -183,7 +213,12 @@ export function traceOptions(doc: UfsmDocument, trace: Trace): ReturnType<typeof
 }
 
 /** Replay a trace against the reference interpreter (or another engine). Returns the failures (empty: passed). */
-export function runTrace(doc: UfsmDocument, trace: Trace, options: RunOptions = {}, make: MachineFactory = interpreterFactory): TraceFailure[] {
+export function runTrace(
+  doc: UfsmDocument,
+  trace: Trace,
+  options: RunOptions = {},
+  make: MachineFactory = interpreterFactory,
+): TraceFailure[] {
   const failures: TraceFailure[] = [];
   const guards = new Map<string, boolean>();
   let calls: string[] = [];
@@ -246,12 +281,22 @@ export function runTrace(doc: UfsmDocument, trace: Trace, options: RunOptions = 
       failures.push({ step: i, message: `expected error '${step.error}', got ${error ? `'${error}'` : "none"}` });
     }
     if (step.raise !== undefined && !raised && error === undefined) {
-      failures.push({ step: i, message: `expected the exception from '${step.raise}' to end the step, but '${step.raise}' was not called` });
+      failures.push({
+        step: i,
+        message: `expected the exception from '${step.raise}' to end the step, but '${step.raise}' was not called`,
+      });
     }
-    if (step.raise === undefined && raised) failures.push({ step: i, message: "an action or guard raised in a step without `raise`" });
+    if (step.raise === undefined && raised)
+      failures.push({ step: i, message: "an action or guard raised in a step without `raise`" });
     if (step.reenter !== undefined && nested !== "busy") {
-      const got = nested === undefined ? `'${step.reenter}' was not called` : `the nested process() gave ${nested === "ok" ? "no error" : `'${nested}'`}`;
-      failures.push({ step: i, message: `${got}; expected the nested process() from '${step.reenter}' to fail with 'busy'` });
+      const got =
+        nested === undefined
+          ? `'${step.reenter}' was not called`
+          : `the nested process() gave ${nested === "ok" ? "no error" : `'${nested}'`}`;
+      failures.push({
+        step: i,
+        message: `${got}; expected the nested process() from '${step.reenter}' to fail with 'busy'`,
+      });
     }
     if (step.expect && error === undefined) {
       const same = calls.length === step.expect.length && calls.every((c, j) => c === step.expect![j]);
@@ -260,7 +305,14 @@ export function runTrace(doc: UfsmDocument, trace: Trace, options: RunOptions = 
     for (const ref of step.active ?? []) {
       const id = resolveStateRef(doc, ref);
       if (!names.has(id)) failures.push({ step: i, message: id });
-      else if (!m.isActive(id)) failures.push({ step: i, message: `'${ref}' is not active (active: ${m.activeIds().map((a) => names.get(a)).join(", ")})` });
+      else if (!m.isActive(id))
+        failures.push({
+          step: i,
+          message: `'${ref}' is not active (active: ${m
+            .activeIds()
+            .map((a) => names.get(a))
+            .join(", ")})`,
+        });
     }
     for (const ref of step.inactive ?? []) {
       const id = resolveStateRef(doc, ref);
@@ -276,11 +328,23 @@ export function formatFailure(trace: Trace, f: TraceFailure): string {
   const step = trace.steps[f.step];
   const what = step?.reset ? "reset" : step?.send !== undefined ? `send ${step.send}` : "step";
   let s = `step ${f.step} (${what}): ${f.message}`;
-  if (f.expected && f.actual) s += `\n    expected: ${f.expected.join(" ") || "(nothing)"}\n    actual:   ${f.actual.join(" ") || "(nothing)"}`;
+  if (f.expected && f.actual)
+    s += `\n    expected: ${f.expected.join(" ") || "(nothing)"}\n    actual:   ${f.actual.join(" ") || "(nothing)"}`;
   return s;
 }
 
-const STEP_ORDER = ["reset", "guards", "send", "raise", "reenter", "expect", "active", "inactive", "error", "doc"] as const;
+const STEP_ORDER = [
+  "reset",
+  "guards",
+  "send",
+  "raise",
+  "reenter",
+  "expect",
+  "active",
+  "inactive",
+  "error",
+  "doc",
+] as const;
 
 /**
  * Write a trace as JSON in the layout of the files in tests/traces: one key per line at the top, each step on one
@@ -298,7 +362,9 @@ export function formatTrace(trace: Trace, width = 120): string {
     return j(v);
   };
   const pairs = (o: object, keys: readonly string[]): string[] =>
-    keys.filter((k) => (o as Record<string, unknown>)[k] !== undefined).map((k) => `${j(k)}: ${value((o as Record<string, unknown>)[k])}`);
+    keys
+      .filter((k) => (o as Record<string, unknown>)[k] !== undefined)
+      .map((k) => `${j(k)}: ${value((o as Record<string, unknown>)[k])}`);
   const top: string[] = [`  "model": ${j(trace.model)}`];
   if (trace.doc !== undefined) top.push(`  "doc": ${j(trace.doc)}`);
   if (trace.options && Object.keys(trace.options).length) top.push(`  "options": ${value(trace.options)}`);

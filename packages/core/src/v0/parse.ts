@@ -154,9 +154,7 @@ function state(v: unknown, path: string): V0State {
     entries: arr(o, "entries", path).map((x, i) => actionRef(x, join(join(path, "entries"), i))),
     exits: arr(o, "exits", path).map((x, i) => actionRef(x, join(join(path, "exits"), i))),
     region: arr(o, "region", path).map((x, i) => region(x, join(join(path, "region"), i))),
-    transitions: arr(o, "transitions", path).map((x, i) =>
-      transition(x, join(join(path, "transitions"), i)),
-    ),
+    transitions: arr(o, "transitions", path).map((x, i) => transition(x, join(join(path, "transitions"), i))),
   };
 }
 

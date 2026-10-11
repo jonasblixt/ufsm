@@ -30,7 +30,18 @@ import type { Expr, IrFunction, IrHistory, IrModule, Stmt, SwitchOn, TraceKind }
 import { TRACE_KINDS } from "../ir/ir";
 import { walkStmts } from "../ir/analyze";
 import { hex32, utf8 } from "../ir/ids";
-import { CodegenError, OUTPUT_NOTICE, identifier, lines, prepare, readTargetOptions, type CommonOptions, type Lines, type Prepared, type Printed } from "./common";
+import {
+  CodegenError,
+  OUTPUT_NOTICE,
+  identifier,
+  lines,
+  prepare,
+  readTargetOptions,
+  type CommonOptions,
+  type Lines,
+  type Prepared,
+  type Printed,
+} from "./common";
 
 export interface COptions extends CommonOptions {
   /** Prefix of every public identifier. Default: the model name as an identifier, plus "_". */
@@ -140,19 +151,48 @@ function cContext(ir: IrModule, options: COptions): CContext {
   for (const d of [...ir.events, ...ir.signals]) name.set(d.id, `${P}${d.name}`);
   for (const d of [...ir.actions, ...ir.guards]) name.set(d.id, `${prefix}${d.name}`);
   const stateAt = new Map(ir.states.map((s) => [`${s.region}:${s.slot}`, s.name]));
-  const stateName = (region: number, slot: number): string => comment(stateAt.get(`${region}:${slot}`) ?? `slot ${slot}`);
+  const stateName = (region: number, slot: number): string =>
+    comment(stateAt.get(`${region}:${slot}`) ?? `slot ${slot}`);
 
   const stateConst = new Map(ir.states.map((st, i) => [i, `${P}STATE_${st.ident}`]));
   const timerConst = (i: number): string => `${P}TIMER_${ir.timers[i]!.name}`;
   const traceConst = (k: TraceKind): string => `${P}TRACE_${k.toUpperCase()}`;
   const publicSignals = (trace || debugInfo) && ir.signals.length > 0;
-  const status = { ok: `${P}OK`, queue: `${P}ERR_QUEUE_FULL`, livelock: `${P}ERR_LIVELOCK`, event: `${P}ERR_EVENT`, busy: `${P}ERR_BUSY` };
+  const status = {
+    ok: `${P}OK`,
+    queue: `${P}ERR_QUEUE_FULL`,
+    livelock: `${P}ERR_LIVELOCK`,
+    event: `${P}ERR_EVENT`,
+    busy: `${P}ERR_BUSY`,
+  };
   const hasBusy = ir.events.length > 0;
   // Every identifier the files define, to catch clashes with declaration names.
   const ctx: CContext = {
     ...prepared,
-    ...{ ir, prefix, P, file, machine: `struct ${prefix}machine`, histIndex, deepRegions, slotT, sigT, queueT, stepsT, name, stateName },
-    ...{ stateConst, timerConst, traceConst, publicSignals, status, hasBusy, settleBody: hasTerminate || ir.eventless !== undefined || hasQueue },
+    ...{
+      ir,
+      prefix,
+      P,
+      file,
+      machine: `struct ${prefix}machine`,
+      histIndex,
+      deepRegions,
+      slotT,
+      sigT,
+      queueT,
+      stepsT,
+      name,
+      stateName,
+    },
+    ...{
+      stateConst,
+      timerConst,
+      traceConst,
+      publicSignals,
+      status,
+      hasBusy,
+      settleBody: hasTerminate || ir.eventless !== undefined || hasQueue,
+    },
   };
   checkNames(ctx);
   return ctx;
@@ -161,7 +201,18 @@ function cContext(ir: IrModule, options: COptions): CContext {
 /** Refuse declaration, state and timer names that become a C keyword, a fixed identifier or another name. */
 function checkNames(ctx: CContext): void {
   const {
-    ir, prefix, P, file, name, stateConst, timerConst, traceConst, publicSignals, status, debugInfo, trace,
+    ir,
+    prefix,
+    P,
+    file,
+    name,
+    stateConst,
+    timerConst,
+    traceConst,
+    publicSignals,
+    status,
+    debugInfo,
+    trace,
     hasTimers,
   } = ctx;
   // Every identifier the files define, to catch clashes with declaration names.
@@ -182,13 +233,20 @@ function checkNames(ctx: CContext): void {
     [`${P}FINGERPRINT`, "the fingerprint"],
     ...(publicSignals ? [[`${prefix}signal`, "the signal enum"] as [string, string]] : []),
     ...(trace
-      ? ([[`${prefix}trace`, "the trace hook"], [`${prefix}trace_kind`, "the trace kind enum"], ...TRACE_KINDS.map((k) => [traceConst(k), "a trace kind"])] as [string, string][])
+      ? ([
+          [`${prefix}trace`, "the trace hook"],
+          [`${prefix}trace_kind`, "the trace kind enum"],
+          ...TRACE_KINDS.map((k) => [traceConst(k), "a trace kind"]),
+        ] as [string, string][])
       : []),
     ...(debugInfo
-      ? ([`${prefix}event_name`, `${prefix}signal_name`, `${prefix}state_name`, `${prefix}is_active`, ...(hasTimers ? [`${prefix}timer_name`] : [])].map((n) => [
-          n,
-          "a debugInfo function",
-        ]) as [string, string][])
+      ? ([
+          `${prefix}event_name`,
+          `${prefix}signal_name`,
+          `${prefix}state_name`,
+          `${prefix}is_active`,
+          ...(hasTimers ? [`${prefix}timer_name`] : []),
+        ].map((n) => [n, "a debugInfo function"]) as [string, string][])
       : []),
     ...(hasTimers
       ? ([
@@ -200,18 +258,44 @@ function checkNames(ctx: CContext): void {
         ] as [string, string][])
       : []),
     ...[
-      "settle", "push_signal", "pop_signal", "m", "rc", "user", "event", "signal", "r", "uint8_t", "uint16_t", "uint32_t",
-      "sig", "kind", "id", "state", "event_names", "signal_names", "state_names", "state_region", "state_slot",
-      "timer", "ms", "periodic", "timer_events", "timer_names",
-    ].map(
-      (n): [string, string] => [n, "an internal name"],
-    ),
+      "settle",
+      "push_signal",
+      "pop_signal",
+      "m",
+      "rc",
+      "user",
+      "event",
+      "signal",
+      "r",
+      "uint8_t",
+      "uint16_t",
+      "uint32_t",
+      "sig",
+      "kind",
+      "id",
+      "state",
+      "event_names",
+      "signal_names",
+      "state_names",
+      "state_region",
+      "state_slot",
+      "timer",
+      "ms",
+      "periodic",
+      "timer_events",
+      "timer_names",
+    ].map((n): [string, string] => [n, "an internal name"]),
     ...ir.functions.map((f): [string, string] => [f.name, "an internal function"]),
     ...ir.functions.flatMap((f) => f.flags.map((x): [string, string] => [x, "an internal variable"])),
   ]);
   const problems: string[] = [];
   const seen = new Map<string, string>();
-  for (const [kind, list] of [["event", ir.events], ["signal", ir.signals], ["action", ir.actions], ["guard", ir.guards]] as const) {
+  for (const [kind, list] of [
+    ["event", ir.events],
+    ["signal", ir.signals],
+    ["action", ir.actions],
+    ["guard", ir.guards],
+  ] as const) {
     for (const d of list) {
       const id = name.get(d.id)!;
       const what = `${kind} '${d.name}'`;
@@ -234,7 +318,10 @@ function checkNames(ctx: CContext): void {
     else if (seen.has(c)) problems.push(`${what} becomes '${c}', like ${seen.get(c)}`);
     seen.set(c, what);
   });
-  if (problems.length) throw new CodegenError(`name clash in the generated C (rename, or set targets.c.prefix):\n  ${problems.join("\n  ")}`);
+  if (problems.length)
+    throw new CodegenError(
+      `name clash in the generated C (rename, or set targets.c.prefix):\n  ${problems.join("\n  ")}`,
+    );
 }
 
 export function generateC(ir: IrModule, options: COptions = {}): CFiles {
@@ -271,7 +358,15 @@ function cExpressions(ctx: CContext): (e: Expr) => string {
         return { s: e.exprs.map((x) => wrap(expr(x), 1)).join(" && "), p: 1 };
       case "or":
         // gcc asks for parentheses around `&&` inside `||`
-        return { s: e.exprs.map((x) => { const y = expr(x); return y.p === 1 ? `(${y.s})` : y.s; }).join(" || "), p: 0 };
+        return {
+          s: e.exprs
+            .map((x) => {
+              const y = expr(x);
+              return y.p === 1 ? `(${y.s})` : y.s;
+            })
+            .join(" || "),
+          p: 0,
+        };
     }
   };
   const notExpr = (e: Expr): Printed => {
@@ -307,8 +402,19 @@ interface CStatements {
 /** The statement printer, writing into `w`. */
 function cStatements(ctx: CContext, w: Lines): CStatements {
   const {
-    ir, prefix, machine, histIndex, name, stateName, stateConst, timerConst, traceConst, status, maxMicrosteps,
-    checkSteps, fallible,
+    ir,
+    prefix,
+    machine,
+    histIndex,
+    name,
+    stateName,
+    stateConst,
+    timerConst,
+    traceConst,
+    status,
+    maxMicrosteps,
+    checkSteps,
+    fallible,
   } = ctx;
   const { line } = w;
   const cond = cExpressions(ctx);
@@ -319,8 +425,13 @@ function cStatements(ctx: CContext, w: Lines): CStatements {
     line(d, "}");
   };
   const switchOn = (o: SwitchOn): string =>
-    o.kind === "cfg" ? `m->cfg[${o.region}]` : o.kind === "hist" ? `m->hist[${histIndex.get(o.region)}]` : `m->deep_r${o.history}[${o.index}]`;
-  const caseRegion = (o: SwitchOn): number => (o.kind === "deep" ? ir.history.find((h) => h.region === o.history)!.snapshotFrom! + o.index : o.region);
+    o.kind === "cfg"
+      ? `m->cfg[${o.region}]`
+      : o.kind === "hist"
+        ? `m->hist[${histIndex.get(o.region)}]`
+        : `m->deep_r${o.history}[${o.index}]`;
+  const caseRegion = (o: SwitchOn): number =>
+    o.kind === "deep" ? ir.history.find((h) => h.region === o.history)!.snapshotFrom! + o.index : o.region;
 
   const stmts = (list: Stmt[], d: number): void => {
     for (const s of list) {
@@ -361,7 +472,12 @@ function cStatements(ctx: CContext, w: Lines): CStatements {
           break;
         }
         case "set":
-          line(d, s.slot === 0 ? `m->cfg[${s.region}] = 0u;` : `m->cfg[${s.region}] = ${s.slot}u; /* ${stateName(s.region, s.slot)} */`);
+          line(
+            d,
+            s.slot === 0
+              ? `m->cfg[${s.region}] = 0u;`
+              : `m->cfg[${s.region}] = ${s.slot}u; /* ${stateName(s.region, s.slot)} */`,
+          );
           break;
         case "call":
           line(d, `${name.get(s.action)}(m->user);`);
@@ -384,7 +500,8 @@ function cStatements(ctx: CContext, w: Lines): CStatements {
           break;
         case "saveDeep": {
           const h = ir.history.find((x) => x.region === s.region)!;
-          for (let k = 0; k < h.snapshotTo! - h.snapshotFrom!; k++) line(d, `m->deep_r${s.region}[${k}] = m->cfg[${h.snapshotFrom! + k}];`);
+          for (let k = 0; k < h.snapshotTo! - h.snapshotFrom!; k++)
+            line(d, `m->deep_r${s.region}[${k}] = m->cfg[${h.snapshotFrom! + k}];`);
           break;
         }
         case "microstep":
@@ -394,7 +511,11 @@ function cStatements(ctx: CContext, w: Lines): CStatements {
           line(d, "}");
           break;
         case "trace":
-          if (s.hook === "transition") line(d, `${prefix}trace(m->user, ${traceConst(s.hook)}, ${s.index}u); /* ${comment(ir.transitions[s.index]!.label)} */`);
+          if (s.hook === "transition")
+            line(
+              d,
+              `${prefix}trace(m->user, ${traceConst(s.hook)}, ${s.index}u); /* ${comment(ir.transitions[s.index]!.label)} */`,
+            );
           else line(d, `${prefix}trace(m->user, ${traceConst(s.hook)}, ${stateConst.get(s.index)});`);
           break;
         case "timerStart": {
@@ -415,7 +536,8 @@ function cStatements(ctx: CContext, w: Lines): CStatements {
     }
   };
 
-  const signature = (f: IrFunction): string => `static ${f.returns === "bool" || fallible.has(f.name) ? "int" : "void"} ${f.name}(${machine} *m)`;
+  const signature = (f: IrFunction): string =>
+    `static ${f.returns === "bool" || fallible.has(f.name) ? "int" : "void"} ${f.name}(${machine} *m)`;
   const needsRc = (body: Stmt[]): boolean => {
     let need = false;
     walkStmts(body, (s) => void (need ||= s.op === "emit" || (s.op === "invoke" && fallible.has(s.fn))));
@@ -427,8 +549,30 @@ function cStatements(ctx: CContext, w: Lines): CStatements {
 /** The header file: usage, enums, the machine struct, the API and what the application implements. */
 function cHeader(ctx: CContext): string {
   const {
-    ir, prefix, P, file, machine, deepRegions, slotT, sigT, queueT, stepsT, name, stateConst, timerConst, traceConst,
-    publicSignals, status, hasBusy, signalQueue, debugInfo, trace, hasQueue, hasTerminate, hasTimers, checkSteps,
+    ir,
+    prefix,
+    P,
+    file,
+    machine,
+    deepRegions,
+    slotT,
+    sigT,
+    queueT,
+    stepsT,
+    name,
+    stateConst,
+    timerConst,
+    traceConst,
+    publicSignals,
+    status,
+    hasBusy,
+    signalQueue,
+    debugInfo,
+    trace,
+    hasQueue,
+    hasTerminate,
+    hasTimers,
+    checkSteps,
   } = ctx;
   const guard = `UFSM_${identifier(file).toUpperCase()}_H`;
   const h: string[] = [];
@@ -439,14 +583,17 @@ function cHeader(ctx: CContext): string {
   hl(`#define ${guard}`);
   hl();
   hl("#include <stdint.h>");
-  if (hasTerminate || hasBusy || hasTimers || ir.guards.length || (debugInfo && ir.states.length)) hl("#include <stdbool.h>");
+  if (hasTerminate || hasBusy || hasTimers || ir.guards.length || (debugInfo && ir.states.length))
+    hl("#include <stdbool.h>");
   hl();
   hl("#ifdef __cplusplus");
   hl('extern "C" {');
   hl("#endif");
   hl();
   hl("/*");
-  hl(` * Usage: call ${prefix}init() once, then ${ir.events.length ? `${prefix}process() for every event` : `${prefix}reset() to restart`}.`);
+  hl(
+    ` * Usage: call ${prefix}init() once, then ${ir.events.length ? `${prefix}process() for every event` : `${prefix}reset() to restart`}.`,
+  );
   hl(` * They return ${status.ok} or a negative ${P}ERR_* code; after an error the`);
   hl(` * machine is in an undefined state until ${prefix}reset() is called.`);
   if (hasBusy) {
@@ -455,7 +602,9 @@ function cHeader(ctx: CContext): string {
     hl(" * interrupt handler); such a call changes nothing and the event is lost.");
   }
   const extras = [...(hasTimers ? ["the timer functions"] : []), ...(trace ? ["the trace hook"] : [])];
-  hl(` * The application implements the actions and guards${extras.length ? ` (and ${extras.join(" and ")})` : ""} declared at the end`);
+  hl(
+    ` * The application implements the actions and guards${extras.length ? ` (and ${extras.join(" and ")})` : ""} declared at the end`,
+  );
   hl(` * of this file; each gets the user pointer passed to ${prefix}init().`);
   if (hasTimers) {
     hl(` * ${prefix}timer_start() starts a timer (periodic: it expires every ms until stopped,`);
@@ -497,7 +646,9 @@ function cHeader(ctx: CContext): string {
   if (ir.states.length) {
     hl("/* States in document order. */");
     hl(`enum ${prefix}state {`);
-    ir.states.forEach((st, i) => hl(`    ${stateConst.get(i)} = ${i},${st.label !== st.ident ? ` /* ${comment(st.label)} */` : ""}`));
+    ir.states.forEach((st, i) =>
+      hl(`    ${stateConst.get(i)} = ${i},${st.label !== st.ident ? ` /* ${comment(st.label)} */` : ""}`),
+    );
     hl("};");
     hl();
   }
@@ -506,7 +657,11 @@ function cHeader(ctx: CContext): string {
   if (hasTimers) {
     hl("/* Timers: started when their state is entered, stopped when it is left. */");
     hl(`enum ${prefix}timer {`);
-    ir.timers.forEach((t, i) => hl(`    ${timerConst(i)} = ${i}, /* ${t.periodic ? "every" : "after"} ${t.ms} ms -> ${comment(ir.events[t.event]!.name)} */`));
+    ir.timers.forEach((t, i) =>
+      hl(
+        `    ${timerConst(i)} = ${i}, /* ${t.periodic ? "every" : "after"} ${t.ms} ms -> ${comment(ir.events[t.event]!.name)} */`,
+      ),
+    );
     hl("};");
     hl(`#define ${P}TIMER_COUNT ${ir.timers.length}`);
     hl();
@@ -514,7 +669,9 @@ function cHeader(ctx: CContext): string {
   if (trace) {
     hl(`enum ${prefix}trace_kind {`);
     hl(`    ${traceConst("event")} = 0, /* id: enum ${prefix}event; process() accepted it */`);
-    hl(`    ${traceConst("signal")} = 1, /* id: ${publicSignals ? `enum ${prefix}signal` : "signal number"}; taken from the queue */`);
+    hl(
+      `    ${traceConst("signal")} = 1, /* id: ${publicSignals ? `enum ${prefix}signal` : "signal number"}; taken from the queue */`,
+    );
     hl(`    ${traceConst("transition")} = 2, /* id: transition number (below); before its actions */`);
     hl(`    ${traceConst("enter")} = 3, /* id: enum ${prefix}state; before its entry actions */`);
     hl(`    ${traceConst("exit")} = 4, /* id: enum ${prefix}state; before its exit actions */`);
@@ -531,8 +688,12 @@ function cHeader(ctx: CContext): string {
   hl(`/* Treat as opaque; zero-initialized storage is fine before ${prefix}init(). */`);
   hl(`${machine} {`);
   hl(`    ${slotT} cfg[${ir.regions}]; /* active state per region, 0 = none */`);
-  if (ir.history.length) hl(`    ${slotT} hist[${ir.history.length}]; /* recorded history per history region, 0 = none */`);
-  for (const dh of deepRegions) hl(`    ${slotT} deep_r${dh.region}[${dh.snapshotTo! - dh.snapshotFrom!}]; /* deep history of region ${dh.region} */`);
+  if (ir.history.length)
+    hl(`    ${slotT} hist[${ir.history.length}]; /* recorded history per history region, 0 = none */`);
+  for (const dh of deepRegions)
+    hl(
+      `    ${slotT} deep_r${dh.region}[${dh.snapshotTo! - dh.snapshotFrom!}]; /* deep history of region ${dh.region} */`,
+    );
   if (hasQueue) {
     hl(`    ${sigT} queue[${signalQueue}]; /* pending signals (FIFO) */`);
     hl(`    ${queueT} queue_head;`);
@@ -608,7 +769,10 @@ function cSourceTop(ctx: CContext, w: Lines, { signature }: CStatements): void {
   line(0, "/*");
   line(0, " * Regions and their states (cfg value: state):");
   ir.regionNames.forEach((n, r) => {
-    const slots = ir.states.filter((s) => s.region === r).map((s) => `${s.slot}: ${comment(s.name)}`).join(", ");
+    const slots = ir.states
+      .filter((s) => s.region === r)
+      .map((s) => `${s.slot}: ${comment(s.name)}`)
+      .join(", ");
     const hk = histIndex.get(r);
     const hd = hk === undefined ? "" : ` [${ir.history[hk]!.kind} history: hist[${hk}]]`;
     line(0, ` *   ${r} ${comment(n)}: ${slots}${hd}`);
@@ -728,7 +892,18 @@ function cSettle(ctx: CContext, w: Lines): void {
 /** init(), reset() and process(), and the timer event lookup. */
 function cEntryPoints(ctx: CContext, w: Lines, { stmts, needsRc }: CStatements): void {
   const {
-    ir, prefix, machine, name, traceConst, status, hasBusy, settleBody, trace, hasQueue, hasTerminate, hasTimers,
+    ir,
+    prefix,
+    machine,
+    name,
+    traceConst,
+    status,
+    hasBusy,
+    settleBody,
+    trace,
+    hasQueue,
+    hasTerminate,
+    hasTimers,
     checkSteps,
   } = ctx;
   const { line } = w;
@@ -846,19 +1021,48 @@ function cDebugInfo(ctx: CContext, w: Lines): void {
       line(1, `return ${param} < ${names.length} ? ${table}[${param}] : (const char *)0;`);
       line(0, "}");
     };
-    if (ir.events.length) lookup("event_name", "event", "event_names", ir.events.map((e) => e.name));
-    if (ir.signals.length) lookup("signal_name", "signal", "signal_names", ir.signals.map((x) => x.name));
+    if (ir.events.length)
+      lookup(
+        "event_name",
+        "event",
+        "event_names",
+        ir.events.map((e) => e.name),
+      );
+    if (ir.signals.length)
+      lookup(
+        "signal_name",
+        "signal",
+        "signal_names",
+        ir.signals.map((x) => x.name),
+      );
     if (ir.states.length) {
-      lookup("state_name", "state", "state_names", ir.states.map((st) => st.label));
+      lookup(
+        "state_name",
+        "state",
+        "state_names",
+        ir.states.map((st) => st.label),
+      );
       line(0, "");
-      line(0, `static const ${uintType(ir.regions - 1)} state_region[${ir.states.length}] = {${ir.states.map((st) => `${st.region}u`).join(", ")}};`);
-      line(0, `static const ${slotT} state_slot[${ir.states.length}] = {${ir.states.map((st) => `${st.slot}u`).join(", ")}};`);
+      line(
+        0,
+        `static const ${uintType(ir.regions - 1)} state_region[${ir.states.length}] = {${ir.states.map((st) => `${st.region}u`).join(", ")}};`,
+      );
+      line(
+        0,
+        `static const ${slotT} state_slot[${ir.states.length}] = {${ir.states.map((st) => `${st.slot}u`).join(", ")}};`,
+      );
       line(0, "");
       line(0, `bool ${prefix}is_active(const ${machine} *m, uint16_t state)`);
       line(0, "{");
       line(1, `return state < ${ir.states.length} && m->cfg[state_region[state]] == state_slot[state];`);
       line(0, "}");
     }
-    if (hasTimers) lookup("timer_name", "timer", "timer_names", ir.timers.map((t) => t.name));
+    if (hasTimers)
+      lookup(
+        "timer_name",
+        "timer",
+        "timer_names",
+        ir.timers.map((t) => t.name),
+      );
   }
 }

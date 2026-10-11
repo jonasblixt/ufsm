@@ -43,7 +43,9 @@ export interface TsUnit {
  * `debugInfo` from an IR lowered with `trace` logs its trace hook calls as decoded pseudo-calls (harness.ts) and
  * reports active states through `isActive()`; its name tables are checked when it is loaded.
  */
-export async function loadTs(irs: { ir: IrModule; options?: TsOptions }[]): Promise<{ units: TsUnit[]; cleanup: () => void; dir: string }> {
+export async function loadTs(
+  irs: { ir: IrModule; options?: TsOptions }[],
+): Promise<{ units: TsUnit[]; cleanup: () => void; dir: string }> {
   const dir = mkdtempSync(join(tmpdir(), "ufsm-ts-"));
   const units = await Promise.all(
     irs.map(async ({ ir, options }, k): Promise<TsUnit> => {
@@ -55,14 +57,31 @@ export async function loadTs(irs: { ir: IrModule; options?: TsOptions }[]): Prom
       const debug = ir.trace && options?.debugInfo === true;
       assert.equal(Machine.FINGERPRINT, ir.fingerprint);
       if (debug) {
-        assert.deepEqual(Machine.EVENT_NAMES, ir.events.map((e) => e.name));
-        assert.deepEqual(Machine.SIGNAL_NAMES, ir.signals.map((x) => x.name));
-        assert.deepEqual(Machine.STATE_NAMES, ir.states.map((st) => st.label));
-        if (ir.timers.length) assert.deepEqual(Machine.TIMER_NAMES, ir.timers.map((t) => t.name));
+        assert.deepEqual(
+          Machine.EVENT_NAMES,
+          ir.events.map((e) => e.name),
+        );
+        assert.deepEqual(
+          Machine.SIGNAL_NAMES,
+          ir.signals.map((x) => x.name),
+        );
+        assert.deepEqual(
+          Machine.STATE_NAMES,
+          ir.states.map((st) => st.label),
+        );
+        if (ir.timers.length)
+          assert.deepEqual(
+            Machine.TIMER_NAMES,
+            ir.timers.map((t) => t.name),
+          );
       }
       if (ir.timers.length) {
         const timerEvent = mod[`u${k}TimerEvent`] as (timer: number) => number;
-        assert.deepEqual(ir.timers.map((_, i) => timerEvent(i)), ir.timers.map((t) => t.event), "timer events");
+        assert.deepEqual(
+          ir.timers.map((_, i) => timerEvent(i)),
+          ir.timers.map((t) => t.event),
+          "timer events",
+        );
       }
       const ErrorClass = mod[`U${k}Error`] as new (code: string, message: string) => Error & { code: string };
       const eventNo = new Map(ir.events.map((e, i) => [e.name, i]));
@@ -88,7 +107,11 @@ export async function loadTs(irs: { ir: IrModule; options?: TsOptions }[]): Prom
         }
         if (debug) {
           const what = (kind: number, id: number): string =>
-            kind === 0 ? `@event:${Machine.EVENT_NAMES[id]}` : kind === 1 ? `@signal:${Machine.SIGNAL_NAMES[id]}` : `@${["t", "enter", "exit"][kind - 2]}:${id}`;
+            kind === 0
+              ? `@event:${Machine.EVENT_NAMES[id]}`
+              : kind === 1
+                ? `@signal:${Machine.SIGNAL_NAMES[id]}`
+                : `@${["t", "enter", "exit"][kind - 2]}:${id}`;
           const trace = (kind: number, id: number): void => {
             const [c] = decodeHooks([what(kind, id)], ir);
             host.call?.(c!, c!);
@@ -107,7 +130,9 @@ export async function loadTs(irs: { ir: IrModule; options?: TsOptions }[]): Prom
           return 0;
         };
         const activeIds = (): string[] =>
-          debug ? ir.states.filter((_, i) => m.isActive!(i)).map((s) => s.id) : ir.states.filter((s) => cfg()[s.region] === s.slot).map((s) => s.id);
+          debug
+            ? ir.states.filter((_, i) => m.isActive!(i)).map((s) => s.id)
+            : ir.states.filter((s) => cfg()[s.region] === s.slot).map((s) => s.id);
         return {
           reset: () => void run(() => m.reset()),
           process: (event) => run(() => m.process(eventNo.get(event) ?? -1)),

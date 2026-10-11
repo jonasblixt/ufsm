@@ -34,7 +34,11 @@ export function findPython(): { python?: string[]; problem?: string } {
   const candidates = env ? [env.split(" ").filter(Boolean)] : [["python3"], ["python"], ["py", "-3"]];
   const problems: string[] = [];
   for (const [cmd, ...args] of candidates) {
-    const r = spawnSync(cmd!, [...args, "-c", `import sys; print(sys.version_info[:2] >= (${MIN_PYTHON.join(", ")}))`], { encoding: "utf8" });
+    const r = spawnSync(
+      cmd!,
+      [...args, "-c", `import sys; print(sys.version_info[:2] >= (${MIN_PYTHON.join(", ")}))`],
+      { encoding: "utf8" },
+    );
     if (r.status !== 0) continue;
     if (r.stdout.trim() === "True") return { python: [cmd!, ...args] };
     problems.push(`${[cmd, ...args].join(" ")} is older than Python ${MIN_PYTHON.join(".")}`);
@@ -59,9 +63,19 @@ export interface PyrightDiagnostic {
 
 /** Run `pyright --strict` (Python 3.8 rules) over every .py file in `dir`; returns all diagnostics. */
 export function runPyright(pyright: string, dir: string): PyrightDiagnostic[] {
-  writeFileSync(join(dir, "pyrightconfig.json"), JSON.stringify({ typeCheckingMode: "strict", pythonVersion: `${MIN_PYTHON.join(".")}` }));
-  const r = spawnSync(pyright, ["--outputjson"], { cwd: dir, encoding: "utf8", maxBuffer: 1 << 26, shell: process.platform === "win32" });
-  let report: { generalDiagnostics?: { file: string; severity: string; message: string; range?: { start: { line: number } } }[] };
+  writeFileSync(
+    join(dir, "pyrightconfig.json"),
+    JSON.stringify({ typeCheckingMode: "strict", pythonVersion: `${MIN_PYTHON.join(".")}` }),
+  );
+  const r = spawnSync(pyright, ["--outputjson"], {
+    cwd: dir,
+    encoding: "utf8",
+    maxBuffer: 1 << 26,
+    shell: process.platform === "win32",
+  });
+  let report: {
+    generalDiagnostics?: { file: string; severity: string; message: string; range?: { start: { line: number } } }[];
+  };
   try {
     report = JSON.parse(r.stdout) as typeof report;
   } catch {
@@ -116,7 +130,12 @@ export function runPython(python: string[], units: PyUnit[]): StepResult[][] {
     const [cmd, ...args] = python;
     let output: string;
     try {
-      output = execFileSync(cmd!, [...args, "-B", "-X", "utf8", join(dir, "driver.py"), dir], { input: `${input.join("\n")}\n`, encoding: "utf8", maxBuffer: 1 << 28, stdio: "pipe" });
+      output = execFileSync(cmd!, [...args, "-B", "-X", "utf8", join(dir, "driver.py"), dir], {
+        input: `${input.join("\n")}\n`,
+        encoding: "utf8",
+        maxBuffer: 1 << 28,
+        stdio: "pipe",
+      });
     } catch (e) {
       const err = e as { stderr?: string; message: string };
       throw new Error(`generated Python failed:\n${String(err.stderr ?? err.message).slice(-4000)}`);

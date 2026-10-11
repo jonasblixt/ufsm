@@ -59,8 +59,24 @@ app.pickTool = (t) => input.pickTool(t);
 
 el<HTMLButtonElement>("explorer-new").addEventListener("click", () => app.files.newModel());
 el<HTMLButtonElement>("explorer-open").addEventListener("click", () => void app.files.openModel());
-attachSash(el("sash-left"), { property: "--sidebar-w", side: "left", initial: 260, min: 160, max: 600, storageKey: "ufsm.sidebarWidth", scale: app.settings.uiZoom });
-attachSash(el("sash-right"), { property: "--panel-w", side: "right", initial: 300, min: 200, max: 700, storageKey: "ufsm.panelWidth", scale: app.settings.uiZoom });
+attachSash(el("sash-left"), {
+  property: "--sidebar-w",
+  side: "left",
+  initial: 260,
+  min: 160,
+  max: 600,
+  storageKey: "ufsm.sidebarWidth",
+  scale: app.settings.uiZoom,
+});
+attachSash(el("sash-right"), {
+  property: "--panel-w",
+  side: "right",
+  initial: 300,
+  min: 200,
+  max: 700,
+  storageKey: "ufsm.panelWidth",
+  scale: app.settings.uiZoom,
+});
 autoHideScrollbars();
 wheelScrollsHorizontally(el("tabs"));
 onCloseRequested(

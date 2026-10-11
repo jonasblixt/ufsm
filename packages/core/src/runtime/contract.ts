@@ -45,7 +45,8 @@ export interface RunOptions {
   onStep?: (entry: StepEvent) => void;
 }
 
-export type MachineErrorCode = "invalid-model" | "not-started" | "unknown-event" | "queue-overflow" | "livelock" | "busy";
+export type MachineErrorCode =
+  "invalid-model" | "not-started" | "unknown-event" | "queue-overflow" | "livelock" | "busy";
 
 export class MachineError extends Error {
   readonly code: MachineErrorCode;
@@ -65,7 +66,8 @@ export function busyError(): MachineError {
 }
 
 /** The message of a `busy` error, in the interpreter and in generated code. */
-export const BUSY_MESSAGE = "reset() or process() did not finish (it failed, or this call was made from inside it); call reset()";
+export const BUSY_MESSAGE =
+  "reset() or process() did not finish (it failed, or this call was made from inside it); call reset()";
 
 /** What a conformance trace drives and what a simulator needs: any executable form of a machine. */
 export interface RunningMachine {

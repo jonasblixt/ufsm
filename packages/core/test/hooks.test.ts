@@ -13,7 +13,16 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CODE_TARGETS, CodegenError, Interpreter, generateFiles, loadModel, type UfsmDocument } from "../src";
-import { fingerprint, flatten, fnv1a32, lowerToIr, stateIdentifier, stateNames, type IrModule, type TraceKind } from "../src/pipeline";
+import {
+  fingerprint,
+  flatten,
+  fnv1a32,
+  lowerToIr,
+  stateIdentifier,
+  stateNames,
+  type IrModule,
+  type TraceKind,
+} from "../src/pipeline";
 import { IrRunner } from "../src/verify/ir-run";
 import { decodeHooks, interpreterHooks } from "./harness";
 
@@ -30,10 +39,17 @@ function hookModel(): UfsmDocument {
     version: 1,
     name: "hooks",
     declarations: {
-      events: [{ id: "ev1", name: "e" }, { id: "ev2", name: "tick" }, { id: "ev3", name: "stop" }],
+      events: [
+        { id: "ev1", name: "e" },
+        { id: "ev2", name: "tick" },
+        { id: "ev3", name: "stop" },
+      ],
       signals: [{ id: "sig1", name: "s" }],
       actions: [
-        ...["P", "A", "Q", "B"].flatMap((n) => [{ id: `ae${n}`, name: `e${n}` }, { id: `ax${n}`, name: `x${n}` }]),
+        ...["P", "A", "Q", "B"].flatMap((n) => [
+          { id: `ae${n}`, name: `e${n}` },
+          { id: `ax${n}`, name: `x${n}` },
+        ]),
         { id: "a1", name: "act" },
         { id: "a2", name: "ia" },
       ],
@@ -44,14 +60,37 @@ function hookModel(): UfsmDocument {
         id: "r0",
         states: [
           { id: "i0", kind: "initial" },
-          { id: "P", kind: "state", name: "P", ...ex("P"), regions: [{ id: "r1", states: [{ id: "i1", kind: "initial" }, { id: "A", kind: "state", name: "A", ...ex("A") }] }] },
+          {
+            id: "P",
+            kind: "state",
+            name: "P",
+            ...ex("P"),
+            regions: [
+              {
+                id: "r1",
+                states: [
+                  { id: "i1", kind: "initial" },
+                  { id: "A", kind: "state", name: "A", ...ex("A") },
+                ],
+              },
+            ],
+          },
           {
             id: "Q",
             kind: "state",
             name: "Q",
             ...ex("Q"),
             internal: [{ id: "it1", on: "ev2", do: [{ call: "a2" }] }],
-            regions: [{ id: "r2", states: [{ id: "i2", kind: "initial" }, { id: "B", kind: "state", name: "B", ...ex("B") }, { id: "T", kind: "terminate" }] }],
+            regions: [
+              {
+                id: "r2",
+                states: [
+                  { id: "i2", kind: "initial" },
+                  { id: "B", kind: "state", name: "B", ...ex("B") },
+                  { id: "T", kind: "terminate" },
+                ],
+              },
+            ],
           },
         ],
       },
@@ -92,7 +131,12 @@ function run(make: (log: (s: string) => void) => { reset(): void; process(e: str
 /** The IR runner's hook calls as the pseudo-calls of harness.ts. */
 function irHook(ir: IrModule, log: (s: string) => void): (kind: TraceKind, index: number) => void {
   return (kind, index) => {
-    const raw = kind === "event" ? `@event:${ir.events[index]!.name}` : kind === "signal" ? `@signal:${ir.signals[index]!.name}` : `@${kind === "transition" ? "t" : kind}:${index}`;
+    const raw =
+      kind === "event"
+        ? `@event:${ir.events[index]!.name}`
+        : kind === "signal"
+          ? `@signal:${ir.signals[index]!.name}`
+          : `@${kind === "transition" ? "t" : kind}:${index}`;
     log(decodeHooks([raw], ir)[0]!);
   };
 }
@@ -143,7 +187,11 @@ describe("generated names", () => {
     doc.declarations.actions[0]!.name = "trace";
     for (const target of CODE_TARGETS) {
       assert.doesNotThrow(() => generateFiles(doc, target, { prefix: target === "c" ? "" : undefined }), target);
-      assert.throws(() => generateFiles(doc, target, { trace: true, ...(target === "c" ? { prefix: "" } : {}) }), CodegenError, target);
+      assert.throws(
+        () => generateFiles(doc, target, { trace: true, ...(target === "c" ? { prefix: "" } : {}) }),
+        CodegenError,
+        target,
+      );
     }
   });
 
@@ -157,10 +205,19 @@ describe("generated names", () => {
 describe("state numbering", () => {
   it("is document order over normal and final states; transitions follow machine.transitions, then internal ones", () => {
     const ir = lowerToIr(flatten(hookModel()));
-    assert.deepEqual(ir.states.map((s) => s.id), ["P", "A", "Q", "B"]);
+    assert.deepEqual(
+      ir.states.map((s) => s.id),
+      ["P", "A", "Q", "B"],
+    );
     // initial transitions are not numbered (never reported)
-    assert.deepEqual(ir.transitions.map((t) => t.id), ["t3", "t4", "t5", "it1"]);
-    assert.deepEqual(ir.transitions.map((t) => t.label), ["t3: P -> Q on e", "t4: B -> B on s", "t5: B -> terminate on stop", "it1: Q -> (internal) on tick"]);
+    assert.deepEqual(
+      ir.transitions.map((t) => t.id),
+      ["t3", "t4", "t5", "it1"],
+    );
+    assert.deepEqual(
+      ir.transitions.map((t) => t.label),
+      ["t3: P -> Q on e", "t4: B -> B on s", "t5: B -> terminate on stop", "it1: Q -> (internal) on tick"],
+    );
   });
 
   it("names states by their name, qualified with parent states only as far as needed", () => {
@@ -194,7 +251,10 @@ describe("state numbering", () => {
       { id: "b", name: "a b", parent: 0 },
       { id: "c", name: "a_b", parent: -1 },
     ]);
-    assert.deepEqual(names.map((n) => n.ident), ["P", "P_a_b", "a_b"]);
+    assert.deepEqual(
+      names.map((n) => n.ident),
+      ["P", "P_a_b", "a_b"],
+    );
   });
 });
 
@@ -215,12 +275,35 @@ describe("fingerprint", () => {
       change(d);
       return lowerToIr(flatten(d)).fingerprint;
     };
-    assert.equal(fp(() => {}), base);
-    assert.equal(fp((d) => (d.declarations.actions[0]!.name = "renamed")), base, "actions are not numbered");
-    assert.notEqual(fp((d) => (d.machine.root.states[1]!.name = "P2")), base, "state renamed");
-    assert.notEqual(fp((d) => (d.declarations.events[0]!.name = "e2")), base, "event renamed");
-    assert.notEqual(fp((d) => d.declarations.events.reverse()), base, "events renumbered");
-    assert.notEqual(fp((d) => (d.name = "other")), base, "model renamed");
+    assert.equal(
+      fp(() => {}),
+      base,
+    );
+    assert.equal(
+      fp((d) => (d.declarations.actions[0]!.name = "renamed")),
+      base,
+      "actions are not numbered",
+    );
+    assert.notEqual(
+      fp((d) => (d.machine.root.states[1]!.name = "P2")),
+      base,
+      "state renamed",
+    );
+    assert.notEqual(
+      fp((d) => (d.declarations.events[0]!.name = "e2")),
+      base,
+      "event renamed",
+    );
+    assert.notEqual(
+      fp((d) => d.declarations.events.reverse()),
+      base,
+      "events renumbered",
+    );
+    assert.notEqual(
+      fp((d) => (d.name = "other")),
+      base,
+      "model renamed",
+    );
   });
 
   it("does not depend on the diagram", () => {
@@ -230,7 +313,10 @@ describe("fingerprint", () => {
     for (const s of Object.values(moved.diagram?.states ?? {})) s.x += 10;
     delete moved.diagram;
     assert.equal(lowerToIr(flatten(moved)).fingerprint, base);
-    assert.equal(fingerprint({ name: "x", events: [], signals: [], states: [], transitions: [] }), fnv1a32('["ufsm-ids",1,"x",[],[],[],[]]'));
+    assert.equal(
+      fingerprint({ name: "x", events: [], signals: [], states: [], transitions: [] }),
+      fnv1a32('["ufsm-ids",1,"x",[],[],[],[]]'),
+    );
   });
 });
 

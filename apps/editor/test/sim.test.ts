@@ -7,7 +7,15 @@ import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { produce } from "immer";
-import { MachineError, formatFailure, formatTrace, loadModel, parseTrace, runTrace, type UfsmDocument } from "@ufsm/core";
+import {
+  MachineError,
+  formatFailure,
+  formatTrace,
+  loadModel,
+  parseTrace,
+  runTrace,
+  type UfsmDocument,
+} from "@ufsm/core";
 import { moveVertices, renameDecl } from "@ufsm/core/edit";
 import { Simulation, relativePath } from "../src/sim";
 import { CODE_VIEWS, generatedCode, highlight } from "../src/code";
@@ -15,8 +23,12 @@ import { CODE_VIEWS, generatedCode, highlight } from "../src/code";
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const load = (f: string): UfsmDocument => loadModel(readFileSync(join(repoRoot, f), "utf8")).doc;
 const models = [
-  ...readdirSync(join(repoRoot, "examples")).filter((f) => f.endsWith(".ufsm")).map((f) => `examples/${f}`),
-  ...readdirSync(join(repoRoot, "tests/models")).filter((f) => f.endsWith(".ufsm")).map((f) => `tests/models/${f}`),
+  ...readdirSync(join(repoRoot, "examples"))
+    .filter((f) => f.endsWith(".ufsm"))
+    .map((f) => `examples/${f}`),
+  ...readdirSync(join(repoRoot, "tests/models"))
+    .filter((f) => f.endsWith(".ufsm"))
+    .map((f) => `tests/models/${f}`),
   "apps/editor/src/fsm/editor.ufsm",
 ];
 
@@ -37,7 +49,10 @@ describe("simulation", () => {
     const r = sim.reset();
     assert.equal(r.event, undefined);
     assert.deepEqual(r.calls, ["eStart"]);
-    assert.deepEqual(r.lines.map((l) => l.kind), ["enter", "call"]);
+    assert.deepEqual(
+      r.lines.map((l) => l.kind),
+      ["enter", "call"],
+    );
     assert.deepEqual(r.record, { reset: true, expect: ["eStart"], active: ["Start"] });
     assert.equal(sim.send("eEvent2").fired, 0);
     assert.equal(sim.fired.size, 0);
@@ -106,7 +121,10 @@ describe("simulation", () => {
     assert.deepEqual(t.options, { signalQueue: 2 });
     assert.deepEqual(runTrace(doc, t), []);
     assert.ok(!wider.staleFor(doc));
-    assert.ok(wider.staleFor({ ...doc, options: { signalQueue: 3 } }), "changing the model's options makes the run out of date");
+    assert.ok(
+      wider.staleFor({ ...doc, options: { signalQueue: 3 } }),
+      "changing the model's options makes the run out of date",
+    );
   });
 
   it("records no active states for a step that failed (the machine is undefined after an error)", () => {
@@ -115,7 +133,10 @@ describe("simulation", () => {
     const sim = new Simulation(doc, guards, { maxMicrosteps: 20 });
     // the conformance trace's steps up to its livelock
     const steps = parseTrace(readFileSync(join(repoRoot, "tests/traces/test_eventless.json"), "utf8")).steps;
-    for (const st of steps.slice(0, steps.findIndex((x) => x.error === "livelock"))) {
+    for (const st of steps.slice(
+      0,
+      steps.findIndex((x) => x.error === "livelock"),
+    )) {
       for (const [k, v] of Object.entries(st.guards ?? {})) guards.set(k, v);
       if (st.reset) sim.reset();
       else if (st.send) sim.send(st.send);
@@ -136,14 +157,25 @@ describe("simulation", () => {
     assert.deepEqual(sim.timers(), [], "reset stops every timer");
     assert.deepEqual(sim.steps[0]!.calls.slice(0, 2), ["stop:travel", "stop:poll"]);
     sim.send("eGo");
-    assert.deepEqual(sim.timers().map((t) => [t.name, t.event, t.periodic]), [["travel", "eTimeout", false], ["poll", "eTick", true], ["blink", "eBlink", true]]);
+    assert.deepEqual(
+      sim.timers().map((t) => [t.name, t.event, t.periodic]),
+      [
+        ["travel", "eTimeout", false],
+        ["poll", "eTick", true],
+        ["blink", "eBlink", true],
+      ],
+    );
     assert.ok(sim.steps[1]!.lines.some((l) => l.kind === "timer" && l.start && l.name === "travel" && l.ms === 2000));
     const poll = sim.timers()[1]!.id;
     const step = sim.fire(poll)!;
     assert.equal(step.event, "eTick");
     assert.equal(step.timer, "poll");
     assert.deepEqual(step.record.send, "eTick", "a trace records the event, like any other");
-    assert.deepEqual(sim.timers().map((t) => t.name), ["travel", "poll", "long"], "poll keeps running; blink stopped with C1");
+    assert.deepEqual(
+      sim.timers().map((t) => t.name),
+      ["travel", "poll", "long"],
+      "poll keeps running; blink stopped with C1",
+    );
     sim.fire(sim.timers()[0]!.id);
     assert.deepEqual(sim.timers(), [], "travel expired and P was left");
     assert.equal(sim.fire(poll), undefined, "not running");
@@ -154,7 +186,10 @@ describe("simulation", () => {
   it("refuses a model with errors", () => {
     const doc = load("examples/dimmer.ufsm");
     doc.machine.transitions.push({ id: "tx", from: "nowhere", to: "nowhere" });
-    assert.throws(() => new Simulation(doc, new Map()), (e: unknown) => e instanceof MachineError && e.code === "invalid-model");
+    assert.throws(
+      () => new Simulation(doc, new Map()),
+      (e: unknown) => e instanceof MachineError && e.code === "invalid-model",
+    );
   });
 
   it("goes out of date when the machine or the declarations change, not the layout", () => {
@@ -238,7 +273,12 @@ describe("code preview", () => {
   });
 
   it("highlights without changing the text, for every repository model and language", () => {
-    const strip = (html: string): string => html.replace(/<[^>]+>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+    const strip = (html: string): string =>
+      html
+        .replace(/<[^>]+>/g, "")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&");
     let files = 0;
     for (const f of models) {
       const doc = load(f);
@@ -261,6 +301,9 @@ describe("code preview", () => {
       highlight("#[derive(Debug)]\nfn f(x: &'static str) -> u8 { 'a' as u8 } // x", "rust"),
       '<span class="c-pre">#[derive(Debug)]</span>\n<span class="c-kw">fn</span> f(x: &amp;\'<span class="c-kw">static</span> <span class="c-kw">str</span>) -&gt; <span class="c-kw">u8</span> { <span class="c-str">\'a\'</span> <span class="c-kw">as</span> <span class="c-kw">u8</span> } <span class="c-com">// x</span>',
     );
-    assert.equal(highlight("def f(self) -> None:  # x\n    return 'y'", "python"), '<span class="c-kw">def</span> f(<span class="c-kw">self</span>) -&gt; <span class="c-kw">None</span>:  <span class="c-com"># x</span>\n    <span class="c-kw">return</span> <span class="c-str">\'y\'</span>');
+    assert.equal(
+      highlight("def f(self) -> None:  # x\n    return 'y'", "python"),
+      '<span class="c-kw">def</span> f(<span class="c-kw">self</span>) -&gt; <span class="c-kw">None</span>:  <span class="c-com"># x</span>\n    <span class="c-kw">return</span> <span class="c-str">\'y\'</span>',
+    );
   });
 });

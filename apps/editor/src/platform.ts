@@ -59,7 +59,11 @@ export async function openModelFile(fileInput: HTMLInputElement): Promise<Opened
  * downloaded and `make` gets the suggested name. Returns the path written, or
  * undefined when the user cancelled.
  */
-export async function saveModelFile(make: (path: string) => string, path: string | undefined, suggestedName: string): Promise<string | undefined> {
+export async function saveModelFile(
+  make: (path: string) => string,
+  path: string | undefined,
+  suggestedName: string,
+): Promise<string | undefined> {
   if (inTauri) {
     const target = path ?? (await save({ defaultPath: suggestedName, filters: FILTERS }));
     if (!target) return undefined;
@@ -219,7 +223,8 @@ export async function writeSettings(text: string): Promise<void> {
   if (inTauri) await invoke("write_settings", { contents: text });
 }
 
-const darkQuery = (): MediaQueryList | undefined => (typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : undefined);
+const darkQuery = (): MediaQueryList | undefined =>
+  typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : undefined;
 
 /** Whether the OS asks for dark apps (the webview's prefers-color-scheme; dark when unknown). */
 export function systemPrefersDark(): boolean {
@@ -232,7 +237,10 @@ export function onSystemAppearance(cb: (dark: boolean) => void): void {
   if (inTauri) {
     // WebKitGTK does not always report prefers-color-scheme; the window's theme comes from the OS.
     const w = getCurrentWindow();
-    void w.theme().then((t) => t && cb(t === "dark")).catch(() => undefined);
+    void w
+      .theme()
+      .then((t) => t && cb(t === "dark"))
+      .catch(() => undefined);
     void w.onThemeChanged(({ payload }) => cb(payload === "dark")).catch(() => undefined);
   }
 }

@@ -11,10 +11,35 @@
  * still reports everything else (a transition without a trigger, a region without an initial state, ...).
  */
 import { ancestors, commonRegion, indexV1, type DocIndex } from "../model/doc-index";
-import { endAt, followTransitions, nearestEnd,regionLayoutOf, diagramOf, snap, MIN_BAR, MIN_STATE } from "./layout";
-import { HEADER_H, actionBlockHeight, isOffPage, isSheet, regionBoxes, regionOrigin, stateLayout, vertexBox, edgeGeometry, edgeOrigin, type Box, type Point } from "../diagram/geometry";
+import { endAt, followTransitions, nearestEnd, regionLayoutOf, diagramOf, snap, MIN_BAR, MIN_STATE } from "./layout";
+import {
+  HEADER_H,
+  actionBlockHeight,
+  isOffPage,
+  isSheet,
+  regionBoxes,
+  regionOrigin,
+  stateLayout,
+  vertexBox,
+  edgeGeometry,
+  edgeOrigin,
+  type Box,
+  type Point,
+} from "../diagram/geometry";
 import { IdAllocator, ID_PREFIX } from "../format/ids";
-import { GRID, type EdgeEnd, type EdgeLayout, type GuardTerm, type Id, type Region, type State, type StateLayout, type Transition, type UfsmDocument, type Vertex } from "../format/model";
+import {
+  GRID,
+  type EdgeEnd,
+  type EdgeLayout,
+  type GuardTerm,
+  type Id,
+  type Region,
+  type State,
+  type StateLayout,
+  type Transition,
+  type UfsmDocument,
+  type Vertex,
+} from "../format/model";
 import { defaultLabel, labelAnchor } from "../diagram/route";
 
 export type VertexKind = Vertex["kind"];
@@ -117,8 +142,10 @@ export function newVertexBox(kind: VertexKind, p: Point, horizontal = false): Bo
  */
 export function draggedVertexBox(kind: VertexKind, a: Point, b: Point, horizontal = false): Box {
   if (isRoundKind(kind)) return newVertexBox(kind, b);
-  const x0 = snap(Math.min(a.x, b.x)), y0 = snap(Math.min(a.y, b.y));
-  const x1 = snap(Math.max(a.x, b.x)), y1 = snap(Math.max(a.y, b.y));
+  const x0 = snap(Math.min(a.x, b.x)),
+    y0 = snap(Math.min(a.y, b.y));
+  const x1 = snap(Math.max(a.x, b.x)),
+    y1 = snap(Math.max(a.y, b.y));
   if (kind === "state") return { x: x0, y: y0, w: Math.max(x1 - x0, MIN_STATE), h: Math.max(y1 - y0, MIN_STATE) };
   return horizontal
     ? { x: x0, y: snap(a.y - BAR_THICKNESS / 2), w: Math.max(x1 - x0, MIN_BAR), h: BAR_THICKNESS }
@@ -131,7 +158,8 @@ export function cannotAdd(index: DocIndex, regionId: Id, kind: VertexKind): stri
   if (!region) return `unknown region ${regionId}`;
   if (INITIALIZERS.has(kind)) {
     const other = region.states.find((v) => INITIALIZERS.has(v.kind));
-    if (other) return `This region already has ${other.kind === "initial" ? "an initial state" : "a history state"}; a region has one.`;
+    if (other)
+      return `This region already has ${other.kind === "initial" ? "an initial state" : "a history state"}; a region has one.`;
   }
   return undefined;
 }
@@ -171,7 +199,10 @@ export function addVertex(
 
   let w: number, h: number;
   if (kind === "state") [w, h] = [Math.max(snap(box.w), MIN_STATE), Math.max(snap(box.h), MIN_STATE)];
-  else if (isBarKind(kind)) [w, h] = opts.horizontal ? [Math.max(snap(box.w), MIN_BAR), BAR_THICKNESS] : [BAR_THICKNESS, Math.max(snap(box.h), MIN_BAR)];
+  else if (isBarKind(kind))
+    [w, h] = opts.horizontal
+      ? [Math.max(snap(box.w), MIN_BAR), BAR_THICKNESS]
+      : [BAR_THICKNESS, Math.max(snap(box.h), MIN_BAR)];
   else [w, h] = [PSEUDO_SIZE, PSEUDO_SIZE];
   const area = regionArea(index, region);
   // shrink to the band (not below the minimum), then move inside it
@@ -231,7 +262,8 @@ export function cannotConnect(index: DocIndex, from: Id, to?: Id): string | unde
 
 /** Where the segment from `c` (inside box `b`) towards `d` leaves the box. */
 function exitPoint(b: Box, c: Point, d: Point): Point {
-  const dx = d.x - c.x, dy = d.y - c.y;
+  const dx = d.x - c.x,
+    dy = d.y - c.y;
   let t = 1;
   if (dx > 0) t = Math.min(t, (b.x + b.w - c.x) / dx);
   if (dx < 0) t = Math.min(t, (b.x - c.x) / dx);
@@ -246,9 +278,12 @@ function exitPoint(b: Box, c: Point, d: Point): Point {
  * contents) attaches at its side nearest to that centre.
  */
 function straightEnds(index: DocIndex, from: Id, to: Id): { from: EdgeEnd; to: EdgeEnd } {
-  const a = vertexBox(index, from), b = vertexBox(index, to);
-  const ka = index.vertices.get(from)!.vertex.kind, kb = index.vertices.get(to)!.vertex.kind;
-  const ca = { x: a.x + a.w / 2, y: a.y + a.h / 2 }, cb = { x: b.x + b.w / 2, y: b.y + b.h / 2 };
+  const a = vertexBox(index, from),
+    b = vertexBox(index, to);
+  const ka = index.vertices.get(from)!.vertex.kind,
+    kb = index.vertices.get(to)!.vertex.kind;
+  const ca = { x: a.x + a.w / 2, y: a.y + a.h / 2 },
+    cb = { x: b.x + b.w / 2, y: b.y + b.h / 2 };
   const end = (box: Box, c: Point, other: Point, round: boolean): EdgeEnd =>
     nearestEnd(box, inside(box, other) ? other : exitPoint(box, c, other), round);
   return { from: end(a, ca, cb, isRoundKind(ka)), to: end(b, cb, ca, isRoundKind(kb)) };
@@ -273,7 +308,8 @@ export function addTransition(
   opts: AddOptions & { via?: Point[]; route?: NewRoute; fromAt?: Point; toAt?: Point } = {},
 ): Id {
   const index = indexV1(doc);
-  const a = index.vertices.get(from)?.vertex, b = index.vertices.get(to)?.vertex;
+  const a = index.vertices.get(from)?.vertex,
+    b = index.vertices.get(to)?.vertex;
   if (!a || !b) throw new Error(`unknown vertex ${a ? to : from}`);
   const id = (opts.ids ?? new IdAllocator(doc)).take(ID_PREFIX.transition);
   let layout: EdgeLayout = { route: "s" };
@@ -281,8 +317,13 @@ export function addTransition(
   if (via.length === 0 && opts.route === "straight") {
     if (from === to) {
       const box = vertexBox(index, from);
-      const r = snap(box.x + box.w), t = snap(box.y);
-      via = [{ x: r + 3 * GRID, y: t + 2 * GRID }, { x: r + 3 * GRID, y: t - 3 * GRID }, { x: r - 2 * GRID, y: t - 3 * GRID }];
+      const r = snap(box.x + box.w),
+        t = snap(box.y);
+      via = [
+        { x: r + 3 * GRID, y: t + 2 * GRID },
+        { x: r + 3 * GRID, y: t - 3 * GRID },
+        { x: r - 2 * GRID, y: t - 3 * GRID },
+      ];
     } else layout = straightEnds(index, from, to);
   }
   if (via.length > 0) {
@@ -329,7 +370,10 @@ export function addTransition(
  */
 export function deleteElements(doc: UfsmDocument, ids: Iterable<Id>): Set<Id> {
   const index = indexV1(doc);
-  const goneV = new Set<Id>(), goneR = new Set<Id>(), goneT = new Set<Id>(), goneTimers = new Set<Id>();
+  const goneV = new Set<Id>(),
+    goneR = new Set<Id>(),
+    goneT = new Set<Id>(),
+    goneTimers = new Set<Id>();
   const dropRegion = (r: Region): void => {
     goneR.add(r.id);
     r.states.forEach(dropVertex);

@@ -10,7 +10,18 @@
 import { ancestors, indexV1, regionChain, vertexName, type DocIndex } from "../model/doc-index";
 import type { Diagnostic } from "./diagnostic";
 import { isApiOption, isBehaviourOption } from "../format/options";
-import { IDENTIFIER, TIMER_MAX_MS, timerMs, type Action, type DeclKind, type GuardTerm, type Id, type Transition, type UfsmDocument, type Vertex } from "../format/model";
+import {
+  IDENTIFIER,
+  TIMER_MAX_MS,
+  timerMs,
+  type Action,
+  type DeclKind,
+  type GuardTerm,
+  type Id,
+  type Transition,
+  type UfsmDocument,
+  type Vertex,
+} from "../format/model";
 
 const INITIALIZERS = new Set(["initial", "shallow-history", "deep-history"]);
 
@@ -44,7 +55,8 @@ export function checkSemantics(doc: UfsmDocument, prebuilt?: DocIndex): Diagnost
   for (const { vertex } of index.vertices.values()) claim(vertex.id, `${vertex.kind} '${vertex.name ?? ""}'`);
   for (const t of doc.machine.transitions) claim(t.id, "a transition");
   for (const { vertex } of index.vertices.values()) {
-    if (vertex.kind === "state") for (const t of vertex.internal ?? []) claim(t.id, `an internal transition of '${vertex.name}'`);
+    if (vertex.kind === "state")
+      for (const t of vertex.internal ?? []) claim(t.id, `an internal transition of '${vertex.name}'`);
   }
   for (const { timer, state } of index.timers.values()) claim(timer.id, `timer '${timer.name}' of '${state.name}'`);
 
@@ -63,7 +75,8 @@ export function checkSemantics(doc: UfsmDocument, prebuilt?: DocIndex): Diagnost
     used.add(id);
     const info = index.decls.get(id);
     if (!info) err("dangling-ref", `${where}: unknown ${kind} '${id}'`, owner);
-    else if (info.kind !== kind) err("wrong-ref", `${where}: '${info.decl.name}' is a ${info.kind}, not a ${kind}`, owner);
+    else if (info.kind !== kind)
+      err("wrong-ref", `${where}: '${info.decl.name}' is a ${info.kind}, not a ${kind}`, owner);
   };
   let emits = false;
   const checkActions = (list: Action[] | undefined, where: string, owner: Id): void => {
@@ -80,7 +93,8 @@ export function checkSemantics(doc: UfsmDocument, prebuilt?: DocIndex): Diagnost
       if ("in" in g) {
         const v = index.vertices.get(g.in)?.vertex;
         if (!v) err("dangling-ref", `${where}: unknown state '${g.in}'`, owner);
-        else if (v.kind !== "state" && v.kind !== "final") err("wrong-ref", `${where}: '${g.in}' is a ${v.kind}, not a state`, owner);
+        else if (v.kind !== "state" && v.kind !== "final")
+          err("wrong-ref", `${where}: '${g.in}' is a ${v.kind}, not a state`, owner);
       } else {
         expectDecl(g.call, "guard", where, owner);
       }
@@ -133,16 +147,21 @@ export function checkSemantics(doc: UfsmDocument, prebuilt?: DocIndex): Diagnost
     if (!from) continue;
     const hasTrigger = t.on !== undefined || t.auto || t.completion;
     if (INITIALIZERS.has(from.kind) || from.kind === "fork") {
-      if (hasTrigger || t.guard?.length) err("pseudo-trigger", `${where}: transitions out of a ${from.kind} cannot have a trigger or guard`, t.id);
+      if (hasTrigger || t.guard?.length)
+        err("pseudo-trigger", `${where}: transitions out of a ${from.kind} cannot have a trigger or guard`, t.id);
     } else if (from.kind === "final" || from.kind === "terminate") {
       err("final-outgoing", `${where}: a ${from.kind} state cannot have outgoing transitions`, t.id);
     } else if ((from.kind === "state" && to?.kind !== "join") || from.kind === "join") {
       if (!hasTrigger) warn("no-trigger", `${where} has no trigger and will never fire`, t.id);
     }
     if (from.kind === "state" && to?.kind === "join" && hasTrigger) {
-      err("join-trigger", `${where}: transitions into a join cannot have a trigger; put it on the join's outgoing transition`, t.id);
+      err(
+        "join-trigger",
+        `${where}: transitions into a join cannot have a trigger; put it on the join's outgoing transition`,
+        t.id,
+      );
     }
-    if (t.completion && from.kind === "state" && !(from.regions?.length)) {
+    if (t.completion && from.kind === "state" && !from.regions?.length) {
       warn("completion-without-regions", `${where}: completion transition from a state without regions`, t.id);
     }
   }
@@ -152,12 +171,17 @@ export function checkSemantics(doc: UfsmDocument, prebuilt?: DocIndex): Diagnost
   for (const { timer, state } of index.timers.values()) {
     const where = `timer '${timer.name}' of state '${state.name}'`;
     if (!IDENTIFIER.test(timer.name)) err("timer-name", `${where}: the name is not a valid identifier`, timer.id);
-    else if (timerNames.has(timer.name)) err("timer-name", `${where}: another timer of the machine has the same name`, timer.id);
+    else if (timerNames.has(timer.name))
+      err("timer-name", `${where}: another timer of the machine has the same name`, timer.id);
     else timerNames.set(timer.name, timer.id);
     expectDecl(timer.event, "event", where, timer.id);
     const ms = timerMs(timer);
     if (!Number.isInteger(ms) || ms < 1 || ms > TIMER_MAX_MS) {
-      err("timer-duration", `${where}: the duration must be a whole number of ms from 1 to ${TIMER_MAX_MS} (about 49.7 days)`, timer.id);
+      err(
+        "timer-duration",
+        `${where}: the duration must be a whole number of ms from 1 to ${TIMER_MAX_MS} (about 49.7 days)`,
+        timer.id,
+      );
     }
   }
 
@@ -175,7 +199,10 @@ export function checkSemantics(doc: UfsmDocument, prebuilt?: DocIndex): Diagnost
   // their states are one and the same, one contains the other, or they lie in orthogonal regions of one state.
   const timerList = [...index.timers.values()];
   const together = (a: Id, b: Id): boolean =>
-    a === b || ancestors(index, a).some((s) => s.id === b) || ancestors(index, b).some((s) => s.id === a) || orthogonal(a, b);
+    a === b ||
+    ancestors(index, a).some((s) => s.id === b) ||
+    ancestors(index, b).some((s) => s.id === a) ||
+    orthogonal(a, b);
   const reported = new Set<Id>();
   for (let i = 0; i < timerList.length; i++) {
     for (let j = i + 1; j < timerList.length; j++) {
@@ -206,7 +233,8 @@ export function checkSemantics(doc: UfsmDocument, prebuilt?: DocIndex): Diagnost
   };
   for (const { vertex } of index.vertices.values()) {
     if (vertex.kind !== "fork") continue;
-    if (!(index.outgoing.get(vertex.id)?.length)) err("fork-no-outgoing", `fork '${vertex.name ?? vertex.id}' has no outgoing transitions`, vertex.id);
+    if (!index.outgoing.get(vertex.id)?.length)
+      err("fork-no-outgoing", `fork '${vertex.name ?? vertex.id}' has no outgoing transitions`, vertex.id);
     visitFork(vertex.id, []);
   }
   for (const id of forkCycle) err("fork-cycle", `fork '${vertexName(index, id)}' is part of a cycle of forks`, id);
@@ -228,9 +256,10 @@ export function checkSemantics(doc: UfsmDocument, prebuilt?: DocIndex): Diagnost
 
   for (const { vertex } of index.vertices.values()) {
     if (vertex.kind !== "fork" && vertex.kind !== "join") continue;
-    const ends = vertex.kind === "fork"
-      ? (index.outgoing.get(vertex.id) ?? []).map((t) => t.to)
-      : doc.machine.transitions.filter((t) => t.to === vertex.id).map((t) => t.from);
+    const ends =
+      vertex.kind === "fork"
+        ? (index.outgoing.get(vertex.id) ?? []).map((t) => t.to)
+        : doc.machine.transitions.filter((t) => t.to === vertex.id).map((t) => t.from);
     const known = ends.filter((id) => index.vertices.has(id));
     let bad = false;
     for (let i = 0; i < known.length && !bad; i++) {
@@ -238,7 +267,11 @@ export function checkSemantics(doc: UfsmDocument, prebuilt?: DocIndex): Diagnost
     }
     if (bad) {
       const what = vertex.kind === "fork" ? "targets" : "sources";
-      err(`${vertex.kind}-${what}`, `the ${what} of ${vertex.kind} '${vertex.name ?? vertex.id}' must lie in different orthogonal regions of one state`, vertex.id);
+      err(
+        `${vertex.kind}-${what}`,
+        `the ${what} of ${vertex.kind} '${vertex.name ?? vertex.id}' must lie in different orthogonal regions of one state`,
+        vertex.id,
+      );
     }
   }
 
@@ -250,13 +283,25 @@ export function checkSemantics(doc: UfsmDocument, prebuilt?: DocIndex): Diagnost
     const candidates = [
       ...(index.outgoing.get(vertex.id) ?? [])
         .filter((t) => index.vertices.get(t.to)?.vertex.kind !== "join")
-        .map((t) => ({ t, key: t.on !== undefined ? `on:${t.on}` : t.auto ? "auto" : t.completion ? "completion" : undefined, what: describe(t) })),
-      ...(vertex.internal ?? []).map((t) => ({ t, key: `on:${t.on}`, what: `internal transition ${index.decls.get(t.on)?.decl.name ?? t.on} of '${vertex.name}'` })),
+        .map((t) => ({
+          t,
+          key: t.on !== undefined ? `on:${t.on}` : t.auto ? "auto" : t.completion ? "completion" : undefined,
+          what: describe(t),
+        })),
+      ...(vertex.internal ?? []).map((t) => ({
+        t,
+        key: `on:${t.on}`,
+        what: `internal transition ${index.decls.get(t.on)?.decl.name ?? t.on} of '${vertex.name}'`,
+      })),
     ];
     for (const { t, key, what } of candidates) {
       if (key === undefined) continue;
       if (unguarded.has(key)) {
-        warn("shadowed", `${what} can never fire: an earlier transition of the same state has the same trigger and no guard`, t.id);
+        warn(
+          "shadowed",
+          `${what} can never fire: an earlier transition of the same state has the same trigger and no guard`,
+          t.id,
+        );
       }
       if (!t.guard?.length) unguarded.add(key);
     }
@@ -278,19 +323,37 @@ export function checkSemantics(doc: UfsmDocument, prebuilt?: DocIndex): Diagnost
   }
   for (const { region } of index.regions.values()) {
     const inits = region.states.filter((s) => INITIALIZERS.has(s.kind));
-    if (inits.length > 1) err("multiple-initial", `region '${region.name ?? region.id}' has ${inits.length} initial/history states`, region.id);
+    if (inits.length > 1)
+      err(
+        "multiple-initial",
+        `region '${region.name ?? region.id}' has ${inits.length} initial/history states`,
+        region.id,
+      );
     for (const i of inits) {
       const outs = index.outgoing.get(i.id) ?? [];
       if (outs.length !== 1) {
-        err("initial-transitions", `${i.kind} in region '${region.name ?? region.id}' must have exactly one outgoing transition (has ${outs.length})`, i.id);
+        err(
+          "initial-transitions",
+          `${i.kind} in region '${region.name ?? region.id}' must have exactly one outgoing transition (has ${outs.length})`,
+          i.id,
+        );
         continue;
       }
       // the default entry stays inside the region and enters something
       const t = outs[0]!;
       for (const v of entered(t)) {
-        if (v.kind === "terminate") err("initial-target", `${describe(t)}: the ${i.kind} transition of a region cannot lead to a terminate`, t.id);
+        if (v.kind === "terminate")
+          err(
+            "initial-target",
+            `${describe(t)}: the ${i.kind} transition of a region cannot lead to a terminate`,
+            t.id,
+          );
         else if (v.id === i.id || !regionChain(index, v.id).includes(region)) {
-          err("initial-target", `${describe(t)}: the ${i.kind} transition of region '${region.name ?? region.id}' must lead into that region`, t.id);
+          err(
+            "initial-target",
+            `${describe(t)}: the ${i.kind} transition of region '${region.name ?? region.id}' must lead into that region`,
+            t.id,
+          );
         } else continue;
         break;
       }
@@ -309,11 +372,15 @@ export function checkSemantics(doc: UfsmDocument, prebuilt?: DocIndex): Diagnost
   }
 
   // ---- options: behaviour options are the same for every target
-  if (emits && doc.options?.signalQueue === 0) err("signal-queue", "the model emits signals, so options.signalQueue must be at least 1");
+  if (emits && doc.options?.signalQueue === 0)
+    err("signal-queue", "the model emits signals, so options.signalQueue must be at least 1");
   for (const [target, set] of Object.entries(doc.targets ?? {})) {
     for (const k of Object.keys(set)) {
       if (isBehaviourOption(k)) {
-        warn("target-option", `targets.${target}.${k} is ignored: it changes behaviour, so it is set in options for every target`);
+        warn(
+          "target-option",
+          `targets.${target}.${k} is ignored: it changes behaviour, so it is set in options for every target`,
+        );
       } else if (isApiOption(k) && typeof set[k] !== "boolean") {
         warn("target-option", `targets.${target}.${k} is ignored: expected true or false`);
       }

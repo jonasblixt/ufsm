@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
-import { V0ActionRefKind, V0GuardKind, V0TriggerKind, type V0ActionRef, type V0GuardRef, type V0Transition } from "./format";
+import {
+  V0ActionRefKind,
+  V0GuardKind,
+  V0TriggerKind,
+  type V0ActionRef,
+  type V0GuardRef,
+  type V0Transition,
+} from "./format";
 import type { V0Index } from "./index-model";
 
 /** Text for an action reference, e.g. `lamp_off()` or `^sDone`. */

@@ -33,7 +33,19 @@ import type { Expr, IrHistory, IrModule, Stmt, SwitchOn } from "../ir/ir";
 import { TRACE_KINDS } from "../ir/ir";
 import { hex32 } from "../ir/ids";
 import { BUSY_MESSAGE } from "../runtime/contract";
-import { CodegenError, OUTPUT_NOTICE, identifier, lines, pascalCase, prepare, readTargetOptions, type CommonOptions, type Lines, type Prepared, type Printed } from "./common";
+import {
+  CodegenError,
+  OUTPUT_NOTICE,
+  identifier,
+  lines,
+  pascalCase,
+  prepare,
+  readTargetOptions,
+  type CommonOptions,
+  type Lines,
+  type Prepared,
+  type Printed,
+} from "./common";
 
 export interface TsOptions extends CommonOptions {
   /** Name of the machine class; also the prefix of the other exported names. Default: the model name in PascalCase. */
@@ -58,8 +70,18 @@ const TS_RESERVED = new Set(
 
 /** Names every object already has: a handler method or event key with one of these names would collide. */
 const OBJECT_MEMBERS = new Set([
-  "constructor", "hasOwnProperty", "isPrototypeOf", "propertyIsEnumerable", "toLocaleString", "toString", "valueOf",
-  "__proto__", "__defineGetter__", "__defineSetter__", "__lookupGetter__", "__lookupSetter__",
+  "constructor",
+  "hasOwnProperty",
+  "isPrototypeOf",
+  "propertyIsEnumerable",
+  "toLocaleString",
+  "toString",
+  "valueOf",
+  "__proto__",
+  "__defineGetter__",
+  "__defineSetter__",
+  "__lookupGetter__",
+  "__lookupSetter__",
 ]);
 
 /** The keys of `targets.ts` besides the API options. */
@@ -121,8 +143,10 @@ interface TsContext extends Prepared {
 function tsContext(ir: IrModule, options: TsOptions): TsContext {
   const cls = options.className ?? pascalCase(ir.name);
   const module = options.module ?? identifier(ir.name);
-  if (!IDENTIFIER.test(cls) || TS_RESERVED.has(cls)) throw new CodegenError(`TypeScript class name '${cls}' is not a usable identifier`);
-  if (!/^[A-Za-z0-9_.-]+$/.test(module)) throw new CodegenError(`TypeScript module name '${module}' is not a plain file name`);
+  if (!IDENTIFIER.test(cls) || TS_RESERVED.has(cls))
+    throw new CodegenError(`TypeScript class name '${cls}' is not a usable identifier`);
+  if (!/^[A-Za-z0-9_.-]+$/.test(module))
+    throw new CodegenError(`TypeScript module name '${module}' is not a plain file name`);
   const prepared = prepare(ir, options);
   const { trace, debugInfo, hasQueue, hasTerminate, hasTimers } = prepared;
   const errorCls = `${cls}Error`;
@@ -139,18 +163,35 @@ function tsContext(ir: IrModule, options: TsOptions): TsContext {
   // Declaration names are C identifiers and become property names (event keys, handler methods), where JavaScript
   // keywords are fine; names every object already has (constructor, toString, ...) are not.
   const problems: string[] = [];
-  for (const [kind, list] of [["event", ir.events], ["signal", ir.signals], ["action", ir.actions], ["guard", ir.guards]] as const) {
+  for (const [kind, list] of [
+    ["event", ir.events],
+    ["signal", ir.signals],
+    ["action", ir.actions],
+    ["guard", ir.guards],
+  ] as const) {
     for (const d of list) {
-      if (OBJECT_MEMBERS.has(d.name)) problems.push(`${kind} '${d.name}' is a name every JavaScript object already has`);
-      else if (trace && d.name === "trace" && (kind === "action" || kind === "guard")) problems.push(`${kind} 'trace' is the name of the trace hook`);
-      else if (hasTimers && (d.name === "timer_start" || d.name === "timer_stop") && (kind === "action" || kind === "guard")) {
+      if (OBJECT_MEMBERS.has(d.name))
+        problems.push(`${kind} '${d.name}' is a name every JavaScript object already has`);
+      else if (trace && d.name === "trace" && (kind === "action" || kind === "guard"))
+        problems.push(`${kind} 'trace' is the name of the trace hook`);
+      else if (
+        hasTimers &&
+        (d.name === "timer_start" || d.name === "timer_stop") &&
+        (kind === "action" || kind === "guard")
+      ) {
         problems.push(`${kind} '${d.name}' is the name of a timer function of the handler`);
       }
     }
   }
-  for (const t of ir.timers) if (OBJECT_MEMBERS.has(t.name)) problems.push(`timer '${t.name}' is a name every JavaScript object already has`);
-  for (const st of ir.states) if (OBJECT_MEMBERS.has(st.ident)) problems.push(`state '${st.label}' is a name every JavaScript object already has`);
-  if (problems.length) throw new CodegenError(`names that cannot be used in the generated TypeScript (rename them):\n  ${problems.join("\n  ")}`);
+  for (const t of ir.timers)
+    if (OBJECT_MEMBERS.has(t.name)) problems.push(`timer '${t.name}' is a name every JavaScript object already has`);
+  for (const st of ir.states)
+    if (OBJECT_MEMBERS.has(st.ident))
+      problems.push(`state '${st.label}' is a name every JavaScript object already has`);
+  if (problems.length)
+    throw new CodegenError(
+      `names that cannot be used in the generated TypeScript (rename them):\n  ${problems.join("\n  ")}`,
+    );
 
   const decl = new Map<string, string>();
   for (const d of [...ir.events, ...ir.signals, ...ir.actions, ...ir.guards]) decl.set(d.id, d.name);
@@ -158,10 +199,26 @@ function tsContext(ir: IrModule, options: TsOptions): TsContext {
   const histIndex = new Map(ir.history.map((h, k) => [h.region, k]));
   const deepRegions = ir.history.filter((h) => h.kind === "deep" && h.snapshotTo! > h.snapshotFrom!);
   const stateAt = new Map(ir.states.map((s) => [`${s.region}:${s.slot}`, s.name]));
-  const stateName = (region: number, slot: number): string => comment(stateAt.get(`${region}:${slot}`) ?? `slot ${slot}`);
+  const stateName = (region: number, slot: number): string =>
+    comment(stateAt.get(`${region}:${slot}`) ?? `slot ${slot}`);
   return {
     ...prepared,
-    ...{ ir, cls, module, errorCls, codeT, eventCls, handlerT, stateCls, signalCls, kindCls, timerCls, timerEventFn, publicSignals, decl },
+    ...{
+      ir,
+      cls,
+      module,
+      errorCls,
+      codeT,
+      eventCls,
+      handlerT,
+      stateCls,
+      signalCls,
+      kindCls,
+      timerCls,
+      timerEventFn,
+      publicSignals,
+      decl,
+    },
     ...{ signalNo, histIndex, deepRegions, stateName },
     eventSteps: ir.events.some((ev) => ir.onEvent[ev.id]),
     signalSteps: hasQueue && ir.signals.some((sg) => ir.onSignal[sg.id]),
@@ -215,7 +272,15 @@ function tsExpressions(ctx: TsContext): TsExpressions {
       case "and":
         return { s: e.exprs.map((x) => wrap(expr(x), 1)).join(" && "), p: 1 };
       case "or":
-        return { s: e.exprs.map((x) => { const y = expr(x); return y.p === 1 ? `(${y.s})` : y.s; }).join(" || "), p: 0 };
+        return {
+          s: e.exprs
+            .map((x) => {
+              const y = expr(x);
+              return y.p === 1 ? `(${y.s})` : y.s;
+            })
+            .join(" || "),
+          p: 0,
+        };
     }
   };
   const notExpr = (e: Expr): Printed => {
@@ -245,8 +310,13 @@ function tsStatements(ctx: TsContext, w: Lines): (list: Stmt[], d: number) => vo
   const { line } = w;
   const { expr, notExpr } = tsExpressions(ctx);
   const switchOn = (o: SwitchOn): string =>
-    o.kind === "cfg" ? cfg(o.region) : o.kind === "hist" ? `this.hist[${histIndex.get(o.region)}]` : `this.deep_r${o.history}[${o.index}]`;
-  const caseRegion = (o: SwitchOn): number => (o.kind === "deep" ? ir.history.find((h) => h.region === o.history)!.snapshotFrom! + o.index : o.region);
+    o.kind === "cfg"
+      ? cfg(o.region)
+      : o.kind === "hist"
+        ? `this.hist[${histIndex.get(o.region)}]`
+        : `this.deep_r${o.history}[${o.index}]`;
+  const caseRegion = (o: SwitchOn): number =>
+    o.kind === "deep" ? ir.history.find((h) => h.region === o.history)!.snapshotFrom! + o.index : o.region;
 
   const stmts = (list: Stmt[], d: number): void => {
     for (const s of list) {
@@ -290,7 +360,10 @@ function tsStatements(ctx: TsContext, w: Lines): (list: Stmt[], d: number) => vo
           break;
         }
         case "set":
-          line(d, s.slot === 0 ? `${cfg(s.region)} = 0;` : `${cfg(s.region)} = ${s.slot}; // ${stateName(s.region, s.slot)}`);
+          line(
+            d,
+            s.slot === 0 ? `${cfg(s.region)} = 0;` : `${cfg(s.region)} = ${s.slot}; // ${stateName(s.region, s.slot)}`,
+          );
           break;
         case "call":
           line(d, `this.h.${decl.get(s.action)}();`);
@@ -312,14 +385,16 @@ function tsStatements(ctx: TsContext, w: Lines): (list: Stmt[], d: number) => vo
           break;
         case "saveDeep": {
           const h = ir.history.find((x) => x.region === s.region)!;
-          if (h.snapshotTo! > h.snapshotFrom!) line(d, `this.deep_r${s.region} = this.cfg.slice(${h.snapshotFrom}, ${h.snapshotTo});`);
+          if (h.snapshotTo! > h.snapshotFrom!)
+            line(d, `this.deep_r${s.region} = this.cfg.slice(${h.snapshotFrom}, ${h.snapshotTo});`);
           break;
         }
         case "microstep":
           if (countSteps) line(d, "this.microstep();");
           break;
         case "trace":
-          if (s.hook === "transition") line(d, `this.h.trace(${kindCls}.transition, ${s.index}); // ${comment(ir.transitions[s.index]!.label)}`);
+          if (s.hook === "transition")
+            line(d, `this.h.trace(${kindCls}.transition, ${s.index}); // ${comment(ir.transitions[s.index]!.label)}`);
           else line(d, `this.h.trace(${kindCls}.${s.hook}, ${stateCls}.${ir.states[s.index]!.ident});`);
           break;
         case "timerStart": {
@@ -345,8 +420,20 @@ function tsStatements(ctx: TsContext, w: Lines): (list: Stmt[], d: number) => vo
 /** Usage, the error class and the constant objects (events, signals, states, timers, trace kinds). */
 function tsPreamble(ctx: TsContext, w: Lines): void {
   const {
-    ir, cls, errorCls, codeT, eventCls, handlerT, stateCls, signalCls, kindCls, timerCls, timerEventFn, publicSignals,
-    trace, hasTimers,
+    ir,
+    cls,
+    errorCls,
+    codeT,
+    eventCls,
+    handlerT,
+    stateCls,
+    signalCls,
+    kindCls,
+    timerCls,
+    timerEventFn,
+    publicSignals,
+    trace,
+    hasTimers,
   } = ctx;
   const { line } = w;
   line(0, `// Generated by uFSM ${UFSM_VERSION} from model "${comment(ir.name)}". Do not edit.`);
@@ -397,8 +484,17 @@ function tsPreamble(ctx: TsContext, w: Lines): void {
     }
     line(0, "");
   };
-  if (publicSignals) constEnum(signalCls, undefined, ir.signals.map((x) => [x.name]));
-  constEnum(stateCls, "States in document order.", ir.states.map((st) => [st.ident, st.label !== st.ident ? st.label : undefined]));
+  if (publicSignals)
+    constEnum(
+      signalCls,
+      undefined,
+      ir.signals.map((x) => [x.name]),
+    );
+  constEnum(
+    stateCls,
+    "States in document order.",
+    ir.states.map((st) => [st.ident, st.label !== st.ident ? st.label : undefined]),
+  );
   if (hasTimers) {
     constEnum(
       timerCls,
@@ -420,7 +516,11 @@ function tsPreamble(ctx: TsContext, w: Lines): void {
       enter: `${stateCls}; before its entry actions`,
       exit: `${stateCls}; before its exit actions`,
     };
-    constEnum(kindCls, `What ${handlerT}.trace() reports; the id is a number of the type named here.`, TRACE_KINDS.map((k) => [k, what[k]]));
+    constEnum(
+      kindCls,
+      `What ${handlerT}.trace() reports; the id is a number of the type named here.`,
+      TRACE_KINDS.map((k) => [k, what[k]]),
+    );
   }
 }
 
@@ -428,15 +528,24 @@ function tsPreamble(ctx: TsContext, w: Lines): void {
 function tsHandler(ctx: TsContext, w: Lines): void {
   const { ir, handlerT, kindCls, timerCls, timerEventFn, trace, hasTimers } = ctx;
   const { line } = w;
-  line(0, "/** Actions and guards the machine calls. Guards may be called more than once per event and in any order. */");
+  line(
+    0,
+    "/** Actions and guards the machine calls. Guards may be called more than once per event and in any order. */",
+  );
   if (ir.actions.length || ir.guards.length || trace || hasTimers) {
     line(0, `export interface ${handlerT} {`);
     for (const a of ir.actions) line(1, `${a.name}(): void;`);
     for (const g of ir.guards) line(1, `${g.name}(): boolean;`);
     if (hasTimers) {
       line(1, "/**");
-      line(1, " * Start a timer: it expires once, or every `ms` until stopped (the handler re-arms it). On expiry, pass");
-      line(1, ` * ${timerEventFn}(timer) to process(). Called inside reset() and process(): must not block or call the machine.`);
+      line(
+        1,
+        " * Start a timer: it expires once, or every `ms` until stopped (the handler re-arms it). On expiry, pass",
+      );
+      line(
+        1,
+        ` * ${timerEventFn}(timer) to process(). Called inside reset() and process(): must not block or call the machine.`,
+      );
       line(1, " */");
       line(1, `timer_start(timer: ${timerCls}, ms: number, periodic: boolean): void;`);
       line(1, "/** Stop a timer; does nothing if it is not running. No expiry of the earlier start should follow. */");
@@ -453,15 +562,29 @@ function tsHandler(ctx: TsContext, w: Lines): void {
 /** The machine class: the region map, the fingerprint, name tables, fields and the constructor. */
 function tsMachineClass(ctx: TsContext, w: Lines): void {
   const {
-    ir, cls, handlerT, histIndex, deepRegions, eventSteps, signalSteps, debugInfo, trace, hasQueue, hasTerminate,
-    hasTimers, countSteps,
+    ir,
+    cls,
+    handlerT,
+    histIndex,
+    deepRegions,
+    eventSteps,
+    signalSteps,
+    debugInfo,
+    trace,
+    hasQueue,
+    hasTerminate,
+    hasTimers,
+    countSteps,
   } = ctx;
   const { line } = w;
   line(0, "");
   line(0, `export class ${cls} {`);
   line(1, "// Regions and their states (cfg value: state):");
   ir.regionNames.forEach((n, r) => {
-    const slots = ir.states.filter((s) => s.region === r).map((s) => `${s.slot}: ${comment(s.name)}`).join(", ");
+    const slots = ir.states
+      .filter((s) => s.region === r)
+      .map((s) => `${s.slot}: ${comment(s.name)}`)
+      .join(", ");
     const hk = histIndex.get(r);
     const hd = hk === undefined ? "" : ` [${ir.history[hk]!.kind} history: hist[${hk}]]`;
     line(1, `//   ${r} ${comment(n)}: ${slots}${hd}`);
@@ -471,7 +594,10 @@ function tsMachineClass(ctx: TsContext, w: Lines): void {
     line(1, "// Transition numbers (trace):");
     ir.transitions.forEach((t, i) => line(1, `//   ${i} ${comment(t.label)}`));
   }
-  line(1, "/** Identifies the numbering of events, signals, states and transitions (`ufsm info` prints it for a model file). */");
+  line(
+    1,
+    "/** Identifies the numbering of events, signals, states and transitions (`ufsm info` prints it for a model file). */",
+  );
   line(1, `static readonly FINGERPRINT = ${hex32(ir.fingerprint)};`);
   if (debugInfo) {
     const names = (list: string[]): string => `[${list.map((n) => JSON.stringify(n)).join(", ")}]`;
@@ -486,7 +612,10 @@ function tsMachineClass(ctx: TsContext, w: Lines): void {
       line(1, `static readonly TIMER_NAMES: readonly string[] = ${names(ir.timers.map((t) => t.name))};`);
     }
     if (ir.states.length) {
-      line(1, `private static readonly STATE_AT: readonly (readonly [number, number])[] = [${ir.states.map((st) => `[${st.region}, ${st.slot}]`).join(", ")}];`);
+      line(
+        1,
+        `private static readonly STATE_AT: readonly (readonly [number, number])[] = [${ir.states.map((st) => `[${st.region}, ${st.slot}]`).join(", ")}];`,
+      );
     }
   }
   const usesHandler = ir.actions.length + ir.guards.length > 0 || trace || hasTimers;
@@ -496,15 +625,19 @@ function tsMachineClass(ctx: TsContext, w: Lines): void {
   line(1, "private busy = false;");
   line(1, `private cfg: number[] = ${zeros(ir.regions)};`);
   if (ir.history.length) line(1, `private hist: number[] = ${zeros(ir.history.length)};`);
-  for (const dh of deepRegions) line(1, `private deep_r${dh.region}: number[] = ${zeros(dh.snapshotTo! - dh.snapshotFrom!)};`);
+  for (const dh of deepRegions)
+    line(1, `private deep_r${dh.region}: number[] = ${zeros(dh.snapshotTo! - dh.snapshotFrom!)};`);
   if (hasQueue) line(1, "private queue: number[] = [];");
   if (countSteps) line(1, "private steps = 0;");
   if (hasTerminate) line(1, "private terminated = false;");
   const table = (ids: { id: string }[], steps: Record<string, string>): string =>
     `[${ids.map((d) => (steps[d.id] ? `() => this.${steps[d.id]}()` : "undefined")).join(", ")}]`;
-  if (eventSteps || signalSteps) line(1, "// Step method per event and signal number (undefined: nothing reacts to it).");
-  if (eventSteps) line(1, `private readonly onEvent: readonly ((() => boolean) | undefined)[] = ${table(ir.events, ir.onEvent)};`);
-  if (signalSteps) line(1, `private readonly onSignal: readonly ((() => boolean) | undefined)[] = ${table(ir.signals, ir.onSignal)};`);
+  if (eventSteps || signalSteps)
+    line(1, "// Step method per event and signal number (undefined: nothing reacts to it).");
+  if (eventSteps)
+    line(1, `private readonly onEvent: readonly ((() => boolean) | undefined)[] = ${table(ir.events, ir.onEvent)};`);
+  if (signalSteps)
+    line(1, `private readonly onSignal: readonly ((() => boolean) | undefined)[] = ${table(ir.signals, ir.onSignal)};`);
   line(0, "");
   line(1, `constructor(handler: ${handlerT}) {`);
   line(2, "this.h = handler;");
@@ -516,7 +649,17 @@ function tsMachineClass(ctx: TsContext, w: Lines): void {
 /** reset() and process(). */
 function tsResetProcess(ctx: TsContext, w: Lines, stmts: (list: Stmt[], d: number) => void): void {
   const {
-    ir, errorCls, eventCls, kindCls, deepRegions, eventSteps, settleBody, trace, hasQueue, hasTerminate, countSteps,
+    ir,
+    errorCls,
+    eventCls,
+    kindCls,
+    deepRegions,
+    eventSteps,
+    settleBody,
+    trace,
+    hasQueue,
+    hasTerminate,
+    countSteps,
   } = ctx;
   const { line } = w;
   // reset
@@ -564,8 +707,20 @@ function tsResetProcess(ctx: TsContext, w: Lines, stmts: (list: Stmt[], d: numbe
 /** settle(), push(), isActive() and microstep(). */
 function tsRuntime(ctx: TsContext, w: Lines): void {
   const {
-    ir, cls, errorCls, stateCls, kindCls, signalSteps, settleBody, signalQueue, maxMicrosteps, debugInfo, trace,
-    hasQueue, hasTerminate, countSteps,
+    ir,
+    cls,
+    errorCls,
+    stateCls,
+    kindCls,
+    signalSteps,
+    settleBody,
+    signalQueue,
+    maxMicrosteps,
+    debugInfo,
+    trace,
+    hasQueue,
+    hasTerminate,
+    countSteps,
   } = ctx;
   const { line } = w;
   // runtime helpers

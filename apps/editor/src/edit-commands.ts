@@ -70,7 +70,9 @@ export function createEditCommands(app: App): EditCommands {
     }
     ws.clipboard = { frag, key: d.key };
     const t = frag.transitions.length;
-    ws.say(`Copied ${frag.vertices.length} state${frag.vertices.length > 1 ? "s" : ""}${t ? ` and ${t} transition${t > 1 ? "s" : ""}` : ""}`);
+    ws.say(
+      `Copied ${frag.vertices.length} state${frag.vertices.length > 1 ? "s" : ""}${t ? ` and ${t} transition${t > 1 ? "s" : ""}` : ""}`,
+    );
     return true;
   };
 
@@ -79,7 +81,9 @@ export function createEditCommands(app: App): EditCommands {
   const freeRoutesSelected = (): string[] => {
     const d = ws.active;
     if (!d) return [];
-    return [...d.selection].filter((id) => d.index.transitions.has(id) && d.index.doc.diagram?.transitions[id]?.route !== "s");
+    return [...d.selection].filter(
+      (id) => d.index.transitions.has(id) && d.index.doc.diagram?.transitions[id]?.route !== "s",
+    );
   };
 
   return {
@@ -89,7 +93,8 @@ export function createEditCommands(app: App): EditCommands {
       if (copySelection()) deleteSelection();
     },
     pasteClipboard: () => {
-      const d0 = ws.active, c = ws.clipboard;
+      const d0 = ws.active,
+        c = ws.clipboard;
       if (!d0) return;
       if (!c) {
         ws.say("Nothing to paste: copy (Ctrl+C) or cut (Ctrl+X) states first.");
@@ -115,7 +120,8 @@ export function createEditCommands(app: App): EditCommands {
       if (!app.input.over) {
         const pts = edgeGeometry(d.index, id)?.points ?? [];
         const k = Math.max(Math.floor((pts.length - 2) / 2), 0);
-        const a = pts[k], b = pts[k + 1];
+        const a = pts[k],
+          b = pts[k + 1];
         if (a && b) p = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
       }
       ws.edit((x) => void insertBendPoint(x, id, p));

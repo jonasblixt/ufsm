@@ -6,7 +6,14 @@
  * changed (machine, declarations, name, options, targets; not the layout), and a small syntax highlighter for C, Python,
  * TypeScript and Rust. No DOM here.
  */
-import { CodegenError, generateFiles, modelIr, type CodeTarget, type GeneratedCode, type UfsmDocument } from "@ufsm/core";
+import {
+  CodegenError,
+  generateFiles,
+  modelIr,
+  type CodeTarget,
+  type GeneratedCode,
+  type UfsmDocument,
+} from "@ufsm/core";
 import { type IrModule } from "@ufsm/core/pipeline";
 
 /** A file of the preview: which target, and which of its files. */
@@ -41,8 +48,21 @@ const cache = new WeakMap<UfsmDocument["machine"], Entry>();
 /** The files of `target` for `doc`, from the cache when nothing they depend on changed. Errors come back as text. */
 export function generatedCode(doc: UfsmDocument, target: CodeTarget): CodeResult {
   let e = cache.get(doc.machine);
-  if (!e || e.name !== doc.name || e.declarations !== doc.declarations || e.options !== doc.options || e.targets !== doc.targets) {
-    e = { name: doc.name, declarations: doc.declarations, options: doc.options, targets: doc.targets, ir: undefined, out: new Map() };
+  if (
+    !e ||
+    e.name !== doc.name ||
+    e.declarations !== doc.declarations ||
+    e.options !== doc.options ||
+    e.targets !== doc.targets
+  ) {
+    e = {
+      name: doc.name,
+      declarations: doc.declarations,
+      options: doc.options,
+      targets: doc.targets,
+      ir: undefined,
+      out: new Map(),
+    };
     cache.set(doc.machine, e);
   }
   const hit = e.out.get(target);
@@ -108,7 +128,12 @@ const patterns = new Map<CodeTarget, RegExp>();
 function pattern(lang: CodeTarget): RegExp {
   let re = patterns.get(lang);
   if (!re) {
-    const pre = lang === "c" ? String.raw`|(^[ \t]*#[^\n]*)` : lang === "rust" ? String.raw`|(^[ \t]*#!?\[[^\n]*)` : String.raw`|(^[ \t]*@\w+)`;
+    const pre =
+      lang === "c"
+        ? String.raw`|(^[ \t]*#[^\n]*)`
+        : lang === "rust"
+          ? String.raw`|(^[ \t]*#!?\[[^\n]*)`
+          : String.raw`|(^[ \t]*@\w+)`;
     re = new RegExp(
       `(${COMMENT[lang]})|(${STRING[lang]})${pre}|\\b(0[xX][0-9a-fA-F]+[uUlL]*|\\d+[uUlL]*)\\b|\\b(${WORDS[lang].split(" ").join("|")})\\b`,
       "gm",

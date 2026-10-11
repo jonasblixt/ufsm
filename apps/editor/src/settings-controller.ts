@@ -8,7 +8,15 @@
  */
 import type { App } from "./app";
 import { cachedSettings, readSettings, systemPrefersDark, writeSettings } from "./platform";
-import { parseSettings, serializeSettings, zoomStep, ZOOM_MAX, ZOOM_MIN, type Settings, type ThemeSetting } from "./settings";
+import {
+  parseSettings,
+  serializeSettings,
+  zoomStep,
+  ZOOM_MAX,
+  ZOOM_MIN,
+  type Settings,
+  type ThemeSetting,
+} from "./settings";
 import { resolveTheme, setCanvasTheme, type ResolvedTheme } from "./theme";
 
 export interface SettingsController {
@@ -58,7 +66,10 @@ export function createSettingsController(app: App): SettingsController {
   /** UI zoom: scale the title bar, explorer, tabs, breadcrumbs, panel and status bar (CSS `zoom: var(--ui-zoom)`). The
    * canvas is not inside any of them, so the diagram, its own zoom and pointer coordinates on it are unaffected. */
   const applyZoom = (): void => document.documentElement.style.setProperty("--ui-zoom", String(settings.zoom / 100));
-  const save = (): void => void writeSettings(serializeSettings(settings)).catch((e: unknown) => app.ws.say(`Settings not saved: ${String(e)}`));
+  const save = (): void =>
+    void writeSettings(serializeSettings(settings)).catch((e: unknown) =>
+      app.ws.say(`Settings not saved: ${String(e)}`),
+    );
 
   const setZoom = (percent: number): void => {
     const zoom = Math.min(Math.max(Math.round(percent), ZOOM_MIN), ZOOM_MAX);

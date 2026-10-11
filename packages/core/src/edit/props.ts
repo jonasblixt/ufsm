@@ -39,12 +39,18 @@ import {
 
 export const DECL_LISTS = { event: "events", signal: "signals", action: "actions", guard: "guards" } as const;
 
-const DECL_TEXT: Record<DeclKind, string> = { event: "an event", signal: "a signal", action: "an action", guard: "a guard" };
+const DECL_TEXT: Record<DeclKind, string> = {
+  event: "an event",
+  signal: "a signal",
+  action: "an action",
+  guard: "a guard",
+};
 
 /** Why `name` cannot name a declaration (a message for the user), or undefined. `except` is the one being renamed. */
 export function declNameProblem(index: DocIndex, name: string, except?: Id): string | undefined {
   if (name === "") return "A name is needed.";
-  if (!IDENTIFIER.test(name)) return `'${name}' is not an identifier: letters, digits and _, not starting with a digit.`;
+  if (!IDENTIFIER.test(name))
+    return `'${name}' is not an identifier: letters, digits and _, not starting with a digit.`;
   for (const { kind, decl } of index.decls.values()) {
     if (decl.name === name && decl.id !== except) return `'${name}' is already declared as ${DECL_TEXT[kind]}.`;
   }
@@ -76,7 +82,8 @@ export function renameDecl(doc: UfsmDocument, id: Id, name: string): void {
 /** Every place that uses a declaration, as the ids of the elements (states, transitions, internal transitions, timers). */
 export function declUses(index: DocIndex, id: Id): Id[] {
   const out: Id[] = [];
-  const inActions = (list: Action[] | undefined): boolean => !!list?.some((a) => ("call" in a ? a.call : a.emit) === id);
+  const inActions = (list: Action[] | undefined): boolean =>
+    !!list?.some((a) => ("call" in a ? a.call : a.emit) === id);
   const inGuard = (list: GuardTerm[] | undefined): boolean => !!list?.some((g) => "call" in g && g.call === id);
   for (const { vertex } of index.vertices.values()) {
     if (vertex.kind !== "state") continue;
@@ -114,9 +121,19 @@ export function deleteDecl(doc: UfsmDocument, id: Id): void {
       if (v.kind !== "state") continue;
       if (v.entry?.some((a) => !keepA(a))) setList(v, "entry", v.entry.filter(keepA));
       if (v.exit?.some((a) => !keepA(a))) setList(v, "exit", v.exit.filter(keepA));
-      if (v.timers?.some((t) => t.event === id)) setList(v, "timers", v.timers.filter((t) => t.event !== id));
+      if (v.timers?.some((t) => t.event === id))
+        setList(
+          v,
+          "timers",
+          v.timers.filter((t) => t.event !== id),
+        );
       if (v.internal) {
-        if (v.internal.some((t) => t.on === id)) setList(v, "internal", v.internal.filter((t) => t.on !== id));
+        if (v.internal.some((t) => t.on === id))
+          setList(
+            v,
+            "internal",
+            v.internal.filter((t) => t.on !== id),
+          );
         v.internal?.forEach(clean);
       }
       v.regions?.forEach(visit);
@@ -176,7 +193,11 @@ export function setTitleField(doc: UfsmDocument, key: keyof TitleBlock, text: st
 }
 
 /** Set one option of the `options` section, or remove it with undefined (an empty section goes too). */
-export function setModelOption<K extends OptionKey>(doc: UfsmDocument, key: K, value: ModelOptions[K] | undefined): void {
+export function setModelOption<K extends OptionKey>(
+  doc: UfsmDocument,
+  key: K,
+  value: ModelOptions[K] | undefined,
+): void {
   if (value === undefined) {
     if (doc.options?.[key] === undefined) return;
     delete doc.options[key];
@@ -187,7 +208,12 @@ export function setModelOption<K extends OptionKey>(doc: UfsmDocument, key: K, v
 }
 
 /** Set one code generator setting (`targets[target][key]`), or remove it with undefined (empty targets go too). */
-export function setTargetOption(doc: UfsmDocument, target: string, key: string, value: string | number | boolean | undefined): void {
+export function setTargetOption(
+  doc: UfsmDocument,
+  target: string,
+  key: string,
+  value: string | number | boolean | undefined,
+): void {
   if (value === undefined) {
     const t = doc.targets?.[target];
     if (!t || !(key in t)) return;
@@ -221,7 +247,12 @@ export function renameRegion(doc: UfsmDocument, id: Id, name: string): void {
 /** Entry or exit actions of a state, in order. */
 export function setStateActions(doc: UfsmDocument, stateId: Id, which: "entry" | "exit", actions: Action[]): void {
   const v = indexV1(doc).vertices.get(stateId)?.vertex;
-  if (v?.kind === "state") setList(v, which, actions.map((a) => ({ ...a })));
+  if (v?.kind === "state")
+    setList(
+      v,
+      which,
+      actions.map((a) => ({ ...a })),
+    );
 }
 
 /** A transition or internal transition by id. */
@@ -233,13 +264,23 @@ function transitionOf(doc: UfsmDocument, id: Id): Transition | InternalTransitio
 /** Actions of a transition or internal transition, in order. */
 export function setTransitionActions(doc: UfsmDocument, transitionId: Id, actions: Action[]): void {
   const t = transitionOf(doc, transitionId);
-  if (t) setList(t, "do", actions.map((a) => ({ ...a })));
+  if (t)
+    setList(
+      t,
+      "do",
+      actions.map((a) => ({ ...a })),
+    );
 }
 
 /** Guard terms of a transition or internal transition (all must hold). */
 export function setGuard(doc: UfsmDocument, transitionId: Id, terms: GuardTerm[]): void {
   const t = transitionOf(doc, transitionId);
-  if (t) setList(t, "guard", terms.map((g) => ({ ...g })));
+  if (t)
+    setList(
+      t,
+      "guard",
+      terms.map((g) => ({ ...g })),
+    );
 }
 
 export type TriggerSpec = { on: Id } | { auto: true } | { completion: true } | undefined;
@@ -271,9 +312,11 @@ export function addInternal(doc: UfsmDocument, stateId: Id, on: Id, opts: { ids?
 /** Why `name` cannot name a timer (a message for the user), or undefined. `except` is the timer being renamed. */
 export function timerNameProblem(index: DocIndex, name: string, except?: Id): string | undefined {
   if (name === "") return "A name is needed.";
-  if (!IDENTIFIER.test(name)) return `'${name}' is not an identifier: letters, digits and _, not starting with a digit.`;
+  if (!IDENTIFIER.test(name))
+    return `'${name}' is not an identifier: letters, digits and _, not starting with a digit.`;
   for (const { timer, state } of index.timers.values()) {
-    if (timer.name === name && timer.id !== except) return `'${name}' is the name of a timer of '${state.name}' already.`;
+    if (timer.name === name && timer.id !== except)
+      return `'${name}' is the name of a timer of '${state.name}' already.`;
   }
   return undefined;
 }
@@ -296,7 +339,12 @@ export function freshTimerName(index: DocIndex): string {
 }
 
 /** Add a timer to a state: one-shot after 1 s, firing event `event`; returns its id (undefined for a non-state). */
-export function addTimer(doc: UfsmDocument, stateId: Id, event: Id, opts: { ids?: IdAllocator; name?: string } = {}): Id | undefined {
+export function addTimer(
+  doc: UfsmDocument,
+  stateId: Id,
+  event: Id,
+  opts: { ids?: IdAllocator; name?: string } = {},
+): Id | undefined {
   const index = indexV1(doc);
   const v = index.vertices.get(stateId)?.vertex;
   if (v?.kind !== "state") return undefined;

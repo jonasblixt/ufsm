@@ -5,7 +5,19 @@
 import type { ComponentChildren } from "preact";
 
 /** A collapsible section with an upper-case title and an optional count badge. */
-export function Section({ title, count, open = true, extra, children }: { title: string; count?: number; open?: boolean; extra?: ComponentChildren; children: ComponentChildren }) {
+export function Section({
+  title,
+  count,
+  open = true,
+  extra,
+  children,
+}: {
+  title: string;
+  count?: number;
+  open?: boolean;
+  extra?: ComponentChildren;
+  children: ComponentChildren;
+}) {
   return (
     <details class="psection" open={open}>
       <summary>

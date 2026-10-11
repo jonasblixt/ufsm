@@ -48,7 +48,13 @@ const commands: SearchItem[] = menuCommands([
 ]);
 const settings: SearchItem[] = [
   { key: "set:theme:gruvbox", kind: "setting", label: "Preferences: Color Theme: Gruvbox", checked: true, run: noop },
-  { key: "set:appearance:dark", kind: "setting", label: "Preferences: Appearance: Dark", keywords: "dark mode", run: noop },
+  {
+    key: "set:appearance:dark",
+    kind: "setting",
+    label: "Preferences: Appearance: Dark",
+    keywords: "dark mode",
+    run: noop,
+  },
 ];
 
 /** Two machines open: dimmer (key 1) and dhcpclient (key 2), plus a second dimmer (key 3) to compare equal names. */
@@ -57,14 +63,22 @@ const items: SearchItem[] = [
   ...elementItems(dhcp, 2, "dhcpclient.ufsm"),
   ...elementItems(dimmer, 3, "dimmer2.ufsm"),
   { key: "machine:dimmer.ufsm", kind: "machine", label: "dimmer.ufsm", doc: 1, docName: "dimmer.ufsm", run: noop },
-  { key: "machine:dhcpclient.ufsm", kind: "machine", label: "dhcpclient.ufsm", doc: 2, docName: "dhcpclient.ufsm", run: noop },
+  {
+    key: "machine:dhcpclient.ufsm",
+    kind: "machine",
+    label: "dhcpclient.ufsm",
+    doc: 2,
+    docName: "dhcpclient.ufsm",
+    run: noop,
+  },
   ...commands,
   ...settings,
   ...helpItems("dimmer.ufsm"),
 ];
 const labels = (text: string, activeDoc: number | undefined = 1, recent: string[] = []): string[] =>
   search(items, text, { activeDoc, recent }).map((m) => m.item.label);
-const rows = (text: string, activeDoc: number | undefined = 1, recent: string[] = []) => search(items, text, { activeDoc, recent });
+const rows = (text: string, activeDoc: number | undefined = 1, recent: string[] = []) =>
+  search(items, text, { activeDoc, recent });
 
 describe("search: fuzzy matching", () => {
   it("needs every character, in order, any case", () => {
@@ -82,7 +96,12 @@ describe("search: fuzzy matching", () => {
   });
 
   it("matches the detail and hidden words only as whole runs", () => {
-    const sys: SearchItem = { key: "s", kind: "setting", label: "Preferences: Appearance: System", keywords: "follow the operating system dark light mode" };
+    const sys: SearchItem = {
+      key: "s",
+      kind: "setting",
+      label: "Preferences: Appearance: System",
+      keywords: "follow the operating system dark light mode",
+    };
     assert.equal(matchItem(sys, "add tran"), undefined, "t-r-a-n spread over 'the operating' is no match");
     assert.ok(matchItem(sys, "dark"));
     const st: SearchItem = { key: "x", kind: "state", label: "10%", detail: "Broadcast Mode" };
@@ -105,9 +124,17 @@ describe("search: fuzzy matching", () => {
     const st = (label: string): SearchItem => ({ key: label, kind: "state", label });
     assert.equal(matchItem(st("Requesting"), "requesting")!.tier, 3);
     assert.equal(matchItem(st("Requesting"), "req")!.tier, 2);
-    assert.equal(matchItem({ key: "c", kind: "command", label: "Add: Transition" }, "trans")!.tier, 2, "the name after the category counts as a prefix");
+    assert.equal(
+      matchItem({ key: "c", kind: "command", label: "Add: Transition" }, "trans")!.tier,
+      2,
+      "the name after the category counts as a prefix",
+    );
     assert.equal(matchItem({ key: "c", kind: "command", label: "Add: Transition" }, "add: t")!.tier, 2);
-    assert.equal(matchItem({ key: "c", kind: "command", label: "Add: Transition" }, "ad")!.tier, 1, "the category alone does not");
+    assert.equal(
+      matchItem({ key: "c", kind: "command", label: "Add: Transition" }, "ad")!.tier,
+      1,
+      "the category alone does not",
+    );
     assert.equal(matchItem({ key: "c", kind: "command", label: "Add: Straight Transition" }, "add tr")!.tier, 1);
     assert.equal(matchItem(st("Broadcast Mode"), "mode")!.tier, 1);
     assert.equal(matchItem(st("Requesting"), "rqst")!.tier, 0);
@@ -131,7 +158,8 @@ describe("search: fuzzy matching", () => {
 describe("search: elements of a machine", () => {
   const els = elementItems(dhcp, 7, "dhcpclient.ufsm");
   it("lists states with their parents, transitions with their ends, internal transitions and declarations", () => {
-    const find = (label: string, kind: string): SearchItem | undefined => els.find((e) => e.label === label && e.kind === kind);
+    const find = (label: string, kind: string): SearchItem | undefined =>
+      els.find((e) => e.label === label && e.kind === kind);
     assert.equal(find("Requesting", "state")?.detail, "Broadcast Mode");
     assert.equal(find("Broadcast Mode", "state")?.detail, "");
     assert.equal(find("SELECT", "transition")?.detail, "Selecting → Requesting");
@@ -148,8 +176,13 @@ describe("search: elements of a machine", () => {
   });
 
   it("finds timers by name, with their label and state as detail", () => {
-    const found = elementItems(index("tests/models/test_timers.ufsm"), 1, "test_timers.ufsm").filter((e) => e.kind === "timer");
-    assert.deepEqual(found.map((e) => e.label), ["travel", "poll", "blink", "long"]);
+    const found = elementItems(index("tests/models/test_timers.ufsm"), 1, "test_timers.ufsm").filter(
+      (e) => e.kind === "timer",
+    );
+    assert.deepEqual(
+      found.map((e) => e.label),
+      ["travel", "poll", "blink", "long"],
+    );
     assert.equal(found[1]!.detail, "t/poll(every 100 ms, eTick) in P");
   });
 
@@ -160,8 +193,14 @@ describe("search: elements of a machine", () => {
       assert.equal(found.filter((e) => e.kind === "internal").length, ix.internals.size, f);
       assert.equal(found.filter((e) => e.kind === "timer").length, ix.timers.size, f);
       for (const { region, owner } of ix.regions.values()) {
-        const wanted = owner && (ix.doc.diagram?.regions[region.id]?.offPage === true || (region.name && (owner.regions?.length ?? 0) > 1));
-        assert.equal(found.some((e) => e.id === region.id), !!wanted, `${f} ${region.id}`);
+        const wanted =
+          owner &&
+          (ix.doc.diagram?.regions[region.id]?.offPage === true || (region.name && (owner.regions?.length ?? 0) > 1));
+        assert.equal(
+          found.some((e) => e.id === region.id),
+          !!wanted,
+          `${f} ${region.id}`,
+        );
       }
     }
   });
@@ -173,7 +212,10 @@ describe("search: ranking", () => {
     assert.equal(first("On", 1), 1);
     assert.equal(first("On", 3), 3);
     const offs = rows("Off", 3).filter((r) => r.item.label === "Off");
-    assert.deepEqual(offs.map((r) => `${r.item.kind}@${r.item.doc}`), ["state@3", "state@1"]);
+    assert.deepEqual(
+      offs.map((r) => `${r.item.kind}@${r.item.doc}`),
+      ["state@3", "state@1"],
+    );
   });
 
   it("puts a better match in another machine before a weak one in focus", () => {
@@ -189,7 +231,11 @@ describe("search: ranking", () => {
 
   it("ranks commands and settings with the focused machine, recent picks first among equals", () => {
     assert.equal(labels("tran")[0], "Add: Transition");
-    assert.equal(labels("tran", 1, ["cmd:Add: Straight Transition"])[0], "Add: Transition", "a recent pick does not beat a better class");
+    assert.equal(
+      labels("tran", 1, ["cmd:Add: Straight Transition"])[0],
+      "Add: Transition",
+      "a recent pick does not beat a better class",
+    );
     const add = labels(">add", 1, ["cmd:Add: Region"]);
     assert.equal(add[0], "Add: Region");
   });
@@ -199,7 +245,11 @@ describe("search: ranking", () => {
     assert.ok(all.includes("File: Open"), "the ellipsis is dropped");
     assert.ok(!all.includes("File: Save"), "disabled");
     assert.ok(all.includes("Run: Start Simulation"));
-    assert.equal(commands.find((c) => c.label === "Run: Start Simulation")?.key, "cmd:Run#0", "a label that changes keys by position");
+    assert.equal(
+      commands.find((c) => c.label === "Run: Start Simulation")?.key,
+      "cmd:Run#0",
+      "a label that changes keys by position",
+    );
     assert.equal(commands.find((c) => c.label === "Add: Transition")?.keys, "A T");
   });
 });
@@ -232,14 +282,20 @@ describe("search: prefixes", () => {
   });
 
   it("? lists the prefixes", () => {
-    assert.deepEqual(rows("?").map((m) => m.item.prefix), ["", ">", "@", "#"]);
+    assert.deepEqual(
+      rows("?").map((m) => m.item.prefix),
+      ["", ">", "@", "#"],
+    );
   });
 });
 
 describe("search: empty field", () => {
   it("shows recent picks that still exist, then the prefixes", () => {
     const r = rows("", 1, ["cmd:Add: State", "el:gone.ufsm:s1", "el:dimmer.ufsm:s1"]);
-    assert.deepEqual(r.slice(0, 2).map((m) => m.item.label), ["Add: State", "Off"]);
+    assert.deepEqual(
+      r.slice(0, 2).map((m) => m.item.label),
+      ["Add: State", "Off"],
+    );
     assert.equal(r[0]?.group, "recently used");
     assert.equal(r[2]?.group, "search modes");
     assert.ok(r.slice(2).every((m) => m.item.kind === "help"));
@@ -250,7 +306,10 @@ describe("search: empty field", () => {
     const r = labels(">", 1, ["cmd:Add: State"]);
     assert.equal(r[0], "Add: State");
     const rest = r.slice(1);
-    assert.deepEqual(rest, [...rest].sort((a, b) => a.localeCompare(b)));
+    assert.deepEqual(
+      rest,
+      [...rest].sort((a, b) => a.localeCompare(b)),
+    );
     assert.equal(rows(">", 1, ["cmd:Add: State"])[1]?.group, "other commands");
   });
 });
@@ -259,15 +318,25 @@ describe("search: recent picks", () => {
   it("moves a pick to the front without duplicates and keeps a few", () => {
     assert.deepEqual(remember(["a", "b", "c"], "b"), ["b", "a", "c"]);
     assert.deepEqual(remember(["a"], "z"), ["z", "a"]);
-    assert.equal(remember(Array.from({ length: 40 }, (_, i) => `k${i}`), "new").length, 30);
+    assert.equal(
+      remember(
+        Array.from({ length: 40 }, (_, i) => `k${i}`),
+        "new",
+      ).length,
+      30,
+    );
   });
 });
 
 describe("search: speed", () => {
   it("ranks every element of every repository model in well under a frame per key", () => {
     const files = [
-      ...readdirSync(join(repoRoot, "examples")).filter((f) => f.endsWith(".ufsm")).map((f) => `examples/${f}`),
-      ...readdirSync(join(repoRoot, "tests/models")).filter((f) => f.endsWith(".ufsm")).map((f) => `tests/models/${f}`),
+      ...readdirSync(join(repoRoot, "examples"))
+        .filter((f) => f.endsWith(".ufsm"))
+        .map((f) => `examples/${f}`),
+      ...readdirSync(join(repoRoot, "tests/models"))
+        .filter((f) => f.endsWith(".ufsm"))
+        .map((f) => `tests/models/${f}`),
       "apps/editor/src/fsm/editor.ufsm",
     ];
     const all = files.flatMap((f, i) => elementItems(index(f), i, f));

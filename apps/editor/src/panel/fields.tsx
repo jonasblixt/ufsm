@@ -31,7 +31,17 @@ export function Link({ id, text, ops }: { id: string; text: string; ops: PanelOp
   );
 }
 
-export function IconButton({ label, title, onClick, cls = "remove" }: { label: string; title: string; onClick(): void; cls?: string }) {
+export function IconButton({
+  label,
+  title,
+  onClick,
+  cls = "remove",
+}: {
+  label: string;
+  title: string;
+  onClick(): void;
+  cls?: string;
+}) {
   return (
     <button type="button" class={cls} title={title} aria-label={title} onClick={onClick}>
       {label}
@@ -137,13 +147,26 @@ export interface Option {
  * Type to filter, arrows to move, Enter or a click to pick, Esc to close. `extra` adds options for the typed text
  * (creating a declaration).
  */
-function Picker({ options, extra, placeholder, onClose }: { options: Option[]; extra?(text: string): Option[]; placeholder: string; onClose(): void }) {
+function Picker({
+  options,
+  extra,
+  placeholder,
+  onClose,
+}: {
+  options: Option[];
+  extra?(text: string): Option[];
+  placeholder: string;
+  onClose(): void;
+}) {
   const [text, setText] = useState("");
   const [at, setAt] = useState(0);
   const ref = useRef<HTMLInputElement>(null);
   useLayoutEffect(() => ref.current?.focus(), []);
   const q = text.trim().toLowerCase();
-  const shown = [...options.filter((o) => o.label.toLowerCase().includes(q)), ...(extra?.(text.trim()) ?? [])].slice(0, 50);
+  const shown = [...options.filter((o) => o.label.toLowerCase().includes(q)), ...(extra?.(text.trim()) ?? [])].slice(
+    0,
+    50,
+  );
   const i = Math.min(at, shown.length - 1);
   const pick = (o: Option | undefined): void => {
     if (!o) return;
@@ -207,17 +230,27 @@ function Picker({ options, extra, placeholder, onClose }: { options: Option[]; e
 }
 
 /** Options to create a declaration of one of `kinds` named after the typed text (when it is a free identifier). */
-function creating(index: DocIndex, kinds: { kind: DeclKind; label(n: string): string; detail: string }[], use: (c: Choice) => void) {
+function creating(
+  index: DocIndex,
+  kinds: { kind: DeclKind; label(n: string): string; detail: string }[],
+  use: (c: Choice) => void,
+) {
   return (text: string): Option[] => {
     const name = text.replace(/^\^/, "");
     if (!IDENTIFIER.test(name) || declNameProblem(index, name)) return [];
     // "^name" means a signal
     if (text.startsWith("^")) kinds = kinds.filter((k) => k.kind === "signal");
-    return kinds.map((k) => ({ key: `new-${k.kind}`, label: k.label(name), detail: k.detail, pick: () => use({ create: { kind: k.kind, name } }) }));
+    return kinds.map((k) => ({
+      key: `new-${k.kind}`,
+      label: k.label(name),
+      detail: k.detail,
+      pick: () => use({ create: { kind: k.kind, name } }),
+    }));
   };
 }
 
-export const declsOf = (index: DocIndex, kind: DeclKind) => [...index.decls.values()].filter((d) => d.kind === kind).map((d) => d.decl);
+export const declsOf = (index: DocIndex, kind: DeclKind) =>
+  [...index.decls.values()].filter((d) => d.kind === kind).map((d) => d.decl);
 
 /** A list with move up/down and remove buttons per row, and an add button that opens a picker. */
 function EditList<T>(p: {
@@ -252,7 +285,9 @@ function EditList<T>(p: {
               {p.extra?.(it, i)}
               <span class="ebuttons">
                 {i > 0 && <IconButton label="↑" title="Move up" cls="mini" onClick={() => move(i, -1)} />}
-                {i < p.items.length - 1 && <IconButton label="↓" title="Move down" cls="mini" onClick={() => move(i, 1)} />}
+                {i < p.items.length - 1 && (
+                  <IconButton label="↓" title="Move down" cls="mini" onClick={() => move(i, 1)} />
+                )}
                 <IconButton label="×" title="Remove" onClick={() => p.onChange(p.items.filter((_, k) => k !== i))} />
               </span>
             </li>
@@ -271,7 +306,15 @@ function EditList<T>(p: {
 }
 
 /** Actions (calls and emits) of an entry/exit list or a transition. */
-export function ActionList({ index, actions, onChange, use, empty, add, open }: {
+export function ActionList({
+  index,
+  actions,
+  onChange,
+  use,
+  empty,
+  add,
+  open,
+}: {
   index: DocIndex;
   actions: readonly Action[];
   onChange(a: Action[]): void;
@@ -294,8 +337,18 @@ export function ActionList({ index, actions, onChange, use, empty, add, open }: 
           placeholder="Action or ^signal to emit"
           onClose={close}
           options={[
-            ...declsOf(index, "action").map((d) => ({ key: d.id, label: `${d.name}()`, detail: "call", pick: () => use({ id: d.id }, "call") })),
-            ...declsOf(index, "signal").map((d) => ({ key: d.id, label: `^${d.name}`, detail: "emit signal", pick: () => use({ id: d.id }, "emit") })),
+            ...declsOf(index, "action").map((d) => ({
+              key: d.id,
+              label: `${d.name}()`,
+              detail: "call",
+              pick: () => use({ id: d.id }, "call"),
+            })),
+            ...declsOf(index, "signal").map((d) => ({
+              key: d.id,
+              label: `^${d.name}`,
+              detail: "emit signal",
+              pick: () => use({ id: d.id }, "emit"),
+            })),
           ]}
           extra={creating(
             index,
@@ -312,7 +365,13 @@ export function ActionList({ index, actions, onChange, use, empty, add, open }: 
 }
 
 /** Guard terms: a guard function (true or false; guards return a boolean) or a state (in, not in). */
-export function GuardList({ index, terms, onChange, use, open }: {
+export function GuardList({
+  index,
+  terms,
+  onChange,
+  use,
+  open,
+}: {
   index: DocIndex;
   terms: readonly GuardTerm[];
   onChange(t: GuardTerm[]): void;
@@ -320,14 +379,23 @@ export function GuardList({ index, terms, onChange, use, open }: {
   open?: boolean;
 }) {
   const replace = (i: number, t: GuardTerm): void => onChange(terms.map((x, k) => (k === i ? t : x)));
-  const states = [...index.vertices.values()].filter((v) => v.vertex.kind === "state" || v.vertex.kind === "final").map((v) => v.vertex);
+  const states = [...index.vertices.values()]
+    .filter((v) => v.vertex.kind === "state" || v.vertex.kind === "final")
+    .map((v) => v.vertex);
   return (
     <EditList
       items={terms}
-      label={(g) => <code>{"in" in g ? `<${vertexName(index, g.in)}>` : `${index.decls.get(g.call)?.decl.name ?? "?"}()`}</code>}
+      label={(g) => (
+        <code>{"in" in g ? `<${vertexName(index, g.in)}>` : `${index.decls.get(g.call)?.decl.name ?? "?"}()`}</code>
+      )}
       extra={(g, i) =>
         "in" in g ? (
-          <select class="mode" aria-label="Condition" value={g.not ? "not" : "in"} onChange={(e) => replace(i, e.currentTarget.value === "not" ? { in: g.in, not: true } : { in: g.in })}>
+          <select
+            class="mode"
+            aria-label="Condition"
+            value={g.not ? "not" : "in"}
+            onChange={(e) => replace(i, e.currentTarget.value === "not" ? { in: g.in, not: true } : { in: g.in })}
+          >
             <option value="in">active</option>
             <option value="not">not active</option>
           </select>
@@ -336,7 +404,9 @@ export function GuardList({ index, terms, onChange, use, open }: {
             class="mode"
             aria-label="Condition"
             value={g.not ? "false" : "true"}
-            onChange={(e) => replace(i, e.currentTarget.value === "false" ? { call: g.call, not: true } : { call: g.call })}
+            onChange={(e) =>
+              replace(i, e.currentTarget.value === "false" ? { call: g.call, not: true } : { call: g.call })
+            }
           >
             <option value="true">is true</option>
             <option value="false">is false</option>
@@ -352,8 +422,18 @@ export function GuardList({ index, terms, onChange, use, open }: {
           placeholder="Guard function or state"
           onClose={close}
           options={[
-            ...declsOf(index, "guard").map((d) => ({ key: d.id, label: `${d.name}()`, detail: "guard", pick: () => use({ id: d.id }) })),
-            ...states.map((v) => ({ key: v.id, label: `<${vertexName(index, v.id)}>`, detail: "state is active", pick: () => use({ in: v.id }) })),
+            ...declsOf(index, "guard").map((d) => ({
+              key: d.id,
+              label: `${d.name}()`,
+              detail: "guard",
+              pick: () => use({ id: d.id }),
+            })),
+            ...states.map((v) => ({
+              key: v.id,
+              label: `<${vertexName(index, v.id)}>`,
+              detail: "state is active",
+              pick: () => use({ in: v.id }),
+            })),
           ]}
           extra={creating(index, [{ kind: "guard", label: (n) => `${n}()`, detail: "new guard" }], (c) => use(c))}
         />
@@ -363,7 +443,13 @@ export function GuardList({ index, terms, onChange, use, open }: {
 }
 
 /** Trigger of a transition (events, signals, auto, completion, none) or of an internal transition (events, signals). */
-export function TriggerField({ index, current, onPick, internal, open }: {
+export function TriggerField({
+  index,
+  current,
+  onPick,
+  internal,
+  open,
+}: {
   index: DocIndex;
   current: string;
   onPick(t: TriggerSpec | Choice): void;
@@ -384,8 +470,18 @@ export function TriggerField({ index, current, onPick, internal, open }: {
   const special: Option[] = internal
     ? []
     : [
-        { key: "auto", label: "auto", detail: "no event: whenever the guard holds", pick: () => onPick({ auto: true }) },
-        { key: "completion", label: "completion", detail: "when every region is final", pick: () => onPick({ completion: true }) },
+        {
+          key: "auto",
+          label: "auto",
+          detail: "no event: whenever the guard holds",
+          pick: () => onPick({ auto: true }),
+        },
+        {
+          key: "completion",
+          label: "completion",
+          detail: "when every region is final",
+          pick: () => onPick({ completion: true }),
+        },
         { key: "none", label: "none", detail: "no trigger", pick: () => onPick(undefined) },
       ];
   return (
@@ -393,8 +489,18 @@ export function TriggerField({ index, current, onPick, internal, open }: {
       placeholder="Event or signal"
       onClose={() => setPicking(false)}
       options={[
-        ...declsOf(index, "event").map((d) => ({ key: d.id, label: d.name, detail: "event", pick: () => onPick({ id: d.id }) })),
-        ...declsOf(index, "signal").map((d) => ({ key: d.id, label: d.name, detail: "signal", pick: () => onPick({ id: d.id }) })),
+        ...declsOf(index, "event").map((d) => ({
+          key: d.id,
+          label: d.name,
+          detail: "event",
+          pick: () => onPick({ id: d.id }),
+        })),
+        ...declsOf(index, "signal").map((d) => ({
+          key: d.id,
+          label: d.name,
+          detail: "signal",
+          pick: () => onPick({ id: d.id }),
+        })),
         ...special,
       ]}
       extra={creating(
@@ -410,7 +516,17 @@ export function TriggerField({ index, current, onPick, internal, open }: {
 }
 
 /** The event a timer fires: declared events only (signals are internal), or a new event. */
-export function TimerEventField({ index, current, onPick, open }: { index: DocIndex; current: string; onPick(c: Choice): void; open?: boolean }) {
+export function TimerEventField({
+  index,
+  current,
+  onPick,
+  open,
+}: {
+  index: DocIndex;
+  current: string;
+  onPick(c: Choice): void;
+  open?: boolean;
+}) {
   const [picking, setPicking] = useState(false);
   useLayoutEffect(() => {
     if (open) setPicking(true);
@@ -426,7 +542,12 @@ export function TimerEventField({ index, current, onPick, open }: { index: DocIn
     <Picker
       placeholder="Event to fire on expiry"
       onClose={() => setPicking(false)}
-      options={declsOf(index, "event").map((d) => ({ key: d.id, label: d.name, detail: "event", pick: () => onPick({ id: d.id }) }))}
+      options={declsOf(index, "event").map((d) => ({
+        key: d.id,
+        label: d.name,
+        detail: "event",
+        pick: () => onPick({ id: d.id }),
+      }))}
       extra={creating(index, [{ kind: "event", label: (n) => n, detail: "new event" }], onPick)}
     />
   );
@@ -457,7 +578,13 @@ export function regionLabel(index: DocIndex, r: Region): string {
 
 export function DocField({ id, value, ops }: { id: Id; value: string | undefined; ops: PanelOps }) {
   return (
-    <TextInput multiline label="Documentation" placeholder="What this is for (Ctrl+Enter to save)" value={value ?? ""} onCommit={(v) => ops.edit((d) => setDocText(d, id, v.trim()))} />
+    <TextInput
+      multiline
+      label="Documentation"
+      placeholder="What this is for (Ctrl+Enter to save)"
+      value={value ?? ""}
+      onCommit={(v) => ops.edit((d) => setDocText(d, id, v.trim()))}
+    />
   );
 }
 

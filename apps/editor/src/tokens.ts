@@ -118,9 +118,11 @@ function mergeInto(target: Json, src: unknown, where: string, origin: WeakMap<ob
       target[key] = child;
       continue;
     }
-    if (key === "$root" ? !prefix : !NAME_RE.test(key)) fail(`${where}: invalid token or group name "${key}"${prefix ? ` in "${prefix}"` : ""}`);
+    if (key === "$root" ? !prefix : !NAME_RE.test(key))
+      fail(`${where}: invalid token or group name "${key}"${prefix ? ` in "${prefix}"` : ""}`);
     if (isObject(child) && "$value" in child) {
-      if (child.$type !== undefined && typeof child.$type !== "string") fail(`${where}: "${path}" has a non-string $type`);
+      if (child.$type !== undefined && typeof child.$type !== "string")
+        fail(`${where}: "${path}" has a non-string $type`);
       origin.set(child, where);
       target[key] = child;
     } else if (key === "$root") fail(`${where}: "${path}.$root" must be a token`);
@@ -133,13 +135,25 @@ function mergeInto(target: Json, src: unknown, where: string, origin: WeakMap<ob
 }
 
 /** Every token of a merged document by path, with its own and its group's `$type`. */
-function flatten(doc: Json, origin: WeakMap<object, string>, out: Map<string, RawToken>, prefix = "", inherited?: string): void {
+function flatten(
+  doc: Json,
+  origin: WeakMap<object, string>,
+  out: Map<string, RawToken>,
+  prefix = "",
+  inherited?: string,
+): void {
   const groupType = typeof doc.$type === "string" ? doc.$type : inherited;
   for (const [key, child] of Object.entries(doc)) {
     if (key.startsWith("$") && key !== "$root") continue;
     if (!isObject(child)) continue;
     const path = key === "$root" ? prefix : prefix ? `${prefix}.${key}` : key;
-    if ("$value" in child) out.set(path, { own: child.$type as string | undefined, group: groupType, value: child.$value, where: origin.get(child) ?? "tokens" });
+    if ("$value" in child)
+      out.set(path, {
+        own: child.$type as string | undefined,
+        group: groupType,
+        value: child.$value,
+        where: origin.get(child) ?? "tokens",
+      });
     else flatten(child, origin, out, path, groupType);
   }
 }
@@ -162,14 +176,20 @@ function readResolver(files: TokenFiles, path: string): Json {
 
 function modifierOf(m: unknown, name: string, where: string): Modifier {
   if (!isObject(m) || !isObject(m.contexts)) return fail(`${where}: modifier "${name}" has no contexts`);
-  if (m.default !== undefined && (typeof m.default !== "string" || !(m.default in m.contexts))) fail(`${where}: modifier "${name}" has an invalid default`);
-  return { contexts: m.contexts, default: m.default as string | undefined, description: typeof m.description === "string" ? m.description : undefined };
+  if (m.default !== undefined && (typeof m.default !== "string" || !(m.default in m.contexts)))
+    fail(`${where}: modifier "${name}" has an invalid default`);
+  return {
+    contexts: m.contexts,
+    default: m.default as string | undefined,
+    description: typeof m.description === "string" ? m.description : undefined,
+  };
 }
 
 /** Every modifier: those under `modifiers` and those written inline in `resolutionOrder`, in that order. */
 function modifiersOf(r: Json, where: string): Map<string, Modifier> {
   const out = new Map<string, Modifier>();
-  for (const [name, m] of Object.entries(isObject(r.modifiers) ? r.modifiers : {})) out.set(name, modifierOf(m, name, where));
+  for (const [name, m] of Object.entries(isObject(r.modifiers) ? r.modifiers : {}))
+    out.set(name, modifierOf(m, name, where));
   for (const item of r.resolutionOrder as unknown[]) {
     if (!isObject(item) || item.type !== "modifier") continue;
     if (typeof item.name !== "string") fail(`${where}: an inline modifier needs a name`);
@@ -185,7 +205,12 @@ export function resolverInfo(files: TokenFiles, path: string): ResolverInfo {
   return {
     name: typeof r.name === "string" ? r.name : undefined,
     description: typeof r.description === "string" ? r.description : undefined,
-    modifiers: [...modifiersOf(r, path)].map(([name, m]) => ({ name, description: m.description, contexts: Object.keys(m.contexts), default: m.default })),
+    modifiers: [...modifiersOf(r, path)].map(([name, m]) => ({
+      name,
+      description: m.description,
+      contexts: Object.keys(m.contexts),
+      default: m.default,
+    })),
   };
 }
 
@@ -193,7 +218,11 @@ export function resolverInfo(files: TokenFiles, path: string): ResolverInfo {
  * Resolve a theme: merge the sources the resolution order selects for these inputs (modifier name -> context;
  * case-insensitive, defaults for the rest), then resolve aliases. Throws TokenError on anything malformed.
  */
-export function resolveTokens(files: TokenFiles, path: string, inputs: Readonly<Record<string, string>> = {}): Map<string, Token> {
+export function resolveTokens(
+  files: TokenFiles,
+  path: string,
+  inputs: Readonly<Record<string, string>> = {},
+): Map<string, Token> {
   const r = readResolver(files, path);
   const mods = modifiersOf(r, path);
   const chosen = new Map<string, string>();
@@ -275,7 +304,8 @@ function resolveAliases(raw: ReadonlyMap<string, RawToken>): Map<string, Token> 
     };
     const resolved = value(t.value);
     const type = t.own ?? aliasType ?? t.group;
-    if (t.own !== undefined && aliasType !== undefined && aliasType !== t.own) fail(`${t.where}: "${path}" is a ${t.own} but aliases a ${aliasType}`);
+    if (t.own !== undefined && aliasType !== undefined && aliasType !== t.own)
+      fail(`${t.where}: "${path}" is a ${t.own} but aliases a ${aliasType}`);
     busy.delete(path);
     const out: Token = { type, value: resolved };
     done.set(path, out);
@@ -294,12 +324,20 @@ const byte = (x: number): number => Math.round(clamp01(x) * 255);
 
 /** A DTCG color value as sRGB. Throws TokenError for anything else. */
 export function parseColor(value: unknown, what = "color"): Rgba {
-  if (!isObject(value)) return fail(`${what}: a color must be an object with colorSpace and components (got ${JSON.stringify(value)})`);
+  if (!isObject(value))
+    return fail(`${what}: a color must be an object with colorSpace and components (got ${JSON.stringify(value)})`);
   const { colorSpace, components, alpha, hex } = value;
-  const a = alpha === undefined ? 1 : typeof alpha === "number" ? clamp01(alpha) : fail(`${what}: alpha must be a number`);
+  const a =
+    alpha === undefined ? 1 : typeof alpha === "number" ? clamp01(alpha) : fail(`${what}: alpha must be a number`);
   const nums = (): number[] => {
     if (!Array.isArray(components) || components.length !== 3) return fail(`${what}: components must have 3 entries`);
-    return components.map((c) => (c === "none" ? 0 : typeof c === "number" && Number.isFinite(c) ? c : fail(`${what}: invalid component ${JSON.stringify(c)}`)));
+    return components.map((c) =>
+      c === "none"
+        ? 0
+        : typeof c === "number" && Number.isFinite(c)
+          ? c
+          : fail(`${what}: invalid component ${JSON.stringify(c)}`),
+    );
   };
   if (colorSpace === "srgb") {
     const [r, g, b] = nums() as [number, number, number];

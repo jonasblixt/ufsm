@@ -51,13 +51,14 @@ export interface IrAnalysis {
 export function analyzeIr(ir: IrModule, maxMicrosteps: number): IrAnalysis {
   const checkSteps = maxMicrosteps > 0;
   const fallible = new Set<string>();
-  for (let changed = true; changed; ) {
+  for (let changed = true; changed;) {
     changed = false;
     for (const f of ir.functions) {
       if (fallible.has(f.name)) continue;
       let fails = false;
       walkStmts(f.body, (s) => {
-        if (s.op === "emit" || (s.op === "microstep" && checkSteps) || (s.op === "invoke" && fallible.has(s.fn))) fails = true;
+        if (s.op === "emit" || (s.op === "microstep" && checkSteps) || (s.op === "invoke" && fallible.has(s.fn)))
+          fails = true;
       });
       if (fails) {
         fallible.add(f.name);

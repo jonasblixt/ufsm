@@ -48,7 +48,8 @@ export interface ScriptStep {
  */
 export function driverLines(s: ScriptStep, guardIndex: Map<string, number>, eventIndex: Map<string, number>): string[] {
   const out: string[] = [];
-  for (const [g, v] of Object.entries(s.guards ?? {})) if (guardIndex.has(g)) out.push(`g ${guardIndex.get(g)} ${v ? 1 : 0}`);
+  for (const [g, v] of Object.entries(s.guards ?? {}))
+    if (guardIndex.has(g)) out.push(`g ${guardIndex.get(g)} ${v ? 1 : 0}`);
   if (s.raise !== undefined) out.push(`x raise ${s.raise}`);
   if (s.reenter !== undefined) out.push(`x reenter ${s.reenter}`);
   if (s.reset) out.push("r");
@@ -69,7 +70,10 @@ export function parseDriverOutput(output: string, units: number, codes: Record<s
     if (line.startsWith("#u ")) cur = results[Number(line.slice(3))];
     else if (line !== "") {
       const [calls = "", active = "", err = "-", nested = "-"] = line.split("\t");
-      const res: StepResult = { calls: calls ? calls.split(" ").map(driverCall) : [], active: active ? active.split(",") : [] };
+      const res: StepResult = {
+        calls: calls ? calls.split(" ").map(driverCall) : [],
+        active: active ? active.split(",") : [],
+      };
       if (err !== "-") res.error = code(err);
       if (nested !== "-") res.nested = nested === "0" ? "ok" : code(nested);
       cur!.push(res);
@@ -145,7 +149,9 @@ export interface StepResult {
 /** Log line of a step, as compared between engines. */
 export function logLine(step: ScriptStep, res: StepResult): string {
   const what = step.reset ? "reset" : step.send!;
-  return res.error ? `${what}: ${res.calls.join(" ")} ERROR ${res.error}` : `${what}: ${res.calls.join(" ")} | ${res.active.join(",")}`;
+  return res.error
+    ? `${what}: ${res.calls.join(" ")} ERROR ${res.error}`
+    : `${what}: ${res.calls.join(" ")} | ${res.active.join(",")}`;
 }
 
 /**
@@ -187,7 +193,11 @@ export function runScript(make: (host: MachineHost) => RunningMachine, script: S
  * that run in this process. With `autoReset`, a failed step is followed by a reset that is not recorded; if that fails
  * too, the remaining steps are skipped.
  */
-export function recordScript(make: (host: MachineHost) => RunningMachine, script: ScriptStep[], autoReset: boolean): StepResult[] {
+export function recordScript(
+  make: (host: MachineHost) => RunningMachine,
+  script: ScriptStep[],
+  autoReset: boolean,
+): StepResult[] {
   const guards = new Map<string, boolean>();
   const out: StepResult[] = [];
   let calls: string[] = [];
@@ -269,17 +279,33 @@ export interface BackendDiff {
  * Assert that results recorded from generated code (one list per diff, autoReset on) equal the interpreter's. With
  * `hooks` (the IR of each diff, generated with debugInfo and trace), the trace hook calls are compared too.
  */
-export function assertMatchesInterpreter(diffs: BackendDiff[], results: StepResult[][], maxMicrosteps: number, backend: string, hooks?: IrModule[]): void {
+export function assertMatchesInterpreter(
+  diffs: BackendDiff[],
+  results: StepResult[][],
+  maxMicrosteps: number,
+  backend: string,
+  hooks?: IrModule[],
+): void {
   diffs.forEach((d, k) => {
     const ir = hooks?.[k];
     const expected = runScript(
-      (h) => new Interpreter(d.doc, h, { maxMicrosteps, signalQueue: d.signalQueue ?? DIFF_QUEUE, ...(ir ? { onStep: interpreterHooks(h) } : {}) }),
+      (h) =>
+        new Interpreter(d.doc, h, {
+          maxMicrosteps,
+          signalQueue: d.signalQueue ?? DIFF_QUEUE,
+          ...(ir ? { onStep: interpreterHooks(h) } : {}),
+        }),
       d.script,
     );
     const steps = d.script.filter((s) => s.reset || s.send !== undefined);
-    const actual = (results[k] ?? []).map((r, i) => logLine(steps[i]!, ir ? { ...r, calls: decodeHooks(r.calls, ir) } : r));
+    const actual = (results[k] ?? []).map((r, i) =>
+      logLine(steps[i]!, ir ? { ...r, calls: decodeHooks(r.calls, ir) } : r),
+    );
     const i = expected.findIndex((x, j) => x !== actual[j]);
-    assert.ok(i < 0 && expected.length === actual.length, `${d.label}, step ${i}:\n  interpreter: ${expected[i]}\n  ${`${backend}:`.padEnd(13)}${actual[i]}`);
+    assert.ok(
+      i < 0 && expected.length === actual.length,
+      `${d.label}, step ${i}:\n  interpreter: ${expected[i]}\n  ${`${backend}:`.padEnd(13)}${actual[i]}`,
+    );
   });
 }
 
@@ -289,7 +315,9 @@ export function assertMatchesInterpreter(diffs: BackendDiff[], results: StepResu
  */
 export function hookDiffs(models: { label: string; doc: UfsmDocument }[], random: number): BackendDiff[] {
   return [
-    ...models.flatMap(({ label, doc }) => [1, 2].map((seed) => ({ label: `${label} seed ${seed} (hooks)`, doc, script: randomScript(doc, seed, 120) }))),
+    ...models.flatMap(({ label, doc }) =>
+      [1, 2].map((seed) => ({ label: `${label} seed ${seed} (hooks)`, doc, script: randomScript(doc, seed, 120) })),
+    ),
     ...Array.from({ length: random }, (_, i) => {
       const doc = randomModel(i + 1, { signals: 2, transitions: 16 });
       return { label: `random model ${i + 1} (hooks)`, doc, script: randomScript(doc, (i + 1) * 37, 40) };
@@ -298,7 +326,12 @@ export function hookDiffs(models: { label: string; doc: UfsmDocument }[], random
 }
 
 /** Log of one random run (see randomScript and runScript). */
-export function drive(make: (host: MachineHost) => RunningMachine, doc: UfsmDocument, seed: number, steps: number): string[] {
+export function drive(
+  make: (host: MachineHost) => RunningMachine,
+  doc: UfsmDocument,
+  seed: number,
+  steps: number,
+): string[] {
   return runScript(make, randomScript(doc, seed, steps));
 }
 
@@ -306,12 +339,27 @@ export function drive(make: (host: MachineHost) => RunningMachine, doc: UfsmDocu
  * Assert that `engine` behaves exactly like the reference interpreter on one random run. With `hooks`, the engine logs
  * its trace hook calls as decoded pseudo-calls (decodeHooks) and they are compared too.
  */
-export function compareWithInterpreter(engine: Engine, doc: UfsmDocument, seed: number, steps: number, options: RunOptions = {}, hooks = false): void {
+export function compareWithInterpreter(
+  engine: Engine,
+  doc: UfsmDocument,
+  seed: number,
+  steps: number,
+  options: RunOptions = {},
+  hooks = false,
+): void {
   const opts = { ...behaviourOptions(doc), maxMicrosteps: 300, ...options };
-  const a = drive((h) => new Interpreter(doc, h, hooks ? { ...opts, onStep: interpreterHooks(h) } : opts), doc, seed, steps);
+  const a = drive(
+    (h) => new Interpreter(doc, h, hooks ? { ...opts, onStep: interpreterHooks(h) } : opts),
+    doc,
+    seed,
+    steps,
+  );
   const b = drive((h) => engine(doc, h, opts), doc, seed, steps);
   const i = a.findIndex((x, k) => x !== b[k]);
-  assert.ok(i < 0 && a.length === b.length, `${doc.name}, seed ${seed}, step ${i}:\n  interpreter: ${a[i]}\n  engine:      ${b[i]}`);
+  assert.ok(
+    i < 0 && a.length === b.length,
+    `${doc.name}, seed ${seed}, step ${i}:\n  interpreter: ${a[i]}\n  engine:      ${b[i]}`,
+  );
 }
 
 /**
@@ -327,7 +375,10 @@ export function joinAgreementModel(agree: boolean): UfsmDocument {
     declarations: {
       events: [{ id: "ev1", name: "e1" }],
       signals: [],
-      actions: [{ id: "a1", name: "j1" }, { id: "a2", name: "j2" }],
+      actions: [
+        { id: "a1", name: "j1" },
+        { id: "a2", name: "j2" },
+      ],
       guards: [],
     },
     machine: {
@@ -340,8 +391,20 @@ export function joinAgreementModel(agree: boolean): UfsmDocument {
             kind: "state",
             name: "P",
             regions: [
-              { id: "r1", states: [{ id: "i1", kind: "initial" }, { id: "A", kind: "state", name: "A" }] },
-              { id: "r2", states: [{ id: "i2", kind: "initial" }, { id: "B", kind: "state", name: "B" }] },
+              {
+                id: "r1",
+                states: [
+                  { id: "i1", kind: "initial" },
+                  { id: "A", kind: "state", name: "A" },
+                ],
+              },
+              {
+                id: "r2",
+                states: [
+                  { id: "i2", kind: "initial" },
+                  { id: "B", kind: "state", name: "B" },
+                ],
+              },
             ],
           },
           { id: "X", kind: "state", name: "X" },
@@ -392,10 +455,21 @@ export function expressionModel(): UfsmDocument {
     version: 1,
     name: "expressions",
     declarations: {
-      events: [{ id: "ev1", name: "e1" }, { id: "ev2", name: "e2" }, { id: "ev3", name: "e3" }],
+      events: [
+        { id: "ev1", name: "e1" },
+        { id: "ev2", name: "e2" },
+        { id: "ev3", name: "e3" },
+      ],
       signals: [],
-      actions: [{ id: "a1", name: "done" }, { id: "a2", name: "joined" }, { id: "a3", name: "early" }],
-      guards: [{ id: "g1", name: "g1" }, { id: "g2", name: "g2" }],
+      actions: [
+        { id: "a1", name: "done" },
+        { id: "a2", name: "joined" },
+        { id: "a3", name: "early" },
+      ],
+      guards: [
+        { id: "g1", name: "g1" },
+        { id: "g2", name: "g2" },
+      ],
     },
     machine: {
       root: {
@@ -407,8 +481,23 @@ export function expressionModel(): UfsmDocument {
             kind: "state",
             name: "P",
             regions: [
-              { id: "r1", states: [{ id: "i1", kind: "initial" }, { id: "A", kind: "state", name: "A" }, { id: "F1", kind: "final" }, { id: "F2", kind: "final" }] },
-              { id: "r2", states: [{ id: "i2", kind: "initial" }, { id: "B", kind: "state", name: "B" }, { id: "F3", kind: "final" }] },
+              {
+                id: "r1",
+                states: [
+                  { id: "i1", kind: "initial" },
+                  { id: "A", kind: "state", name: "A" },
+                  { id: "F1", kind: "final" },
+                  { id: "F2", kind: "final" },
+                ],
+              },
+              {
+                id: "r2",
+                states: [
+                  { id: "i2", kind: "initial" },
+                  { id: "B", kind: "state", name: "B" },
+                  { id: "F3", kind: "final" },
+                ],
+              },
             ],
           },
           { id: "X", kind: "state", name: "X" },
@@ -419,7 +508,14 @@ export function expressionModel(): UfsmDocument {
         { id: "t0", from: "i0", to: "P" },
         { id: "t1", from: "i1", to: "A" },
         { id: "t2", from: "i2", to: "B" },
-        { id: "ta1", from: "A", to: "F1", on: "ev1", guard: [{ call: "g1", not: true }, { call: "g2" }], do: [{ call: "a3" }] },
+        {
+          id: "ta1",
+          from: "A",
+          to: "F1",
+          on: "ev1",
+          guard: [{ call: "g1", not: true }, { call: "g2" }],
+          do: [{ call: "a3" }],
+        },
         { id: "ta2", from: "A", to: "F2", on: "ev2", guard: [{ call: "g1" }] },
         { id: "ta3", from: "A", to: "J" },
         { id: "tb1", from: "B", to: "J" },

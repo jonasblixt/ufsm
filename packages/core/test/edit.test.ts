@@ -6,7 +6,16 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { indexV1, loadModel, parseV1, serializeV1, type DocIndex, type FreeEdgeLayout, type SEdgeLayout, type UfsmDocument } from "../src";
+import {
+  indexV1,
+  loadModel,
+  parseV1,
+  serializeV1,
+  type DocIndex,
+  type FreeEdgeLayout,
+  type SEdgeLayout,
+  type UfsmDocument,
+} from "../src";
 import {
   moveRegionSplit,
   moveVertices,
@@ -50,7 +59,13 @@ function testDoc(): UfsmDocument {
               kind: "state",
               name: "P",
               regions: [
-                { id: "r1", states: [{ id: "s3", kind: "state", name: "A" }, { id: "s6", kind: "state", name: "D" }] },
+                {
+                  id: "r1",
+                  states: [
+                    { id: "s3", kind: "state", name: "A" },
+                    { id: "s6", kind: "state", name: "D" },
+                  ],
+                },
                 { id: "r2", states: [{ id: "s4", kind: "state", name: "B" }] },
               ],
             },
@@ -79,13 +94,21 @@ function testDoc(): UfsmDocument {
         regions: { r1: { h: 130 } },
         transitions: {
           t1: { from: { side: "right", offset: 10 }, to: { side: "left", offset: 20 } },
-          t2: { from: { side: "bottom", offset: 50 }, to: { side: "left", offset: 30 }, via: [[170, 320]], label: { x: 180, y: 260, w: 100 } },
+          t2: {
+            from: { side: "bottom", offset: 50 },
+            to: { side: "left", offset: 30 },
+            via: [[170, 320]],
+            label: { x: 180, y: 260, w: 100 },
+          },
           t3: { route: "s" },
           t4: { route: "s", jog: { x: 600 } },
           t5: {
             from: { side: "right", offset: 50 },
             to: { side: "left", offset: 30 },
-            via: [[600, 150], [600, 130]],
+            via: [
+              [600, 150],
+              [600, 130],
+            ],
             label: { x: 520, y: 100, w: 150 },
           },
           t6: { from: { side: "right", offset: 30 }, to: { side: "left", offset: 30 }, via: [[150, 80]] },
@@ -122,12 +145,20 @@ describe("layout edits: moving", () => {
     const doc = testDoc();
     assert.deepEqual(moveVertices(doc, ["s3"], 0, 500, "s3"), { x: 0, y: 50 }, "A's band ends at 260");
     assert.deepEqual(moveVertices(doc, ["s3"], 0, -500, "s3"), { x: 0, y: -70 }, "...and starts at 130");
-    assert.deepEqual(moveVertices(doc, ["s5"], -1000, 0, "s5"), { x: -700, y: 0 }, "the sheet: non-negative coordinates");
+    assert.deepEqual(
+      moveVertices(doc, ["s5"], -1000, 0, "s5"),
+      { x: -700, y: 0 },
+      "the sheet: non-negative coordinates",
+    );
     const outside = testDoc();
     outside.diagram!.states["s3"]!.y = 200; // abs 300..360, below its band
     assert.deepEqual(moveVertices(outside, ["s3"], 0, 10, "s3"), { x: 0, y: 0 });
     assert.deepEqual(moveVertices(outside, ["s3"], 0, -10, "s3"), { x: 0, y: -10 });
-    assert.deepEqual(moveVertices(testDoc(), ["s3", "s5"], 0, 100, "s5"), { x: 0, y: 50 }, "a group moves as far as its tightest member");
+    assert.deepEqual(
+      moveVertices(testDoc(), ["s3", "s5"], 0, 100, "s5"),
+      { x: 0, y: 50 },
+      "a group moves as far as its tightest member",
+    );
   });
 
   it("let free routes follow: translated when both ends move, bend points kept when one does", () => {
@@ -137,7 +168,10 @@ describe("layout edits: moving", () => {
     assert.deepEqual(free(doc, "t2").via, [[180, 330]]);
     assert.deepEqual(free(doc, "t2").label, { x: 190, y: 270, w: 100 });
     // t5 leaves P (moved by 10,10) for C (still): its bend points stay on the grid, only its first segment changes
-    assert.deepEqual(free(doc, "t5").via, [[600, 150], [600, 130]]);
+    assert.deepEqual(free(doc, "t5").via, [
+      [600, 150],
+      [600, 130],
+    ]);
     // t6 lies inside r1: its coordinates are relative to P and need no change
     assert.deepEqual(free(doc, "t6").via, [[150, 80]]);
     assert.deepEqual(free(doc, "t1"), free(testDoc(), "t1"), "no bend points, no label: nothing to write");
@@ -192,7 +226,14 @@ describe("layout edits: resizing", () => {
     assert.equal(up.diagram!.regions["r1"]!.h, 150);
     assert.deepEqual([box(up, "s3").y, box(up, "s4").y], [150, 290]);
     const bands = regionBoxes(indexV1(up), indexV1(up).vertices.get("s2")!.vertex as never);
-    assert.deepEqual(bands.map((b) => [b.box.y, b.box.h]), [[110, 150], [260, 140]], "the bands did not move");
+    assert.deepEqual(
+      bands.map((b) => [b.box.y, b.box.h]),
+      [
+        [110, 150],
+        [260, 140],
+      ],
+      "the bands did not move",
+    );
     const down = testDoc();
     resizeVertex(down, "s2", { top: 170 });
     assert.equal(box(down, "s2").y, 120, "A's top (150) minus the header");
@@ -234,7 +275,11 @@ describe("layout edits: resizing", () => {
     const fixed = testDoc();
     fixed.diagram!.regions["r2"] = { h: 140 };
     moveRegionSplit(fixed, "s2", 0, 250);
-    assert.deepEqual([fixed.diagram!.regions["r1"]!.h, fixed.diagram!.regions["r2"]!.h], [120, 150], "the state keeps its height");
+    assert.deepEqual(
+      [fixed.diagram!.regions["r1"]!.h, fixed.diagram!.regions["r2"]!.h],
+      [120, 150],
+      "the state keeps its height",
+    );
     const none = testDoc();
     moveRegionSplit(none, "s2", 1, 300);
     assert.deepEqual(none, testDoc(), "no separator below the last band");
@@ -306,10 +351,18 @@ describe("layout edits: transition handles", () => {
 
 describe("layout edits on every repository model", () => {
   const files = ["examples", "tests/models", "apps/editor/src/fsm"].flatMap((d) =>
-    existsSync(join(repoRoot, d)) ? readdirSync(join(repoRoot, d)).filter((f) => f.endsWith(".ufsm")).map((f) => join(repoRoot, d, f)) : [],
+    existsSync(join(repoRoot, d))
+      ? readdirSync(join(repoRoot, d))
+          .filter((f) => f.endsWith(".ufsm"))
+          .map((f) => join(repoRoot, d, f))
+      : [],
   );
   const inside = (b: Box, band: Box | undefined): boolean =>
-    !band || (b.x >= band.x - 1e-6 && b.y >= band.y - 1e-6 && b.x + b.w <= band.x + band.w + 1e-6 && b.y + b.h <= band.y + band.h + 1e-6);
+    !band ||
+    (b.x >= band.x - 1e-6 &&
+      b.y >= band.y - 1e-6 &&
+      b.x + b.w <= band.x + band.w + 1e-6 &&
+      b.y + b.h <= band.y + band.h + 1e-6);
   /** Inline children of every state, with their band. */
   const placements = (index: DocIndex): { id: string; ok: boolean }[] =>
     [...index.vertices.keys()].map((id) => ({ id, ok: inside(vertexBox(index, id), regionBand(index, id)) }));
@@ -333,7 +386,8 @@ describe("layout edits on every repository model", () => {
           resizeVertex(doc, id, { right: b.x + b.w + (r() - 0.5) * 300, bottom: b.y + b.h + (r() - 0.5) * 300 });
         } else {
           const v = indexV1(doc).vertices.get(id)!.vertex;
-          if (v.kind === "state" && (v.regions?.length ?? 0) > 1) moveRegionSplit(doc, id, 0, vertexBox(indexV1(doc), id).y + r() * 400);
+          if (v.kind === "state" && (v.regions?.length ?? 0) > 1)
+            moveRegionSplit(doc, id, 0, vertexBox(indexV1(doc), id).y + r() * 400);
         }
         moves++;
         const index = indexV1(doc);

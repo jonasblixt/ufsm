@@ -34,7 +34,8 @@ export function createFiles(app: App): Files {
 
   const closeDoc = async (d: DocSession | undefined, force = false): Promise<boolean> => {
     if (!d) return false;
-    if (!force && d.dirty && !(await confirmDiscard(`${d.fileName} has unsaved changes. Close it and discard them?`))) return false;
+    if (!force && d.dirty && !(await confirmDiscard(`${d.fileName} has unsaved changes. Close it and discard them?`)))
+      return false;
     if (!ws.sessions.includes(d)) return false;
     d.explorer?.entry.root.remove();
     explorerEmptyEl.hidden = ws.sessions.length > 1;
@@ -42,7 +43,12 @@ export function createFiles(app: App): Files {
     return true;
   };
 
-  const showModel = (loaded: LoadedModel, fileName: string, path: string | undefined, untitled?: string): DocSession => {
+  const showModel = (
+    loaded: LoadedModel,
+    fileName: string,
+    path: string | undefined,
+    untitled?: string,
+  ): DocSession => {
     const d = ws.open(loaded, fileName, path, untitled);
     const entry = explorerEntry(
       () => ws.activate(d),

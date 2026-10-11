@@ -15,7 +15,16 @@
  *
  * No DOM: the title bar renders the matches (quickpick.tsx), main.ts supplies the commands and runs the pick.
  */
-import { actionLabel, ancestors, internalTransitionLabel, timerLabel, transitionLabel, vertexName, type DeclKind, type DocIndex } from "@ufsm/core";
+import {
+  actionLabel,
+  ancestors,
+  internalTransitionLabel,
+  timerLabel,
+  transitionLabel,
+  vertexName,
+  type DeclKind,
+  type DocIndex,
+} from "@ufsm/core";
 
 export type ItemKind =
   | "command"
@@ -70,7 +79,9 @@ export const PREFIXES: readonly { prefix: string; mode: Mode; text: string }[] =
 /** Split the field's text into the mode its first character selects and the query after it. */
 export function parseQuery(text: string): { mode: Mode; query: string; prefix: string } {
   const p = PREFIXES.find((x) => text.startsWith(x.prefix));
-  return p ? { mode: p.mode, query: text.slice(p.prefix.length).trim(), prefix: p.prefix } : { mode: "all", query: text.trim(), prefix: "" };
+  return p
+    ? { mode: p.mode, query: text.slice(p.prefix.length).trim(), prefix: p.prefix }
+    : { mode: "all", query: text.trim(), prefix: "" };
 }
 
 /** Placeholder of the field for a mode. */
@@ -92,7 +103,13 @@ export function modeHint(mode: Mode, machine: string | undefined): string {
 /** The `?` rows: one per prefix (plain search first). */
 export function helpItems(machine: string | undefined): SearchItem[] {
   return [
-    { key: "help:", kind: "help", label: "…", detail: "Search everything: elements of every open machine, commands, settings", prefix: "" },
+    {
+      key: "help:",
+      kind: "help",
+      label: "…",
+      detail: "Search everything: elements of every open machine, commands, settings",
+      prefix: "",
+    },
     ...PREFIXES.filter((p) => p.mode !== "help").map((p) => ({
       key: `help:${p.prefix}`,
       kind: "help" as const,
@@ -104,7 +121,18 @@ export function helpItems(machine: string | undefined): SearchItem[] {
   ];
 }
 
-const ELEMENT_KINDS: ReadonlySet<ItemKind> = new Set(["state", "pseudo", "region", "transition", "internal", "timer", "event", "signal", "action", "guard"]);
+const ELEMENT_KINDS: ReadonlySet<ItemKind> = new Set([
+  "state",
+  "pseudo",
+  "region",
+  "transition",
+  "internal",
+  "timer",
+  "event",
+  "signal",
+  "action",
+  "guard",
+]);
 export const isElement = (it: SearchItem): boolean => ELEMENT_KINDS.has(it.kind);
 const isCommand = (it: SearchItem): boolean => it.kind === "command" || it.kind === "setting";
 
@@ -128,7 +156,10 @@ const PSEUDO_NAMES: Readonly<Record<string, string>> = {
 export function elementItems(index: DocIndex, doc: number, docName: string): SearchItem[] {
   const out: SearchItem[] = [];
   const base = { doc, docName };
-  const path = (id: string): string => ancestors(index, id).map((s) => s.name).join(" › ");
+  const path = (id: string): string =>
+    ancestors(index, id)
+      .map((s) => s.name)
+      .join(" › ");
   const key = (id: string): string => `el:${docName}:${id}`;
   const offPage = (id: string): boolean => index.doc.diagram?.regions[id]?.offPage === true;
 
@@ -136,32 +167,84 @@ export function elementItems(index: DocIndex, doc: number, docName: string): Sea
     if (v.kind === "state") {
       // entry/exit actions as hidden words: searching an action also finds the states that call it
       const calls = [...(v.entry ?? []), ...(v.exit ?? [])].map((a) => actionLabel(index, a)).join(" ");
-      out.push({ ...base, key: key(v.id), kind: "state", id: v.id, label: v.name || "(unnamed)", detail: path(v.id), ...(calls ? { keywords: calls } : {}) });
+      out.push({
+        ...base,
+        key: key(v.id),
+        kind: "state",
+        id: v.id,
+        label: v.name || "(unnamed)",
+        detail: path(v.id),
+        ...(calls ? { keywords: calls } : {}),
+      });
     } else if (v.name) {
       const where = path(v.id);
-      out.push({ ...base, key: key(v.id), kind: "pseudo", id: v.id, label: v.name, detail: where ? `${PSEUDO_NAMES[v.kind]} in ${where}` : PSEUDO_NAMES[v.kind] });
+      out.push({
+        ...base,
+        key: key(v.id),
+        kind: "pseudo",
+        id: v.id,
+        label: v.name,
+        detail: where ? `${PSEUDO_NAMES[v.kind]} in ${where}` : PSEUDO_NAMES[v.kind],
+      });
     }
   }
   for (const { region: r, owner } of index.regions.values()) {
     // a state's only region is just its body (the state is found already); converted files call them all "New region"
     if (!owner || !(offPage(r.id) || (r.name && (owner.regions?.length ?? 0) > 1))) continue;
     const where = [path(owner.id), owner.name].filter(Boolean).join(" › ");
-    out.push({ ...base, key: key(r.id), kind: "region", id: r.id, label: r.name || owner.name, detail: `${offPage(r.id) ? "sheet" : "region"} of ${where}` });
+    out.push({
+      ...base,
+      key: key(r.id),
+      kind: "region",
+      id: r.id,
+      label: r.name || owner.name,
+      detail: `${offPage(r.id) ? "sheet" : "region"} of ${where}`,
+    });
   }
   for (const t of index.transitions.values()) {
     const ends = `${vertexName(index, t.from)} → ${vertexName(index, t.to)}`;
     const text = transitionLabel(index, t);
-    out.push({ ...base, key: key(t.id), kind: "transition", id: t.id, label: text || ends, detail: text ? ends : "", keywords: t.id });
+    out.push({
+      ...base,
+      key: key(t.id),
+      kind: "transition",
+      id: t.id,
+      label: text || ends,
+      detail: text ? ends : "",
+      keywords: t.id,
+    });
   }
   for (const { transition: t, state } of index.internals.values()) {
-    out.push({ ...base, key: key(t.id), kind: "internal", id: t.id, label: internalTransitionLabel(index, t), detail: `internal, in ${state.name}` });
+    out.push({
+      ...base,
+      key: key(t.id),
+      kind: "internal",
+      id: t.id,
+      label: internalTransitionLabel(index, t),
+      detail: `internal, in ${state.name}`,
+    });
   }
   for (const { timer: t, state } of index.timers.values()) {
     // the label `t/name(20 s, eEvent)` is searched by the timer's name; the rest are hidden words
-    out.push({ ...base, key: key(t.id), kind: "timer", id: t.id, label: t.name, detail: `${timerLabel(index, t)} in ${state.name}`, keywords: timerLabel(index, t) });
+    out.push({
+      ...base,
+      key: key(t.id),
+      kind: "timer",
+      id: t.id,
+      label: t.name,
+      detail: `${timerLabel(index, t)} in ${state.name}`,
+      keywords: timerLabel(index, t),
+    });
   }
   for (const { kind, decl } of index.decls.values()) {
-    out.push({ ...base, key: key(decl.id), kind, id: decl.id, label: decl.name, detail: decl.doc ? `${kind} · ${decl.doc}` : kind });
+    out.push({
+      ...base,
+      key: key(decl.id),
+      kind,
+      id: decl.id,
+      label: decl.name,
+      detail: decl.doc ? `${kind} · ${decl.doc}` : kind,
+    });
   }
   return out;
 }
@@ -351,7 +434,12 @@ export function matchItem(item: SearchItem, query: string): Omit<Match, "item"> 
   // the category alone ("a" of "Add: State") is no prefix match: every command of that menu would be one
   else if (name.startsWith(q) || (l.startsWith(q) && (q.includes(":") || l === name))) tier = 2;
   else if (inLabel && words.every((w) => atWordStart(w, label, starts))) tier = 1;
-  return { tier, score, labelHits: [...labelHits].sort((x, y) => x - y), detailHits: [...detailHits].sort((x, y) => x - y) };
+  return {
+    tier,
+    score,
+    labelHits: [...labelHits].sort((x, y) => x - y),
+    detailHits: [...detailHits].sort((x, y) => x - y),
+  };
 }
 
 // ---------------------------------------------------------------- ranking
@@ -365,7 +453,22 @@ export interface SearchContext {
   limit?: number;
 }
 
-const KIND_ORDER: readonly ItemKind[] = ["state", "machine", "command", "setting", "region", "pseudo", "transition", "internal", "timer", "event", "signal", "action", "guard", "help"];
+const KIND_ORDER: readonly ItemKind[] = [
+  "state",
+  "machine",
+  "command",
+  "setting",
+  "region",
+  "pseudo",
+  "transition",
+  "internal",
+  "timer",
+  "event",
+  "signal",
+  "action",
+  "guard",
+  "help",
+];
 
 /** Items `mode` looks at. */
 function inMode(it: SearchItem, mode: Mode, activeDoc: number | undefined): boolean {
@@ -393,7 +496,9 @@ export function search(items: readonly SearchItem[], text: string, ctx: SearchCo
 
   if (query === "") {
     if (mode === "help") return pool.map(plain);
-    const recent = pool.filter((it) => recentRank.has(it.key)).sort((a, b) => recentRank.get(a.key)! - recentRank.get(b.key)!);
+    const recent = pool
+      .filter((it) => recentRank.has(it.key))
+      .sort((a, b) => recentRank.get(a.key)! - recentRank.get(b.key)!);
     let rest: SearchItem[];
     if (mode === "all") {
       // like VS Code's Quick Open: what was picked lately, then how to narrow the search
@@ -403,12 +508,15 @@ export function search(items: readonly SearchItem[], text: string, ctx: SearchCo
       rest = pool.filter((it) => !recentRank.has(it.key)).sort((a, b) => a.label.localeCompare(b.label));
     } else {
       // elements in document order, the focused machine first
-      rest = pool.filter((it) => !recentRank.has(it.key)).sort((a, b) => Number(b.doc === ctx.activeDoc) - Number(a.doc === ctx.activeDoc));
+      rest = pool
+        .filter((it) => !recentRank.has(it.key))
+        .sort((a, b) => Number(b.doc === ctx.activeDoc) - Number(a.doc === ctx.activeDoc));
     }
     const rows = [...recent, ...rest].slice(0, limit).map(plain);
     if (recent.length > 0 && rows[0]) rows[0].group = "recently used";
     const firstRest = rows[recent.length];
-    if (firstRest && recent.length > 0) firstRest.group = mode === "all" ? "search modes" : mode === "commands" ? "other commands" : "elements";
+    if (firstRest && recent.length > 0)
+      firstRest.group = mode === "all" ? "search modes" : mode === "commands" ? "other commands" : "elements";
     return rows;
   }
 
@@ -440,14 +548,19 @@ export function remember(recent: readonly string[], key: string, max = 30): stri
 
 export interface MenuLike {
   label: string;
-  items: ("-" | { label: string | (() => string); keys?: string; run(): void; enabled?(): boolean; checked?(): boolean })[];
+  items: (
+    "-" | { label: string | (() => string); keys?: string; run(): void; enabled?(): boolean; checked?(): boolean }
+  )[];
 }
 
 /**
  * Every enabled menu item as a command, labelled VS Code style with its menu as the category ("Edit: Undo"). Items
  * whose label changes ("Start Simulation" / "Restart Simulation") are keyed by the menu and position, so recency survives.
  */
-export function menuCommands(menus: readonly MenuLike[], skip: (menu: string, label: string) => boolean = () => false): SearchItem[] {
+export function menuCommands(
+  menus: readonly MenuLike[],
+  skip: (menu: string, label: string) => boolean = () => false,
+): SearchItem[] {
   const out: SearchItem[] = [];
   for (const menu of menus) {
     menu.items.forEach((it, i) => {

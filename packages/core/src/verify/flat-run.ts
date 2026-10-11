@@ -128,7 +128,8 @@ export class FlatRunner {
       if (!this.isActiveIndex(o.state)) continue;
       const c = o.candidates.find((x) => this.enabled(this.model.transitions[x.transition]!));
       if (!c || !c.offer) continue;
-      if (c.firstAt && !c.firstAt.every((src) => firstOf(offers.find((x) => x.state === src)!) === c.transition)) continue;
+      if (c.firstAt && !c.firstAt.every((src) => firstOf(offers.find((x) => x.state === src)!) === c.transition))
+        continue;
       const t = this.model.transitions[c.transition]!;
       if (blocked.has(t.domain)) continue;
       chosen.push(t);
@@ -228,7 +229,10 @@ export class FlatRunner {
   }
 
   private defaultOp(v: number): EntryOp {
-    return { vertex: v, regions: this.model.vertices[v]!.regions.map((region) => ({ region, default: true as const })) };
+    return {
+      vertex: v,
+      regions: this.model.vertices[v]!.regions.map((region) => ({ region, default: true as const })),
+    };
   }
 
   private enterVertex(op: EntryOp): void {

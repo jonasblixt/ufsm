@@ -29,5 +29,5 @@ export function loadModel(text: string): LoadedModel {
     const { doc, notes } = migrateV0(parseV0(text));
     return { doc, sourceVersion: 0, notes };
   }
-  throw new UfsmFormatError("", "not a uFSM model (expected \"format\": \"ufsm\", or a legacy \"kind\": \"uFSM Model\" file)");
+  throw new UfsmFormatError("", 'not a uFSM model (expected "format": "ufsm", or a legacy "kind": "uFSM Model" file)');
 }

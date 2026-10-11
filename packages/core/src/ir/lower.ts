@@ -28,12 +28,14 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
   const V = flat.vertices;
 
   /** A trace statement, or nothing without the `trace` option. */
-  const hook = (h: "transition" | "enter" | "exit", index: number): Stmt[] => (trace ? [{ op: "trace", hook: h, index }] : []);
+  const hook = (h: "transition" | "enter" | "exit", index: number): Stmt[] =>
+    trace ? [{ op: "trace", hook: h, index }] : [];
   const starts = (timers: number[]): Stmt[] => timers.map((timer) => ({ op: "timerStart", timer }));
   const stops = (timers: number[]): Stmt[] => timers.map((timer) => ({ op: "timerStop", timer }));
   /** reset() and terminate stop every timer, in timer order. */
   const stopAll = (): Stmt[] => stops(flat.timers.map((_, i) => i));
-  const actions = (list: Action[]): Stmt[] => list.map((a) => ("call" in a ? { op: "call", action: a.call } : { op: "emit", signal: a.emit }));
+  const actions = (list: Action[]): Stmt[] =>
+    list.map((a) => ("call" in a ? { op: "call", action: a.call } : { op: "emit", signal: a.emit }));
   const hasContent = (r: number): boolean => R[r]!.slots.length > 0;
   const enterable = (r: number): boolean => R[r]!.init !== undefined || R[r]!.history !== "none";
   /** Does the subtree strictly inside region r contain a history region? */
@@ -75,13 +77,24 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
         if (fr.history !== "none") {
           const save: Stmt[] = [{ op: "saveHistory", region: c }];
           if (fr.history === "deep") save.push({ op: "saveDeep", region: c });
-          body.push({ op: "if", cond: { op: "activeIn", region: c, slots: [0, ...fr.finalSlots] }, then: [{ op: "clearHistory", region: c }], else: save });
+          body.push({
+            op: "if",
+            cond: { op: "activeIn", region: c, slots: [0, ...fr.finalSlots] },
+            then: [{ op: "clearHistory", region: c }],
+            else: save,
+          });
         }
         if (historyInside(c)) body.push({ op: "invoke", fn: recordFn(c) });
       }
       return { slot: i + 1, body };
     }).filter((c) => c.body.length > 0);
-    fns.push({ name, returns: "void", flags: [], body: [{ op: "switch", on: { kind: "cfg", region: r }, cases }], doc: `Record history inside ${regionName(r)}.` });
+    fns.push({
+      name,
+      returns: "void",
+      flags: [],
+      body: [{ op: "switch", on: { kind: "cfg", region: r }, cases }],
+      doc: `Record history inside ${regionName(r)}.`,
+    });
     return name;
   };
 
@@ -101,7 +114,8 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
     if ("path" in op) return enterOp(op.path);
     return enterable(op.region) ? [{ op: "invoke", fn: enterFn(op.region) }] : [];
   };
-  const enterDefaults = (v: number): Stmt[] => enterOp({ vertex: v, regions: V[v]!.regions.map((region) => ({ region, default: true as const })) });
+  const enterDefaults = (v: number): Stmt[] =>
+    enterOp({ vertex: v, regions: V[v]!.regions.map((region) => ({ region, default: true as const })) });
 
   /** enter_rN: default entry of region N (history if recorded, else its initializer). */
   const enterFn = (r: number): string => {
@@ -112,10 +126,16 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
     const init: Stmt[] = fr.init ? [...actions(fr.init.actions), ...enterOp(fr.init.path)] : [];
     let body: Stmt[] = init;
     if (fr.history === "shallow") {
-      const restore: Stmt = { op: "switch", on: { kind: "hist", region: r }, cases: fr.slots.map((v, i) => ({ slot: i + 1, body: enterDefaults(v) })) };
+      const restore: Stmt = {
+        op: "switch",
+        on: { kind: "hist", region: r },
+        cases: fr.slots.map((v, i) => ({ slot: i + 1, body: enterDefaults(v) })),
+      };
       body = [{ op: "if", cond: { op: "hasHistory", region: r }, then: [restore], else: init }];
     } else if (fr.history === "deep") {
-      body = [{ op: "if", cond: { op: "hasHistory", region: r }, then: [{ op: "invoke", fn: restoreFn(r) }], else: init }];
+      body = [
+        { op: "if", cond: { op: "hasHistory", region: r }, then: [{ op: "invoke", fn: restoreFn(r) }], else: init },
+      ];
     }
     fns.push({ name, returns: "void", flags: [], body, doc: `Enter ${regionName(r)} by default.` });
     return name;
@@ -134,11 +154,23 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
         const fv = V[v]!;
         return {
           slot: i + 1,
-          body: [{ op: "set", region: c, slot: i + 1 } as Stmt, ...hook("enter", v), ...actions(fv.entry), ...starts(fv.timers), ...fv.regions.map((cc) => restoreIn(cc, false))],
+          body: [
+            { op: "set", region: c, slot: i + 1 } as Stmt,
+            ...hook("enter", v),
+            ...actions(fv.entry),
+            ...starts(fv.timers),
+            ...fv.regions.map((cc) => restoreIn(cc, false)),
+          ],
         };
       }),
     });
-    fns.push({ name, returns: "void", flags: [], body: [restoreIn(r, true)], doc: `Restore the deep history of ${regionName(r)}.` });
+    fns.push({
+      name,
+      returns: "void",
+      flags: [],
+      body: [restoreIn(r, true)],
+      doc: `Restore the deep history of ${regionName(r)}.`,
+    });
     return name;
   };
 
@@ -153,13 +185,16 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
     const e: Expr = { op: "guard", guard: g.call };
     return g.not ? { op: "not", expr: e } : e;
   };
-  const and = (exprs: Expr[]): Expr => (exprs.length === 0 ? { op: "true" } : exprs.length === 1 ? exprs[0]! : { op: "and", exprs });
+  const and = (exprs: Expr[]): Expr =>
+    exprs.length === 0 ? { op: "true" } : exprs.length === 1 ? exprs[0]! : { op: "and", exprs };
   const or = (exprs: Expr[]): Expr => (exprs.length === 1 ? exprs[0]! : { op: "or", exprs });
 
   /** Enabled, apart from the offering state being active (checked by the enclosing offer). */
   const enabled = (t: FlatTransition, offerState: number): Expr =>
     and([
-      ...t.sources.filter((v) => v !== offerState).map((v): Expr => ({ op: "active", region: V[v]!.region, slot: V[v]!.slot })),
+      ...t.sources
+        .filter((v) => v !== offerState)
+        .map((v): Expr => ({ op: "active", region: V[v]!.region, slot: V[v]!.slot })),
       ...t.complete.map((r): Expr => ({ op: "activeIn", region: r, slots: R[r]!.finalSlots })),
       ...t.guard.map(guardExpr),
     ]);
@@ -185,7 +220,8 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
     return false; // one contains the other
   };
   /** Two transitions can be enabled in the same microstep only if all their sources can be active together. */
-  const compatible = (a: FlatTransition, b: FlatTransition): boolean => a.sources.every((x) => b.sources.every((y) => !exclusive(x, y)));
+  const compatible = (a: FlatTransition, b: FlatTransition): boolean =>
+    a.sources.every((x) => b.sources.every((y) => !exclusive(x, y)));
 
   const stepFn = (name: string, offers: Offer[], doc: string): string => {
     const considered: number[] = [];
@@ -202,11 +238,17 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
           for (const src of c.firstAt ?? []) {
             // The join must be the first enabled candidate at its other sources too.
             const other = offers.find((x) => x.state === src)!;
-            const before = other.candidates.slice(0, other.candidates.findIndex((x) => x.transition === c.transition));
+            const before = other.candidates.slice(
+              0,
+              other.candidates.findIndex((x) => x.transition === c.transition),
+            );
             for (const b of before) conds.push({ op: "not", expr: enabled(flat.transitions[b.transition]!, src) });
           }
-          const blockers = earlier.filter((k) => conflicts(flat.transitions[k]!, t) && compatible(flat.transitions[k]!, t));
-          if (blockers.length) conds.push({ op: "not", expr: or(blockers.map((k): Expr => ({ op: "flag", name: flag(k) }))) });
+          const blockers = earlier.filter(
+            (k) => conflicts(flat.transitions[k]!, t) && compatible(flat.transitions[k]!, t),
+          );
+          if (blockers.length)
+            conds.push({ op: "not", expr: or(blockers.map((k): Expr => ({ op: "flag", name: flag(k) }))) });
           const take: Stmt = { op: "setFlag", name: flag(c.transition) };
           then = conds.length ? [{ op: "if", cond: and(conds), then: [take] }] : [take];
           considered.push(c.transition);
@@ -225,7 +267,11 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
       then.length === 0 ? [] : ordered.length === 1 ? then : [{ op: "if", cond: { op: "flag", name: flag(k) }, then }];
     const byDomainDesc = [...ordered].sort((a, b) => T(b).domain - T(a).domain);
     const byDomainAsc = [...ordered].sort((a, b) => T(a).domain - T(b).domain);
-    body.push({ op: "if", cond: { op: "not", expr: or(ordered.map((k): Expr => ({ op: "flag", name: flag(k) }))) }, then: [{ op: "return", value: false }] });
+    body.push({
+      op: "if",
+      cond: { op: "not", expr: or(ordered.map((k): Expr => ({ op: "flag", name: flag(k) }))) },
+      then: [{ op: "return", value: false }],
+    });
     body.push({ op: "microstep" });
     // Transitions with the same domain block each other, so at most one of them is taken: record and exit once per domain.
     // Internal transitions exit nothing and record no history.
@@ -233,8 +279,11 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
     const domains = [...new Set(exiting.map((k) => T(k).domain))];
     const inDomain = (d: number): number[] => ordered.filter((k) => T(k).domain === d && !T(k).internal);
     const whenAny = (ks: number[], then: Stmt[]): Stmt[] =>
-      ordered.length === ks.length ? then : [{ op: "if", cond: or(ks.map((k): Expr => ({ op: "flag", name: flag(k) }))), then }];
-    for (const d of domains) if (historyInside(d)) body.push(...whenAny(inDomain(d), [{ op: "invoke", fn: recordFn(d) }]));
+      ordered.length === ks.length
+        ? then
+        : [{ op: "if", cond: or(ks.map((k): Expr => ({ op: "flag", name: flag(k) }))), then }];
+    for (const d of domains)
+      if (historyInside(d)) body.push(...whenAny(inDomain(d), [{ op: "invoke", fn: recordFn(d) }]));
     for (const d of domains) body.push(...whenAny(inDomain(d), [{ op: "invoke", fn: exitFn(d) }]));
     for (const k of ordered) body.push(...when(k, [...hook("transition", k), ...actions(T(k).actions)]));
     for (const k of byDomainAsc) body.push(...when(k, T(k).entry ? regionOp(T(k).entry!) : []));
@@ -263,15 +312,28 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
     const offers = flat.offers[s.id];
     if (offers) onSignal[s.id] = stepFn(`step_${s.name}`, offers, `Signal ${s.name}.`);
   }
-  const eventless = flat.eventless.length ? stepFn("eventless", flat.eventless, "Auto and completion transitions.") : undefined;
+  const eventless = flat.eventless.length
+    ? stepFn("eventless", flat.eventless, "Auto and completion transitions.")
+    : undefined;
 
   const history: IrHistory[] = R.flatMap((fr, r): IrHistory[] => {
     if (fr.history === "none") return [];
-    return [fr.history === "deep" ? { region: r, kind: "deep", snapshotFrom: fr.regionFrom, snapshotTo: fr.regionTo } : { region: r, kind: "shallow" }];
+    return [
+      fr.history === "deep"
+        ? { region: r, kind: "deep", snapshotFrom: fr.regionFrom, snapshotTo: fr.regionTo }
+        : { region: r, kind: "shallow" },
+    ];
   });
 
   const names = stateNames(V.map((v) => ({ id: v.id, name: v.name, parent: R[v.region]!.owner })));
-  const states = V.map((v, i) => ({ id: v.id, name: v.name, ...names[i]!, region: v.region, slot: v.slot, final: v.kind === "final" }));
+  const states = V.map((v, i) => ({
+    id: v.id,
+    name: v.name,
+    ...names[i]!,
+    region: v.region,
+    slot: v.slot,
+    final: v.kind === "final",
+  }));
   /** The explicit targets of an entry: the innermost vertices its paths lead to. */
   const targets = (op: RegionOp | undefined): number[] => {
     if (!op || !("path" in op)) return [];
@@ -280,8 +342,15 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
   };
   const transitions: IrTransition[] = flat.transitions.map((t) => {
     const from = t.sources.map((v) => states[v]!.label).join(", ");
-    const to = t.internal ? "(internal)" : t.terminate ? "terminate" : targets(t.entry).map((v) => states[v]!.label).join(", ");
-    const on = t.trigger.kind === "event" ? ` on ${t.trigger.name}` : t.trigger.kind === "none" ? "" : ` (${t.trigger.kind})`;
+    const to = t.internal
+      ? "(internal)"
+      : t.terminate
+        ? "terminate"
+        : targets(t.entry)
+            .map((v) => states[v]!.label)
+            .join(", ");
+    const on =
+      t.trigger.kind === "event" ? ` on ${t.trigger.name}` : t.trigger.kind === "none" ? "" : ` (${t.trigger.kind})`;
     return { id: t.id, label: `${t.id}: ${from} -> ${to}${on}` };
   });
 
@@ -289,7 +358,8 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
   // steps when a signal can be queued at all. Helpers were pushed while building the step functions; they come first,
   // the steps keep trigger order.
   const all = [...fns.filter((f) => f.returns === "void"), ...fns.filter((f) => f.returns === "bool")];
-  if (!emitsSignals({ signals: flat.signals, start, functions: all })) for (const k of Object.keys(onSignal)) delete onSignal[k];
+  if (!emitsSignals({ signals: flat.signals, start, functions: all }))
+    for (const k of Object.keys(onSignal)) delete onSignal[k];
   const byName = new Map(all.map((f) => [f.name, f]));
   const reachable = new Set<string>();
   const visit = (name: string): void => {
@@ -301,7 +371,13 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
   [...Object.values(onEvent), ...(eventless ? [eventless] : []), ...Object.values(onSignal)].forEach(visit);
 
   const eventIndex = new Map(flat.events.map((e, i) => [e.id, i]));
-  const timers: IrTimer[] = flat.timers.map((t) => ({ id: t.id, name: t.name, ms: t.ms, periodic: t.periodic, event: eventIndex.get(t.event)! }));
+  const timers: IrTimer[] = flat.timers.map((t) => ({
+    id: t.id,
+    name: t.name,
+    ms: t.ms,
+    periodic: t.periodic,
+    event: eventIndex.get(t.event)!,
+  }));
 
   return {
     name: flat.name,

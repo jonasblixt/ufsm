@@ -76,10 +76,12 @@ export function parseSettings(text: string | undefined): ParsedSettings {
   const { theme, zoom, ...other } = json as Record<string, unknown>;
   settings.other = other;
   if (zoom !== undefined) {
-    if (typeof zoom !== "number" || !Number.isFinite(zoom)) problems.push("settings.json: zoom must be a number (percent); using 100");
+    if (typeof zoom !== "number" || !Number.isFinite(zoom))
+      problems.push("settings.json: zoom must be a number (percent); using 100");
     else {
       settings.zoom = Math.round(Math.min(Math.max(zoom, ZOOM_MIN), ZOOM_MAX));
-      if (zoom < ZOOM_MIN || zoom > ZOOM_MAX) problems.push(`settings.json: zoom must be ${ZOOM_MIN} to ${ZOOM_MAX}; using ${settings.zoom}`);
+      if (zoom < ZOOM_MIN || zoom > ZOOM_MAX)
+        problems.push(`settings.json: zoom must be ${ZOOM_MIN} to ${ZOOM_MAX}; using ${settings.zoom}`);
     }
   }
   if (theme === undefined) return { settings, problems };

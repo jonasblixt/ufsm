@@ -19,7 +19,10 @@ describe("generateFiles", () => {
     doc.targets = { c: { prefix: "dim_" }, python: { className: "Dim" }, rust: { module: "dim" } };
     const ir = lowerToIr(flatten(doc));
     const c = generateC(ir, { prefix: "dim_", maxMicrosteps: 7 });
-    assert.deepEqual(generateFiles(doc, "c").files, [{ name: c.headerName, text: c.header }, { name: c.sourceName, text: c.source }]);
+    assert.deepEqual(generateFiles(doc, "c").files, [
+      { name: c.headerName, text: c.header },
+      { name: c.sourceName, text: c.source },
+    ]);
     const py = generatePython(ir, { className: "Dim", maxMicrosteps: 7 });
     assert.deepEqual(generateFiles(doc, "python", {}, ir).files, [{ name: py.fileName, text: py.source }]);
     const ts = generateTypeScript(ir, { maxMicrosteps: 7 });
@@ -35,9 +38,19 @@ describe("generateFiles", () => {
     doc.options = { signalQueue: 5, maxMicrosteps: 9 };
     doc.targets = { ts: { signalQueue: 3 } };
     const fromModel = generateFiles(doc, "ts", {}, ir);
-    assert.equal(fromModel.files[0]!.text, text({ signalQueue: 5, maxMicrosteps: 9 }), "the model's options, not the target's");
-    assert.deepEqual(fromModel.problems, ["targets.ts.signalQueue: changes behaviour, so it is set in options for every target (ignored)"]);
-    assert.equal(generateFiles(doc, "ts", { signalQueue: 2 }, ir).files[0]!.text, text({ signalQueue: 2, maxMicrosteps: 9 }), "a flag overrides the model");
+    assert.equal(
+      fromModel.files[0]!.text,
+      text({ signalQueue: 5, maxMicrosteps: 9 }),
+      "the model's options, not the target's",
+    );
+    assert.deepEqual(fromModel.problems, [
+      "targets.ts.signalQueue: changes behaviour, so it is set in options for every target (ignored)",
+    ]);
+    assert.equal(
+      generateFiles(doc, "ts", { signalQueue: 2 }, ir).files[0]!.text,
+      text({ signalQueue: 2, maxMicrosteps: 9 }),
+      "a flag overrides the model",
+    );
     assert.notEqual(text({ signalQueue: 5 }), text({}), "the queue size shows in the code");
   });
 
@@ -57,7 +70,10 @@ describe("generateFiles", () => {
   it("refuses a model with errors", () => {
     const doc = load("examples/dimmer.ufsm");
     doc.machine.transitions.push({ id: doc.machine.transitions[0]!.id, from: "nowhere", to: "nowhere" });
-    assert.throws(() => modelIr(doc), (e: unknown) => e instanceof CodegenError && /the model has \d+ errors?/.test(e.message));
+    assert.throws(
+      () => modelIr(doc),
+      (e: unknown) => e instanceof CodegenError && /the model has \d+ errors?/.test(e.message),
+    );
     assert.throws(() => generateFiles(doc, "python"), CodegenError);
   });
 });

@@ -19,5 +19,12 @@ export { checkDiagram } from "./diagram";
 export function checkV1(doc: UfsmDocument, prebuilt?: DocIndex): Diagnostic[] {
   const index = prebuilt ?? indexV1(doc);
   const semantic = checkSemantics(doc, index);
-  return [...semantic, ...checkDiagram(doc, index, semantic.some((d) => d.code === "duplicate-id"))];
+  return [
+    ...semantic,
+    ...checkDiagram(
+      doc,
+      index,
+      semantic.some((d) => d.code === "duplicate-id"),
+    ),
+  ];
 }

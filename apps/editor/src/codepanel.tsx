@@ -79,7 +79,12 @@ export function CodeTab({ doc, view: viewId, ops }: CodeProps) {
               Save…
             </button>
             {result.files.length > 1 && (
-              <button type="button" class="mini" title={`Save ${result.files.map((f) => f.name).join(" and ")} into a folder`} onClick={() => ops.saveAll(result.files)}>
+              <button
+                type="button"
+                class="mini"
+                title={`Save ${result.files.map((f) => f.name).join(" and ")} into a folder`}
+                onClick={() => ops.saveAll(result.files)}
+              >
                 Save both…
               </button>
             )}

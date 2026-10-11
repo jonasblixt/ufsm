@@ -6,7 +6,18 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { checkV1, indexV1, internalTransitionLabel, loadModel, parseV1, serializeV1, transitionLabel, timerLabel, type State, type UfsmDocument } from "../src";
+import {
+  checkV1,
+  indexV1,
+  internalTransitionLabel,
+  loadModel,
+  parseV1,
+  serializeV1,
+  transitionLabel,
+  timerLabel,
+  type State,
+  type UfsmDocument,
+} from "../src";
 import {
   addDecl,
   addInternal,
@@ -71,17 +82,36 @@ function testDoc(): UfsmDocument {
               kind: "state",
               name: "P",
               regions: [
-                { id: "r1", states: [{ id: "s3", kind: "state", name: "A" }, { id: "s6", kind: "state", name: "D" }] },
+                {
+                  id: "r1",
+                  states: [
+                    { id: "s3", kind: "state", name: "A" },
+                    { id: "s6", kind: "state", name: "D" },
+                  ],
+                },
                 { id: "r2", states: [{ id: "s4", kind: "state", name: "B" }] },
               ],
             },
-            { id: "s5", kind: "state", name: "C", entry: [{ call: "act1" }], internal: [{ id: "t7", on: "ev1", guard: [{ in: "s3" }] }] },
+            {
+              id: "s5",
+              kind: "state",
+              name: "C",
+              entry: [{ call: "act1" }],
+              internal: [{ id: "t7", on: "ev1", guard: [{ in: "s3" }] }],
+            },
             { id: "s7", kind: "fork" },
           ],
         },
         transitions: [
           { id: "t1", from: "s1", to: "s2" },
-          { id: "t2", from: "s3", to: "s4", on: "ev1", guard: [{ call: "grd1" }], do: [{ emit: "sig1" }, { call: "act1" }] },
+          {
+            id: "t2",
+            from: "s3",
+            to: "s4",
+            on: "ev1",
+            guard: [{ call: "grd1" }],
+            do: [{ emit: "sig1" }, { call: "act1" }],
+          },
           { id: "t3", from: "s4", to: "s5", on: "ev1", guard: [{ in: "s3" }, { call: "grd1", not: true }] },
           { id: "t4", from: "s3", to: "s5", on: "ev1" },
           { id: "t5", from: "s2", to: "s5", on: "ev1" },
@@ -105,8 +135,21 @@ function testDoc(): UfsmDocument {
           t2: { route: "s" },
           t3: { route: "s" },
           t4: { route: "s", jog: { x: 600 } },
-          t5: { from: { side: "right", offset: 50 }, to: { side: "left", offset: 30 }, via: [[600, 150], [600, 130]], label: { x: 520, y: 100, w: 150 } },
-          t6: { from: { side: "right", offset: 30 }, to: { side: "left", offset: 30 }, via: [[150, 80]], label: { x: 130, y: 40, w: 100 } },
+          t5: {
+            from: { side: "right", offset: 50 },
+            to: { side: "left", offset: 30 },
+            via: [
+              [600, 150],
+              [600, 130],
+            ],
+            label: { x: 520, y: 100, w: 150 },
+          },
+          t6: {
+            from: { side: "right", offset: 30 },
+            to: { side: "left", offset: 30 },
+            via: [[150, 80]],
+            label: { x: 130, y: 40, w: 100 },
+          },
         },
       },
     }),
@@ -114,7 +157,15 @@ function testDoc(): UfsmDocument {
 }
 
 const clone = (doc: UfsmDocument): UfsmDocument => structuredClone(doc);
-const BROKEN = new Set(["duplicate-id", "dangling-ref", "wrong-ref", "stale-layout", "missing-layout", "duplicate-name", "bad-name"]);
+const BROKEN = new Set([
+  "duplicate-id",
+  "dangling-ref",
+  "wrong-ref",
+  "stale-layout",
+  "missing-layout",
+  "duplicate-name",
+  "bad-name",
+]);
 const broken = (doc: UfsmDocument): string[] =>
   checkV1(doc)
     .filter((d) => BROKEN.has(d.code))
@@ -200,7 +251,10 @@ describe("declarations", () => {
     setTargetOption(doc, "c", "prefix", "lamp_");
     setTargetOption(doc, "c", "file", "lamp");
     setModelOption(doc, "signalQueue", 4);
-    assert.deepEqual([doc.name, doc.doc, doc.targets, doc.options], ["lamp", "A lamp.", { c: { prefix: "lamp_", file: "lamp" } }, { signalQueue: 4 }]);
+    assert.deepEqual(
+      [doc.name, doc.doc, doc.targets, doc.options],
+      ["lamp", "A lamp.", { c: { prefix: "lamp_", file: "lamp" } }, { signalQueue: 4 }],
+    );
     roundTrips(doc);
     setTargetOption(doc, "c", "prefix", undefined);
     setTargetOption(doc, "c", "file", undefined);
@@ -226,11 +280,18 @@ describe("declarations", () => {
     const index = indexV1(doc);
     const fit = sheetFit(index);
     assert.equal(fit[0]?.id, "s2");
-    assert.ok(fit.every((p) => !index.vertices.has(p.id) || index.vertices.get(p.id)!.region.id === "r0"), "a composite's contents are not listed again");
+    assert.ok(
+      fit.every((p) => !index.vertices.has(p.id) || index.vertices.get(p.id)!.region.id === "r0"),
+      "a composite's contents are not listed again",
+    );
     roundTrips(doc);
     delete doc.diagram;
     setPaper(doc, "A3");
-    assert.deepEqual(doc.diagram, { paper: "A3", states: {}, regions: {}, transitions: {} }, "a diagram section is created");
+    assert.deepEqual(
+      doc.diagram,
+      { paper: "A3", states: {}, regions: {}, transitions: {} },
+      "a diagram section is created",
+    );
   });
 
   it("title block fields: trimmed, removed when empty, the block with the last one", () => {
@@ -258,7 +319,11 @@ describe("timers", () => {
     assert.equal(addTimer(doc, "s1", "ev1"), undefined, "pseudo-states have no timers");
     assert.deepEqual(S(doc, "s5").timers, [{ id: "tm1", name: "timer1", after: 1, unit: "s", event: "ev1" }]);
     setTimer(doc, b, { kind: "every", count: 500, unit: "ms" });
-    assert.deepEqual(S(doc, "s3").timers, [{ id: "tm2", name: "poll", every: 500, unit: "ms", event: "ev1" }], "after became every");
+    assert.deepEqual(
+      S(doc, "s3").timers,
+      [{ id: "tm2", name: "poll", every: 500, unit: "ms", event: "ev1" }],
+      "after became every",
+    );
     setTimer(doc, b, { kind: "after" });
     assert.equal(timerLabel(indexV1(doc), S(doc, "s3").timers![0]!), "t/poll(500 ms, e1)", "the count is kept");
     const index = indexV1(doc);
@@ -277,7 +342,10 @@ describe("timers", () => {
     const doc = testDoc();
     const a = addTimer(doc, "s5", "ev1")!;
     addTimer(doc, "s3", "ev1");
-    assert.deepEqual(declUses(indexV1(doc), "ev1").filter((id) => id.startsWith("tm")), ["tm2", "tm1"]);
+    assert.deepEqual(
+      declUses(indexV1(doc), "ev1").filter((id) => id.startsWith("tm")),
+      ["tm2", "tm1"],
+    );
     setDocText(doc, a, "how long the door may take");
     assert.equal(S(doc, "s5").timers![0]!.doc, "how long the door may take");
     assert.deepEqual([...deleteElements(doc, [a])], [a]);
@@ -295,11 +363,19 @@ describe("timers", () => {
     const doc = testDoc();
     addTimer(doc, "s3", "ev1", { name: "poll" });
     const frag = copyFragment(indexV1(doc), ["s3"])!;
-    assert.deepEqual(frag.declarations.map((d) => d.decl.name), ["e1"], "the timer's event comes along");
+    assert.deepEqual(
+      frag.declarations.map((d) => d.decl.name),
+      ["e1"],
+      "the timer's event comes along",
+    );
     const ids = pasteFragment(doc, frag, "r0", { x: 600, y: 500 });
     const copy = S(doc, ids[0]!);
     assert.deepEqual(copy.timers, [{ id: "tm2", name: "poll_2", after: 1, unit: "s", event: "ev1" }]);
-    assert.deepEqual(checkV1(doc).filter((d) => d.code.startsWith("timer-")), [], "no duplicate timer names");
+    assert.deepEqual(
+      checkV1(doc).filter((d) => d.code.startsWith("timer-")),
+      [],
+      "no duplicate timer names",
+    );
     const other = testDoc();
     other.declarations.events = [];
     deleteElements(other, ["t2", "t3", "t4", "t5", "t7"]);
@@ -329,16 +405,25 @@ describe("state, region and transition properties", () => {
     const doc = testDoc();
     setStateActions(doc, "s2", "entry", [{ call: "act1" }, { emit: "sig1" }]);
     setStateActions(doc, "s2", "exit", [{ call: "act1" }]);
-    assert.deepEqual([S(doc, "s2").entry, S(doc, "s2").exit], [[{ call: "act1" }, { emit: "sig1" }], [{ call: "act1" }]]);
+    assert.deepEqual(
+      [S(doc, "s2").entry, S(doc, "s2").exit],
+      [[{ call: "act1" }, { emit: "sig1" }], [{ call: "act1" }]],
+    );
     setStateActions(doc, "s2", "exit", []);
     assert.equal(S(doc, "s2").exit, undefined);
     setTransitionActions(doc, "t3", [{ call: "act1" }]);
     setTransitionActions(doc, "t7", [{ emit: "sig1" }]);
-    setGuard(doc, "t2", [{ call: "grd1", not: true }, { in: "s6", not: true }]);
+    setGuard(doc, "t2", [
+      { call: "grd1", not: true },
+      { in: "s6", not: true },
+    ]);
     setGuard(doc, "t7", []);
     assert.deepEqual(T(doc, "t3").do, [{ call: "act1" }]);
     assert.deepEqual(indexV1(doc).internals.get("t7")!.transition, { id: "t7", on: "ev1", do: [{ emit: "sig1" }] });
-    assert.deepEqual(T(doc, "t2").guard, [{ call: "grd1", not: true }, { in: "s6", not: true }]);
+    assert.deepEqual(T(doc, "t2").guard, [
+      { call: "grd1", not: true },
+      { in: "s6", not: true },
+    ]);
     assert.deepEqual(broken(doc), []);
     roundTrips(doc);
   });
@@ -355,7 +440,11 @@ describe("state, region and transition properties", () => {
     assert.deepEqual(Object.keys(T(doc, "t2")).sort(), ["do", "from", "guard", "id", "to"]);
     setTrigger(doc, "t7", { on: "sig1" });
     setTrigger(doc, "t7", { auto: true });
-    assert.deepEqual(indexV1(doc).internals.get("t7")!.transition, { id: "t7", on: "sig1", guard: [{ in: "s3" }] }, "no auto on an internal transition");
+    assert.deepEqual(
+      indexV1(doc).internals.get("t7")!.transition,
+      { id: "t7", on: "sig1", guard: [{ in: "s3" }] },
+      "no auto on an internal transition",
+    );
     roundTrips(doc);
   });
 
@@ -388,7 +477,11 @@ describe("state, region and transition properties", () => {
     const g0 = edgeGeometry(index0, "t6")!;
     setOffPage(doc, "r1", true);
     assert.deepEqual(doc.diagram!.regions["r1"], { h: 130, offPage: true });
-    assert.deepEqual(doc.diagram!.states["s3"], { x: 20, y: 20, w: 100, h: 60 }, "same place relative to the band (130 abs)");
+    assert.deepEqual(
+      doc.diagram!.states["s3"],
+      { x: 20, y: 20, w: 100, h: 60 },
+      "same place relative to the band (130 abs)",
+    );
     const g1 = edgeGeometry(indexV1(doc), "t6")!;
     const moved = (p: { x: number; y: number }) => ({ x: p.x - 100, y: p.y - 130 });
     assert.deepEqual(g1.points, g0.points.map(moved), "the band's corner (100,130) became the sheet's origin");
@@ -405,7 +498,11 @@ describe("state, region and transition properties", () => {
 
 describe("property edits on every repository model and random models", () => {
   const files = ["examples", "tests/models", "apps/editor/src/fsm"].flatMap((d) =>
-    existsSync(join(repoRoot, d)) ? readdirSync(join(repoRoot, d)).filter((f) => f.endsWith(".ufsm")).map((f) => join(repoRoot, d, f)) : [],
+    existsSync(join(repoRoot, d))
+      ? readdirSync(join(repoRoot, d))
+          .filter((f) => f.endsWith(".ufsm"))
+          .map((f) => join(repoRoot, d, f))
+      : [],
   );
   const models = (): { name: string; doc: UfsmDocument }[] => [
     ...files.map((f) => ({ name: f, doc: loadModel(readFileSync(f, "utf8")).doc })),
@@ -416,7 +513,11 @@ describe("property edits on every repository model and random models", () => {
     const r = rng(21);
     let n = 0;
     for (const { name, doc: original } of models()) {
-      const errors = new Set(checkV1(original).filter((d) => d.severity === "error").map((d) => d.code));
+      const errors = new Set(
+        checkV1(original)
+          .filter((d) => d.severity === "error")
+          .map((d) => d.code),
+      );
       const decls = [...indexV1(original).decls.keys()];
       for (let k = 0; k < 6; k++) {
         const doc = clone(original);
@@ -430,7 +531,11 @@ describe("property edits on every repository model and random models", () => {
           }
         }
         const after = checkV1(doc).filter((d) => d.severity === "error" && !errors.has(d.code));
-        assert.deepEqual(after.map((d) => `${d.code}: ${d.message}`), [], `${name}: ${pick.join(" ")}`);
+        assert.deepEqual(
+          after.map((d) => `${d.code}: ${d.message}`),
+          [],
+          `${name}: ${pick.join(" ")}`,
+        );
         const index = indexV1(doc);
         for (const id of pick) if (index.decls.has(id)) assert.ok(declUses(index, id).length >= 0);
         roundTrips(doc);
@@ -448,7 +553,11 @@ describe("property edits on every repository model and random models", () => {
         const off = index.doc.diagram?.regions[id]?.offPage === true;
         const doc = clone(original);
         setOffPage(doc, id, !off);
-        assert.deepEqual(broken(doc).filter((m) => !broken(original).includes(m)), [], `${name}: ${id}`);
+        assert.deepEqual(
+          broken(doc).filter((m) => !broken(original).includes(m)),
+          [],
+          `${name}: ${id}`,
+        );
         setOffPage(doc, id, off);
         assert.deepEqual(doc, original, `${name}: ${id} round trip`);
         n++;

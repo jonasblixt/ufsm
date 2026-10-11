@@ -108,7 +108,13 @@ export class Simulation {
         guard: (name) => guards.get(name) ?? false,
         timerStart: (name, id, ms, periodic) => {
           const t = this.index.timers.get(id)?.timer;
-          this.running.set(id, { id, name, ms, periodic, event: (t && this.index.decls.get(t.event)?.decl.name) ?? "?" });
+          this.running.set(id, {
+            id,
+            name,
+            ms,
+            periodic,
+            event: (t && this.index.decls.get(t.event)?.decl.name) ?? "?",
+          });
           this.current?.calls.push(timerStartCall(name, ms, periodic));
         },
         timerStop: (name, id) => {
@@ -126,7 +132,9 @@ export class Simulation {
 
   /** True once the document's machine, declarations or options are not the ones simulated (layout edits do not count). */
   staleFor(doc: UfsmDocument): boolean {
-    return doc.machine !== this.doc.machine || doc.declarations !== this.doc.declarations || doc.options !== this.doc.options;
+    return (
+      doc.machine !== this.doc.machine || doc.declarations !== this.doc.declarations || doc.options !== this.doc.options
+    );
   }
 
   /** Start, or start over: the initial configuration, history and queue cleared. */

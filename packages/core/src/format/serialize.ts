@@ -50,13 +50,25 @@ function num(n: number): number {
   return Math.round(n * 1000) / 1000 + 0; // + 0 turns -0 into 0
 }
 
-const declJ = (d: Decl): Json => ordered([["id", d.id], ["name", d.name], ["doc", d.doc]]);
+const declJ = (d: Decl): Json =>
+  ordered([
+    ["id", d.id],
+    ["name", d.name],
+    ["doc", d.doc],
+  ]);
 
 const actionJ = (a: Action): Json => ("call" in a ? { call: a.call } : { emit: a.emit });
 
 function guardJ(g: GuardTerm): Json {
-  if ("in" in g) return ordered([["in", g.in], ["not", g.not]]);
-  return ordered([["call", g.call], ["not", g.not]]);
+  if ("in" in g)
+    return ordered([
+      ["in", g.in],
+      ["not", g.not],
+    ]);
+  return ordered([
+    ["call", g.call],
+    ["not", g.not],
+  ]);
 }
 
 function vertexJ(v: Vertex): Json {
@@ -73,11 +85,19 @@ function vertexJ(v: Vertex): Json {
       ["regions", nonEmpty(v.regions, regionJ)],
     ]);
   }
-  return ordered([["id", v.id], ["kind", v.kind], ["name", v.name]]);
+  return ordered([
+    ["id", v.id],
+    ["kind", v.kind],
+    ["name", v.name],
+  ]);
 }
 
 function regionJ(r: Region): Json {
-  return ordered([["id", r.id], ["name", r.name], ["states", r.states.map(vertexJ)]]);
+  return ordered([
+    ["id", r.id],
+    ["name", r.name],
+    ["states", r.states.map(vertexJ)],
+  ]);
 }
 
 function timerJ(t: Timer): Json {
@@ -117,12 +137,23 @@ function transitionJ(t: Transition): Json {
 }
 
 const stateLayoutJ = (l: StateLayout): Json =>
-  ordered([["x", num(l.x)], ["y", num(l.y)], ["w", num(l.w)], ["h", num(l.h)], ["orientation", l.orientation], ["actionsHeight", l.actionsHeight === undefined ? undefined : num(l.actionsHeight)]]);
+  ordered([
+    ["x", num(l.x)],
+    ["y", num(l.y)],
+    ["w", num(l.w)],
+    ["h", num(l.h)],
+    ["orientation", l.orientation],
+    ["actionsHeight", l.actionsHeight === undefined ? undefined : num(l.actionsHeight)],
+  ]);
 
 const regionLayoutJ = (l: RegionLayout): Json =>
-  ordered([["h", l.h === undefined ? undefined : num(l.h)], ["offPage", l.offPage]]);
+  ordered([
+    ["h", l.h === undefined ? undefined : num(l.h)],
+    ["offPage", l.offPage],
+  ]);
 
-const edgeEndJ = (end: EdgeEnd | undefined): Json | undefined => (end ? { side: end.side, offset: num(end.offset) } : undefined);
+const edgeEndJ = (end: EdgeEnd | undefined): Json | undefined =>
+  end ? { side: end.side, offset: num(end.offset) } : undefined;
 
 // `route` is written only for S routes: absent means "free".
 const edgeLayoutJ = (e: EdgeLayout): Json =>
@@ -177,7 +208,14 @@ function diagramJ(d: Diagram, doc: UfsmDocument): Json {
     ["titleBlock", titleBlockJ(d.titleBlock)],
     ["states", orderedMap(d.states, order.states, stateLayoutJ)],
     ["regions", orderedMap(d.regions, order.regions, regionLayoutJ)],
-    ["transitions", orderedMap(d.transitions, doc.machine.transitions.map((t) => t.id), edgeLayoutJ)],
+    [
+      "transitions",
+      orderedMap(
+        d.transitions,
+        doc.machine.transitions.map((t) => t.id),
+        edgeLayoutJ,
+      ),
+    ],
   ]);
 }
 

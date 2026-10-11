@@ -33,7 +33,9 @@ export function identifier(text: string): string {
 
 /** "test_guard1" -> "TestGuard1", "New model" -> "NewModel": the default class or struct name of a machine. */
 export function pascalCase(text: string): string {
-  const parts = identifier(text).split("_").filter((p) => p !== "");
+  const parts = identifier(text)
+    .split("_")
+    .filter((p) => p !== "");
   const s = parts.map((p) => p[0]!.toUpperCase() + p.slice(1)).join("");
   return /^[A-Za-z]/.test(s) ? s : `M${s}`;
 }
@@ -90,11 +92,13 @@ export interface Prepared extends ResolvedOptions, IrAnalysis {}
 
 /** Resolve the common options against the IR, analyze it, and refuse what cannot be generated. */
 export function prepare(ir: IrModule, options: CommonOptions): Prepared {
-  if (options.trace !== undefined && options.trace !== ir.trace) throw new CodegenError("options.trace differs from the IR's: lower the model with { trace }");
+  if (options.trace !== undefined && options.trace !== ir.trace)
+    throw new CodegenError("options.trace differs from the IR's: lower the model with { trace }");
   const signalQueue = options.signalQueue ?? OPTION_DEFAULTS.signalQueue;
   const maxMicrosteps = options.maxMicrosteps ?? OPTION_DEFAULTS.maxMicrosteps;
   const analysis = analyzeIr(ir, maxMicrosteps);
-  if (analysis.hasQueue && signalQueue < 1) throw new CodegenError("the model emits signals: signalQueue must be at least 1");
+  if (analysis.hasQueue && signalQueue < 1)
+    throw new CodegenError("the model emits signals: signalQueue must be at least 1");
   return { signalQueue, maxMicrosteps, debugInfo: options.debugInfo ?? false, trace: ir.trace, ...analysis };
 }
 

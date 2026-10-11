@@ -6,7 +6,18 @@
  * size) and drawing a transition (source, bend points, target), with the ghost and route previews drawn over the sheet.
  */
 import { indexV1, type DocIndex, type EdgeEnd, type UfsmDocument, type Vertex } from "@ufsm/core";
-import { addTransition, addVertex, cannotAdd, cannotConnect, draggedVertexBox, endAt, isRoundKind, newVertexBox, regionAt, type VertexKind } from "@ufsm/core/edit";
+import {
+  addTransition,
+  addVertex,
+  cannotAdd,
+  cannotConnect,
+  draggedVertexBox,
+  endAt,
+  isRoundKind,
+  newVertexBox,
+  regionAt,
+  type VertexKind,
+} from "@ufsm/core/edit";
 import { attachPoint, autoSides, edgeGeometry, sRoute, vertexBox, type Box, type Point } from "@ufsm/core/diagram";
 import type { App } from "../app";
 import type { EditorFsmHandler } from "../fsm/editor-fsm";
@@ -35,7 +46,15 @@ function placeBox(kind: VertexKind, p0: Point, p: Point, dragged: boolean, horiz
 const linkRoutes = new WeakMap<DocIndex, { key: string; points: Point[] | undefined }>();
 
 /** The route a click on `target` would give the transition being drawn (computed on a copy; cached per target). */
-function linkRoute(tool: ToolId, d: DocSession, source: string, from: Point, target: string, to: Point, bends: readonly Point[]): Point[] | undefined {
+function linkRoute(
+  tool: ToolId,
+  d: DocSession,
+  source: string,
+  from: Point,
+  target: string,
+  to: Point,
+  bends: readonly Point[],
+): Point[] | undefined {
   // the ends the click would get, not the raw points: the route only changes when one of them does
   const end = (vid: string, p: Point): string => {
     const e = endAt(d.index, vid, p);
@@ -47,7 +66,12 @@ function linkRoute(tool: ToolId, d: DocSession, source: string, from: Point, tar
   const copy = structuredClone(d.history.current) as UfsmDocument;
   let points: Point[] | undefined;
   try {
-    const id = addTransition(copy, source, target, { via: [...bends], route: tool === "straight" ? "straight" : "s", fromAt: from, toAt: to });
+    const id = addTransition(copy, source, target, {
+      via: [...bends],
+      route: tool === "straight" ? "straight" : "s",
+      fromAt: from,
+      toAt: to,
+    });
     points = edgeGeometry(indexV1(copy), id)?.points;
   } catch {
     points = undefined;
@@ -80,7 +104,8 @@ export function drawOverlay(app: App, c: CanvasRenderingContext2D, scale: number
     const route = ok ? linkRoute(tool, d, link.source, link.from, v.id, link.to, link.bends) : undefined;
     const start = endAt(d.index, link.source, link.from);
     if (route) drawLinkRoute(c, source, route, target, scale);
-    else if (tool === "transition") drawLinkRoute(c, source, sRouteTowards(d.index, link.source, start, link.to), target, scale);
+    else if (tool === "transition")
+      drawLinkRoute(c, source, sRouteTowards(d.index, link.source, start, link.to), target, scale);
     else drawLink(c, source, attachPoint(d.index, link.source, start), link.bends, link.to, target, scale);
   } else if (ghost) drawGhost(c, ghost.box, isVertexTool(ghost.kind) && isRoundKind(ghost.kind), scale);
 }
@@ -157,7 +182,13 @@ export function toolActions(app: App, input: InputState) {
         return;
       }
       const region = regionAt(d.index, d.sheet, p0);
-      s.placing = { kind: s.tool, p0, region: region.id, error: cannotAdd(d.index, region.id, s.tool), created: undefined };
+      s.placing = {
+        kind: s.tool,
+        p0,
+        region: region.id,
+        error: cannotAdd(d.index, region.id, s.tool),
+        created: undefined,
+      };
       if (s.placing.error) return;
       d.begin();
       previewPlace(p0, false);
@@ -247,7 +278,9 @@ export function toolActions(app: App, input: InputState) {
       if (!app.ws.active || !l || !v) return;
       let id = "";
       const route = s.tool === "straight" ? "straight" : "s";
-      app.ws.edit((d) => void (id = addTransition(d, l.source, v.id, { via: l.bends, route, fromAt: l.from, toAt: p })));
+      app.ws.edit(
+        (d) => void (id = addTransition(d, l.source, v.id, { via: l.bends, route, fromAt: l.from, toAt: p })),
+      );
       if (id) app.ws.select([id]);
     },
     linkCancel: () => {

@@ -50,7 +50,11 @@ import { randomModel } from "./random-model";
 export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const traceDir = join(repoRoot, "tests/traces");
 export const modelFiles = ["examples", "tests/models"].flatMap((d) =>
-  existsSync(join(repoRoot, d)) ? readdirSync(join(repoRoot, d)).filter((f) => f.endsWith(".ufsm")).map((f) => join(repoRoot, d, f)) : [],
+  existsSync(join(repoRoot, d))
+    ? readdirSync(join(repoRoot, d))
+        .filter((f) => f.endsWith(".ufsm"))
+        .map((f) => join(repoRoot, d, f))
+    : [],
 );
 export const load = (path: string): UfsmDocument => loadModel(readFileSync(path, "utf8")).doc;
 /** The livelock limit of differential runs, on both sides. */
@@ -79,7 +83,9 @@ export interface BackendSpec {
    * In-process backends: live machines the trace runner drives itself (traces with `raise` and `reenter` call back into
    * the machine). Without it, traces are replayed from `run`'s results; the drivers implement raise/reenter.
    */
-  machines?(units: { ir: IrModule; options?: CommonOptions }[]): Promise<{ make(k: number, host: MachineHost): RunningMachine; cleanup(): void }>;
+  machines?(
+    units: { ir: IrModule; options?: CommonOptions }[],
+  ): Promise<{ make(k: number, host: MachineHost): RunningMachine; cleanup(): void }>;
   /** Matches the generated text of a model with timers, and not that of a model without: the timer API. */
   timerApi: RegExp;
 }
@@ -87,7 +93,16 @@ export interface BackendSpec {
 /** test_guard1 with keywords of the target languages and blanket-impl method names as declaration names. */
 export function keywordModel(): UfsmDocument {
   const doc = load(join(repoRoot, "tests/models/test_guard1.ufsm"));
-  const names: Record<string, string> = { e1: "type", e2: "self", eA: "match", xA: "into", eB: "clone", xB: "Self", g1: "async", g2: "gen" };
+  const names: Record<string, string> = {
+    e1: "type",
+    e2: "self",
+    eA: "match",
+    xA: "into",
+    eB: "clone",
+    xB: "Self",
+    g1: "async",
+    g2: "gen",
+  };
   const d = doc.declarations;
   for (const x of [...d.events, ...d.signals, ...d.actions, ...d.guards]) x.name = names[x.name] ?? x.name;
   return doc;
@@ -100,14 +115,36 @@ export const SHAPES: [string, Expr, (a: boolean, b: boolean, c: boolean) => bool
   ["or_in_and", { op: "and", exprs: [{ op: "or", exprs: [g("a"), g("b")] }, g("c")] }, (a, b, c) => (a || b) && c],
   ["and_in_or", { op: "or", exprs: [g("a"), { op: "and", exprs: [g("b"), g("c")] }] }, (a, b, c) => a || (b && c)],
   ["not_and", { op: "not", expr: { op: "and", exprs: [g("a"), g("b")] } }, (a, b) => !(a && b)],
-  ["not_or_in_and", { op: "and", exprs: [{ op: "not", expr: { op: "or", exprs: [g("a"), g("b")] } }, g("c")] }, (a, b, c) => !(a || b) && c],
+  [
+    "not_or_in_and",
+    { op: "and", exprs: [{ op: "not", expr: { op: "or", exprs: [g("a"), g("b")] } }, g("c")] },
+    (a, b, c) => !(a || b) && c,
+  ],
   ["not_in_or", { op: "or", exprs: [g("a"), { op: "not", expr: g("b") }] }, (a, b) => a || !b],
   ["not_guard", { op: "not", expr: g("a") }, (a) => !a],
-  ["nots_in_and", { op: "and", exprs: [{ op: "not", expr: g("a") }, { op: "not", expr: g("c") }] }, (a, _b, c) => !a && !c],
+  [
+    "nots_in_and",
+    {
+      op: "and",
+      exprs: [
+        { op: "not", expr: g("a") },
+        { op: "not", expr: g("c") },
+      ],
+    },
+    (a, _b, c) => !a && !c,
+  ],
   // cfg[0] is 1 (state A) throughout
   ["in_slots", { op: "and", exprs: [{ op: "activeIn", region: 0, slots: [1, 2] }, g("a")] }, (a) => a],
-  ["not_in_slots", { op: "and", exprs: [{ op: "not", expr: { op: "activeIn", region: 0, slots: [2, 3] } }, g("a")] }, (a) => a],
-  ["not_active", { op: "or", exprs: [{ op: "not", expr: { op: "active", region: 0, slot: 1 } }, g("b")] }, (_a, b) => b],
+  [
+    "not_in_slots",
+    { op: "and", exprs: [{ op: "not", expr: { op: "activeIn", region: 0, slots: [2, 3] } }, g("a")] },
+    (a) => a,
+  ],
+  [
+    "not_active",
+    { op: "or", exprs: [{ op: "not", expr: { op: "active", region: 0, slot: 1 } }, g("b")] },
+    (_a, b) => b,
+  ],
 ];
 
 /** One step function per shape; it calls `hit` when its condition is true. */
@@ -134,7 +171,10 @@ export function shapesModule(): IrModule {
       name: `step_${n}`,
       returns: "bool" as const,
       flags: [],
-      body: [{ op: "if" as const, cond, then: [{ op: "call" as const, action: "act1" }] }, { op: "return" as const, value: false }],
+      body: [
+        { op: "if" as const, cond, then: [{ op: "call" as const, action: "act1" }] },
+        { op: "return" as const, value: false },
+      ],
     })),
   };
 }
@@ -145,7 +185,10 @@ function tailModule(): IrModule {
     name: "tail",
     regions: 1,
     regionNames: ["root"],
-    states: [{ id: "a", name: "A", ident: "A", label: "A", region: 0, slot: 1, final: false }, { id: "b", name: "B", ident: "B", label: "B", region: 0, slot: 2, final: false }],
+    states: [
+      { id: "a", name: "A", ident: "A", label: "A", region: 0, slot: 1, final: false },
+      { id: "b", name: "B", ident: "B", label: "B", region: 0, slot: 2, final: false },
+    ],
     history: [],
     transitions: [],
     trace: false,
@@ -169,7 +212,11 @@ function tailModule(): IrModule {
           {
             op: "if",
             cond: { op: "and", exprs: [{ op: "active", region: 0, slot: 1 }, g("g")] },
-            then: [{ op: "set", region: 0, slot: 2 }, { op: "call", action: "act1" }, { op: "return", value: true }],
+            then: [
+              { op: "set", region: 0, slot: 2 },
+              { op: "call", action: "act1" },
+              { op: "return", value: true },
+            ],
           },
           { op: "return", value: false },
         ],
@@ -205,7 +252,11 @@ export function describeBackend(spec: BackendSpec): void {
   ];
 
   describe(`${name} backend: conformance traces`, { skip }, () => {
-    const files = existsSync(traceDir) ? readdirSync(traceDir).filter((x) => x.endsWith(".json")).sort() : [];
+    const files = existsSync(traceDir)
+      ? readdirSync(traceDir)
+          .filter((x) => x.endsWith(".json"))
+          .sort()
+      : [];
     it(`${files.length} traces`, async () => {
       const traces = files.map((f) => {
         const path = join(traceDir, f);
@@ -217,13 +268,21 @@ export function describeBackend(spec: BackendSpec): void {
       if (spec.machines) {
         const { make, cleanup } = await spec.machines(traces);
         try {
-          failures = traces.flatMap(({ f, trace, doc }, k) => runTrace(doc, trace, {}, (_d, host) => make(k, host)).map((x) => `${f}: ${formatFailure(trace, x)}`));
+          failures = traces.flatMap(({ f, trace, doc }, k) =>
+            runTrace(doc, trace, {}, (_d, host) => make(k, host)).map((x) => `${f}: ${formatFailure(trace, x)}`),
+          );
         } finally {
           cleanup();
         }
       } else {
-        const results = await spec.run(traces.map(({ ir, options, trace }) => ({ ir, options, script: trace.steps, autoReset: false })));
-        failures = traces.flatMap(({ f, trace, doc }, k) => runTrace(doc, trace, {}, replayResults(results[k]!, `${name} driver`)).map((x) => `${f}: ${formatFailure(trace, x)}`));
+        const results = await spec.run(
+          traces.map(({ ir, options, trace }) => ({ ir, options, script: trace.steps, autoReset: false })),
+        );
+        failures = traces.flatMap(({ f, trace, doc }, k) =>
+          runTrace(doc, trace, {}, replayResults(results[k]!, `${name} driver`)).map(
+            (x) => `${f}: ${formatFailure(trace, x)}`,
+          ),
+        );
       }
       assert.equal(failures.length, 0, failures.join("\n"));
     });
@@ -231,7 +290,13 @@ export function describeBackend(spec: BackendSpec): void {
 
   describe(`${name} backend matches the interpreter`, { skip }, () => {
     it("on joins whose sources agree or disagree", async () => {
-      await compareAll([false, true].map((agree) => ({ label: `joins ${agree}`, doc: joinAgreementModel(agree), script: [{ reset: true }, { send: "e1" }, { send: "e1" }] })));
+      await compareAll(
+        [false, true].map((agree) => ({
+          label: `joins ${agree}`,
+          doc: joinAgreementModel(agree),
+          script: [{ reset: true }, { send: "e1" }, { send: "e1" }],
+        })),
+      );
     });
     it("on a model that needs every expression form", async () => {
       await compareAll(seeded("expressions", expressionModel(), [1, 2, 3, 4, 5, 6, 7, 8], 80));
@@ -274,7 +339,12 @@ export function describeBackend(spec: BackendSpec): void {
       assert.deepEqual(results!.map(outcome), expected);
     });
     it("keep the value of a final return (hand-built eventless step that ends in `return false`)", async () => {
-      const script: ScriptStep[] = [{ reset: true }, { send: "e1" }, { guards: { g: true }, send: "e1" }, { send: "e1" }];
+      const script: ScriptStep[] = [
+        { reset: true },
+        { send: "e1" },
+        { guards: { g: true }, send: "e1" },
+        { send: "e1" },
+      ];
       const [results] = await spec.run([{ ir: tailModule(), options: { maxMicrosteps: 5 }, script, autoReset: false }]);
       assert.deepEqual(results!.map(outcome), ["|a|-", "|a|-", "moved|b|-", "|b|-"]);
     });
@@ -290,7 +360,10 @@ export function describeBackend(spec: BackendSpec): void {
       }
     });
     it("have a timer API only for a model with timers", () => {
-      const text = (file: string): string => generateFiles(load(join(repoRoot, "tests/models", file)), spec.target).files.map((x) => x.text).join("\n");
+      const text = (file: string): string =>
+        generateFiles(load(join(repoRoot, "tests/models", file)), spec.target)
+          .files.map((x) => x.text)
+          .join("\n");
       assert.match(text("test_timers.ufsm"), spec.timerApi);
       assert.doesNotMatch(text("test_guard1.ufsm"), spec.timerApi);
     });
@@ -299,15 +372,30 @@ export function describeBackend(spec: BackendSpec): void {
       doc.targets = { [spec.target]: { signalQueue: 0, debugInfo: true, trace: "yes", unknownKey: 1 } };
       const { files, problems } = generateFiles(doc, spec.target);
       assert.equal(problems.length, 3, problems.join("\n"));
-      assert.ok(problems.some((p) => p.includes(`targets.${spec.target}.signalQueue`)), "a behaviour option is ignored");
-      assert.ok(problems.some((p) => p.includes(`targets.${spec.target}.trace`)), "an API option of the wrong type is ignored");
-      assert.ok(problems.some((p) => p.includes(`targets.${spec.target}.unknownKey`)), "an unknown key is reported");
-      const plain = generateFiles(load(join(repoRoot, "tests/models/test_signals.ufsm")), spec.target, { debugInfo: true });
+      assert.ok(
+        problems.some((p) => p.includes(`targets.${spec.target}.signalQueue`)),
+        "a behaviour option is ignored",
+      );
+      assert.ok(
+        problems.some((p) => p.includes(`targets.${spec.target}.trace`)),
+        "an API option of the wrong type is ignored",
+      );
+      assert.ok(
+        problems.some((p) => p.includes(`targets.${spec.target}.unknownKey`)),
+        "an unknown key is reported",
+      );
+      const plain = generateFiles(load(join(repoRoot, "tests/models/test_signals.ufsm")), spec.target, {
+        debugInfo: true,
+      });
       assert.deepEqual(files, plain.files, "debugInfo from targets is used, signalQueue is not");
     });
     it("report what cannot be generated as CodegenError", () => {
       const doc = load(join(repoRoot, "tests/models/test_signals.ufsm"));
-      assert.throws(() => generateFiles(doc, spec.target, { signalQueue: 0 }), CodegenError, "a model that emits needs a queue");
+      assert.throws(
+        () => generateFiles(doc, spec.target, { signalQueue: 0 }),
+        CodegenError,
+        "a model that emits needs a queue",
+      );
       doc.declarations.events.push({ id: "dup", name: doc.declarations.events[0]!.name });
       assert.throws(() => generateFiles(doc, spec.target), CodegenError, "a model with errors");
     });

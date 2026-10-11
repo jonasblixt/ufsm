@@ -43,7 +43,9 @@ export interface CanvasState {
   /** Ghost of what a click would place, at the pointer (placing tools while the pointer is idle). */
   ghost: { kind: ToolId; box: Box } | undefined;
   /** A vertex being placed (the press went down; the vertex is previewed in the document). */
-  placing: { kind: VertexKind | "region"; p0: Point; region: string; error: string | undefined; created: string | undefined } | undefined;
+  placing:
+    | { kind: VertexKind | "region"; p0: Point; region: string; error: string | undefined; created: string | undefined }
+    | undefined;
   /** A transition being drawn: its source and where it was clicked, the bend points so far and the pointer. */
   link: { source: string; from: Point; bends: Point[]; to: Point } | undefined;
   drag: Drag | undefined;

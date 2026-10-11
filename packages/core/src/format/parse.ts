@@ -34,7 +34,11 @@ export function readV1(data: unknown): UfsmDocument {
   if (isObject(data)) {
     if (data["format"] !== "ufsm") throw new UfsmFormatError("format", "expected 'ufsm'");
     const version = data["version"];
-    if (version !== 1) throw new UfsmFormatError("version", `unsupported version ${JSON.stringify(version)} (this build reads version 1)`);
+    if (version !== 1)
+      throw new UfsmFormatError(
+        "version",
+        `unsupported version ${JSON.stringify(version)} (this build reads version 1)`,
+      );
   }
   if (!Value.Check(V1_SCHEMA, data)) throw explain(data);
 
@@ -66,7 +70,12 @@ interface SchemaError {
 type Node = Obj;
 
 const pointer = (p: string): string[] =>
-  p === "" || p === "#" ? [] : p.replace(/^#?\//, "").split("/").map((t) => t.replace(/~1/g, "/").replace(/~0/g, "~"));
+  p === "" || p === "#"
+    ? []
+    : p
+        .replace(/^#?\//, "")
+        .split("/")
+        .map((t) => t.replace(/~1/g, "/").replace(/~0/g, "~"));
 
 function deref(node: Node): Node {
   let n = node;
@@ -217,7 +226,9 @@ function message(root: unknown, err: SchemaError, node: Node | undefined): UfsmF
   const own = ownMessage(node, err.keyword, value);
   switch (err.keyword) {
     case "required": {
-      const missing = (err.params["requiredProperties"] as string[] | undefined)?.find((k) => !(isObject(value) && k in value));
+      const missing = (err.params["requiredProperties"] as string[] | undefined)?.find(
+        (k) => !(isObject(value) && k in value),
+      );
       return new UfsmFormatError(missing ? dotted(root, err.instancePath, missing) : path, own ?? "missing");
     }
     case "additionalProperties": {
@@ -225,13 +236,17 @@ function message(root: unknown, err: SchemaError, node: Node | undefined): UfsmF
       return new UfsmFormatError(extra ? dotted(root, err.instancePath, extra) : path, own ?? "unknown field");
     }
     case "type":
-      return new UfsmFormatError(path, own ?? `expected ${TYPE_NAMES[String(err.params["type"])] ?? err.params["type"]}`);
+      return new UfsmFormatError(
+        path,
+        own ?? `expected ${TYPE_NAMES[String(err.params["type"])] ?? err.params["type"]}`,
+      );
     case "const":
       return new UfsmFormatError(path, own ?? `expected ${JSON.stringify(err.params["allowedValue"])}`);
     case "enum":
       return new UfsmFormatError(
         path,
-        own ?? `expected one of ${((err.params["allowedValues"] as unknown[]) ?? []).map(show).join(", ")}; got '${show(value)}'`,
+        own ??
+          `expected one of ${((err.params["allowedValues"] as unknown[]) ?? []).map(show).join(", ")}; got '${show(value)}'`,
       );
     default:
       return new UfsmFormatError(path, own ?? err.message);
@@ -247,5 +262,8 @@ function explain(root: unknown): UfsmFormatError {
     if (where.node) return message(root, err, where.node);
   }
   const first = errors[0];
-  return new UfsmFormatError(first ? dotted(root, first.instancePath) : "", first?.message ?? "not a valid v1 document");
+  return new UfsmFormatError(
+    first ? dotted(root, first.instancePath) : "",
+    first?.message ?? "not a valid v1 document",
+  );
 }

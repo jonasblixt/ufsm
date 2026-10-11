@@ -25,7 +25,13 @@ export function Problems({ doc, ops }: { doc: PanelDoc | undefined; ops: PanelOp
     <ul class="problems-list">
       {rows.map((r, i) => (
         <li key={`${r.code}-${r.id ?? ""}-${i}`}>
-          <button type="button" class="problem" disabled={!r.id} onClick={() => r.id && ops.jump(r.id)} title={r.id ? "Show it" : undefined}>
+          <button
+            type="button"
+            class="problem"
+            disabled={!r.id}
+            onClick={() => r.id && ops.jump(r.id)}
+            title={r.id ? "Show it" : undefined}
+          >
             <span class={`sev ${r.severity}`}>{r.severity}</span>
             <span class="msg">
               {r.message}

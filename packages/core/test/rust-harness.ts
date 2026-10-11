@@ -51,13 +51,25 @@ export function findRust(): RustTools {
   const tools: RustTools = {};
   try {
     writeFileSync(join(dir, "probe.rs"), 'fn main() { println!("ok"); }\n');
-    const b = spawnSync(rustc, ["--edition", RUST_EDITION, "probe.rs", "-o", exe("probe")], { cwd: dir, encoding: "utf8" });
-    if (b.status !== 0) return { problem: `${rustc} cannot build a hello-world: ${(b.stderr || b.stdout || "").trim().split(/\r?\n/)[0]}` };
+    const b = spawnSync(rustc, ["--edition", RUST_EDITION, "probe.rs", "-o", exe("probe")], {
+      cwd: dir,
+      encoding: "utf8",
+    });
+    if (b.status !== 0)
+      return {
+        problem: `${rustc} cannot build a hello-world: ${(b.stderr || b.stdout || "").trim().split(/\r?\n/)[0]}`,
+      };
     const run = spawnSync(join(dir, exe("probe")), [], { encoding: "utf8" });
     if (run.status !== 0 || run.stdout.trim() !== "ok") return { problem: `${rustc} builds programs that do not run` };
     tools.rustc = rustc;
     const clippy = process.env["CLIPPY_DRIVER"] ?? "clippy-driver";
-    if (spawnSync(clippy, ["--edition", RUST_EDITION, "--crate-type", "lib", "probe.rs", "-o", "probe.rlib"], { cwd: dir, encoding: "utf8" }).status === 0) tools.clippy = clippy;
+    if (
+      spawnSync(clippy, ["--edition", RUST_EDITION, "--crate-type", "lib", "probe.rs", "-o", "probe.rlib"], {
+        cwd: dir,
+        encoding: "utf8",
+      }).status === 0
+    )
+      tools.clippy = clippy;
     const rustfmt = process.env["RUSTFMT"] ?? "rustfmt";
     if (spawnSync(rustfmt, ["--version"], { encoding: "utf8" }).status === 0) tools.rustfmt = rustfmt;
   } finally {
@@ -72,12 +84,22 @@ export const RUSTC_FLAGS = ["-D", "warnings", "-W", "missing_docs"];
 export const CLIPPY_FLAGS = [...RUSTC_FLAGS, "-W", "clippy::pedantic"];
 
 /** Build a library crate from `lib.rs` in `dir`; throws with the compiler's messages on failure. */
-export async function buildLib(compiler: string, dir: string, flags: string[], edition = RUST_EDITION, name = "units"): Promise<void> {
+export async function buildLib(
+  compiler: string,
+  dir: string,
+  flags: string[],
+  edition = RUST_EDITION,
+  name = "units",
+): Promise<void> {
   try {
-    await execFileAsync(compiler, ["--edition", edition, "--crate-type", "rlib", "--crate-name", name, ...flags, "lib.rs", "-o", `lib${name}.rlib`], {
-      cwd: dir,
-      maxBuffer: 1 << 26,
-    });
+    await execFileAsync(
+      compiler,
+      ["--edition", edition, "--crate-type", "rlib", "--crate-name", name, ...flags, "lib.rs", "-o", `lib${name}.rlib`],
+      {
+        cwd: dir,
+        maxBuffer: 1 << 26,
+      },
+    );
   } catch (e) {
     const err = e as { stderr?: string; message: string };
     throw new Error(`Rust compilation failed:\n${String(err.stderr ?? err.message).slice(0, 6000)}`);
@@ -101,9 +123,15 @@ const str = (s: string): string => JSON.stringify(s);
  */
 function testCode(ir: IrModule, debug: boolean): string {
   const events = ir.events.map((e, i) => `        ${i} => Some(Event::${rustName(e.name)}),`);
-  const raise = (name: string): string => `        if self.raise.as_deref() == Some(${str(name)}) {\n            panic!("raised");\n        }\n`;
-  const actions = ir.actions.map((a) => `    fn ${rustName(a.name)}(&mut self) {\n        self.calls.push(${str(a.name)}.to_string());\n${raise(a.name)}    }`);
-  const guards = ir.guards.map((g, i) => `    fn ${rustName(g.name)}(&mut self) -> bool {\n${raise(g.name)}        self.guards[${i}]\n    }`);
+  const raise = (name: string): string =>
+    `        if self.raise.as_deref() == Some(${str(name)}) {\n            panic!("raised");\n        }\n`;
+  const actions = ir.actions.map(
+    (a) =>
+      `    fn ${rustName(a.name)}(&mut self) {\n        self.calls.push(${str(a.name)}.to_string());\n${raise(a.name)}    }`,
+  );
+  const guards = ir.guards.map(
+    (g, i) => `    fn ${rustName(g.name)}(&mut self) -> bool {\n${raise(g.name)}        self.guards[${i}]\n    }`,
+  );
   const at = ir.states.map((st) => `(${st.region}, ${st.slot})`).join(", ");
   const active = debug
     ? "        u16::try_from(i).ok().and_then(State::from_index).is_some_and(|s| self.is_active(s))"
@@ -121,7 +149,7 @@ function testCode(ir: IrModule, debug: boolean): string {
         "            TraceKind::Enter | TraceKind::Exit => {",
         '                let what = if kind == TraceKind::Enter { "enter" } else { "exit" };',
         "                let name = State::from_index(id).map(State::name);",
-        '                if name != LABELS.get(usize::from(id)).copied() {',
+        "                if name != LABELS.get(usize::from(id)).copied() {",
         '                    self.calls.push("BAD_STATE_NAME".to_string());',
         "                }",
         '                format!("@{what}:{id}")',
@@ -181,7 +209,11 @@ ${[...actions, ...guards, ...trace, ...timers].join("\n")}
 }
 
 /** Generate, compile and run the units; returns the results of every reset/send step, per unit. */
-export async function runRust(tools: RustTools, units: RustUnit[], options: { lint?: boolean } = {}): Promise<StepResult[][]> {
+export async function runRust(
+  tools: RustTools,
+  units: RustUnit[],
+  options: { lint?: boolean } = {},
+): Promise<StepResult[][]> {
   const dir = mkdtempSync(join(tmpdir(), "ufsm-rs-"));
   try {
     const lib: string[] = [
@@ -236,7 +268,9 @@ export async function runRust(tools: RustTools, units: RustUnit[], options: { li
         "}",
         "",
       );
-      makes.push(`        ${k} => Box::new(u${k}::Machine::new(TestHandler { calls: Vec::new(), guards: [false; 256], raise: None })),`);
+      makes.push(
+        `        ${k} => Box::new(u${k}::Machine::new(TestHandler { calls: Vec::new(), guards: [false; 256], raise: None })),`,
+      );
       states.push(`    &[${u.ir.states.map((s) => str(s.id)).join(", ")}],`);
     });
     lib.push(
@@ -260,7 +294,11 @@ export async function runRust(tools: RustTools, units: RustUnit[], options: { li
     // the generated code must be clean; the harness's own items are allowed what tests need (Box<dyn>, panics)
     await buildLib(compiler, dir, ["-D", "warnings", "-A", "clippy::pedantic", "-A", "missing_docs"]);
     try {
-      execFileSync(tools.rustc!, ["--edition", RUST_EDITION, "main.rs", "--extern", "units=libunits.rlib", "-L", ".", "-o", exe("driver")], { cwd: dir, stdio: "pipe" });
+      execFileSync(
+        tools.rustc!,
+        ["--edition", RUST_EDITION, "main.rs", "--extern", "units=libunits.rlib", "-L", ".", "-o", exe("driver")],
+        { cwd: dir, stdio: "pipe" },
+      );
     } catch (e) {
       const err = e as { stderr?: Buffer; message: string };
       throw new Error(`Rust driver failed to build:\n${String(err.stderr ?? err.message).slice(0, 4000)}`);
@@ -274,7 +312,11 @@ export async function runRust(tools: RustTools, units: RustUnit[], options: { li
       for (const s of u.script) input.push(...driverLines(s, gi, ei));
     });
     input.push("q");
-    const output = execFileSync(join(dir, exe("driver")), [], { input: `${input.join("\n")}\n`, encoding: "utf8", maxBuffer: 1 << 28 });
+    const output = execFileSync(join(dir, exe("driver")), [], {
+      input: `${input.join("\n")}\n`,
+      encoding: "utf8",
+      maxBuffer: 1 << 28,
+    });
     return parseDriverOutput(output, units.length);
   } finally {
     removeTempDir(dir);

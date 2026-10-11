@@ -37,7 +37,19 @@ import {
   type Box,
   type Point,
 } from "../diagram/geometry";
-import { GRID, type Diagram, type EdgeEnd, type FreeEdgeLayout, type Id, type Region, type RegionLayout, type Side, type State, type StateLayout, type UfsmDocument } from "../format/model";
+import {
+  GRID,
+  type Diagram,
+  type EdgeEnd,
+  type FreeEdgeLayout,
+  type Id,
+  type Region,
+  type RegionLayout,
+  type Side,
+  type State,
+  type StateLayout,
+  type UfsmDocument,
+} from "../format/model";
 import { followOffset, followPolyline, sideLength } from "../diagram/route";
 import { LABEL_FIRST_LINE } from "../diagram/label-layout";
 
@@ -58,7 +70,8 @@ export const snap = (v: number, grid = GRID): number => Math.round(v / grid) * g
 const ZERO: Point = { x: 0, y: 0 };
 const clamp = (v: number, lo: number, hi: number): number => Math.min(Math.max(v, lo), hi);
 /** Clamp to [lo, hi], but never further than `cur` already is: limits stop movement, they do not cause it. */
-const fit = (want: number, lo: number, hi: number, cur: number): number => clamp(want, Math.min(lo, cur), Math.max(hi, cur));
+const fit = (want: number, lo: number, hi: number, cur: number): number =>
+  clamp(want, Math.min(lo, cur), Math.max(hi, cur));
 const near = (a: Point, b: Point): boolean => Math.abs(a.x - b.x) < 1e-6 && Math.abs(a.y - b.y) < 1e-6;
 const sub = (a: Point, b: Point): Point => ({ x: a.x - b.x, y: a.y - b.y });
 
@@ -136,7 +149,12 @@ export function followTransitions(doc: UfsmDocument, before: DocIndex, change: (
   const old = new Map<Id, Snapshot>();
   for (const t of doc.machine.transitions) {
     const g = edgeGeometry(before, t.id);
-    if (g) old.set(t.id, { points: g.points, label: g.label && { x: g.label.x, y: g.label.y }, origin: edgeOrigin(before, t.id) });
+    if (g)
+      old.set(t.id, {
+        points: g.points,
+        label: g.label && { x: g.label.x, y: g.label.y },
+        origin: edgeOrigin(before, t.id),
+      });
   }
   change();
   const after = indexV1(doc);
@@ -167,7 +185,8 @@ export function followTransitions(doc: UfsmDocument, before: DocIndex, change: (
     if (e.label && was.label) {
       // the label hangs above its text line: follow the point where the first line is drawn
       const d = followOffset(was.points, { x: was.label.x, y: was.label.y + LABEL_FIRST_LINE }, ds, de);
-      const x = Math.round(was.label.x + d.x - o.x), y = Math.round(was.label.y + d.y - o.y);
+      const x = Math.round(was.label.x + d.x - o.x),
+        y = Math.round(was.label.y + d.y - o.y);
       if (x !== e.label.x || y !== e.label.y) e.label = { x, y, w: e.label.w };
     }
   }
@@ -226,10 +245,17 @@ export function resizeVertex(doc: UfsmDocument, id: Id, targets: EdgeTargets): v
   const fixed = (k: number): number | undefined => index.doc.diagram?.regions[regions[k]!.id]?.h;
   const all = s ? regions.flatMap((_, k) => contents(index, s, k)) : [];
   const minSide = s ? MIN_STATE : MIN_BAR;
-  const want = (e: Edge): number | undefined => (allowed.has(e) && targets[e] !== undefined ? snap(targets[e]) : undefined);
+  const want = (e: Edge): number | undefined =>
+    allowed.has(e) && targets[e] !== undefined ? snap(targets[e]) : undefined;
 
-  let x0 = b.x, y0 = b.y, x1 = b.x + b.w, y1 = b.y + b.h;
-  const left = want("left"), right = want("right"), top = want("top"), bottom = want("bottom");
+  let x0 = b.x,
+    y0 = b.y,
+    x1 = b.x + b.w,
+    y1 = b.y + b.h;
+  const left = want("left"),
+    right = want("right"),
+    top = want("top"),
+    bottom = want("bottom");
   if (left !== undefined) x0 = fit(left, lim.x0, Math.min(x1 - minSide, ...all.map((c) => c.x)), b.x);
   if (right !== undefined) x1 = fit(right, Math.max(x0 + minSide, ...all.map((c) => c.x + c.w)), lim.x1, b.x + b.w);
   const last = regions.length - 1;
@@ -247,10 +273,14 @@ export function resizeVertex(doc: UfsmDocument, id: Id, targets: EdgeTargets): v
   // top of the last band after the top edge moved (later bands do not move: the first band absorbs it)
   const lastTop = last < 0 ? 0 : last === 0 ? y0 + header : bands[last]!.box.y;
   if (bottom !== undefined) {
-    const lo = last < 0 ? y0 + Math.max(minSide, header) : Math.max(lastTop + MIN_BAND, ...contents(index, s!, last).map((c) => c.y + c.h));
+    const lo =
+      last < 0
+        ? y0 + Math.max(minSide, header)
+        : Math.max(lastTop + MIN_BAND, ...contents(index, s!, last).map((c) => c.y + c.h));
     y1 = fit(bottom, lo, lim.y1, b.y + b.h);
   }
-  const dl = x0 - b.x, dt = y0 - b.y;
+  const dl = x0 - b.x,
+    dt = y0 - b.y;
   if (dl === 0 && dt === 0 && x1 === b.x + b.w && y1 === b.y + b.h) return;
 
   followTransitions(doc, index, () => {
@@ -272,7 +302,8 @@ export function resizeVertex(doc: UfsmDocument, id: Id, targets: EdgeTargets): v
       }
       const h0 = regions.length ? fixed(0) : undefined;
       if (dt !== 0 && h0 !== undefined) regionLayoutOf(doc, regions[0]!.id).h = h0 - dt;
-      if (y1 !== b.y + b.h && last >= 0 && fixed(last) !== undefined) regionLayoutOf(doc, regions[last]!.id).h = y1 - lastTop;
+      if (y1 !== b.y + b.h && last >= 0 && fixed(last) !== undefined)
+        regionLayoutOf(doc, regions[last]!.id).h = y1 - lastTop;
     }
     if (dl === 0 && dt === 0) return;
     for (const t of doc.machine.transitions) {
@@ -298,7 +329,8 @@ export function moveRegionSplit(doc: UfsmDocument, stateId: Id, k: number, y: nu
   const s = index.vertices.get(stateId)?.vertex;
   if (s?.kind !== "state" || !s.regions || k < 0 || k >= s.regions.length - 1) return;
   const bands = regionBoxes(index, s);
-  const a = bands[k]!.box, b = bands[k + 1]!.box;
+  const a = bands[k]!.box,
+    b = bands[k + 1]!.box;
   const cur = a.y + a.h;
   const lo = Math.max(a.y + MIN_BAND, ...contents(index, s, k).map((c) => c.y + c.h));
   const hi = Math.min(b.y + b.h - MIN_BAND, ...contents(index, s, k + 1).map((c) => c.y));
@@ -325,7 +357,10 @@ function applyActionsHeight(doc: UfsmDocument, stateId: Id, want: number | undef
   const top = b.y + HEADER_H;
   const cur = block.height;
   const lines = (h: number): number => ACTION_PAD + ACTION_LINE_H * Math.floor((h - ACTION_PAD) / ACTION_LINE_H);
-  let h = want === undefined ? block.auto : clamp(ACTION_PAD + ACTION_LINE_H * Math.round((want - ACTION_PAD) / ACTION_LINE_H), ACTION_MIN_H, block.auto);
+  let h =
+    want === undefined
+      ? block.auto
+      : clamp(ACTION_PAD + ACTION_LINE_H * Math.round((want - ACTION_PAD) / ACTION_LINE_H), ACTION_MIN_H, block.auto);
   const bands = regionBoxes(index, s);
   const first = bands[0];
   if (first && h > cur) {
@@ -428,7 +463,8 @@ export function setBendPoint(doc: UfsmDocument, transitionId: Id, i: number, p: 
   const e = doc.diagram?.transitions[transitionId];
   if (!e || e.route === "s" || !e.via?.[i] || !index.transitions.has(transitionId)) return;
   const o = edgeOrigin(index, transitionId);
-  const x = Math.round(snap(p.x) - o.x), y = Math.round(snap(p.y) - o.y);
+  const x = Math.round(snap(p.x) - o.x),
+    y = Math.round(snap(p.y) - o.y);
   if (e.via[i]![0] !== x || e.via[i]![1] !== y) e.via[i] = [x, y];
 }
 
@@ -443,7 +479,8 @@ export function setLabel(doc: UfsmDocument, transitionId: Id, p: Point): void {
   const g = edgeGeometry(index, transitionId);
   if (!e || !g?.label) return;
   const base = e.route === "s" ? routeInfo(index, transitionId)!.labelAnchor : edgeOrigin(index, transitionId);
-  const x = Math.round(snap(p.x) - base.x), y = Math.round(snap(p.y) - base.y);
+  const x = Math.round(snap(p.x) - base.x),
+    y = Math.round(snap(p.y) - base.y);
   if (!e.label || e.label.x !== x || e.label.y !== y) e.label = { x, y, w: g.label.w };
 }
 
@@ -491,7 +528,8 @@ export function insertBendPoint(doc: UfsmDocument, transitionId: Id, p: Point): 
   const e = doc.diagram?.transitions[transitionId];
   const g = edgeGeometry(index, transitionId);
   if (!e || e.route === "s" || !g || g.points.length < 2) return -1;
-  let best = Infinity, seg = 0;
+  let best = Infinity,
+    seg = 0;
   for (let i = 1; i < g.points.length; i++) {
     const d = segmentDistance(p, g.points[i - 1]!, g.points[i]!);
     if (d < best) {
@@ -549,7 +587,8 @@ export function setOffPage(doc: UfsmDocument, regionId: Id, offPage: boolean): v
   // inline coordinates are relative to the owner's corner, a sheet's to its origin; a band spans the owner's width,
   // so only y changes
   const dy = band.y - vertexBox(index, info.owner.id).y;
-  const sx = 0, sy = offPage ? -dy : dy;
+  const sx = 0,
+    sy = offPage ? -dy : dy;
   const l = regionLayoutOf(doc, regionId);
   if (offPage) l.offPage = true;
   else {
@@ -581,8 +620,10 @@ export function setBarOrientation(doc: UfsmDocument, id: Id, horizontal: boolean
   if (v?.kind !== "fork" && v?.kind !== "join") return;
   const l = (diagramOf(doc).states[id] ??= { ...stateLayout(index, id) });
   if ((l.orientation === "horizontal") === horizontal) return;
-  const cx = l.x + l.w / 2, cy = l.y + l.h / 2;
-  const long = Math.max(l.w, l.h), thick = Math.min(l.w, l.h);
+  const cx = l.x + l.w / 2,
+    cy = l.y + l.h / 2;
+  const long = Math.max(l.w, l.h),
+    thick = Math.min(l.w, l.h);
   [l.w, l.h] = horizontal ? [long, thick] : [thick, long];
   l.x = Math.round(cx - l.w / 2);
   l.y = Math.round(cy - l.h / 2);

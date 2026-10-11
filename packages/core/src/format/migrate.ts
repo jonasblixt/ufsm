@@ -80,7 +80,10 @@ const COMPARE: Record<number, { op: string; word: string }> = {
 
 /** A compared value as part of an identifier: `1`, `m1` for -1, `2p5` for 2.5. */
 function valueWord(v: number): string {
-  return String(v).replace("-", "m").replace(".", "p").replace(/[^A-Za-z0-9_]/g, "_");
+  return String(v)
+    .replace("-", "m")
+    .replace(".", "p")
+    .replace(/[^A-Za-z0-9_]/g, "_");
 }
 
 function sanitize(name: string): string {
@@ -98,7 +101,12 @@ export function migrateV0(v0: V0Model): MigrationResult {
 
   // ---------------------------------------------------------------- declarations
   /** v0 uuid -> v1 id, per declaration kind (v0 ids of different kinds never collide, but be safe). */
-  const declId = { event: new Map<string, Id>(), signal: new Map<string, Id>(), action: new Map<string, Id>(), guard: new Map<string, Id>() };
+  const declId = {
+    event: new Map<string, Id>(),
+    signal: new Map<string, Id>(),
+    action: new Map<string, Id>(),
+    guard: new Map<string, Id>(),
+  };
   const usedNames = new Map<string, DeclKind>();
 
   const declare = (kind: DeclKind, prefix: string, list: V0Named[]): Decl[] => {
@@ -274,7 +282,10 @@ export function migrateV0(v0: V0Model): MigrationResult {
             tr.on = id;
             if (kind === undefined) {
               const name = (ev ? v0index.triggers : v0index.signals).get(t.trigger)?.name ?? t.trigger;
-              note("trigger-kind", `${where}: trigger kind missing in the v0 file; using ${ev ? "event" : "signal"} '${name}'`);
+              note(
+                "trigger-kind",
+                `${where}: trigger kind missing in the v0 file; using ${ev ? "event" : "signal"} '${name}'`,
+              );
             }
           }
         }
@@ -292,7 +303,10 @@ export function migrateV0(v0: V0Model): MigrationResult {
   for (const id of compared) {
     if (calledPlain.has(id)) continue;
     const i = declarations.guards.findIndex((d) => d.id === id);
-    note("removed", `guard '${declarations.guards[i]!.name}' was only compared with values; its terms now call the derived guards`);
+    note(
+      "removed",
+      `guard '${declarations.guards[i]!.name}' was only compared with values; its terms now call the derived guards`,
+    );
     declarations.guards.splice(i, 1);
   }
 
@@ -350,7 +364,8 @@ export function migrateV0(v0: V0Model): MigrationResult {
     return sheetFit(indexV1(doc)).length === 0;
   });
   diagram.paper = fits ?? v0Paper;
-  if (fits && fits !== v0Paper) note("paper", `paper ${v0Paper} is now ${fits}, so the drawing fits inside the frame and clear of the title block`);
+  if (fits && fits !== v0Paper)
+    note("paper", `paper ${v0Paper} is now ${fits}, so the drawing fits inside the frame and clear of the title block`);
 
   return { doc, notes };
 }

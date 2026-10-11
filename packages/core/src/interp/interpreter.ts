@@ -42,7 +42,10 @@ export class Interpreter {
   constructor(doc: UfsmDocument, host: MachineHost = {}, options: RunOptions = {}) {
     const errors = checkSemantics(doc).filter((d) => d.severity === "error");
     if (errors.length > 0) {
-      throw new MachineError("invalid-model", `model has ${errors.length} error(s): ${errors.map((e) => e.message).join("; ")}`);
+      throw new MachineError(
+        "invalid-model",
+        `model has ${errors.length} error(s): ${errors.map((e) => e.message).join("; ")}`,
+      );
     }
     this.structure = buildStructure(doc);
     this.host = host;
@@ -252,8 +255,13 @@ export class Interpreter {
       this.history.set(r.id, [top]);
       return;
     }
-    const leaves = [...this.active].filter((v) => v.within.has(r.id) && !v.regions.some((c) => c.vertices.some((x) => this.active.has(x))));
-    this.history.set(r.id, leaves.sort((a, b) => a.order - b.order));
+    const leaves = [...this.active].filter(
+      (v) => v.within.has(r.id) && !v.regions.some((c) => c.vertices.some((x) => this.active.has(x))),
+    );
+    this.history.set(
+      r.id,
+      leaves.sort((a, b) => a.order - b.order),
+    );
   }
 
   /** Compute and execute the entry set for `ts` plus default entry of `regions`. */

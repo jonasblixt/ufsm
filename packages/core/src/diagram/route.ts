@@ -26,7 +26,6 @@ export interface Pt {
   y: number;
 }
 
-
 /** Axis of the movable segment, if the shape has one: `x` = a vertical segment at that x, `y` = a horizontal one. */
 export type JogAxis = "x" | "y";
 export type Jog = { x: number } | { y: number };
@@ -49,7 +48,8 @@ const EPS = 0.5;
 /** Nearest grid line. */
 const onGrid = (v: number): number => Math.round(v / GRID) * GRID;
 /** The first grid line at or beyond `v` in direction `dir` (+1 or -1): stubs and lanes around boxes stay outside. */
-const gridOut = (v: number, dir: number): number => (dir > 0 ? Math.ceil(v / GRID - 1e-9) : Math.floor(v / GRID + 1e-9)) * GRID;
+const gridOut = (v: number, dir: number): number =>
+  (dir > 0 ? Math.ceil(v / GRID - 1e-9) : Math.floor(v / GRID + 1e-9)) * GRID;
 /** The first candidate that `ok` accepts (grid-aligned defaults first, then the exact ones), else the last. */
 const firstOk = (ok: (v: number) => boolean, ...vs: number[]): number => vs.find(ok) ?? vs[vs.length - 1]!;
 
@@ -67,8 +67,12 @@ export function simplifyPolyline(points: Pt[]): Pt[] {
     out.push({ x: p.x, y: p.y });
   }
   for (let i = out.length - 2; i >= 1; i--) {
-    const a = out[i - 1]!, b = out[i]!, c = out[i + 1]!;
-    const straight = (Math.abs(a.x - b.x) < 1e-9 && Math.abs(b.x - c.x) < 1e-9) || (Math.abs(a.y - b.y) < 1e-9 && Math.abs(b.y - c.y) < 1e-9);
+    const a = out[i - 1]!,
+      b = out[i]!,
+      c = out[i + 1]!;
+    const straight =
+      (Math.abs(a.x - b.x) < 1e-9 && Math.abs(b.x - c.x) < 1e-9) ||
+      (Math.abs(a.y - b.y) < 1e-9 && Math.abs(b.y - c.y) < 1e-9);
     // only merge when b lies between a and c (no fold back)
     if (straight && (b.x - a.x) * (c.x - b.x) >= 0 && (b.y - a.y) * (c.y - b.y) >= 0) out.splice(i, 1);
   }
@@ -82,7 +86,8 @@ export function simplifyPolyline(points: Pt[]): Pt[] {
  * `|stagger|`, which is only distinct for one-sided staggers.
  */
 export function sRoute(p: Pt, sp: Side, q: Pt, sq: Side, jog?: Jog, stagger = 0, lane = Math.abs(stagger)): SRoute {
-  const dp = outward(sp), dq = outward(sq);
+  const dp = outward(sp),
+    dq = outward(sq);
   const result = (pts: Pt[], j: SRoute["jog"]): SRoute => ({ points: simplifyPolyline(pts), jog: j });
 
   if (horizontal(sp) === horizontal(sq)) {
@@ -101,14 +106,23 @@ export function sRoute(p: Pt, sp: Side, q: Pt, sq: Side, jog?: Jog, stagger = 0,
         const mid = (A(p) + A(q)) / 2;
         const staggered = mid + stagger;
         const fits = (v: number): boolean => Math.min(A(p), A(q)) + 1 < v && v < Math.max(A(p), A(q)) - 1;
-        const j = jogValue(jog, along, firstOk(fits, onGrid(staggered), gridOut(staggered, 1), gridOut(staggered, -1), staggered, onGrid(mid), mid));
+        const j = jogValue(
+          jog,
+          along,
+          firstOk(fits, onGrid(staggered), gridOut(staggered, 1), gridOut(staggered, -1), staggered, onGrid(mid), mid),
+        );
         return result([p, make(j, Cc(p)), make(j, Cc(q)), q], { axis: along, value: j });
       }
       // facing away: leave, cross over, come back in
-      const a1 = gridOut(A(p) + dp * STUB, dp), a2 = gridOut(A(q) + dq * STUB, dq);
+      const a1 = gridOut(A(p) + dp * STUB, dp),
+        a2 = gridOut(A(q) + dq * STUB, dq);
       // cross between the ends, or around them when they are level (else the crossing would fold back)
       const level = Math.abs(Cc(p) - Cc(q)) < 2 * STUB;
-      const j = jogValue(jog, across, level ? gridOut(Math.max(Cc(p), Cc(q)) + 2 * STUB + lane, 1) : onGrid((Cc(p) + Cc(q)) / 2 + stagger));
+      const j = jogValue(
+        jog,
+        across,
+        level ? gridOut(Math.max(Cc(p), Cc(q)) + 2 * STUB + lane, 1) : onGrid((Cc(p) + Cc(q)) / 2 + stagger),
+      );
       return result([p, make(a1, Cc(p)), make(a1, j), make(a2, j), make(a2, Cc(q)), q], { axis: across, value: j });
     }
     // same side: U around both ends
@@ -136,14 +150,20 @@ export function sRoute(p: Pt, sp: Side, q: Pt, sq: Side, jog?: Jog, stagger = 0,
   const alongAxis: JogAxis = h ? "x" : "y";
   const staggered = a1 + stagger;
   const between = (v: number): boolean => dp * (v - A(p)) > 1 && dp * (A(q) - v) > 1;
-  const j = jogValue(jog, alongAxis, firstOk(between, onGrid(staggered), gridOut(staggered, 1), gridOut(staggered, -1), staggered, onGrid(a1), a1));
+  const j = jogValue(
+    jog,
+    alongAxis,
+    firstOk(between, onGrid(staggered), gridOut(staggered, 1), gridOut(staggered, -1), staggered, onGrid(a1), a1),
+  );
   return result([p, make(j, Cc(p)), make(j, cOut), make(A(q), cOut), q], { axis: alongAxis, value: j });
 }
 
 /** Which sides an automatic end should use, from the two boxes (source a, target b). */
 export function autoSides(a: Box, b: Box): [Side, Side] {
-  const gapRight = b.x - (a.x + a.w), gapLeft = a.x - (b.x + b.w);
-  const gapBelow = b.y - (a.y + a.h), gapAbove = a.y - (b.y + b.h);
+  const gapRight = b.x - (a.x + a.w),
+    gapLeft = a.x - (b.x + b.w);
+  const gapBelow = b.y - (a.y + a.h),
+    gapAbove = a.y - (b.y + b.h);
   const best = Math.max(gapRight, gapLeft, gapBelow, gapAbove);
   if (best <= 0) return ["right", "right"]; // overlapping or nested boxes: a U on the right
   if (best === gapRight) return ["right", "left"];
@@ -154,7 +174,8 @@ export function autoSides(a: Box, b: Box): [Side, Side] {
 
 /** Side facing from box `a` towards point `p` (for an automatic end whose other end is pinned). */
 export function sideTowards(a: Box, p: Pt, horizontalPreferred: boolean): Side {
-  const cx = a.x + a.w / 2, cy = a.y + a.h / 2;
+  const cx = a.x + a.w / 2,
+    cy = a.y + a.h / 2;
   if (horizontalPreferred) return p.x >= cx ? "right" : "left";
   return p.y >= cy ? "bottom" : "top";
 }
@@ -172,8 +193,15 @@ export function sideLength(b: Box, s: Side): number {
 export function labelAnchor(points: Pt[]): { anchor: Pt; horizontal: boolean; length: number } {
   const segs = points.slice(1).map((b, i) => ({ a: points[i]!, b }));
   const hs = segs.filter((s) => Math.abs(s.a.y - s.b.y) < 1e-9 && Math.abs(s.a.x - s.b.x) > 1e-9);
-  const pick = hs.find((s) => Math.abs(s.b.x - s.a.x) >= 40) ?? hs.sort((u, v) => Math.abs(v.b.x - v.a.x) - Math.abs(u.b.x - u.a.x))[0];
-  if (pick) return { anchor: { x: Math.min(pick.a.x, pick.b.x), y: pick.a.y }, horizontal: true, length: Math.abs(pick.b.x - pick.a.x) };
+  const pick =
+    hs.find((s) => Math.abs(s.b.x - s.a.x) >= 40) ??
+    hs.sort((u, v) => Math.abs(v.b.x - v.a.x) - Math.abs(u.b.x - u.a.x))[0];
+  if (pick)
+    return {
+      anchor: { x: Math.min(pick.a.x, pick.b.x), y: pick.a.y },
+      horizontal: true,
+      length: Math.abs(pick.b.x - pick.a.x),
+    };
   const mid = segs[Math.floor((segs.length - 1) / 2)]!;
   return { anchor: { x: (mid.a.x + mid.b.x) / 2, y: (mid.a.y + mid.b.y) / 2 }, horizontal: false, length: 0 };
 }
@@ -208,15 +236,19 @@ export function followPolyline(points: Pt[], ds: Pt, de: Pt): Pt[] {
 export function followOffset(points: Pt[], pt: Pt, ds: Pt, de: Pt): Pt {
   if (points.length < 2) return { x: ds.x, y: ds.y };
   const d = followDeltas(points.length, ds, de);
-  let best = Infinity, out: Pt = { x: ds.x, y: ds.y };
+  let best = Infinity,
+    out: Pt = { x: ds.x, y: ds.y };
   for (let i = 1; i < points.length; i++) {
-    const a = points[i - 1]!, b = points[i]!;
+    const a = points[i - 1]!,
+      b = points[i]!;
     const len = Math.hypot(b.x - a.x, b.y - a.y);
-    const t = len > 0 ? Math.min(Math.max(((pt.x - a.x) * (b.x - a.x) + (pt.y - a.y) * (b.y - a.y)) / (len * len), 0), 1) : 0;
+    const t =
+      len > 0 ? Math.min(Math.max(((pt.x - a.x) * (b.x - a.x) + (pt.y - a.y) * (b.y - a.y)) / (len * len), 0), 1) : 0;
     const dist = Math.hypot(pt.x - (a.x + t * (b.x - a.x)), pt.y - (a.y + t * (b.y - a.y)));
     if (dist < best) {
       best = dist;
-      const da = d[i - 1]!, db = d[i]!;
+      const da = d[i - 1]!,
+        db = d[i]!;
       out = { x: (1 - t) * da.x + t * db.x, y: (1 - t) * da.y + t * db.y };
     }
   }

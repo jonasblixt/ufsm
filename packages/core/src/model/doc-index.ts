@@ -1,7 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
-import type { Decl, DeclKind, Id, InternalTransition, Region, State, Timer, Transition, UfsmDocument, Vertex } from "../format/model";
+import type {
+  Decl,
+  DeclKind,
+  Id,
+  InternalTransition,
+  Region,
+  State,
+  Timer,
+  Transition,
+  UfsmDocument,
+  Vertex,
+} from "../format/model";
 
 export interface VertexInfo {
   vertex: Vertex;

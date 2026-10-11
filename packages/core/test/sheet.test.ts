@@ -7,7 +7,18 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv from "ajv";
-import { PAPER_SIZES, checkV1, indexV1, loadModel, migrateV0, parseV1, serializeV1, v0, type Paper, type UfsmDocument } from "../src";
+import {
+  PAPER_SIZES,
+  checkV1,
+  indexV1,
+  loadModel,
+  migrateV0,
+  parseV1,
+  serializeV1,
+  v0,
+  type Paper,
+  type UfsmDocument,
+} from "../src";
 import { newDocument } from "../src/edit";
 import {
   FRAME_BORDER,
@@ -60,7 +71,14 @@ function testDoc(paper: Paper = "A4"): UfsmDocument {
               kind: "state",
               name: "A",
               regions: [
-                { id: "r1", name: "Inner", states: [{ id: "s4", kind: "state", name: "C" }, { id: "s5", kind: "state", name: "D" }] },
+                {
+                  id: "r1",
+                  name: "Inner",
+                  states: [
+                    { id: "s4", kind: "state", name: "C" },
+                    { id: "s5", kind: "state", name: "D" },
+                  ],
+                },
                 { id: "r2", states: [{ id: "s6", kind: "state", name: "E" }] },
               ],
             },
@@ -95,7 +113,12 @@ describe("sheet frame", () => {
     for (const p of PAPERS) {
       const f = sheetFrame(p);
       assert.deepEqual(f.sheet, { x: -FRAME_MARGIN, y: -FRAME_MARGIN, ...PAPER_SIZES[p] });
-      assert.deepEqual(f.area, { x: 0, y: 0, w: PAPER_SIZES[p].w - 2 * FRAME_MARGIN, h: PAPER_SIZES[p].h - 2 * FRAME_MARGIN });
+      assert.deepEqual(f.area, {
+        x: 0,
+        y: 0,
+        w: PAPER_SIZES[p].w - 2 * FRAME_MARGIN,
+        h: PAPER_SIZES[p].h - 2 * FRAME_MARGIN,
+      });
       assert.equal(f.border.x, FRAME_BORDER - FRAME_MARGIN);
       assert.equal(f.border.x + f.border.w, f.sheet.x + f.sheet.w - FRAME_BORDER);
       assert.ok(FRAME_BORDER / MM >= 5, `${p}: the border line is printable (≥ 5 mm from the edge)`);
@@ -126,7 +149,10 @@ describe("sheet frame", () => {
     assert.equal(zoneOf(f, { x: -1, y: 10 }), undefined);
     assert.equal(zoneOf(f, { x: 10, y: f.area.h + 1 }), undefined);
     const a1 = sheetFrame("A1");
-    const letters = a1.ys.slice(0, -1).map((y) => zoneOf(a1, { x: 1, y: y + 1 })!.slice(0, 1)).join("");
+    const letters = a1.ys
+      .slice(0, -1)
+      .map((y) => zoneOf(a1, { x: 1, y: y + 1 })!.slice(0, 1))
+      .join("");
     assert.equal(letters, "ABCDEFGHJKLM");
     assert.equal(zoneOf(a1, { x: a1.area.w, y: 1 }), "A16");
   });
@@ -134,7 +160,12 @@ describe("sheet frame", () => {
   it("the title block sits in the bottom-right corner of the drawing area", () => {
     for (const p of PAPERS) {
       const { titleBlock: tb, area } = sheetFrame(p);
-      assert.deepEqual(tb, { x: area.w - TITLE_BLOCK_W, y: area.h - TITLE_BLOCK_H, w: TITLE_BLOCK_W, h: TITLE_BLOCK_H });
+      assert.deepEqual(tb, {
+        x: area.w - TITLE_BLOCK_W,
+        y: area.h - TITLE_BLOCK_H,
+        w: TITLE_BLOCK_W,
+        h: TITLE_BLOCK_H,
+      });
     }
   });
 });
@@ -150,7 +181,11 @@ describe("sheets of a document", () => {
         [2, "r1", "A · Inner", "/A · Inner"],
       ],
     );
-    assert.equal(sheetInfo(index, index.regions.get("r2")!.region).number, 1, "an inline region is drawn on its parent's sheet");
+    assert.equal(
+      sheetInfo(index, index.regions.get("r2")!.region).number,
+      1,
+      "an inline region is drawn on its parent's sheet",
+    );
     assert.equal(sheets(index), all, "cached per index");
   });
 
@@ -160,7 +195,10 @@ describe("sheets of a document", () => {
       const all = sheets(index);
       const offPage = [...index.regions.values()].filter((r) => isSheet(index, r.region));
       assert.equal(all.length, offPage.length, rel);
-      assert.deepEqual(all.map((s) => s.number), all.map((_, i) => i + 1));
+      assert.deepEqual(
+        all.map((s) => s.number),
+        all.map((_, i) => i + 1),
+      );
       for (const s of all.slice(1)) {
         assert.equal(sheetInfo(index, s.region), s, "a sheet is drawn on itself");
         const owner = index.regions.get(s.region.id)!.owner!;
@@ -190,10 +228,17 @@ describe("title block", () => {
       let area = 0;
       for (const c of cells) {
         area += c.box.w * c.box.h;
-        assert.ok(c.box.x >= tb.x && c.box.y >= tb.y && c.box.x + c.box.w <= tb.x + tb.w && c.box.y + c.box.h <= tb.y + tb.h, `${c.key} inside`);
+        assert.ok(
+          c.box.x >= tb.x && c.box.y >= tb.y && c.box.x + c.box.w <= tb.x + tb.w && c.box.y + c.box.h <= tb.y + tb.h,
+          `${c.key} inside`,
+        );
         for (const o of cells) {
           if (o === c) continue;
-          const overlap = c.box.x < o.box.x + o.box.w && o.box.x < c.box.x + c.box.w && c.box.y < o.box.y + o.box.h && o.box.y < c.box.y + c.box.h;
+          const overlap =
+            c.box.x < o.box.x + o.box.w &&
+            o.box.x < c.box.x + c.box.w &&
+            c.box.y < o.box.y + o.box.h &&
+            o.box.y < c.box.y + c.box.h;
           assert.ok(!overlap, `${c.key} and ${o.key} do not overlap`);
         }
       }
@@ -203,10 +248,20 @@ describe("title block", () => {
 
   it("filled from the model, the file name and the free fields", () => {
     const doc = testDoc("A3");
-    doc.diagram!.titleBlock = { revision: "C", date: "2026-10-10", author: "Jonas", company: "blxt", document: "UF-001" };
+    doc.diagram!.titleBlock = {
+      revision: "C",
+      date: "2026-10-10",
+      author: "Jonas",
+      company: "blxt",
+      document: "UF-001",
+    };
     const index = indexV1(doc);
     const val = (region: string, fileName?: string): Record<string, string> =>
-      Object.fromEntries(titleBlockCells(index, index.regions.get(region)!.region, fileName === undefined ? {} : { fileName }).map((c) => [c.key, c.value]));
+      Object.fromEntries(
+        titleBlockCells(index, index.regions.get(region)!.region, fileName === undefined ? {} : { fileName }).map(
+          (c) => [c.key, c.value],
+        ),
+      );
     assert.deepEqual(val("r0", "frame.ufsm"), {
       title: "frame",
       revision: "C",
@@ -223,7 +278,9 @@ describe("title block", () => {
     assert.equal(val("r1").sheet, "2 / 2");
     assert.equal(val("r1").path, "/A · Inner");
     assert.equal(val("r1").file, "", "no file name yet");
-    const free = titleBlockCells(index, doc.machine.root).filter((c) => c.free).map((c) => c.free);
+    const free = titleBlockCells(index, doc.machine.root)
+      .filter((c) => c.free)
+      .map((c) => c.free);
     assert.deepEqual(free, ["revision", "date", "author", "company", "document"]);
   });
 
@@ -234,9 +291,14 @@ describe("title block", () => {
     assert.match(text, /"paper": "A4",\n    "titleBlock": \{ "revision": "A", "document": "X-1" \},\n    "states"/);
     assert.equal(serializeV1(parseV1(text)), text);
     const schema = JSON.parse(readFileSync(join(repoRoot, "packages/core/schema/ufsm-v1.schema.json"), "utf8"));
-    const validate = new Ajv({ allErrors: true, strict: false } as ConstructorParameters<typeof Ajv>[0]).compile(schema);
+    const validate = new Ajv({ allErrors: true, strict: false } as ConstructorParameters<typeof Ajv>[0]).compile(
+      schema,
+    );
     assert.ok(validate(JSON.parse(text)), JSON.stringify(validate.errors));
-    assert.ok(!validate(JSON.parse(text.replace('"revision": "A"', '"rev": "A"'))), "the schema rejects unknown fields too");
+    assert.ok(
+      !validate(JSON.parse(text.replace('"revision": "A"', '"rev": "A"'))),
+      "the schema rejects unknown fields too",
+    );
     doc.diagram!.titleBlock = { revision: "" };
     assert.doesNotMatch(serializeV1(doc), /titleBlock/, "empty fields and blocks are not written");
     assert.throws(() => parseV1(text.replace('"revision": "A"', '"rev": "A"')), /rev/);
@@ -272,26 +334,59 @@ describe("fit on the sheet", () => {
     // B just above the block, A left of it and lower: t2's S route runs inside the block
     doc.diagram!.states["s3"] = { x: tb.x + 300, y: tb.y - 120, w: 100, h: 100 };
     doc.diagram!.states["s2"] = { x: tb.x - 400, y: tb.y - 80, w: 300, h: 200 };
-    assert.deepEqual(sheetFit(indexV1(doc)).map((p) => [p.id, p.problem]), [["t2", "title-block"]]);
+    assert.deepEqual(
+      sheetFit(indexV1(doc)).map((p) => [p.id, p.problem]),
+      [["t2", "title-block"]],
+    );
     doc.diagram!.states["s2"]!.x = tb.x - 200;
-    assert.deepEqual(sheetFit(indexV1(doc)).map((p) => [p.id, p.problem]), [["s2", "title-block"]], "A overlaps; t2 starts at A, so it is not listed again");
+    assert.deepEqual(
+      sheetFit(indexV1(doc)).map((p) => [p.id, p.problem]),
+      [["s2", "title-block"]],
+      "A overlaps; t2 starts at A, so it is not listed again",
+    );
     doc.diagram!.states["s2"] = { x: tb.x - 400, y: tb.y - 200, w: 300, h: 160 };
-    doc.diagram!.transitions["t2"] = { from: { side: "bottom", offset: 150 }, to: { side: "bottom", offset: 50 }, via: [[tb.x - 250, tb.y + 60], [tb.x + 350, tb.y + 60]] };
-    assert.deepEqual(sheetFit(indexV1(doc)).map((p) => [p.id, p.problem]), [["t2", "title-block"]]);
-    doc.diagram!.transitions["t2"] = { from: { side: "bottom", offset: 150 }, to: { side: "bottom", offset: 50 }, via: [[tb.x - 250, tb.h + tb.y + 60], [tb.x + 350, tb.y + tb.h + 60]] };
-    assert.deepEqual(sheetFit(indexV1(doc)).map((p) => [p.id, p.problem]), [["t2", "outside"]]);
+    doc.diagram!.transitions["t2"] = {
+      from: { side: "bottom", offset: 150 },
+      to: { side: "bottom", offset: 50 },
+      via: [
+        [tb.x - 250, tb.y + 60],
+        [tb.x + 350, tb.y + 60],
+      ],
+    };
+    assert.deepEqual(
+      sheetFit(indexV1(doc)).map((p) => [p.id, p.problem]),
+      [["t2", "title-block"]],
+    );
+    doc.diagram!.transitions["t2"] = {
+      from: { side: "bottom", offset: 150 },
+      to: { side: "bottom", offset: 50 },
+      via: [
+        [tb.x - 250, tb.h + tb.y + 60],
+        [tb.x + 350, tb.y + tb.h + 60],
+      ],
+    };
+    assert.deepEqual(
+      sheetFit(indexV1(doc)).map((p) => [p.id, p.problem]),
+      [["t2", "outside"]],
+    );
   });
 
   it("every repository model fits its sheets", () => {
     const rels = [
-      ...["examples", "tests/models"].flatMap((d) => readdirSync(join(repoRoot, d)).filter((f) => f.endsWith(".ufsm")).map((f) => `${d}/${f}`)),
+      ...["examples", "tests/models"].flatMap((d) =>
+        readdirSync(join(repoRoot, d))
+          .filter((f) => f.endsWith(".ufsm"))
+          .map((f) => `${d}/${f}`),
+      ),
       "apps/editor/src/fsm/editor.ufsm",
       "apps/editor/test/browser/edit.ufsm",
     ];
     assert.ok(rels.length >= 40, `${rels.length} models`);
     // The label of t6 runs past the right edge of the frame in the converted v0 file, which must stay as converted.
     const known: Record<string, string[]> = {
-      "tests/models/test_external_transitions.ufsm": ["outside-frame t6: transition P -> P lies outside the frame (sheet 1, A6)"],
+      "tests/models/test_external_transitions.ufsm": [
+        "outside-frame t6: transition P -> P lies outside the frame (sheet 1, A6)",
+      ],
     };
     for (const rel of rels) assert.deepEqual(codes(load(rel)), known[rel] ?? [], rel);
   });
@@ -304,7 +399,10 @@ describe("fit on the sheet", () => {
     const { doc, notes } = migrateV0(v0doc);
     assert.equal(doc.diagram!.paper, "A3");
     assert.deepEqual(sheetFit(indexV1(doc)), []);
-    assert.deepEqual(notes.filter((n) => n.code === "paper").map((n) => n.message), ["paper A4 is now A3, so the drawing fits inside the frame and clear of the title block"]);
+    assert.deepEqual(
+      notes.filter((n) => n.code === "paper").map((n) => n.message),
+      ["paper A4 is now A3, so the drawing fits inside the frame and clear of the title block"],
+    );
     const small = migrateV0(v0.parseV0(readFileSync(join(repoRoot, "old/tests/test_guard1.ufsm"), "utf8")));
     assert.equal(small.doc.diagram!.paper, "A4", "a drawing that fits keeps its paper");
     assert.ok(!small.notes.some((n) => n.code === "paper"));
@@ -314,7 +412,12 @@ describe("fit on the sheet", () => {
   });
 
   it("only the outermost element is listed, on every repository model squeezed onto A4", () => {
-    for (const rel of ["tests/models/canvas.ufsm", "tests/models/test_nested_states.ufsm", "tests/models/test_nested_states2.ufsm", "apps/editor/src/fsm/editor.ufsm"]) {
+    for (const rel of [
+      "tests/models/canvas.ufsm",
+      "tests/models/test_nested_states.ufsm",
+      "tests/models/test_nested_states2.ufsm",
+      "apps/editor/src/fsm/editor.ufsm",
+    ]) {
       const doc = load(rel);
       doc.diagram!.paper = "A4";
       const index = indexV1(doc);
@@ -324,7 +427,7 @@ describe("fit on the sheet", () => {
       // owners up to the sheet the vertex is drawn on (an off-page region starts a sheet of its own)
       const owners = (id: string): string[] => {
         const out: string[] = [];
-        for (let r = index.vertices.get(id)!.region; !isSheet(index, r); ) {
+        for (let r = index.vertices.get(id)!.region; !isSheet(index, r);) {
           const o = index.regions.get(r.id)!.owner!;
           out.push(o.id);
           r = index.vertices.get(o.id)!.region;
@@ -348,15 +451,31 @@ describe("transition labels", () => {
     assert.deepEqual(transitionLabelItems(index, t), ["selfP", " / aP()"]);
     const at = { x: 100, y: 200, w: 120 };
     const one = layoutTransitionLabel(index, t, at, (text) => text.length * 7);
-    assert.deepEqual(one.items.map((i) => [i.x, i.y]), [[100, 200 + LABEL_FIRST_LINE], [145, 200 + LABEL_FIRST_LINE]]);
+    assert.deepEqual(
+      one.items.map((i) => [i.x, i.y]),
+      [
+        [100, 200 + LABEL_FIRST_LINE],
+        [145, 200 + LABEL_FIRST_LINE],
+      ],
+    );
     assert.deepEqual(one.box, { x: 100, y: 200 + LABEL_TOP, w: 94, h: 20 });
     const narrow = layoutTransitionLabel(index, t, { ...at, w: 60 }, (text) => text.length * 7);
-    assert.deepEqual(narrow.items.map((i) => [i.x, i.y]), [[100, 240], [100, 260]], "the second item wraps");
+    assert.deepEqual(
+      narrow.items.map((i) => [i.x, i.y]),
+      [
+        [100, 240],
+        [100, 260],
+      ],
+      "the second item wraps",
+    );
     assert.equal(narrow.box.h, 40);
   });
 
   it("count in the sheet fit: a label past the frame is reported for its transition", () => {
     const doc = load("tests/models/test_external_transitions.ufsm");
-    assert.deepEqual(sheetFit(indexV1(doc)).map((p) => `${p.id} ${p.problem}`), ["t6 outside"]);
+    assert.deepEqual(
+      sheetFit(indexV1(doc)).map((p) => `${p.id} ${p.problem}`),
+      ["t6 outside"],
+    );
   });
 });

@@ -199,7 +199,8 @@ export function hiddenMarkerAt(index: DocIndex, sheet: Region, x: number, y: num
     const marker = actionBlock(index, v).hiddenMarker;
     if (!marker) return;
     const b = vertexBox(index, v.id);
-    if (x >= b.x + marker.x && x <= b.x + marker.x + marker.w && y >= b.y + marker.y && y <= b.y + marker.y + marker.h) found = v;
+    if (x >= b.x + marker.x && x <= b.x + marker.x + marker.w && y >= b.y + marker.y && y <= b.y + marker.y + marker.h)
+      found = v;
   });
   return found;
 }

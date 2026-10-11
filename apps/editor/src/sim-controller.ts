@@ -73,21 +73,32 @@ export function createSimController(app: App): SimController {
   };
 
   const saveTrace = async (): Promise<void> => {
-    const d = ws.active, sim = d?.sim;
+    const d = ws.active,
+      sim = d?.sim;
     if (!d || !sim) return;
     try {
       const name = `${d.fileName.replace(/\.ufsm$/i, "")}.json`;
-      const written = await saveTextFile(name, { name: "uFSM trace", extensions: ["json"] }, (path) => traceText(d, sim, inTauri ? path : undefined));
-      if (written) ws.say(`Saved the trace (${sim.steps.length} steps) as ${baseName(written)}. Replay it with: ufsm trace ${baseName(written)}`);
+      const written = await saveTextFile(name, { name: "uFSM trace", extensions: ["json"] }, (path) =>
+        traceText(d, sim, inTauri ? path : undefined),
+      );
+      if (written)
+        ws.say(
+          `Saved the trace (${sim.steps.length} steps) as ${baseName(written)}. Replay it with: ufsm trace ${baseName(written)}`,
+        );
     } catch (e) {
       ws.say(`Saving the trace failed: ${String(e)}`);
     }
   };
 
   const copyTrace = async (): Promise<void> => {
-    const d = ws.active, sim = d?.sim;
+    const d = ws.active,
+      sim = d?.sim;
     if (!d || !sim) return;
-    ws.say((await copyText(traceText(d, sim, undefined))) ? `Copied the trace (${sim.steps.length} steps).` : "Could not use the clipboard.");
+    ws.say(
+      (await copyText(traceText(d, sim, undefined)))
+        ? `Copied the trace (${sim.steps.length} steps).`
+        : "Could not use the clipboard.",
+    );
   };
 
   /** A running, up-to-date simulation of the active machine. */
@@ -150,9 +161,14 @@ export function createSimController(app: App): SimController {
       d.codeView = id;
       ws.changed("shell");
     },
-    copy: (text, what) => void copyText(text).then((ok) => ws.say(ok ? `Copied ${what}.` : "Could not use the clipboard.")),
+    copy: (text, what) =>
+      void copyText(text).then((ok) => ws.say(ok ? `Copied ${what}.` : "Could not use the clipboard.")),
     save: (file: GeneratedFile) =>
-      void saveTextFile(file.name, { name: file.name.split(".").pop()!.toUpperCase(), extensions: [file.name.split(".").pop()!] }, () => file.text)
+      void saveTextFile(
+        file.name,
+        { name: file.name.split(".").pop()!.toUpperCase(), extensions: [file.name.split(".").pop()!] },
+        () => file.text,
+      )
         .then((p) => p && ws.say(`Saved ${baseName(p)}`))
         .catch((e: unknown) => ws.say(`Saving failed: ${String(e)}`)),
     saveAll: (files) =>
@@ -203,7 +219,9 @@ export function createSimController(app: App): SimController {
       statusEl.hidden = !sim;
       if (!d || !sim) return;
       const stale = d.simStale;
-      statusEl.textContent = stale ? "Simulation out of date" : `Simulating · step ${sim.steps.length - 1}${sim.terminated ? " · terminated" : ""}`;
+      statusEl.textContent = stale
+        ? "Simulation out of date"
+        : `Simulating · step ${sim.steps.length - 1}${sim.terminated ? " · terminated" : ""}`;
       statusEl.classList.toggle("stale", stale);
     },
   };

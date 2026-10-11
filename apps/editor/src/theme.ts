@@ -9,7 +9,19 @@
  * renderer on every draw). No DOM.
  */
 import { effectiveAppearance, type Appearance, type ThemeSetting } from "./settings";
-import { cssColor, luminance, parseColor, resolveTokens, resolverInfo, TokenError, withAlpha, type ResolverInfo, type Rgba, type Token, type TokenFiles } from "./tokens";
+import {
+  cssColor,
+  luminance,
+  parseColor,
+  resolveTokens,
+  resolverInfo,
+  TokenError,
+  withAlpha,
+  type ResolverInfo,
+  type Rgba,
+  type Token,
+  type TokenFiles,
+} from "./tokens";
 import uiTokens from "./themes/ui.tokens.json";
 import gruvboxResolver from "./themes/gruvbox/gruvbox.resolver.json";
 import gruvboxPalette from "./themes/gruvbox/gruvbox.tokens.json";
@@ -80,7 +92,10 @@ export interface ThemeEntry {
 }
 
 /** Bundled themes, in the order the Settings tab lists them. */
-export const THEMES: readonly ThemeEntry[] = ["catppuccin", "everforest", "gruvbox", "solarized"].map((id) => ({ id, resolver: `${id}/${id}.resolver.json` }));
+export const THEMES: readonly ThemeEntry[] = ["catppuccin", "everforest", "gruvbox", "solarized"].map((id) => ({
+  id,
+  resolver: `${id}/${id}.resolver.json`,
+}));
 
 /** The theme used when settings.json names one that does not exist (and the default, see settings.ts). */
 export const FALLBACK_THEME: ThemeEntry = THEMES.find((t) => t.id === "gruvbox")!;
@@ -106,16 +121,61 @@ export interface CanvasColors {
 
 export type CanvasColor = keyof CanvasColors;
 
-const CANVAS_KEYS: readonly CanvasColor[] = ["background", "paper", "grid", "stateFill", "ink", "selection", "touching", "ok", "refuse", "warning", "badgeMark", "active", "would"];
+const CANVAS_KEYS: readonly CanvasColor[] = [
+  "background",
+  "paper",
+  "grid",
+  "stateFill",
+  "ink",
+  "selection",
+  "touching",
+  "ok",
+  "refuse",
+  "warning",
+  "badgeMark",
+  "active",
+  "would",
+];
 
 /** CSS custom properties every theme must produce (style.css uses them). */
 export const CSS_COLORS: readonly string[] = [
-  "bg", "bg0", "bg1", "bg2", "bg-dark", "fg", "fg4", "gray", "red", "green", "yellow", "blue", "purple", "aqua", "orange",
-  "chrome", "card", "card-edge", "shadow", "close-hover", "close-hover-fg",
+  "bg",
+  "bg0",
+  "bg1",
+  "bg2",
+  "bg-dark",
+  "fg",
+  "fg4",
+  "gray",
+  "red",
+  "green",
+  "yellow",
+  "blue",
+  "purple",
+  "aqua",
+  "orange",
+  "chrome",
+  "card",
+  "card-edge",
+  "shadow",
+  "close-hover",
+  "close-hover-fg",
 ];
 
 /** Colors shown as a strip in the Settings tab. */
-const SWATCHES: readonly string[] = ["ui.chrome", "ui.card", "ui.bg-dark", "ui.fg", "ui.red", "ui.green", "ui.yellow", "ui.blue", "ui.purple", "ui.aqua", "ui.orange"];
+const SWATCHES: readonly string[] = [
+  "ui.chrome",
+  "ui.card",
+  "ui.bg-dark",
+  "ui.fg",
+  "ui.red",
+  "ui.green",
+  "ui.yellow",
+  "ui.blue",
+  "ui.purple",
+  "ui.aqua",
+  "ui.orange",
+];
 
 export interface ResolvedTheme {
   id: string;
@@ -133,7 +193,10 @@ export interface ResolvedTheme {
 const camel = (s: string): string => s.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
 
 /** Turn resolved tokens into what the editor applies. Throws TokenError when a required color is missing. */
-export function buildTheme(tokens: ReadonlyMap<string, Token>, meta: { id: string; name: string; inputs: Readonly<Record<string, string>> }): ResolvedTheme {
+export function buildTheme(
+  tokens: ReadonlyMap<string, Token>,
+  meta: { id: string; name: string; inputs: Readonly<Record<string, string>> },
+): ResolvedTheme {
   const css: Record<string, string> = {};
   const canvas: Partial<Record<CanvasColor, Rgba>> = {};
   const colors = new Map<string, Rgba>();
@@ -151,9 +214,20 @@ export function buildTheme(tokens: ReadonlyMap<string, Token>, meta: { id: strin
     else if ((CANVAS_KEYS as readonly string[]).includes(camel(name))) canvas[camel(name) as CanvasColor] = c;
   }
   for (const k of CSS_COLORS) if (!(`--${k}` in css)) throw new TokenError(`${meta.name}: token "ui.${k}" is missing`);
-  for (const k of CANVAS_KEYS) if (!canvas[k]) throw new TokenError(`${meta.name}: token "canvas.${k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}" is missing`);
+  for (const k of CANVAS_KEYS)
+    if (!canvas[k])
+      throw new TokenError(
+        `${meta.name}: token "canvas.${k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}" is missing`,
+      );
   const canvasRgba = canvas as Record<CanvasColor, Rgba>;
-  const appearance: Appearance = meta.inputs[APPEARANCE] === "light" ? "light" : meta.inputs[APPEARANCE] === "dark" ? "dark" : luminance(canvasRgba.paper) > 0.4 ? "light" : "dark";
+  const appearance: Appearance =
+    meta.inputs[APPEARANCE] === "light"
+      ? "light"
+      : meta.inputs[APPEARANCE] === "dark"
+        ? "dark"
+        : luminance(canvasRgba.paper) > 0.4
+          ? "light"
+          : "dark";
   return {
     id: meta.id,
     name: meta.name,
@@ -198,20 +272,28 @@ export function resolveTheme(setting: ThemeSetting, systemDark: boolean): ThemeR
     }
     const want = Object.entries(setting.inputs).find(([k]) => k.toLowerCase() === m.name.toLowerCase())?.[1];
     const ctx = want === undefined ? undefined : m.contexts.find((c) => c.toLowerCase() === want.toLowerCase());
-    if (want !== undefined && !ctx) problems.push(`theme option ${m.name} has no value "${want}"; using ${m.default ?? m.contexts[0]}`);
+    if (want !== undefined && !ctx)
+      problems.push(`theme option ${m.name} has no value "${want}"; using ${m.default ?? m.contexts[0]}`);
     const pick = ctx ?? m.default ?? m.contexts[0];
     if (pick !== undefined) inputs[m.name] = pick;
   }
   for (const k of Object.keys(setting.inputs)) {
-    if (!info.modifiers.some((m) => m.name.toLowerCase() === k.toLowerCase())) problems.push(`theme ${entry.id} has no option "${k}"`);
+    if (!info.modifiers.some((m) => m.name.toLowerCase() === k.toLowerCase()))
+      problems.push(`theme ${entry.id} has no option "${k}"`);
   }
   const name = info.name ?? entry.id;
   try {
-    return { theme: buildTheme(resolveTokens(THEME_FILES, entry.resolver, inputs), { id: entry.id, name, inputs }), problems };
+    return {
+      theme: buildTheme(resolveTokens(THEME_FILES, entry.resolver, inputs), { id: entry.id, name, inputs }),
+      problems,
+    };
   } catch (e) {
     if (!(e instanceof TokenError) || entry === FALLBACK_THEME) throw e;
     problems.push(e.message);
-    return { theme: resolveTheme({ name: FALLBACK_THEME.id, appearance: setting.appearance, inputs: {} }, systemDark).theme, problems };
+    return {
+      theme: resolveTheme({ name: FALLBACK_THEME.id, appearance: setting.appearance, inputs: {} }, systemDark).theme,
+      problems,
+    };
   }
 }
 
@@ -222,14 +304,22 @@ const effectCache = new Map<string, boolean>();
  * (a resolved theme's inputs). Catppuccin's flavor picks the dark flavor, so it makes no difference while light.
  */
 export function modifierHasEffect(entry: ThemeEntry, inputs: Readonly<Record<string, string>>, name: string): boolean {
-  const key = JSON.stringify([entry.resolver, name, Object.entries(inputs).filter(([k]) => k !== name).sort()]);
+  const key = JSON.stringify([
+    entry.resolver,
+    name,
+    Object.entries(inputs)
+      .filter(([k]) => k !== name)
+      .sort(),
+  ]);
   const known = effectCache.get(key);
   if (known !== undefined) return known;
   const m = themeInfo(entry).modifiers.find((x) => x.name === name);
   const looks = new Set<string>();
   for (const ctx of m?.contexts ?? []) {
     const tokens = resolveTokens(THEME_FILES, entry.resolver, { ...inputs, [name]: ctx });
-    const shown = [...tokens].filter(([path]) => /^(ui|syntax|canvas)\./.test(path)).map(([path, t]) => [path, cssColor(parseColor(t.value))]);
+    const shown = [...tokens]
+      .filter(([path]) => /^(ui|syntax|canvas)\./.test(path))
+      .map(([path, t]) => [path, cssColor(parseColor(t.value))]);
     looks.add(JSON.stringify(shown));
   }
   const effect = looks.size > 1;

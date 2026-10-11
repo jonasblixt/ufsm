@@ -18,7 +18,14 @@ if (!cc && process.env["UFSM_REQUIRE_CC"]) throw new Error(`UFSM_REQUIRE_CC is s
 const skip = cc ? false : (problem ?? "no C compiler");
 const ir = (doc: UfsmDocument) => lowerToIr(flatten(doc));
 
-describeBackend({ name: "C", target: "c", randomEnv: "UFSM_C_RANDOM", skip, run: (units) => runC(cc!, units), timerApi: /_timer_start\(void \*user/ });
+describeBackend({
+  name: "C",
+  target: "c",
+  randomEnv: "UFSM_C_RANDOM",
+  skip,
+  run: (units) => runC(cc!, units),
+  timerApi: /_timer_start\(void \*user/,
+});
 
 describe("C backend: generated files", () => {
   it("compile without warnings as freestanding C99, also with debugInfo and trace", { skip }, () => {
@@ -29,13 +36,21 @@ describe("C backend: generated files", () => {
         const name = f.replace(/^.*[\\/]/, "").replace(/\.ufsm$/, "");
         return [false, true].map((debug) => {
           const file = debug ? `${name}_debug` : name;
-          const out = generateC(lowerToIr(flatten(doc), { trace: debug }), { file, prefix: `${file}_`, debugInfo: debug });
+          const out = generateC(lowerToIr(flatten(doc), { trace: debug }), {
+            file,
+            prefix: `${file}_`,
+            debugInfo: debug,
+          });
           writeFileSync(join(dir, out.headerName), out.header);
           writeFileSync(join(dir, out.sourceName), out.source);
           return out.sourceName;
         });
       });
-      for (const s of sources) execFileSync(cc!, [...strictFlags(cc!), "-ffreestanding", "-c", s, "-o", s.replace(/\.c$/, ".o")], { cwd: dir, stdio: "pipe" });
+      for (const s of sources)
+        execFileSync(cc!, [...strictFlags(cc!), "-ffreestanding", "-c", s, "-o", s.replace(/\.c$/, ".o")], {
+          cwd: dir,
+          stdio: "pipe",
+        });
     } finally {
       removeTempDir(dir);
     }
@@ -68,7 +83,9 @@ describe("C backend: generated files", () => {
   it("generate only what the model uses", () => {
     const plain = generateC(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm")))).header;
     assert.doesNotMatch(plain, /queue\[|queue_len|hist\[|terminated;/);
-    const signals = generateC(ir(load(join(repoRoot, "tests/models/test_chained_signals.ufsm"))), { signalQueue: 5 }).header;
+    const signals = generateC(ir(load(join(repoRoot, "tests/models/test_chained_signals.ufsm"))), {
+      signalQueue: 5,
+    }).header;
     assert.match(signals, /uint8_t queue\[5\];/);
     const noCheck = generateC(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), { maxMicrosteps: 0 });
     assert.doesNotMatch(noCheck.header + noCheck.source, /steps;|->steps/);
@@ -80,7 +97,10 @@ describe("C backend: generated files", () => {
     const out = generateC(ir(load(join(repoRoot, "tests/models/test_timers.ufsm"))), { debugInfo: true });
     assert.match(out.header, /^ {4}TEST_TIMERS_TIMER_travel = 0, \/\* after 2000 ms -> eTimeout \*\/$/m);
     assert.match(out.header, /^#define TEST_TIMERS_TIMER_COUNT 4$/m);
-    assert.match(out.header, /^void test_timers_timer_start\(void \*user, enum test_timers_timer timer, uint32_t ms, bool periodic\);$/m);
+    assert.match(
+      out.header,
+      /^void test_timers_timer_start\(void \*user, enum test_timers_timer timer, uint32_t ms, bool periodic\);$/m,
+    );
     assert.match(out.header, /^void test_timers_timer_stop\(void \*user, enum test_timers_timer timer\);$/m);
     assert.match(out.header, /^enum test_timers_event test_timers_timer_event\(enum test_timers_timer timer\);$/m);
     assert.match(out.header, /^const char \*test_timers_timer_name\(uint16_t timer\);$/m);
@@ -91,21 +111,29 @@ describe("C backend: generated files", () => {
   it("reject timer names that clash in C", () => {
     const doc = load(join(repoRoot, "tests/models/test_timers.ufsm"));
     doc.declarations.actions[0]!.name = "timer_start";
-    assert.throws(() => generateC(ir(doc)), /action 'timer_start' becomes 'test_timers_timer_start', which is the timer start function/);
+    assert.throws(
+      () => generateC(ir(doc)),
+      /action 'timer_start' becomes 'test_timers_timer_start', which is the timer start function/,
+    );
     doc.declarations.actions[0]!.name = "eIdle";
     doc.declarations.events[0]!.name = "TIMER_poll";
     assert.throws(() => generateC(ir(doc)), /timer 'poll' becomes 'TEST_TIMERS_TIMER_poll', like event 'TIMER_poll'/);
   });
 
   it("keep the queue bound exact: the last free slot can be used (B3)", () => {
-    const src = generateC(ir(load(join(repoRoot, "tests/models/test_chained_signals.ufsm"))), { signalQueue: 3 }).source;
+    const src = generateC(ir(load(join(repoRoot, "tests/models/test_chained_signals.ufsm"))), {
+      signalQueue: 3,
+    }).source;
     assert.match(src, /if \(m->queue_len == 3u\) \{\n\s+return TEST_CHAINED_SIGNALS_ERR_QUEUE_FULL;/);
   });
 
   it("reject names that clash in C", () => {
     const doc = load(join(repoRoot, "tests/models/test_guard1.ufsm"));
     doc.declarations.actions[0]!.name = "init";
-    assert.throws(() => generateC(ir(doc)), (e: unknown) => e instanceof CodegenError && /action 'init' becomes 'test_guard1_init'/.test(e.message));
+    assert.throws(
+      () => generateC(ir(doc)),
+      (e: unknown) => e instanceof CodegenError && /action 'init' becomes 'test_guard1_init'/.test(e.message),
+    );
     doc.declarations.actions[0]!.name = "while";
     assert.throws(() => generateC(ir(doc), { prefix: "" }), /C keyword/);
     assert.throws(() => generateC(ir(doc), { prefix: "9x" }), /not a C identifier/);

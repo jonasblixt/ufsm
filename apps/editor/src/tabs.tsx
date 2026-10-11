@@ -55,8 +55,12 @@ function Tabs({ tabs, onActivate, onClose }: TabsProps) {
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => onClose(t.key)}
           >
-            <span class="x" aria-hidden="true">×</span>
-            <span class="dot" aria-hidden="true">●</span>
+            <span class="x" aria-hidden="true">
+              ×
+            </span>
+            <span class="dot" aria-hidden="true">
+              ●
+            </span>
           </button>
         </div>
       ))}

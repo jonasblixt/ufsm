@@ -79,7 +79,10 @@ describe("TypeScript backend: generated files", () => {
         written.set(out.fileName, join(dir, out.fileName));
         writeFileSync(join(dir, out.fileName), out.source);
         // and with debugInfo and trace
-        const debug = generateTypeScript(lowerToIr(flatten(load(f)), { trace: true }), { debugInfo: true, module: out.fileName.replace(/\.ts$/, "_debug") });
+        const debug = generateTypeScript(lowerToIr(flatten(load(f)), { trace: true }), {
+          debugInfo: true,
+          module: out.fileName.replace(/\.ts$/, "_debug"),
+        });
         written.set(debug.fileName, join(dir, debug.fileName));
         writeFileSync(join(dir, debug.fileName), debug.source);
       }
@@ -93,7 +96,10 @@ describe("TypeScript backend: generated files", () => {
   it("let typed callers use them and reject wrong handlers and events", () => {
     const dir = mkdtempSync(join(tmpdir(), "ufsm-tsc-"));
     try {
-      writeFileSync(join(dir, "dimmer.ts"), generateTypeScript(ir(load(join(repoRoot, "examples/dimmer.ufsm")))).source);
+      writeFileSync(
+        join(dir, "dimmer.ts"),
+        generateTypeScript(ir(load(join(repoRoot, "examples/dimmer.ufsm")))).source,
+      );
       writeFileSync(join(dir, "example.ts"), docExample());
       writeFileSync(
         join(dir, "wrong.ts"),
@@ -105,7 +111,11 @@ describe("TypeScript backend: generated files", () => {
       const diags = typeCheck([join(dir, "example.ts"), join(dir, "wrong.ts")], ["ES2020", "DOM"]);
       const other = diags.filter((d) => d.file !== "wrong.ts");
       assert.deepEqual(other, [], other.map((d) => `${d.file}:${d.line}: ${d.message}`).join("\n"));
-      assert.deepEqual(diags.filter((d) => d.file === "wrong.ts").map((d) => d.line), [3, 4], diags.map((d) => `${d.file}:${d.line}: ${d.message}`).join("\n"));
+      assert.deepEqual(
+        diags.filter((d) => d.file === "wrong.ts").map((d) => d.line),
+        [3, 4],
+        diags.map((d) => `${d.file}:${d.line}: ${d.message}`).join("\n"),
+      );
     } finally {
       removeTempDir(dir);
     }
@@ -114,10 +124,17 @@ describe("TypeScript backend: generated files", () => {
   it("run the dimmer example from docs/backend-ts.md with plain Node (type stripping)", () => {
     const dir = mkdtempSync(join(tmpdir(), "ufsm-ts-"));
     try {
-      writeFileSync(join(dir, "dimmer.ts"), generateTypeScript(ir(load(join(repoRoot, "examples/dimmer.ufsm")))).source);
+      writeFileSync(
+        join(dir, "dimmer.ts"),
+        generateTypeScript(ir(load(join(repoRoot, "examples/dimmer.ufsm")))).source,
+      );
       writeFileSync(join(dir, "example.ts"), docExample());
       writeFileSync(join(dir, "package.json"), '{ "type": "module" }\n');
-      const out = execFileSync(process.execPath, ["--no-warnings", "example.ts"], { cwd: dir, encoding: "utf8", stdio: "pipe" });
+      const out = execFileSync(process.execPath, ["--no-warnings", "example.ts"], {
+        cwd: dir,
+        encoding: "utf8",
+        stdio: "pipe",
+      });
       assert.equal(out.trim(), "lamp at 30%");
     } finally {
       removeTempDir(dir);
@@ -135,7 +152,10 @@ describe("TypeScript backend: generated files", () => {
     const guards = generateTypeScript(ir(load(join(repoRoot, "tests/models/test_guard_terms.ufsm")))).source;
     assert.match(guards, /^ {2}not: 1,$/m, "JavaScript keywords are fine as property names");
     assert.match(guards, /^ {2}g\(\): boolean;$/m);
-    const custom = generateTypeScript(ir(load(join(repoRoot, "examples/dimmer.ufsm"))), { className: "Lamp", module: "lamp-fsm" });
+    const custom = generateTypeScript(ir(load(join(repoRoot, "examples/dimmer.ufsm"))), {
+      className: "Lamp",
+      module: "lamp-fsm",
+    });
     assert.equal(custom.fileName, "lamp-fsm.ts");
     assert.match(custom.source, /^export interface LampHandler \{$/m);
   });
@@ -143,14 +163,20 @@ describe("TypeScript backend: generated files", () => {
   it("generate only what the model uses", () => {
     const plain = generateTypeScript(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm")))).source;
     assert.doesNotMatch(plain, /this\.queue|this\.hist|terminated|settle/);
-    const signals = generateTypeScript(ir(load(join(repoRoot, "tests/models/test_chained_signals.ufsm"))), { signalQueue: 5 }).source;
+    const signals = generateTypeScript(ir(load(join(repoRoot, "tests/models/test_chained_signals.ufsm"))), {
+      signalQueue: 5,
+    }).source;
     assert.match(signals, /if \(this\.queue\.length >= 5\) \{/);
-    const noCheck = generateTypeScript(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), { maxMicrosteps: 0 }).source;
+    const noCheck = generateTypeScript(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), {
+      maxMicrosteps: 0,
+    }).source;
     assert.doesNotMatch(noCheck, /steps|microstep/);
   });
 
   it("emit the timer API only for a model with timers, usable by a typed caller", () => {
-    const none = generateTypeScript(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), { debugInfo: true }).source;
+    const none = generateTypeScript(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), {
+      debugInfo: true,
+    }).source;
     assert.doesNotMatch(none, /timer/i);
     const timers = ir(load(join(repoRoot, "tests/models/test_timers.ufsm")));
     const src = generateTypeScript(timers, { debugInfo: true }).source;
@@ -159,7 +185,10 @@ describe("TypeScript backend: generated files", () => {
     assert.match(src, /^export function testTimersTimerEvent\(timer: TestTimersTimer\): TestTimersEvent \{$/m);
     assert.match(src, /^ {2}timer_start\(timer: TestTimersTimer, ms: number, periodic: boolean\): void;$/m);
     assert.match(src, /^ {2}timer_stop\(timer: TestTimersTimer\): void;$/m);
-    assert.match(src, /^ {2}static readonly TIMER_NAMES: readonly string\[\] = \["travel", "poll", "blink", "long"\];$/m);
+    assert.match(
+      src,
+      /^ {2}static readonly TIMER_NAMES: readonly string\[\] = \["travel", "poll", "blink", "long"\];$/m,
+    );
     assert.match(src, /this\.h\.timer_start\(TestTimersTimer\.long, 3600000, false\);/);
     const dir = mkdtempSync(join(tmpdir(), "ufsm-tsc-"));
     try {
@@ -196,14 +225,23 @@ describe("TypeScript backend: generated files", () => {
   it("reject an action named like a timer function of the handler", () => {
     const doc = load(join(repoRoot, "tests/models/test_timers.ufsm"));
     doc.declarations.actions[0]!.name = "timer_start";
-    assert.throws(() => generateTypeScript(ir(doc)), /action 'timer_start' is the name of a timer function of the handler/);
+    assert.throws(
+      () => generateTypeScript(ir(doc)),
+      /action 'timer_start' is the name of a timer function of the handler/,
+    );
   });
 
   it("reject names that every JavaScript object has", () => {
     const doc = load(join(repoRoot, "tests/models/test_guard1.ufsm"));
     doc.declarations.actions[0]!.name = "toString";
-    assert.throws(() => generateTypeScript(ir(doc)), (e: unknown) => e instanceof CodegenError && /action 'toString'/.test(e.message));
-    assert.throws(() => generateTypeScript(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), { className: "class" }), /not a usable identifier/);
+    assert.throws(
+      () => generateTypeScript(ir(doc)),
+      (e: unknown) => e instanceof CodegenError && /action 'toString'/.test(e.message),
+    );
+    assert.throws(
+      () => generateTypeScript(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), { className: "class" }),
+      /not a usable identifier/,
+    );
   });
 
   it("read targets.ts: its own settings, never behaviour options", () => {

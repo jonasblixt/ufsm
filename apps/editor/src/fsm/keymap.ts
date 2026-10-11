@@ -8,7 +8,17 @@
  * parts' actions (canvas/keys.ts, pointer.ts, tools.ts). No DOM; `npm run gen:editor-fsm` writes it, a test keeps it
  * fresh.
  */
-import { actionLabel, guardLabel, indexV1, regionChain, type DocIndex, type GuardTerm, type Action, type Id, type UfsmDocument } from "@ufsm/core";
+import {
+  actionLabel,
+  guardLabel,
+  indexV1,
+  regionChain,
+  type DocIndex,
+  type GuardTerm,
+  type Action,
+  type Id,
+  type UfsmDocument,
+} from "@ufsm/core";
 
 const EVENT_TEXT: Record<string, string> = {
   eKey_esc: "Esc",
@@ -43,8 +53,10 @@ function eventText(index: DocIndex, on: Id | undefined): string {
 }
 
 const cell = (s: string): string => s.replace(/\|/g, "\\|");
-const guards = (index: DocIndex, g: GuardTerm[] | undefined): string => (g ?? []).map((x) => `\`${guardLabel(index, x)}\``).join(" ");
-const actions = (index: DocIndex, a: Action[] | undefined): string => (a ?? []).map((x) => `\`${actionLabel(index, x)}\``).join(" ");
+const guards = (index: DocIndex, g: GuardTerm[] | undefined): string =>
+  (g ?? []).map((x) => `\`${guardLabel(index, x)}\``).join(" ");
+const actions = (index: DocIndex, a: Action[] | undefined): string =>
+  (a ?? []).map((x) => `\`${actionLabel(index, x)}\``).join(" ");
 
 export function keymapMarkdown(doc: UfsmDocument): string {
   const index = indexV1(doc);
@@ -70,10 +82,14 @@ export function keymapMarkdown(doc: UfsmDocument): string {
     for (const t of index.outgoing.get(stateId) ?? []) {
       const to = index.vertices.get(t.to)?.vertex;
       const target = to?.kind === "state" ? to.name : (to?.name ?? to?.kind ?? t.to);
-      rows.push(`| ${cell(v.name)} | ${cell(eventText(index, t.on) || (t.auto ? "(auto)" : t.completion ? "(completion)" : ""))} | ${cell(guards(index, t.guard))} | ${cell(actions(index, t.do))} | ${cell(target)} |`);
+      rows.push(
+        `| ${cell(v.name)} | ${cell(eventText(index, t.on) || (t.auto ? "(auto)" : t.completion ? "(completion)" : ""))} | ${cell(guards(index, t.guard))} | ${cell(actions(index, t.do))} | ${cell(target)} |`,
+      );
     }
     for (const t of v.internal ?? []) {
-      rows.push(`| ${cell(v.name)} | ${cell(eventText(index, t.on))} | ${cell(guards(index, t.guard))} | ${cell(actions(index, t.do))} | (stays) |`);
+      rows.push(
+        `| ${cell(v.name)} | ${cell(eventText(index, t.on))} | ${cell(guards(index, t.guard))} | ${cell(actions(index, t.do))} | (stays) |`,
+      );
     }
     if (rows.length) {
       if (g !== group) {

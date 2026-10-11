@@ -79,7 +79,8 @@ export const TARGETS: { key: string; title: string; options: TargetOption[] }[] 
       {
         key: "file",
         label: "File",
-        fallback: (n, set) => (typeof set["prefix"] === "string" ? set["prefix"].replace(/_+$/, "") : "") || identifier(n),
+        fallback: (n, set) =>
+          (typeof set["prefix"] === "string" ? set["prefix"].replace(/_+$/, "") : "") || identifier(n),
       },
     ],
   },
@@ -116,7 +117,21 @@ const KIND_TITLES: { kind: DeclKind; title: string; one: string }[] = [
   { kind: "guard", title: "Guards", one: "guard" },
 ];
 
-function DeclRow({ index, id, name, doc, ops, highlight }: { index: DocIndex; id: Id; name: string; doc: string | undefined; ops: PanelOps; highlight: boolean }) {
+function DeclRow({
+  index,
+  id,
+  name,
+  doc,
+  ops,
+  highlight,
+}: {
+  index: DocIndex;
+  id: Id;
+  name: string;
+  doc: string | undefined;
+  ops: PanelOps;
+  highlight: boolean;
+}) {
   const ref = useRef<HTMLLIElement>(null);
   useLayoutEffect(() => {
     if (highlight) ref.current?.scrollIntoView({ block: "nearest" });
@@ -131,12 +146,28 @@ function DeclRow({ index, id, name, doc, ops, highlight }: { index: DocIndex; id
         onCommit={(v) => ops.edit((d) => renameDecl(d, id, v.trim()))}
       />
       <span class="dim uses">{uses === 0 ? "unused" : `${uses} use${uses > 1 ? "s" : ""}`}</span>
-      <IconButton label="×" title={uses ? `Delete, and remove its ${uses} use${uses > 1 ? "s" : ""}` : "Delete"} onClick={() => ops.edit((d) => deleteDecl(d, id))} />
+      <IconButton
+        label="×"
+        title={uses ? `Delete, and remove its ${uses} use${uses > 1 ? "s" : ""}` : "Delete"}
+        onClick={() => ops.edit((d) => deleteDecl(d, id))}
+      />
     </li>
   );
 }
 
-function DeclList({ index, kind, one, ops, highlight }: { index: DocIndex; kind: DeclKind; one: string; ops: PanelOps; highlight: Id | undefined }) {
+function DeclList({
+  index,
+  kind,
+  one,
+  ops,
+  highlight,
+}: {
+  index: DocIndex;
+  kind: DeclKind;
+  one: string;
+  ops: PanelOps;
+  highlight: Id | undefined;
+}) {
   const [adding, setAdding] = useState(false);
   const decls = declsOf(index, kind);
   return (
@@ -146,7 +177,15 @@ function DeclList({ index, kind, one, ops, highlight }: { index: DocIndex; kind:
       ) : (
         <ul class="plist">
           {decls.map((d) => (
-            <DeclRow key={d.id} index={index} id={d.id} name={d.name} doc={d.doc} ops={ops} highlight={d.id === highlight} />
+            <DeclRow
+              key={d.id}
+              index={index}
+              id={d.id}
+              name={d.name}
+              doc={d.doc}
+              ops={ops}
+              highlight={d.id === highlight}
+            />
           ))}
         </ul>
       )}
@@ -193,7 +232,15 @@ function today(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-export function Project({ doc, ops, highlight }: { doc: PanelDoc | undefined; ops: PanelOps; highlight: Id | undefined }) {
+export function Project({
+  doc,
+  ops,
+  highlight,
+}: {
+  doc: PanelDoc | undefined;
+  ops: PanelOps;
+  highlight: Id | undefined;
+}) {
   if (!doc) return <div class="pempty">No machine open.</div>;
   const index = doc.index;
   const d = index.doc;
@@ -210,7 +257,12 @@ export function Project({ doc, ops, highlight }: { doc: PanelDoc | undefined; op
       </div>
       <Section title="Machine">
         <Field label="Name">
-          <TextInput label="Machine name" value={d.name} validate={(v) => (v.trim() ? undefined : "A name is needed.")} onCommit={(v) => ops.edit((x) => setMachineName(x, v.trim()))} />
+          <TextInput
+            label="Machine name"
+            value={d.name}
+            validate={(v) => (v.trim() ? undefined : "A name is needed.")}
+            onCommit={(v) => ops.edit((x) => setMachineName(x, v.trim()))}
+          />
         </Field>
         <Field label="File">
           <span title={doc.path ?? doc.fileName}>{doc.fileName}</span>
@@ -218,7 +270,11 @@ export function Project({ doc, ops, highlight }: { doc: PanelDoc | undefined; op
         <Field label="Format">{doc.converted ? "v0, converted (save to write v1)" : "v1"}</Field>
         <Field label="Status">{doc.dirty ? "Unsaved changes" : "Saved"}</Field>
         <Field label="Paper">
-          <select aria-label="Paper size" value={paper} onChange={(e) => ops.edit((x) => setPaper(x, e.currentTarget.value as Paper))}>
+          <select
+            aria-label="Paper size"
+            value={paper}
+            onChange={(e) => ops.edit((x) => setPaper(x, e.currentTarget.value as Paper))}
+          >
             {(Object.keys(PAPER_SIZES) as Paper[]).map((p) => (
               <option key={p} value={p}>
                 {p} ({PAPER_SIZES[p].w} × {PAPER_SIZES[p].h})
@@ -238,7 +294,13 @@ export function Project({ doc, ops, highlight }: { doc: PanelDoc | undefined; op
           </div>
         )}
         <div class="sublabel">Description</div>
-        <TextInput multiline label="Description" placeholder="What this machine does (Ctrl+Enter to save)" value={d.doc ?? ""} onCommit={(v) => ops.edit((x) => setMachineDoc(x, v.trim()))} />
+        <TextInput
+          multiline
+          label="Description"
+          placeholder="What this machine does (Ctrl+Enter to save)"
+          value={d.doc ?? ""}
+          onCommit={(v) => ops.edit((x) => setMachineDoc(x, v.trim()))}
+        />
       </Section>
       <Section title="Title block">
         <div class="snote">
@@ -248,9 +310,18 @@ export function Project({ doc, ops, highlight }: { doc: PanelDoc | undefined; op
         {TITLE_BLOCK_FIELDS.map((k) => (
           <Field label={TITLE_FIELD_NAMES[k]} key={k}>
             <div class="title-field">
-              <TextInput label={TITLE_FIELD_LABELS[k]} value={tb[k] ?? ""} onCommit={(v) => ops.edit((x) => setTitleField(x, k, v))} />
+              <TextInput
+                label={TITLE_FIELD_LABELS[k]}
+                value={tb[k] ?? ""}
+                onCommit={(v) => ops.edit((x) => setTitleField(x, k, v))}
+              />
               {k === "date" && (
-                <button type="button" class="mini" title="Set to today's date" onClick={() => ops.edit((x) => setTitleField(x, "date", today()))}>
+                <button
+                  type="button"
+                  class="mini"
+                  title="Set to today's date"
+                  onClick={() => ops.edit((x) => setTitleField(x, "date", today()))}
+                >
                   Today
                 </button>
               )}

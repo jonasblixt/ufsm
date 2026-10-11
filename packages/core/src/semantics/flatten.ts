@@ -21,7 +21,15 @@
  * conformance traces and random models.
  */
 import type { Action, Id, UfsmDocument } from "../format/model";
-import { SemanticsError, buildStructure, type CompoundTransition, type SemRegion, type SemVertex, type Structure, type Trigger } from "./structure";
+import {
+  SemanticsError,
+  buildStructure,
+  type CompoundTransition,
+  type SemRegion,
+  type SemVertex,
+  type Structure,
+  type Trigger,
+} from "./structure";
 
 export interface FlatVertex {
   id: Id;
@@ -168,10 +176,22 @@ export function flatten(doc: UfsmDocument, prebuilt?: Structure): FlatModel {
   /** Entry program for the vertex of region `r` leading to `targets` (all inside r, already validated orthogonal). */
   const pathIn = (r: SemRegion, targets: SemVertex[]): EntryOp => {
     const v = r.vertices.find((x) => targets.some((t) => t === x || x.regions.some((c) => t.within.has(c.id))));
-    if (!v || (v.kind !== "state" && v.kind !== "final")) throw new SemanticsError(`no state on the path in region ${r.id}`);
-    return enterOp(v, targets.filter((t) => t !== v));
+    if (!v || (v.kind !== "state" && v.kind !== "final"))
+      throw new SemanticsError(`no state on the path in region ${r.id}`);
+    return enterOp(
+      v,
+      targets.filter((t) => t !== v),
+    );
   };
-  const enterOp = (v: SemVertex, inner: SemVertex[]): EntryOp => ({ vertex: vi(v), regions: v.regions.map((c) => regionOp(c, inner.filter((t) => t.within.has(c.id)))) });
+  const enterOp = (v: SemVertex, inner: SemVertex[]): EntryOp => ({
+    vertex: vi(v),
+    regions: v.regions.map((c) =>
+      regionOp(
+        c,
+        inner.filter((t) => t.within.has(c.id)),
+      ),
+    ),
+  });
   const regionOp = (r: SemRegion, targets: SemVertex[]): RegionOp => {
     if (targets.length === 0) return { region: ri(r), default: true };
     // A history or initial pseudo-state as target means entering its region by default.
@@ -206,7 +226,8 @@ export function flatten(doc: UfsmDocument, prebuilt?: Structure): FlatModel {
     if (r.region.name !== undefined) fr.name = r.region.name;
     if (init) {
       const real = init.targets.filter((t) => t.kind !== "terminate");
-      if (real.length !== init.targets.length) throw new SemanticsError(`initializer of region ${r.id} leads to terminate`);
+      if (real.length !== init.targets.length)
+        throw new SemanticsError(`initializer of region ${r.id} leads to terminate`);
       fr.init = { actions: init.actions, path: pathIn(r, real) };
     }
     return fr;
@@ -226,7 +247,9 @@ export function flatten(doc: UfsmDocument, prebuilt?: Structure): FlatModel {
       trigger: t.trigger,
       sources: t.sources.map(vi),
       complete: t.trigger.kind === "completion" ? t.sources.flatMap((src) => src.regions.map(ri)) : [],
-      guard: t.guard.map((g): FlatGuard => ("in" in g ? (g.not ? { in: vi(s.vertices.get(g.in)!), not: true } : { in: vi(s.vertices.get(g.in)!) }) : g)),
+      guard: t.guard.map((g): FlatGuard =>
+        "in" in g ? (g.not ? { in: vi(s.vertices.get(g.in)!), not: true } : { in: vi(s.vertices.get(g.in)!) }) : g,
+      ),
       actions: t.actions,
       domain: domainRegion,
       blocks: [...blocks].sort((a, b) => a - b),
@@ -256,7 +279,8 @@ export function flatten(doc: UfsmDocument, prebuilt?: Structure): FlatModel {
     const list = offerList((t) => t.trigger.kind === "event" && t.trigger.id === e.id);
     if (list.length) offers[e.id] = list;
   }
-  const decl = (xs: { id: Id; name: string }[]): { id: Id; name: string }[] => xs.map((x) => ({ id: x.id, name: x.name }));
+  const decl = (xs: { id: Id; name: string }[]): { id: Id; name: string }[] =>
+    xs.map((x) => ({ id: x.id, name: x.name }));
   return {
     name: doc.name,
     events: decl(doc.declarations.events),

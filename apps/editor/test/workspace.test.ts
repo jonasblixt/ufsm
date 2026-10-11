@@ -144,7 +144,10 @@ describe("hit testing (no DOM)", () => {
     const d = ws.active!;
     const t = [...d.index.transitions.values()].find((x) => edgeGeometry(d.index, x.id)?.label)!;
     const box = transitionLabelBox(d.index, t, estimateLabelWidth)!;
-    assert.deepEqual(hitTransition(d.index, d.sheet, box.x + 2, box.y + 2, 4, estimateLabelWidth), { id: t.id, label: true });
+    assert.deepEqual(hitTransition(d.index, d.sheet, box.x + 2, box.y + 2, 4, estimateLabelWidth), {
+      id: t.id,
+      label: true,
+    });
     const [p, q] = edgeGeometry(d.index, t.id)!.points;
     const mid = { x: (p!.x + q!.x) / 2, y: (p!.y + q!.y) / 2 };
     assert.equal(hitTransition(d.index, d.sheet, mid.x, mid.y, 4, estimateLabelWidth)?.id !== undefined, true);

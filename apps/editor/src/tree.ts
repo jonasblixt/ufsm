@@ -59,7 +59,10 @@ export function buildTree(container: HTMLElement, index: DocIndex, cb: TreeCallb
       const row = document.createElement("div");
       row.className = "row";
       row.append(twisty(true), lbl);
-      row.addEventListener("click", onLabel(undefined, () => cb.onState(s)));
+      row.addEventListener(
+        "click",
+        onLabel(undefined, () => cb.onState(s)),
+      );
       stateNodes.set(s.id, { row });
       return row;
     }
@@ -68,7 +71,10 @@ export function buildTree(container: HTMLElement, index: DocIndex, cb: TreeCallb
     const summary = document.createElement("summary");
     summary.className = "row";
     summary.append(twisty(), lbl);
-    lbl.addEventListener("click", onLabel(details, () => cb.onState(s)));
+    lbl.addEventListener(
+      "click",
+      onLabel(details, () => cb.onState(s)),
+    );
     details.append(summary);
     for (const r of children) details.append(regionNode(r, depth + 1));
     stateNodes.set(s.id, { row: summary, details });
@@ -81,8 +87,15 @@ export function buildTree(container: HTMLElement, index: DocIndex, cb: TreeCallb
     details.open = depth < 2 && !offPage;
     const summary = document.createElement("summary");
     summary.className = "row";
-    const lbl = label(r.name || "(region)", offPage ? "region off-page" : "region", offPage ? "Off-page region: opens on its own sheet" : undefined);
-    lbl.addEventListener("click", onLabel(details, () => cb.onRegion(r)));
+    const lbl = label(
+      r.name || "(region)",
+      offPage ? "region off-page" : "region",
+      offPage ? "Off-page region: opens on its own sheet" : undefined,
+    );
+    lbl.addEventListener(
+      "click",
+      onLabel(details, () => cb.onRegion(r)),
+    );
     summary.append(twisty(), lbl);
     details.append(summary);
     for (const s of r.states.filter(listed)) details.append(stateNode(s, depth + 1));

@@ -60,7 +60,10 @@ const HINTS = {
 };
 
 export function keyActions(app: App, input: InputState) {
-  const commands = Object.fromEntries(COMMAND_ACTIONS.map((id) => [id, () => app.commands.run(id)])) as Record<(typeof COMMAND_ACTIONS)[number], () => void>;
+  const commands = Object.fromEntries(COMMAND_ACTIONS.map((id) => [id, () => app.commands.run(id)])) as Record<
+    (typeof COMMAND_ACTIONS)[number],
+    () => void
+  >;
   const hint = (text: string) => (): void => app.shell.setStatus(text);
   return {
     ...commands,

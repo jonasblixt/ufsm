@@ -5,7 +5,18 @@
  * Random but valid models for differential testing (interpreter vs flat
  * rules vs generated code). Deterministic for a given seed.
  */
-import type { Action, GuardTerm, InternalTransition, Region, State, Timer, TimerUnit, Transition, UfsmDocument, Vertex } from "../src";
+import type {
+  Action,
+  GuardTerm,
+  InternalTransition,
+  Region,
+  State,
+  Timer,
+  TimerUnit,
+  Transition,
+  UfsmDocument,
+  Vertex,
+} from "../src";
 
 export interface RandomModelOptions {
   maxDepth?: number;
@@ -179,7 +190,9 @@ export function randomModel(seed: number, opts: RandomModelOptions = {}): UfsmDo
     if (x < 0.1 && finals.length) to = pick(finals).id;
     else if (x < 0.14) {
       // into a history pseudo-state of some region
-      const hs = regions.flatMap((reg) => reg.states.filter((v) => v.kind === "shallow-history" || v.kind === "deep-history"));
+      const hs = regions.flatMap((reg) =>
+        reg.states.filter((v) => v.kind === "shallow-history" || v.kind === "deep-history"),
+      );
       to = hs.length ? pick(hs).id : pick(stateIds);
     } else to = pick(stateIds);
     let trig = trigger();
@@ -199,8 +212,12 @@ export function randomModel(seed: number, opts: RandomModelOptions = {}): UfsmDo
   for (const st of states) {
     if (ri() >= 0.25) continue;
     for (let k = ri() < 0.3 ? 2 : 1; k > 0; k--) {
-      const it: InternalTransition = { id: `t${++nTrans}`, on: signals.length && ri() < 0.25 ? pickI(signals).id : pickI(events).id };
-      if (ri() < 0.35 && guards.length) it.guard = [ri() < 0.5 ? { call: pickI(guards).id } : { call: pickI(guards).id, not: true }];
+      const it: InternalTransition = {
+        id: `t${++nTrans}`,
+        on: signals.length && ri() < 0.25 ? pickI(signals).id : pickI(events).id,
+      };
+      if (ri() < 0.35 && guards.length)
+        it.guard = [ri() < 0.5 ? { call: pickI(guards).id } : { call: pickI(guards).id, not: true }];
       const d: Action[] = [{ call: action(`n${it.id}`) }];
       if (signals.length && ri() < 0.2) d.push({ emit: pickI(signals).id });
       it.do = d;
@@ -248,7 +265,12 @@ export function randomModel(seed: number, opts: RandomModelOptions = {}): UfsmDo
       const fork: Vertex = { id: `s${++nState}`, kind: "fork" };
       host.states.push(fork);
       regionOf.set(fork.id, host);
-      for (const reg of use) add(chance(0.2) ? { from: fork.id, to: endIn(reg).id, do: [{ call: action(`f${nTrans + 1}`) }] } : { from: fork.id, to: endIn(reg).id });
+      for (const reg of use)
+        add(
+          chance(0.2)
+            ? { from: fork.id, to: endIn(reg).id, do: [{ call: action(`f${nTrans + 1}`) }] }
+            : { from: fork.id, to: endIn(reg).id },
+        );
       return fork;
     };
     if (chance(0.6)) {
@@ -275,7 +297,11 @@ export function randomModel(seed: number, opts: RandomModelOptions = {}): UfsmDo
       add({ from: pick(sb).id, to: join.id });
       for (const reg of use.slice(2)) add({ from: endIn(reg).id, to: join.id });
       const targets = states.filter((s) => s.id !== p.id && !isAncestor(p.id, s.id));
-      const t: Omit<Transition, "id"> = { from: join.id, to: pick(targets.length ? targets : [p]).id, ...(chance(0.7) ? { on: pick(events).id } : { auto: true as const }) };
+      const t: Omit<Transition, "id"> = {
+        from: join.id,
+        to: pick(targets.length ? targets : [p]).id,
+        ...(chance(0.7) ? { on: pick(events).id } : { auto: true as const }),
+      };
       if (chance(0.3)) t.guard = guard(false) ?? [];
       if (t.guard?.length === 0) delete t.guard;
       add(t);
@@ -288,7 +314,12 @@ export function randomModel(seed: number, opts: RandomModelOptions = {}): UfsmDo
     const term: Vertex = { id: `s${++nState}`, kind: "terminate" };
     host.states.push(term);
     regionOf.set(term.id, host);
-    add({ from: pick(inHost.length ? inHost : states).id, to: term.id, on: pick(events).id, ...(chance(0.5) ? { do: [{ call: action(`q${nState}`) }] } : {}) });
+    add({
+      from: pick(inHost.length ? inHost : states).id,
+      to: term.id,
+      on: pick(events).id,
+      ...(chance(0.5) ? { do: [{ call: action(`q${nState}`) }] } : {}),
+    });
   }
 
   return {

@@ -75,7 +75,11 @@ const KEYS: Record<string, EditorFsmEvent> = {
 const FIELD_KEYS: ReadonlySet<string> = new Set(["+", "=", "-", "0", "p", "P"]);
 
 function inTextField(t: EventTarget | null): boolean {
-  return t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || (t instanceof HTMLElement && t.isContentEditable);
+  return (
+    t instanceof HTMLInputElement ||
+    t instanceof HTMLTextAreaElement ||
+    (t instanceof HTMLElement && t.isContentEditable)
+  );
 }
 
 export interface Input {
@@ -96,7 +100,19 @@ export function attachInput(
   active: () => boolean,
   before: () => void = () => undefined,
 ): Input {
-  const input: InputState = { x: 0, y: 0, startX: 0, startY: 0, lastX: 0, lastY: 0, shift: false, ctrl: false, wheelDeltaY: 0, tool: "select", over: false };
+  const input: InputState = {
+    x: 0,
+    y: 0,
+    startX: 0,
+    startY: 0,
+    lastX: 0,
+    lastY: 0,
+    shift: false,
+    ctrl: false,
+    wheelDeltaY: 0,
+    tool: "select",
+    over: false,
+  };
   const machine = new EditorFsm(makeHandler(input));
   machine.reset();
   let pointer: number | undefined;
@@ -119,7 +135,8 @@ export function attachInput(
       input.x = e.clientX;
       input.y = e.clientY;
     }
-    const press = event === EditorFsmEvent.eLMBDown || event === EditorFsmEvent.eRMBDown || event === EditorFsmEvent.eMouseBack;
+    const press =
+      event === EditorFsmEvent.eLMBDown || event === EditorFsmEvent.eRMBDown || event === EditorFsmEvent.eMouseBack;
     if (e instanceof KeyboardEvent || press) before();
     dispatch(event);
     if (e instanceof MouseEvent) {
@@ -130,7 +147,8 @@ export function attachInput(
 
   canvas.addEventListener("pointerdown", (e) => {
     if (pointer !== undefined || !active()) return;
-    const event = e.button === 0 ? EditorFsmEvent.eLMBDown : e.button === 1 || e.button === 2 ? EditorFsmEvent.eRMBDown : undefined;
+    const event =
+      e.button === 0 ? EditorFsmEvent.eLMBDown : e.button === 1 || e.button === 2 ? EditorFsmEvent.eRMBDown : undefined;
     if (event === undefined) return;
     if (e.button === 1) e.preventDefault(); // no middle-button autoscroll
     pointer = e.pointerId;
@@ -172,7 +190,8 @@ export function attachInput(
   // explorer, menus, panels. Text fields keep it for cut/copy/paste and spelling.
   window.addEventListener("contextmenu", (e) => {
     const t = e.target;
-    if (t instanceof HTMLElement && t.closest("input, textarea, [contenteditable]:not([contenteditable='false'])")) return;
+    if (t instanceof HTMLElement && t.closest("input, textarea, [contenteditable]:not([contenteditable='false'])"))
+      return;
     e.preventDefault();
   });
   canvas.addEventListener("auxclick", (e) => e.preventDefault());

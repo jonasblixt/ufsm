@@ -22,7 +22,10 @@ describe("editor interaction model", { skip: !existsSync(dir) && "apps/editor no
   const { doc } = loadModel(readFileSync(join(dir, "editor.ufsm"), "utf8"));
 
   it("passes the design rule check without warnings", () => {
-    assert.deepEqual(checkV1(doc).map((d) => `${d.severity}: ${d.message}`), []);
+    assert.deepEqual(
+      checkV1(doc).map((d) => `${d.severity}: ${d.message}`),
+      [],
+    );
   });
 
   it("matches the committed generated code (regenerate with `npm run gen:editor-fsm`)", () => {

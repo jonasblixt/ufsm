@@ -57,39 +57,54 @@ describe("v0 loader", () => {
     assert.equal(s.triggers, 36);
   });
 
-  it("orders regions top-down as the old editor displays them", { skip: models.length === 0 && "old/ not present" }, () => {
-    // Invariant over every legacy model: in regionsTopDown() order, the
-    // topmost normal state of each region never lies above the previous one's.
-    let checked = 0;
-    for (const path of models) {
-      const index = load(path);
-      for (const { state } of index.states.values()) {
-        // Off-page regions live on their own sheets, so only inline ones are comparable.
-        const tops = regionsTopDown(state)
-          .filter((r) => !r.off_page)
-          .map((r) => Math.min(...r.states.filter((s) => s.kind === "state").map((s) => s.y)))
-          .filter(Number.isFinite);
-        for (let i = 1; i < tops.length; i++) {
-          assert.ok(tops[i - 1]! <= tops[i]!, `${relative(repoRoot, path)}: regions of '${state.name}' out of order`);
+  it(
+    "orders regions top-down as the old editor displays them",
+    { skip: models.length === 0 && "old/ not present" },
+    () => {
+      // Invariant over every legacy model: in regionsTopDown() order, the
+      // topmost normal state of each region never lies above the previous one's.
+      let checked = 0;
+      for (const path of models) {
+        const index = load(path);
+        for (const { state } of index.states.values()) {
+          // Off-page regions live on their own sheets, so only inline ones are comparable.
+          const tops = regionsTopDown(state)
+            .filter((r) => !r.off_page)
+            .map((r) => Math.min(...r.states.filter((s) => s.kind === "state").map((s) => s.y)))
+            .filter(Number.isFinite);
+          for (let i = 1; i < tops.length; i++) {
+            assert.ok(tops[i - 1]! <= tops[i]!, `${relative(repoRoot, path)}: regions of '${state.name}' out of order`);
+          }
+          if (tops.length > 1) checked++;
         }
-        if (tops.length > 1) checked++;
       }
-    }
-    assert.ok(checked > 0, "expected some states with several regions");
-  });
+      assert.ok(checked > 0, "expected some states with several regions");
+    },
+  );
 
-  it("puts Ar1 above Ar2 in test_nested_composits", { skip: !existsSync(join(oldDir, "tests/test_nested_composits.ufsm")) }, () => {
-    const index = load(join(oldDir, "tests/test_nested_composits.ufsm"));
-    const a = [...index.states.values()].find((x) => x.state.name === "A")!.state;
-    assert.deepEqual(regionsTopDown(a).map((r) => r.name), ["Ar1", "Ar2"]);
-  });
+  it(
+    "puts Ar1 above Ar2 in test_nested_composits",
+    { skip: !existsSync(join(oldDir, "tests/test_nested_composits.ufsm")) },
+    () => {
+      const index = load(join(oldDir, "tests/test_nested_composits.ufsm"));
+      const a = [...index.states.values()].find((x) => x.state.name === "A")!.state;
+      assert.deepEqual(
+        regionsTopDown(a).map((r) => r.name),
+        ["Ar1", "Ar2"],
+      );
+    },
+  );
 
-  it("formats transition labels like the old editor", { skip: !existsSync(join(oldDir, "examples/dimmer/dimmer.ufsm")) }, () => {
-    const index = load(join(oldDir, "examples/dimmer/dimmer.ufsm"));
-    const labels = index.transitions.map((t) => transitionLabel(index, t));
-    assert.ok(labels.includes("eButton"));
-    assert.ok(labels.includes("eOffButton"));
-  });
+  it(
+    "formats transition labels like the old editor",
+    { skip: !existsSync(join(oldDir, "examples/dimmer/dimmer.ufsm")) },
+    () => {
+      const index = load(join(oldDir, "examples/dimmer/dimmer.ufsm"));
+      const labels = index.transitions.map((t) => transitionLabel(index, t));
+      assert.ok(labels.includes("eButton"));
+      assert.ok(labels.includes("eOffButton"));
+    },
+  );
 });
 
 describe("v0 format errors", () => {

@@ -19,7 +19,8 @@ if (!python && process.env["UFSM_REQUIRE_PYTHON"]) throw new Error(`UFSM_REQUIRE
 const skip = python ? false : (problem ?? "no Python");
 // The type check skips without pyright; UFSM_REQUIRE_PYRIGHT=1 (CI) turns that into a failure.
 const { pyright, problem: pyrightProblem } = findPyright();
-if (!pyright && process.env["UFSM_REQUIRE_PYRIGHT"]) throw new Error(`UFSM_REQUIRE_PYRIGHT is set but ${pyrightProblem}`);
+if (!pyright && process.env["UFSM_REQUIRE_PYRIGHT"])
+  throw new Error(`UFSM_REQUIRE_PYRIGHT is set but ${pyrightProblem}`);
 const skipPyright = pyright ? false : (pyrightProblem ?? "no pyright");
 const ir = (doc: UfsmDocument) => lowerToIr(flatten(doc));
 
@@ -65,35 +66,45 @@ print(bad)`,
     }
   });
 
-  it(`pass pyright --strict (Python ${MIN_PYTHON.join(".")}), and so do typed callers; wrong handlers and events do not`, { skip: skipPyright }, () => {
-    const dir = mkdtempSync(join(tmpdir(), "ufsm-pyright-"));
-    try {
-      const written = new Set<string>();
-      for (const f of modelFiles) {
-        const out = generatePython(ir(load(f)));
-        if (written.has(out.fileName)) continue; // examples/ and tests/models/ both have a test_model1
-        written.add(out.fileName);
-        writeFileSync(join(dir, out.fileName), out.source);
-        // and with debugInfo and trace
-        const debug = generatePython(lowerToIr(flatten(load(f)), { trace: true }), { debugInfo: true, module: out.fileName.replace(/\.py$/, "_debug") });
-        writeFileSync(join(dir, debug.fileName), debug.source);
+  it(
+    `pass pyright --strict (Python ${MIN_PYTHON.join(".")}), and so do typed callers; wrong handlers and events do not`,
+    { skip: skipPyright },
+    () => {
+      const dir = mkdtempSync(join(tmpdir(), "ufsm-pyright-"));
+      try {
+        const written = new Set<string>();
+        for (const f of modelFiles) {
+          const out = generatePython(ir(load(f)));
+          if (written.has(out.fileName)) continue; // examples/ and tests/models/ both have a test_model1
+          written.add(out.fileName);
+          writeFileSync(join(dir, out.fileName), out.source);
+          // and with debugInfo and trace
+          const debug = generatePython(lowerToIr(flatten(load(f)), { trace: true }), {
+            debugInfo: true,
+            module: out.fileName.replace(/\.py$/, "_debug"),
+          });
+          writeFileSync(join(dir, debug.fileName), debug.source);
+        }
+        const docText = readFileSync(join(repoRoot, "docs/backend-python.md"), "utf8");
+        writeFileSync(join(dir, "doc_example.py"), /## Example\n\n```python\n([\s\S]*?)```/.exec(docText)![1]!);
+        writeFileSync(
+          join(dir, "wrong_caller.py"),
+          "from dimmer import Dimmer, DimmerEvent\n\n\nclass Lamp:\n    def lamp_off(self) -> None: ...\n\n\n" +
+            "machine = Dimmer(Lamp())  # lamp_10_percent() etc. are missing\nmachine.process(1)  # an int, not a DimmerEvent\nmachine.process(DimmerEvent.eOffButton)\n",
+        );
+        const diags = runPyright(pyright!, dir).filter((d) => d.severity !== "information");
+        const generated = diags.filter((d) => d.file !== "wrong_caller.py");
+        assert.deepEqual(generated, [], generated.map((d) => `${d.file}:${d.line}: ${d.message}`).join("\n"));
+        const wrong = diags
+          .filter((d) => d.file === "wrong_caller.py")
+          .map((d) => d.line)
+          .sort();
+        assert.deepEqual(wrong, [8, 9], diags.map((d) => `${d.file}:${d.line}: ${d.message}`).join("\n"));
+      } finally {
+        removeTempDir(dir);
       }
-      const docText = readFileSync(join(repoRoot, "docs/backend-python.md"), "utf8");
-      writeFileSync(join(dir, "doc_example.py"), /## Example\n\n```python\n([\s\S]*?)```/.exec(docText)![1]!);
-      writeFileSync(
-        join(dir, "wrong_caller.py"),
-        "from dimmer import Dimmer, DimmerEvent\n\n\nclass Lamp:\n    def lamp_off(self) -> None: ...\n\n\n" +
-          "machine = Dimmer(Lamp())  # lamp_10_percent() etc. are missing\nmachine.process(1)  # an int, not a DimmerEvent\nmachine.process(DimmerEvent.eOffButton)\n",
-      );
-      const diags = runPyright(pyright!, dir).filter((d) => d.severity !== "information");
-      const generated = diags.filter((d) => d.file !== "wrong_caller.py");
-      assert.deepEqual(generated, [], generated.map((d) => `${d.file}:${d.line}: ${d.message}`).join("\n"));
-      const wrong = diags.filter((d) => d.file === "wrong_caller.py").map((d) => d.line).sort();
-      assert.deepEqual(wrong, [8, 9], diags.map((d) => `${d.file}:${d.line}: ${d.message}`).join("\n"));
-    } finally {
-      removeTempDir(dir);
-    }
-  });
+    },
+  );
 
   it("run the dimmer example from docs/backend-python.md", { skip }, () => {
     const dir = mkdtempSync(join(tmpdir(), "ufsm-py-"));
@@ -123,7 +134,10 @@ print(bad)`,
     assert.equal(pascalCase("test_guard1"), "TestGuard1");
     assert.equal(pascalCase("New model"), "NewModel");
     assert.equal(pascalCase("3d"), "M3d");
-    const custom = generatePython(ir(load(join(repoRoot, "examples/dimmer.ufsm"))), { className: "Lamp", module: "lamp_fsm" });
+    const custom = generatePython(ir(load(join(repoRoot, "examples/dimmer.ufsm"))), {
+      className: "Lamp",
+      module: "lamp_fsm",
+    });
     assert.equal(custom.fileName, "lamp_fsm.py");
     assert.match(custom.source, /^class LampEvent\(IntEnum\):$/m);
     assert.match(custom.source, /^class LampHandler\(Protocol\):$/m);
@@ -138,9 +152,13 @@ print(bad)`,
   it("generate only what the model uses", () => {
     const plain = generatePython(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm")))).source;
     assert.doesNotMatch(plain, /_queue|_hist|_terminated|_settle/);
-    const signals = generatePython(ir(load(join(repoRoot, "tests/models/test_chained_signals.ufsm"))), { signalQueue: 5 }).source;
+    const signals = generatePython(ir(load(join(repoRoot, "tests/models/test_chained_signals.ufsm"))), {
+      signalQueue: 5,
+    }).source;
     assert.match(signals, /if len\(self\._queue\) >= 5:/);
-    const noCheck = generatePython(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), { maxMicrosteps: 0 }).source;
+    const noCheck = generatePython(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), {
+      maxMicrosteps: 0,
+    }).source;
     assert.doesNotMatch(noCheck, /_steps|_microstep/);
   });
 
@@ -166,7 +184,10 @@ print(bad)`,
   it("reject names Python cannot use", () => {
     const doc = load(join(repoRoot, "tests/models/test_guard1.ufsm"));
     doc.declarations.actions[0]!.name = "__secret";
-    assert.throws(() => generatePython(ir(doc)), (e: unknown) => e instanceof CodegenError && /'__secret' starts with '__'/.test(e.message));
+    assert.throws(
+      () => generatePython(ir(doc)),
+      (e: unknown) => e instanceof CodegenError && /'__secret' starts with '__'/.test(e.message),
+    );
     doc.declarations.actions[0]!.name = "while";
     doc.declarations.actions[1]!.name = "while_";
     assert.throws(() => generatePython(ir(doc)), /action 'while_' becomes 'while_', like action 'while'/);

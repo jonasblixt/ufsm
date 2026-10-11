@@ -73,7 +73,9 @@ function load(file: string): LoadedModel {
 
 function printNotes(m: LoadedModel, file: string): void {
   if (m.sourceVersion === 0) {
-    console.error(`${file}: legacy v0 file, converted in memory (${m.notes.length} change${m.notes.length === 1 ? "" : "s"})`);
+    console.error(
+      `${file}: legacy v0 file, converted in memory (${m.notes.length} change${m.notes.length === 1 ? "" : "s"})`,
+    );
     for (const n of m.notes) console.error(`  note: ${n.message}`);
   }
 }
@@ -100,7 +102,10 @@ function main(argv: string[]): number {
   /** --signal-queue and --max-microsteps: overrides of the model's options for `run` and `generate`. */
   const optionFlags = (): { signalQueue?: number; maxMicrosteps?: number } => {
     const out: { signalQueue?: number; maxMicrosteps?: number } = {};
-    for (const [flag, key] of [["signal-queue", "signalQueue"], ["max-microsteps", "maxMicrosteps"]] as const) {
+    for (const [flag, key] of [
+      ["signal-queue", "signalQueue"],
+      ["max-microsteps", "maxMicrosteps"],
+    ] as const) {
       const v = values[flag];
       if (v === undefined) continue;
       if (!/^\d+$/.test(v)) throw new CodegenError(`--${flag}: expected a whole number, got '${v}'`);
@@ -139,9 +144,15 @@ function main(argv: string[]): number {
       for (const { vertex } of index.vertices.values()) kinds[vertex.kind] = (kinds[vertex.kind] ?? 0) + 1;
       const d = doc.declarations;
       console.log(`Model:       ${doc.name}  (file format v${m.sourceVersion})`);
-      console.log(`States:      ${index.vertices.size}  (${Object.entries(kinds).map(([k, n]) => `${k} ${n}`).join(", ")})`);
+      console.log(
+        `States:      ${index.vertices.size}  (${Object.entries(kinds)
+          .map(([k, n]) => `${k} ${n}`)
+          .join(", ")})`,
+      );
       console.log(`Regions:     ${index.regions.size}`);
-      console.log(`Transitions: ${index.transitions.size}${index.internals.size ? ` (+ ${index.internals.size} internal)` : ""}`);
+      console.log(
+        `Transitions: ${index.transitions.size}${index.internals.size ? ` (+ ${index.internals.size} internal)` : ""}`,
+      );
       console.log(`Events:      ${d.events.length}`);
       console.log(`Signals:     ${d.signals.length}`);
       console.log(`Actions:     ${d.actions.length}`);
@@ -163,7 +174,8 @@ function main(argv: string[]): number {
         const loc = id === undefined || !m.doc.diagram ? undefined : locate(index, id);
         return loc ? `, ${locationText(loc)}` : "";
       };
-      for (const d of diags) console.log(`${d.severity}: ${d.message}  [${d.code}${d.id ? ` ${d.id}` : ""}${where(d.id)}]`);
+      for (const d of diags)
+        console.log(`${d.severity}: ${d.message}  [${d.code}${d.id ? ` ${d.id}` : ""}${where(d.id)}]`);
       const errors = diags.filter((d) => d.severity === "error").length;
       console.log(errors === 0 ? `OK (${diags.length} warning${diags.length === 1 ? "" : "s"})` : `${errors} error(s)`);
       return errors === 0 ? 0 : 2;
@@ -178,7 +190,8 @@ function main(argv: string[]): number {
       for (const { transition, state } of index.internals.values()) {
         console.log(`${state.name} (internal)  : ${internalTransitionLabel(index, transition)}`);
       }
-      for (const { timer, state } of index.timers.values()) console.log(`${state.name} (timer)  : ${timerLabel(index, timer)}`);
+      for (const { timer, state } of index.timers.values())
+        console.log(`${state.name} (timer)  : ${timerLabel(index, timer)}`);
       return 0;
     }
     case "migrate": {
@@ -222,29 +235,52 @@ function main(argv: string[]): number {
         guards.set(m[1]!, m[2] === undefined || m[2] === "true" || m[2] === "1");
       }
       const name = (id: string): string => vertexName(index, id);
-      const m = new Interpreter(doc, { guard: (g) => guards.get(g) ?? false }, {
-        ...optionFlags(),
-        onStep: (e) => {
-          switch (e.type) {
-            case "reset": console.log("-> reset"); break;
-            case "event": console.log(e.signal ? `-> signal ${e.name}` : `-> ${e.name}`); break;
-            case "exit": console.log(`   exit  ${name(e.state)}`); break;
-            case "enter": console.log(`   enter ${name(e.state)}`); break;
-            case "transition": {
-              const t = index.transitions.get(e.id);
-              const it = index.internals.get(e.id);
-              if (t) console.log(`   take  ${name(t.from)} -> ${name(t.to)}`);
-              else if (it) console.log(`   take  ${it.state.name} (internal) ${internalTransitionLabel(index, it.transition)}`);
-              break;
+      const m = new Interpreter(
+        doc,
+        { guard: (g) => guards.get(g) ?? false },
+        {
+          ...optionFlags(),
+          onStep: (e) => {
+            switch (e.type) {
+              case "reset":
+                console.log("-> reset");
+                break;
+              case "event":
+                console.log(e.signal ? `-> signal ${e.name}` : `-> ${e.name}`);
+                break;
+              case "exit":
+                console.log(`   exit  ${name(e.state)}`);
+                break;
+              case "enter":
+                console.log(`   enter ${name(e.state)}`);
+                break;
+              case "transition": {
+                const t = index.transitions.get(e.id);
+                const it = index.internals.get(e.id);
+                if (t) console.log(`   take  ${name(t.from)} -> ${name(t.to)}`);
+                else if (it)
+                  console.log(`   take  ${it.state.name} (internal) ${internalTransitionLabel(index, it.transition)}`);
+                break;
+              }
+              case "call":
+                console.log(`   call  ${e.action}`);
+                break;
+              case "emit":
+                console.log(`   emit  ${e.signal}`);
+                break;
+              case "timer-start":
+                console.log(`   start ${e.timer} (${e.periodic ? "every " : ""}${e.ms} ms)`);
+                break;
+              case "timer-stop":
+                console.log(`   stop  ${e.timer}`);
+                break;
+              case "terminate":
+                console.log("   terminated");
+                break;
             }
-            case "call": console.log(`   call  ${e.action}`); break;
-            case "emit": console.log(`   emit  ${e.signal}`); break;
-            case "timer-start": console.log(`   start ${e.timer} (${e.periodic ? "every " : ""}${e.ms} ms)`); break;
-            case "timer-stop": console.log(`   stop  ${e.timer}`); break;
-            case "terminate": console.log("   terminated"); break;
-          }
+          },
         },
-      });
+      );
       m.reset();
       for (const ev of files.slice(1)) m.process(ev);
       console.log(`active: ${m.activeIds().map(name).join(", ") || "(none)"}`);
@@ -269,17 +305,23 @@ function main(argv: string[]): number {
       console.log(`regions (${f.regions.length}), cfg slot = index in the list, 0 = inactive`);
       f.regions.forEach((r, i) => {
         const hist = r.history === "none" ? "" : `  ${r.history} history`;
-        console.log(`  r${i} ${rname(i)}: ${r.slots.map((v, k) => `${k + 1}=${vname(v)}`).join(" ") || "(empty)"}${hist}`);
+        console.log(
+          `  r${i} ${rname(i)}: ${r.slots.map((v, k) => `${k + 1}=${vname(v)}`).join(" ") || "(empty)"}${hist}`,
+        );
       });
       console.log(`transitions (${f.transitions.length})`);
       f.transitions.forEach((t, i) => {
         const trig = t.trigger.kind === "event" ? t.trigger.name : t.trigger.kind;
         const what = t.terminate ? " terminate" : "";
-        console.log(`  #${i} ${tname(i)} [${trig}] exit r${t.domain} (${rname(t.domain)}), blocks ${t.blocks.map((b) => `r${b}`).join(" ")}${what}`);
+        console.log(
+          `  #${i} ${tname(i)} [${trig}] exit r${t.domain} (${rname(t.domain)}), blocks ${t.blocks.map((b) => `r${b}`).join(" ")}${what}`,
+        );
       });
       const show = (label: string, offers: typeof f.eventless): void => {
         if (!offers.length) return;
-        console.log(`  ${label}: ${offers.map((o) => `${vname(o.state)}(${o.candidates.map((c) => `#${c.transition}${c.offer ? "" : "?"}`).join(" ")})`).join(" ")}`);
+        console.log(
+          `  ${label}: ${offers.map((o) => `${vname(o.state)}(${o.candidates.map((c) => `#${c.transition}${c.offer ? "" : "?"}`).join(" ")})`).join(" ")}`,
+        );
       };
       console.log("offers in visit order (? = join offered by its last source)");
       for (const e of [...f.events, ...f.signals]) show(e.name, f.offers[e.id] ?? []);
@@ -302,9 +344,14 @@ function main(argv: string[]): number {
         console.error(`ufsm generate: missing model file\n\n${USAGE}`);
         return 1;
       }
-      for (const [flag, targets] of [["prefix", ["c"]], ["class-name", ["python", "ts", "rust"]]] as const) {
+      for (const [flag, targets] of [
+        ["prefix", ["c"]],
+        ["class-name", ["python", "ts", "rust"]],
+      ] as const) {
         if (values[flag] !== undefined && !(targets as readonly string[]).includes(target)) {
-          console.error(`ufsm generate: --${flag} only applies to ${targets.slice(0, -1).join(", ")}${targets.length > 1 ? " and " : ""}${targets[targets.length - 1]}`);
+          console.error(
+            `ufsm generate: --${flag} only applies to ${targets.slice(0, -1).join(", ")}${targets.length > 1 ? " and " : ""}${targets[targets.length - 1]}`,
+          );
           return 1;
         }
       }
@@ -358,7 +405,12 @@ function main(argv: string[]): number {
 try {
   process.exitCode = main(process.argv.slice(2));
 } catch (e) {
-  if (e instanceof UfsmFormatError || e instanceof MachineError || e instanceof CodegenError || (e as NodeJS.ErrnoException).code === "ENOENT") {
+  if (
+    e instanceof UfsmFormatError ||
+    e instanceof MachineError ||
+    e instanceof CodegenError ||
+    (e as NodeJS.ErrnoException).code === "ENOENT"
+  ) {
     console.error(`ufsm: ${(e as Error).message}`);
     process.exitCode = e instanceof CodegenError ? 2 : 1;
   } else {

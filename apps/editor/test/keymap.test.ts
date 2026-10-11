@@ -19,7 +19,8 @@ describe("editor key map", () => {
   });
 
   it("lists every key action of the model, so a key can be followed to its command", () => {
-    for (const action of ["save", "deleteSelection", "goUp", "simStart", "dragBegin"]) assert.ok(text.includes("`" + action + "()`"), action);
+    for (const action of ["save", "deleteSelection", "goUp", "simStart", "dragBegin"])
+      assert.ok(text.includes("`" + action + "()`"), action);
     assert.match(text, /^## Keys$/m);
     assert.ok(text.includes("| Zoom | f |  | `fit()` | Tools |"));
   });

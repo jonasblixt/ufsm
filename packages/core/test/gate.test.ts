@@ -8,7 +8,17 @@
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { CODE_TARGETS, CodegenError, Interpreter, MachineError, checkV1, generateFiles, indexV1, type State, type UfsmDocument } from "../src";
+import {
+  CODE_TARGETS,
+  CodegenError,
+  Interpreter,
+  MachineError,
+  checkV1,
+  generateFiles,
+  indexV1,
+  type State,
+  type UfsmDocument,
+} from "../src";
 import { randomModel, rng } from "./random-model";
 
 function baseDoc(): UfsmDocument {
@@ -42,10 +52,15 @@ function runAllStages(doc: UfsmDocument): void {
 
 /** The model has the error `code` on `id`, and every later stage refuses it with its own error class. */
 function rejected(doc: UfsmDocument, code: string, id: string): void {
-  const found = checkV1(doc).filter((d) => d.severity === "error").map((d) => `${d.code} ${d.id}`);
+  const found = checkV1(doc)
+    .filter((d) => d.severity === "error")
+    .map((d) => `${d.code} ${d.id}`);
   assert.ok(found.includes(`${code} ${id}`), `expected ${code} on ${id}, got ${JSON.stringify(found)}`);
   for (const target of CODE_TARGETS) assert.throws(() => generateFiles(doc, target), CodegenError);
-  assert.throws(() => new Interpreter(doc), (e) => e instanceof MachineError && e.code === "invalid-model");
+  assert.throws(
+    () => new Interpreter(doc),
+    (e) => e instanceof MachineError && e.code === "invalid-model",
+  );
 }
 
 describe("the design rule check as the validity gate", () => {
@@ -79,7 +94,15 @@ describe("the design rule check as the validity gate", () => {
   it("an initial transition that leaves its region", () => {
     const doc = baseDoc();
     const a = doc.machine.root.states[1] as State;
-    a.regions = [{ id: "r1", states: [{ id: "s4", kind: "initial" }, { id: "s5", kind: "state", name: "C" }] }];
+    a.regions = [
+      {
+        id: "r1",
+        states: [
+          { id: "s4", kind: "initial" },
+          { id: "s5", kind: "state", name: "C" },
+        ],
+      },
+    ];
     doc.machine.transitions.push({ id: "t3", from: "s4", to: "s3" }, { id: "t4", from: "s5", to: "s3", on: "ev1" });
     rejected(doc, "initial-target", "t3");
   });

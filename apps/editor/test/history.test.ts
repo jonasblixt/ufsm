@@ -39,7 +39,10 @@ describe("editor undo history", () => {
     const text = serializeV1(doc);
     const h = new History(doc);
     const id = firstState(doc);
-    assert.equal(h.edit((d) => void moveVertices(d, [id], 40, 20, id)), true);
+    assert.equal(
+      h.edit((d) => void moveVertices(d, [id], 40, 20, id)),
+      true,
+    );
     const edited = serializeV1(h.current);
     assert.notEqual(edited, text);
     assert.equal(serializeV1(doc), text, "the loaded document is never mutated");
@@ -58,7 +61,10 @@ describe("editor undo history", () => {
   it("records nothing for an edit that changes nothing", () => {
     const h = new History(load());
     const before = h.current;
-    assert.equal(h.edit(() => undefined), false);
+    assert.equal(
+      h.edit(() => undefined),
+      false,
+    );
     assert.equal(h.current, before);
     assert.ok(!h.canUndo);
   });
@@ -70,7 +76,11 @@ describe("editor undo history", () => {
     h.begin();
     h.preview((d) => void moveVertices(d, [id], 100, 0, id));
     h.preview((d) => void moveVertices(d, [id], 30, 0, id));
-    assert.equal(h.current.diagram!.states[id]!.x, doc.diagram!.states[id]!.x + 30, "not 130: every preview starts over");
+    assert.equal(
+      h.current.diagram!.states[id]!.x,
+      doc.diagram!.states[id]!.x + 30,
+      "not 130: every preview starts over",
+    );
     assert.ok(!h.canUndo, "no undo while dragging");
     assert.ok(h.commit());
     assert.ok(h.undo());
@@ -112,9 +122,13 @@ describe("editor undo history", () => {
       const texts = [serializeV1(doc)];
       const index = indexV1(doc);
       const states = [...index.vertices.values()].filter((i) => i.vertex.kind === "state").map((i) => i.vertex.id);
-      const a = states[0]!, b = states[states.length - 1]!;
+      const a = states[0]!,
+        b = states[states.length - 1]!;
       const step = (recipe: (d: UfsmDocument) => void): void => {
-        assert.ok(h.edit((d) => recipe(d as UfsmDocument)), f);
+        assert.ok(
+          h.edit((d) => recipe(d as UfsmDocument)),
+          f,
+        );
         texts.push(serializeV1(h.current));
       };
       step((d) => void addVertex(d, d.machine.root.id, "state", { x: 3000, y: 100, w: 160, h: 80 }));

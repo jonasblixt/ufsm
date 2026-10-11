@@ -40,7 +40,12 @@ export class IrRunner {
   private busy = false;
   private steps = 0;
 
-  constructor(ir: IrModule, host: MachineHost = {}, options: RunOptions = {}, onHook?: (kind: TraceKind, index: number) => void) {
+  constructor(
+    ir: IrModule,
+    host: MachineHost = {},
+    options: RunOptions = {},
+    onHook?: (kind: TraceKind, index: number) => void,
+  ) {
     this.ir = ir;
     this.host = host;
     this.onHook = ir.trace ? onHook : undefined;

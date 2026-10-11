@@ -10,7 +10,15 @@
  */
 import { type DocIndex, type Id, type Region } from "@ufsm/core";
 import { resizableEdges, type Edge, type EdgeEndName } from "@ufsm/core/edit";
-import { HEADER_H, actionBlock, edgeGeometry, regionBoxes, routeInfo, type MeasureText, type Point } from "@ufsm/core/diagram";
+import {
+  HEADER_H,
+  actionBlock,
+  edgeGeometry,
+  regionBoxes,
+  routeInfo,
+  type MeasureText,
+  type Point,
+} from "@ufsm/core/diagram";
 import { drawnBox, forEachVisible, hitTest, hitTransition } from "./hit";
 
 export type Grip =
@@ -65,20 +73,42 @@ export function handlesFor(index: DocIndex, sheet: Region, selection: ReadonlySe
     const allowed = new Set(resizableEdges(index, id));
     for (const r of RESIZE) {
       if (!r.edges.every((e) => allowed.has(e))) continue;
-      const h: Handle = { grip: { kind: "resize", id, edges: r.edges }, x: b.x + r.fx * b.w, y: b.y + r.fy * b.h, shape: "square", hidden: true, cursor: r.cursor };
+      const h: Handle = {
+        grip: { kind: "resize", id, edges: r.edges },
+        x: b.x + r.fx * b.w,
+        y: b.y + r.fy * b.h,
+        shape: "square",
+        hidden: true,
+        cursor: r.cursor,
+      };
       // a side grabs along its whole length; a corner is a point (it beats the sides near it)
-      if (r.edges.length === 1) Object.assign(h, r.fx === 0.5 ? { span: [b.x, b.x + b.w], axis: "x" } : { span: [b.y, b.y + b.h], axis: "y" });
+      if (r.edges.length === 1)
+        Object.assign(h, r.fx === 0.5 ? { span: [b.x, b.x + b.w], axis: "x" } : { span: [b.y, b.y + b.h], axis: "y" });
       out.push(h);
     }
     if (v.kind === "state") {
       // the bottom line of the action block: drag it to hide lines, or to show them again
       const block = actionBlock(index, v);
       if (block.auto > 0 && HEADER_H + block.height < b.h) {
-        out.push({ grip: { kind: "actions", id }, x: b.x + b.w / 2, y: b.y + HEADER_H + block.height, shape: "bar", span: [b.x, b.x + b.w], cursor: "ns-resize" });
+        out.push({
+          grip: { kind: "actions", id },
+          x: b.x + b.w / 2,
+          y: b.y + HEADER_H + block.height,
+          shape: "bar",
+          span: [b.x, b.x + b.w],
+          cursor: "ns-resize",
+        });
       }
       const bands = regionBoxes(index, v);
       bands.slice(0, -1).forEach(({ box }, k) => {
-        out.push({ grip: { kind: "split", id, k }, x: box.x + box.w / 2, y: box.y + box.h, shape: "bar", span: [box.x, box.x + box.w], cursor: "ns-resize" });
+        out.push({
+          grip: { kind: "split", id, k },
+          x: box.x + box.w / 2,
+          y: box.y + box.h,
+          shape: "bar",
+          span: [box.x, box.x + box.w],
+          cursor: "ns-resize",
+        });
       });
     }
   }
@@ -87,17 +117,38 @@ export function handlesFor(index: DocIndex, sheet: Region, selection: ReadonlySe
     if (!t || !visible.has(t.from)) continue;
     const g = edgeGeometry(index, id);
     if (!g || g.points.length < 2) continue;
-    const first = g.points[0]!, last = g.points[g.points.length - 1]!;
+    const first = g.points[0]!,
+      last = g.points[g.points.length - 1]!;
     const info = routeInfo(index, id);
     if (info) {
-      out.push({ grip: { kind: "end", id, end: "from", pinned: info.fromPinned }, ...first, shape: info.fromPinned ? "dot" : "ring", cursor: "crosshair" });
-      out.push({ grip: { kind: "end", id, end: "to", pinned: info.toPinned }, ...last, shape: info.toPinned ? "dot" : "ring", cursor: "crosshair" });
+      out.push({
+        grip: { kind: "end", id, end: "from", pinned: info.fromPinned },
+        ...first,
+        shape: info.fromPinned ? "dot" : "ring",
+        cursor: "crosshair",
+      });
+      out.push({
+        grip: { kind: "end", id, end: "to", pinned: info.toPinned },
+        ...last,
+        shape: info.toPinned ? "dot" : "ring",
+        cursor: "crosshair",
+      });
       const mid = info.jog && jogMidpoint(g.points, info.jog.axis, info.jog.value);
-      if (mid) out.push({ grip: { kind: "jog", id }, ...mid, shape: "square", cursor: info.jog!.axis === "x" ? "ew-resize" : "ns-resize" });
+      if (mid)
+        out.push({
+          grip: { kind: "jog", id },
+          ...mid,
+          shape: "square",
+          cursor: info.jog!.axis === "x" ? "ew-resize" : "ns-resize",
+        });
     } else {
       out.push({ grip: { kind: "end", id, end: "from", pinned: true }, ...first, shape: "dot", cursor: "crosshair" });
       out.push({ grip: { kind: "end", id, end: "to", pinned: true }, ...last, shape: "dot", cursor: "crosshair" });
-      g.points.slice(1, -1).forEach((p, i) => out.push({ grip: { kind: "bend", id, i }, x: p.x, y: p.y, shape: "square", cursor: "move" }));
+      g.points
+        .slice(1, -1)
+        .forEach((p, i) =>
+          out.push({ grip: { kind: "bend", id, i }, x: p.x, y: p.y, shape: "square", cursor: "move" }),
+        );
     }
   }
   return out;
@@ -106,8 +157,12 @@ export function handlesFor(index: DocIndex, sheet: Region, selection: ReadonlySe
 /** Middle of the route segment that is the movable one: vertical at x = value (axis x) or horizontal at y = value. */
 function jogMidpoint(points: Point[], axis: "x" | "y", value: number): Point | undefined {
   for (let i = 1; i < points.length; i++) {
-    const a = points[i - 1]!, b = points[i]!;
-    const on = axis === "x" ? Math.abs(a.x - value) < 1e-6 && Math.abs(b.x - value) < 1e-6 : Math.abs(a.y - value) < 1e-6 && Math.abs(b.y - value) < 1e-6;
+    const a = points[i - 1]!,
+      b = points[i]!;
+    const on =
+      axis === "x"
+        ? Math.abs(a.x - value) < 1e-6 && Math.abs(b.x - value) < 1e-6
+        : Math.abs(a.y - value) < 1e-6 && Math.abs(b.y - value) < 1e-6;
     if (on) return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
   }
   return undefined;
@@ -136,7 +191,11 @@ export function gripAt(
   let bestD = Infinity;
   for (const h of handles) {
     const [along, across] = h.axis === "y" ? [y, x - h.x] : [x, y - h.y];
-    const d = h.span ? (along >= h.span[0] - r && along <= h.span[1] + r ? Math.abs(across) : Infinity) : Math.hypot(x - h.x, y - h.y);
+    const d = h.span
+      ? along >= h.span[0] - r && along <= h.span[1] + r
+        ? Math.abs(across)
+        : Infinity
+      : Math.hypot(x - h.x, y - h.y);
     // point handles beat a line they sit on; a hidden corner grabs a little further out, so it is easy to hit
     const corner = h.hidden && !h.span;
     const reach = corner ? 1.5 * r : r;
@@ -151,6 +210,7 @@ export function gripAt(
   const t = hitTransition(index, sheet, x, y, 6 / scale, measure);
   if (t) return t.label ? { grip: { kind: "label", id: t.id }, cursor: "move" } : undefined;
   const hit = hitTest(index, sheet, x, y, 6 / scale);
-  if (hit.vertex && (selection.has(hit.vertex.id) || !hit.region)) return { grip: { kind: "move", id: hit.vertex.id }, cursor: "move" };
+  if (hit.vertex && (selection.has(hit.vertex.id) || !hit.region))
+    return { grip: { kind: "move", id: hit.vertex.id }, cursor: "move" };
   return undefined;
 }

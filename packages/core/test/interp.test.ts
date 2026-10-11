@@ -6,11 +6,26 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { Interpreter, MachineError, formatFailure, formatTrace, indexV1, loadModel, parseTrace, runTrace, type StepEvent, type UfsmDocument } from "../src";
+import {
+  Interpreter,
+  MachineError,
+  formatFailure,
+  formatTrace,
+  indexV1,
+  loadModel,
+  parseTrace,
+  runTrace,
+  type StepEvent,
+  type UfsmDocument,
+} from "../src";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const traceDir = join(repoRoot, "tests/traces");
-const traceFiles = existsSync(traceDir) ? readdirSync(traceDir).filter((f) => f.endsWith(".json")).sort() : [];
+const traceFiles = existsSync(traceDir)
+  ? readdirSync(traceDir)
+      .filter((f) => f.endsWith(".json"))
+      .sort()
+  : [];
 
 describe("conformance traces (reference interpreter)", () => {
   it("exist for every old C test", () => assert.ok(traceFiles.length >= 14, `found ${traceFiles.length}`));
@@ -26,7 +41,12 @@ describe("conformance traces (reference interpreter)", () => {
 });
 
 /** Tiny builder for inline models: states "A", "P{C,D}", transitions "A -e1-> B". */
-function machine(spec: { root: string[]; transitions: string[]; signals?: string[]; history?: Record<string, "shallow-history" | "deep-history"> }): UfsmDocument {
+function machine(spec: {
+  root: string[];
+  transitions: string[];
+  signals?: string[];
+  history?: Record<string, "shallow-history" | "deep-history">;
+}): UfsmDocument {
   let n = 0;
   const events = new Map<string, string>();
   const actions = new Map<string, string>();
@@ -93,11 +113,20 @@ function machine(spec: { root: string[]; transitions: string[]; signals?: string
     const m = /^(\w+) -(\w+)?(?:\[(!?\w+)\])?(?:\/([\w^,]+))?-> (\w+)$/.exec(t);
     if (!m) throw new Error(`bad transition spec '${t}'`);
     const [, from, trig, , act, to] = m;
-    const tr: UfsmDocument["machine"]["transitions"][number] = { id: `t${transitions.length + 1}`, from: ids.get(from!)!, to: ids.get(to!)! };
+    const tr: UfsmDocument["machine"]["transitions"][number] = {
+      id: `t${transitions.length + 1}`,
+      from: ids.get(from!)!,
+      to: ids.get(to!)!,
+    };
     if (trig === "auto") tr.auto = true;
     else if (trig === "completion") tr.completion = true;
     else if (trig) tr.on = signals.has(trig) ? decl(events, "sig_", trig) : decl(events, "ev", trig);
-    if (act) tr.do = act.split(",").map((a) => (a.startsWith("^") ? { emit: decl(events, "sig_", a.slice(1)) } : { call: decl(actions, "act", a) }));
+    if (act)
+      tr.do = act
+        .split(",")
+        .map((a) =>
+          a.startsWith("^") ? { emit: decl(events, "sig_", a.slice(1)) } : { call: decl(actions, "act", a) },
+        );
     transitions.push(tr);
   }
   const evDecls = [...events].filter(([k]) => !signals.has(k)).map(([name, id]) => ({ id, name }));
@@ -106,7 +135,12 @@ function machine(spec: { root: string[]; transitions: string[]; signals?: string
     format: "ufsm",
     version: 1,
     name: "inline",
-    declarations: { events: evDecls, signals: sigDecls, actions: [...actions].map(([name, id]) => ({ id, name })), guards: [] },
+    declarations: {
+      events: evDecls,
+      signals: sigDecls,
+      actions: [...actions].map(([name, id]) => ({ id, name })),
+      guards: [],
+    },
     machine: { root, transitions },
   };
 }
@@ -123,16 +157,25 @@ function run(doc: UfsmDocument, events: string[], opts: { signalQueue?: number }
 describe("interpreter", () => {
   it("requires reset() before process()", () => {
     const m = new Interpreter(machine({ root: ["A", "B"], transitions: ["A -e1-> B"] }));
-    assert.throws(() => m.process("e1"), (e: unknown) => e instanceof MachineError && e.code === "not-started");
+    assert.throws(
+      () => m.process("e1"),
+      (e: unknown) => e instanceof MachineError && e.code === "not-started",
+    );
   });
 
   it("rejects unknown events and models with errors", () => {
     const doc = machine({ root: ["A", "B"], transitions: ["A -e1-> B"] });
     const m = new Interpreter(doc);
     m.reset();
-    assert.throws(() => m.process("nope"), (e: unknown) => e instanceof MachineError && e.code === "unknown-event");
+    assert.throws(
+      () => m.process("nope"),
+      (e: unknown) => e instanceof MachineError && e.code === "unknown-event",
+    );
     doc.machine.transitions.push({ id: "tx", from: "s1", to: "missing", on: "ev1" });
-    assert.throws(() => new Interpreter(doc), (e: unknown) => e instanceof MachineError && e.code === "invalid-model");
+    assert.throws(
+      () => new Interpreter(doc),
+      (e: unknown) => e instanceof MachineError && e.code === "invalid-model",
+    );
   });
 
   it("accepts event ids as well as names", () => {
@@ -155,18 +198,37 @@ describe("interpreter", () => {
   it("detects auto-transition livelocks", () => {
     const doc = machine({ root: ["A", "B"], transitions: ["A -auto-> B", "B -auto-> A"] });
     const m = new Interpreter(doc, {}, { maxMicrosteps: 50 });
-    assert.throws(() => m.reset(), (e: unknown) => e instanceof MachineError && e.code === "livelock");
+    assert.throws(
+      () => m.reset(),
+      (e: unknown) => e instanceof MachineError && e.code === "livelock",
+    );
   });
 
   it("bounds the signal queue when asked to", () => {
     const doc = machine({ root: ["A", "B"], signals: ["s"], transitions: ["A -e1/^s,^s,^s-> B"] });
     assert.deepEqual(run(doc, ["e1"], { signalQueue: 3 }), ["xA", "eB"]);
-    assert.throws(() => run(doc, ["e1"], { signalQueue: 2 }), (e: unknown) => e instanceof MachineError && e.code === "queue-overflow");
+    assert.throws(
+      () => run(doc, ["e1"], { signalQueue: 2 }),
+      (e: unknown) => e instanceof MachineError && e.code === "queue-overflow",
+    );
   });
 
   it("drains the signal queue in every process() call (B2)", () => {
     const doc = machine({ root: ["A", "B"], signals: ["s"], transitions: ["A -e1/^s-> B", "B -s-> A"] });
-    assert.deepEqual(run(doc, ["e1", "e1", "e1"]), ["xA", "eB", "xB", "eA", "xA", "eB", "xB", "eA", "xA", "eB", "xB", "eA"]);
+    assert.deepEqual(run(doc, ["e1", "e1", "e1"]), [
+      "xA",
+      "eB",
+      "xB",
+      "eA",
+      "xA",
+      "eB",
+      "xB",
+      "eA",
+      "xA",
+      "eB",
+      "xB",
+      "eA",
+    ]);
   });
 
   it("stays busy after a call that did not finish, until reset()", () => {
@@ -175,7 +237,10 @@ describe("interpreter", () => {
     const id = (name: string): string => doc.machine.root.states.find((v) => v.name === name)!.id;
     const m = new Interpreter(doc, {}, { signalQueue: 1 });
     m.reset();
-    assert.throws(() => m.process("e1"), (e: unknown) => e instanceof MachineError && e.code === "queue-overflow");
+    assert.throws(
+      () => m.process("e1"),
+      (e: unknown) => e instanceof MachineError && e.code === "queue-overflow",
+    );
     assert.throws(() => m.process("e1"), isBusy);
     assert.throws(() => m.process("e9"), /unknown event/, "unknown-event is checked first");
     m.reset();
@@ -189,7 +254,10 @@ describe("interpreter", () => {
       },
     });
     h.reset();
-    assert.throws(() => h.process("e1"), (e: unknown) => e === boom);
+    assert.throws(
+      () => h.process("e1"),
+      (e: unknown) => e === boom,
+    );
     raise = false;
     assert.throws(() => h.process("e1"), isBusy);
     h.reset();
@@ -217,7 +285,10 @@ describe("interpreter", () => {
     assert.ok(nested instanceof MachineError && nested.code === "busy");
     assert.deepEqual(calls, ["eA", "xA", "go", "eB"]);
     m.process("e1");
-    assert.ok(m.isActive(doc.machine.root.states.find((v) => v.name === "A")!.id), "a refused nested call does not latch");
+    assert.ok(
+      m.isActive(doc.machine.root.states.find((v) => v.name === "A")!.id),
+      "a refused nested call does not latch",
+    );
   });
 
   it("restores shallow history one level deep", () => {
@@ -227,7 +298,22 @@ describe("interpreter", () => {
       transitions: ["Off -go-> On", "On -stop-> Off", "X -next-> Y", "X1 -sub-> X2", "Y -back-> X"],
     });
     // Leave from X2: shallow history restores X, which then starts at X1 again.
-    assert.deepEqual(run(doc, ["go", "sub", "stop", "go"]), ["xOff", "eOn", "eX", "eX1", "xX1", "eX2", "xX2", "xX", "xOn", "eOff", "xOff", "eOn", "eX", "eX1"]);
+    assert.deepEqual(run(doc, ["go", "sub", "stop", "go"]), [
+      "xOff",
+      "eOn",
+      "eX",
+      "eX1",
+      "xX1",
+      "eX2",
+      "xX2",
+      "xX",
+      "xOn",
+      "eOff",
+      "xOff",
+      "eOn",
+      "eX",
+      "eX1",
+    ]);
   });
 
   it("restores deep history all the way down", () => {
@@ -236,7 +322,22 @@ describe("interpreter", () => {
       history: { r_Onr0: "deep-history" },
       transitions: ["Off -go-> On", "On -stop-> Off", "X1 -sub-> X2"],
     });
-    assert.deepEqual(run(doc, ["go", "sub", "stop", "go"]), ["xOff", "eOn", "eX", "eX1", "xX1", "eX2", "xX2", "xX", "xOn", "eOff", "xOff", "eOn", "eX", "eX2"]);
+    assert.deepEqual(run(doc, ["go", "sub", "stop", "go"]), [
+      "xOff",
+      "eOn",
+      "eX",
+      "eX1",
+      "xX1",
+      "eX2",
+      "xX2",
+      "xX",
+      "xOn",
+      "eOff",
+      "xOff",
+      "eOn",
+      "eX",
+      "eX2",
+    ]);
   });
 
   it("forgets history when the region was left resting in its final state", () => {
@@ -254,7 +355,11 @@ describe("interpreter", () => {
     const y = on.regions![0]!.states.find((v) => v.name === "Y")!;
     doc.machine.transitions.push({ id: "tf", from: y.id, to: "fin", on: "evf" });
     assert.deepEqual(run(doc, ["go", "next", "stop", "go"]).slice(-3), ["xOff", "eOn", "eY"], "history restores Y");
-    assert.deepEqual(run(doc, ["go", "next", "stop", "go", "done", "stop", "go"]).slice(-3), ["xOff", "eOn", "eX"], "final clears the record");
+    assert.deepEqual(
+      run(doc, ["go", "next", "stop", "go", "done", "stop", "go"]).slice(-3),
+      ["xOff", "eOn", "eX"],
+      "final clears the record",
+    );
   });
 
   it("enters nothing on the way to a terminate pseudo-state", () => {
@@ -324,17 +429,24 @@ describe("interpreter for simulators", () => {
       const v = index.vertices.get(id)!.vertex;
       return v.name ?? v.kind;
     };
-    const name = (id: string): string => `${vname(index.transitions.get(id)!.from)}->${vname(index.transitions.get(id)!.to)}`;
+    const name = (id: string): string =>
+      `${vname(index.transitions.get(id)!.from)}->${vname(index.transitions.get(id)!.to)}`;
     const m = new Interpreter(doc);
     assert.deepEqual(m.wouldTake("eBegin"), [], "nothing before reset()");
     m.reset();
-    assert.deepEqual(m.wouldTake("eBegin").map((t) => t.parts.map((p) => name(p.id))), [["Start->fork", "fork->B1", "fork->B2"]]);
+    assert.deepEqual(
+      m.wouldTake("eBegin").map((t) => t.parts.map((p) => name(p.id))),
+      [["Start->fork", "fork->B1", "fork->B2"]],
+    );
     assert.deepEqual(m.wouldTake("eEvent2"), []);
     assert.deepEqual(m.wouldTake("nonsense"), [], "unknown events take nothing");
     assert.deepEqual(m.activeIds().length, 1, "asking changed nothing");
     m.process("eBegin");
     m.process("eEvent");
-    assert.deepEqual(m.wouldTake("eEvent2").map((t) => t.parts.map((p) => name(p.id)).sort()), [["B11->join", "B2->join", "join->End"]]);
+    assert.deepEqual(
+      m.wouldTake("eEvent2").map((t) => t.parts.map((p) => name(p.id)).sort()),
+      [["B11->join", "B2->join", "join->End"]],
+    );
   });
 
   it("asks the guards as process() would", () => {
@@ -372,26 +484,42 @@ describe("trace files", () => {
       const out = formatTrace(trace);
       assert.deepEqual(parseTrace(out), trace, f);
       assert.equal(formatTrace(parseTrace(out)), out, `${f}: formatting is stable`);
-      for (const line of out.split("\n")) if (/^ {4}\{ /.test(line)) assert.ok(line.replace(/,$/, "").length <= 120, `${f}: ${line}`);
+      for (const line of out.split("\n"))
+        if (/^ {4}\{ /.test(line)) assert.ok(line.replace(/,$/, "").length <= 120, `${f}: ${line}`);
     }
-    const t = parseTrace(`{"model":"m.ufsm","options":{"signalQueue":2},"steps":[{"reset":true,"expect":["eA"]},{"guards":{"g":true,"h":false},"send":"e1","expect":[],"active":["A"]}]}`);
+    const t = parseTrace(
+      `{"model":"m.ufsm","options":{"signalQueue":2},"steps":[{"reset":true,"expect":["eA"]},{"guards":{"g":true,"h":false},"send":"e1","expect":[],"active":["A"]}]}`,
+    );
     assert.equal(
       formatTrace(t),
       `{\n  "model": "m.ufsm",\n  "options": { "signalQueue": 2 },\n  "steps": [\n    { "reset": true, "expect": ["eA"] },\n    { "guards": { "g": true, "h": false }, "send": "e1", "expect": [], "active": ["A"] }\n  ]\n}\n`,
     );
-    const long = formatTrace({ model: "m", steps: [{ send: "e1", expect: Array.from({ length: 20 }, (_, i) => `action${i}`) }] });
+    const long = formatTrace({
+      model: "m",
+      steps: [{ send: "e1", expect: Array.from({ length: 20 }, (_, i) => `action${i}`) }],
+    });
     assert.match(long, /\n {4}\{\n {6}"send": "e1",\n {6}"expect": \["action0", /);
     assert.equal(formatTrace({ model: "m", steps: [] }), `{\n  "model": "m",\n  "steps": []\n}\n`);
-    assert.throws(() => parseTrace(`{"model":"m","steps":[{"guards":{"g":1},"send":"e1","expect":[]}]}`), /true \| false/, "guard values are booleans");
+    assert.throws(
+      () => parseTrace(`{"model":"m","steps":[{"guards":{"g":1},"send":"e1","expect":[]}]}`),
+      /true \| false/,
+      "guard values are booleans",
+    );
   });
 
   it("reject unknown keys and steps without expectations", () => {
     assert.throws(() => parseTrace(`{"model":"m","steps":[{"send":"e1"}]}`), /needs `expect`/);
     assert.throws(() => parseTrace(`{"model":"m","steps":[{"send":"e1","expect":[],"bogus":1}]}`), /unknown key/);
     assert.throws(() => parseTrace(`{"model":"m","steps":[{"reset":true,"send":"e1","expect":[]}]}`), /not both/);
-    assert.throws(() => parseTrace(`{"model":"m","steps":[{"reset":true,"reenter":"eA","expect":[]}]}`), /needs a send/);
+    assert.throws(
+      () => parseTrace(`{"model":"m","steps":[{"reset":true,"reenter":"eA","expect":[]}]}`),
+      /needs a send/,
+    );
     assert.throws(() => parseTrace(`{"model":"m","steps":[{"send":"e1","raise":"xA","error":"busy"}]}`), /no `error`/);
-    assert.throws(() => parseTrace(`{"model":"m","steps":[{"guards":{"g":true},"raise":"g"}]}`), /needs a reset or send/);
+    assert.throws(
+      () => parseTrace(`{"model":"m","steps":[{"guards":{"g":true},"raise":"g"}]}`),
+      /needs a reset or send/,
+    );
   });
 
   it("raise exceptions from actions and call process() from inside an action (guards: test_busy.json)", () => {
@@ -407,7 +535,9 @@ describe("trace files", () => {
     const trace = parseTrace(`{"model":"m","steps":[${steps.join(",")}]}`);
     assert.deepEqual(runTrace(doc, trace), []);
     // raised where none was expected, expected but not raised, a nested call on the wrong action
-    const wrong = parseTrace(`{"model":"m","steps":[{"reset":true,"raise":"zz","expect":["eA"]},{"send":"e1","reenter":"zz","expect":[]}]}`);
+    const wrong = parseTrace(
+      `{"model":"m","steps":[{"reset":true,"raise":"zz","expect":["eA"]},{"send":"e1","reenter":"zz","expect":[]}]}`,
+    );
     const failures = runTrace(doc, wrong).map((f) => f.message);
     assert.match(failures[0]!, /'zz' was not called/);
     assert.match(failures[1]!, /'zz' was not called; expected the nested process\(\)/);
@@ -415,7 +545,9 @@ describe("trace files", () => {
 
   it("report differing traces", () => {
     const doc = machine({ root: ["A", "B"], transitions: ["A -e1-> B"] });
-    const trace = parseTrace(`{"model":"m","steps":[{"reset":true,"expect":["eA"]},{"send":"e1","expect":["xA","eX"],"active":["A"]}]}`);
+    const trace = parseTrace(
+      `{"model":"m","steps":[{"reset":true,"expect":["eA"]},{"send":"e1","expect":["xA","eX"],"active":["A"]}]}`,
+    );
     const failures = runTrace(doc, trace);
     assert.equal(failures.length, 2);
     assert.match(formatFailure(trace, failures[0]!), /expected: xA eX\n {4}actual: {3}xA eB/);
@@ -424,7 +556,9 @@ describe("trace files", () => {
 
   it("check states that must not be active", () => {
     const doc = machine({ root: ["A", "B"], transitions: ["A -e1-> B"] });
-    const trace = parseTrace(`{"model":"m","steps":[{"reset":true,"expect":["eA"],"inactive":["B"]},{"send":"e1","expect":["xA","eB"],"inactive":["B"]}]}`);
+    const trace = parseTrace(
+      `{"model":"m","steps":[{"reset":true,"expect":["eA"],"inactive":["B"]},{"send":"e1","expect":["xA","eB"],"inactive":["B"]}]}`,
+    );
     const failures = runTrace(doc, trace);
     assert.equal(failures.length, 1);
     assert.equal(failures[0]!.step, 1);
@@ -433,7 +567,9 @@ describe("trace files", () => {
 
   it("take a signal queue size and a livelock limit", () => {
     const doc = machine({ root: ["A", "B"], transitions: ["A -auto-> B", "B -e1-> A"] });
-    const trace = parseTrace(`{"model":"m","options":{"signalQueue":2,"maxMicrosteps":1},"steps":[{"reset":true,"expect":["eA","xA","eB"]},{"send":"e1","error":"livelock"}]}`);
+    const trace = parseTrace(
+      `{"model":"m","options":{"signalQueue":2,"maxMicrosteps":1},"steps":[{"reset":true,"expect":["eA","xA","eB"]},{"send":"e1","error":"livelock"}]}`,
+    );
     assert.deepEqual(trace.options, { signalQueue: 2, maxMicrosteps: 1 });
     assert.equal(runTrace(doc, trace).length, 0);
     for (const bad of [`{"queue":2}`, `{"maxMicrosteps":-1}`, `{"signalQueue":1.5}`]) {

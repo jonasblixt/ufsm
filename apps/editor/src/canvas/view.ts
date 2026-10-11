@@ -69,7 +69,10 @@ export function createCanvasView(app: App): CanvasView {
     for (const x of d.diagnostics) {
       if (!x.id) continue;
       const ix = d.index;
-      const id = ix.vertices.has(x.id) || ix.transitions.has(x.id) ? x.id : (ix.internals.get(x.id)?.state.id ?? ix.timers.get(x.id)?.state.id ?? ix.regions.get(x.id)?.owner?.id);
+      const id =
+        ix.vertices.has(x.id) || ix.transitions.has(x.id)
+          ? x.id
+          : (ix.internals.get(x.id)?.state.id ?? ix.timers.get(x.id)?.state.id ?? ix.regions.get(x.id)?.owner?.id);
       if (id && marks.get(id) !== "error") marks.set(id, x.severity === "error" ? "error" : "warning");
     }
     marksCache.set(d.diagnostics, marks);
@@ -131,7 +134,11 @@ export function createCanvasView(app: App): CanvasView {
     const { w, h } = cssSize();
     const pad = 40;
     const v = view();
-    const scale = Math.min((w - 2 * pad) / Math.max(b.x1 - b.x0, 1), (h - 2 * pad) / Math.max(b.y1 - b.y0, 1), maxScale);
+    const scale = Math.min(
+      (w - 2 * pad) / Math.max(b.x1 - b.x0, 1),
+      (h - 2 * pad) / Math.max(b.y1 - b.y0, 1),
+      maxScale,
+    );
     v.scale = scale;
     v.x = (w - (b.x1 - b.x0) * scale) / 2 - b.x0 * scale;
     v.y = (h - (b.y1 - b.y0) * scale) / 2 - b.y0 * scale;

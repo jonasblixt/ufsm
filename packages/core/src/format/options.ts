@@ -18,7 +18,12 @@ import type { ModelOptions, UfsmDocument } from "./model";
 export type OptionKey = keyof ModelOptions;
 
 /** The value of every option when the model does not set it; the generated code's defaults too. */
-export const OPTION_DEFAULTS: Readonly<Required<ModelOptions>> = { signalQueue: 16, maxMicrosteps: 10000, debugInfo: false, trace: false };
+export const OPTION_DEFAULTS: Readonly<Required<ModelOptions>> = {
+  signalQueue: 16,
+  maxMicrosteps: 10000,
+  debugInfo: false,
+  trace: false,
+};
 
 /** Options that change behaviour (whole numbers): set in `options` only. */
 export const BEHAVIOUR_OPTIONS = ["signalQueue", "maxMicrosteps"] as const satisfies readonly OptionKey[];
@@ -69,12 +74,16 @@ export function defined<T extends object>(o: T): Partial<T> {
  * Split `targets.<target>` into the API options it overrides and the target's own keys (prefix, className, ...),
  * which the generator reads. Behaviour options and API options with a wrong value are reported and ignored.
  */
-export function targetSection(doc: UfsmDocument, target: string): { api: ModelOptions; own: [string, unknown][]; problems: string[] } {
+export function targetSection(
+  doc: UfsmDocument,
+  target: string,
+): { api: ModelOptions; own: [string, unknown][]; problems: string[] } {
   const api: Record<string, unknown> = {};
   const own: [string, unknown][] = [];
   const problems: string[] = [];
   for (const [k, v] of Object.entries(doc.targets?.[target] ?? {})) {
-    if (isBehaviourOption(k)) problems.push(`targets.${target}.${k}: changes behaviour, so it is set in options for every target (ignored)`);
+    if (isBehaviourOption(k))
+      problems.push(`targets.${target}.${k}: changes behaviour, so it is set in options for every target (ignored)`);
     else if (!isApiOption(k)) own.push([k, v]);
     else if (VALID[k].test(v)) api[k] = v;
     else problems.push(`targets.${target}.${k}: expected ${VALID[k].expected}`);

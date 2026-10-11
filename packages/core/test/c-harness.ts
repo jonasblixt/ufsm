@@ -75,8 +75,18 @@ export function findCompiler(): { cc?: string; problem?: string } {
 
 /** Warnings the generated code must compile cleanly with (gcc and clang). */
 export const STRICT_FLAGS = [
-  "-std=c99", "-Wall", "-Wextra", "-Wpedantic", "-Werror", "-Wconversion", "-Wsign-conversion", "-Wshadow",
-  "-Wstrict-prototypes", "-Wmissing-prototypes", "-Wcast-qual", "-Wundef",
+  "-std=c99",
+  "-Wall",
+  "-Wextra",
+  "-Wpedantic",
+  "-Werror",
+  "-Wconversion",
+  "-Wsign-conversion",
+  "-Wshadow",
+  "-Wstrict-prototypes",
+  "-Wmissing-prototypes",
+  "-Wcast-qual",
+  "-Wundef",
 ];
 
 /** STRICT_FLAGS, plus clang-only checks for dead or contradictory conditions (newer clangs have them in -Wall). */
@@ -93,7 +103,12 @@ export interface CUnit {
 }
 
 const str = (s: string): string => JSON.stringify(s);
-const ERRORS: Record<string, string> = { "-1": "queue-overflow", "-2": "livelock", "-3": "unknown-event", "-4": "busy" };
+const ERRORS: Record<string, string> = {
+  "-1": "queue-overflow",
+  "-2": "livelock",
+  "-3": "unknown-event",
+  "-4": "busy",
+};
 
 const execFileAsync = promisify(execFile);
 
@@ -132,7 +147,9 @@ export async function runC(cc: string, units: CUnit[]): Promise<StepResult[][]> 
       if (debug) {
         const labels = u.ir.states.map((st) => cString(st.label));
         const name = (fn: string, has: boolean, what: string): string =>
-          has ? `{ const char *n = ${p}${fn}(id); snprintf(buf, sizeof buf, "@${what}:%s", n ? n : "BAD_NAME"); }` : `snprintf(buf, sizeof buf, "@${what}:%u", (unsigned int)id);`;
+          has
+            ? `{ const char *n = ${p}${fn}(id); snprintf(buf, sizeof buf, "@${what}:%s", n ? n : "BAD_NAME"); }`
+            : `snprintf(buf, sizeof buf, "@${what}:%u", (unsigned int)id);`;
         c.push(
           "#include <stdio.h>",
           "#include <string.h>",
@@ -172,7 +189,11 @@ export async function runC(cc: string, units: CUnit[]): Promise<StepResult[][]> 
         const check = [
           `    if ((int)timer < 0 || (int)timer >= ${P}TIMER_COUNT) { test_call(user, "BAD_TIMER"); return; }`,
           `    if ((int)${p}timer_event(timer) != timer_events[timer]) test_call(user, "BAD_TIMER_EVENT");`,
-          ...(u.options?.debugInfo ? [`    if (!${p}timer_name((uint16_t)timer) || strcmp(${p}timer_name((uint16_t)timer), timer_names[timer]) != 0) test_call(user, "BAD_TIMER_NAME");`] : []),
+          ...(u.options?.debugInfo
+            ? [
+                `    if (!${p}timer_name((uint16_t)timer) || strcmp(${p}timer_name((uint16_t)timer), timer_names[timer]) != 0) test_call(user, "BAD_TIMER_NAME");`,
+              ]
+            : []),
         ];
         c.push(
           ...(debug ? [] : ["#include <stdio.h>", "#include <string.h>", ""]),
@@ -196,11 +217,14 @@ export async function runC(cc: string, units: CUnit[]): Promise<StepResult[][]> 
         );
       }
       u.ir.actions.forEach((a) => c.push(`void ${p}${a.name}(void *user) { test_call(user, ${str(a.name)}); }`));
-      u.ir.guards.forEach((g, i) => c.push(`bool ${p}${g.name}(void *user) { return test_guard(user, ${i}, ${str(g.name)}); }`));
+      u.ir.guards.forEach((g, i) =>
+        c.push(`bool ${p}${g.name}(void *user) { return test_guard(user, ${i}, ${str(g.name)}); }`),
+      );
       c.push(`static struct ${p}machine machine;`);
       c.push(`static int w_init(void *user) { return ${p}init(&machine, user); }`);
       c.push(`static int w_reset(void) { return ${p}reset(&machine); }`);
-      if (u.ir.events.length) c.push(`static int w_process(int e) { return ${p}process(&machine, (enum ${p}event)e); }`);
+      if (u.ir.events.length)
+        c.push(`static int w_process(int e) { return ${p}process(&machine, (enum ${p}event)e); }`);
       if (debug && u.ir.states.length) {
         // through is_active(): find the state number of (region, slot)
         c.push(
@@ -218,8 +242,12 @@ export async function runC(cc: string, units: CUnit[]): Promise<StepResult[][]> 
       c.push(`static void w_clear(void) { static const struct ${p}machine zero; machine = zero; }`);
       const states = u.ir.states.map((s) => `{ ${s.region}u, ${s.slot}u, ${str(s.id)} }`);
       c.push(`static const struct test_state states[] = { ${states.length ? states.join(", ") : "{ 0u, 0u, 0 }"} };`);
-      c.push(`static const char *const events[] = { ${u.ir.events.length ? u.ir.events.map((e) => str(e.name)).join(", ") : "0"} };`);
-      c.push(`const struct test_unit unit${k} = { w_init, w_reset, ${u.ir.events.length ? "w_process" : "0"}, w_active, w_clear, states, ${u.ir.states.length}u, events, ${u.ir.events.length}u };`);
+      c.push(
+        `static const char *const events[] = { ${u.ir.events.length ? u.ir.events.map((e) => str(e.name)).join(", ") : "0"} };`,
+      );
+      c.push(
+        `const struct test_unit unit${k} = { w_init, w_reset, ${u.ir.events.length ? "w_process" : "0"}, w_active, w_clear, states, ${u.ir.states.length}u, events, ${u.ir.events.length}u };`,
+      );
       writeFileSync(join(dir, `drv${k}.c`), `${c.join("\n")}\n`);
       sources.push(`drv${k}.c`);
       table.push(`&unit${k}`);

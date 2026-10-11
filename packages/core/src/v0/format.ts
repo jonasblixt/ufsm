@@ -10,14 +10,7 @@
 export type V0Side = "left" | "right" | "top" | "bottom";
 
 export type V0StateKind =
-  | "state"
-  | "init"
-  | "final"
-  | "shallow-history"
-  | "deep-history"
-  | "fork"
-  | "join"
-  | "terminate";
+  "state" | "init" | "final" | "shallow-history" | "deep-history" | "fork" | "join" | "terminate";
 
 export const V0_STATE_KINDS: readonly V0StateKind[] = [
   "state",

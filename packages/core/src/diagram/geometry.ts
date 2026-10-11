@@ -11,7 +11,16 @@
  */
 import { HEADER, actionBlock } from "./action-block";
 import { commonRegion, type DocIndex } from "../model/doc-index";
-import { GRID, type EdgeEnd, type Id, type LabelLayout, type Region, type Side, type State, type StateLayout } from "../format/model";
+import {
+  GRID,
+  type EdgeEnd,
+  type Id,
+  type LabelLayout,
+  type Region,
+  type Side,
+  type State,
+  type StateLayout,
+} from "../format/model";
 import { autoSides, defaultLabel, labelAnchor, sRoute, sideLength, sideTowards, type JogAxis } from "./route";
 
 export interface Point {
@@ -116,7 +125,11 @@ export function attachPoint(index: DocIndex, vertexId: Id, end: EdgeEnd): Point 
   const kind = index.vertices.get(vertexId)?.vertex.kind;
   // Round pseudo states always attach at the middle of the side.
   const centred =
-    kind === "initial" || kind === "final" || kind === "shallow-history" || kind === "deep-history" || kind === "terminate";
+    kind === "initial" ||
+    kind === "final" ||
+    kind === "shallow-history" ||
+    kind === "deep-history" ||
+    kind === "terminate";
   const oy = centred ? b.h / 2 : Math.min(end.offset, b.h);
   const ox = centred ? b.w / 2 : Math.min(end.offset, b.w);
   switch (end.side) {
@@ -180,11 +193,20 @@ function resolveSEnds(index: DocIndex): Map<Id, ResolvedEnds> {
   index.doc.machine.transitions.forEach((t, order) => {
     const e = layouts[t.id];
     if (e?.route !== "s" || !index.vertices.has(t.from) || !index.vertices.has(t.to)) return;
-    const a = vertexBox(index, t.from), b = vertexBox(index, t.to);
+    const a = vertexBox(index, t.from),
+      b = vertexBox(index, t.to);
     let sf: Side, st: Side;
     if (e.from && e.to) [sf, st] = [e.from.side, e.to.side];
-    else if (e.from) [sf, st] = [e.from.side, sideTowards(b, attachPoint(index, t.from, e.from), e.from.side === "left" || e.from.side === "right")];
-    else if (e.to) [sf, st] = [sideTowards(a, attachPoint(index, t.to, e.to), e.to.side === "left" || e.to.side === "right"), e.to.side];
+    else if (e.from)
+      [sf, st] = [
+        e.from.side,
+        sideTowards(b, attachPoint(index, t.from, e.from), e.from.side === "left" || e.from.side === "right"),
+      ];
+    else if (e.to)
+      [sf, st] = [
+        sideTowards(a, attachPoint(index, t.to, e.to), e.to.side === "left" || e.to.side === "right"),
+        e.to.side,
+      ];
     else if (t.from === t.to) {
       // a self-transition loops around the top-right corner: out of the right side near the top, into the top near the right
       const loops = (selfLoops.get(t.from) ?? 0) + 1;
@@ -201,9 +223,32 @@ function resolveSEnds(index: DocIndex): Map<Id, ResolvedEnds> {
       return;
     } else [sf, st] = autoSides(a, b);
     const centre = (x: Box): Point => ({ x: x.x + x.w / 2, y: x.y + x.h / 2 });
-    out.set(t.id, { from: e.from ?? { side: sf, offset: 0 }, to: e.to ?? { side: st, offset: 0 }, fromPinned: !!e.from, toPinned: !!e.to, stagger: 0, lane: 0 });
-    if (!e.from) pending.push({ id: t.id, end: "from", vertex: t.from, side: sf, other: e.to ? attachPoint(index, t.to, e.to) : centre(b), order: 2 * order });
-    if (!e.to) pending.push({ id: t.id, end: "to", vertex: t.to, side: st, other: e.from ? attachPoint(index, t.from, e.from) : centre(a), order: 2 * order + 1 });
+    out.set(t.id, {
+      from: e.from ?? { side: sf, offset: 0 },
+      to: e.to ?? { side: st, offset: 0 },
+      fromPinned: !!e.from,
+      toPinned: !!e.to,
+      stagger: 0,
+      lane: 0,
+    });
+    if (!e.from)
+      pending.push({
+        id: t.id,
+        end: "from",
+        vertex: t.from,
+        side: sf,
+        other: e.to ? attachPoint(index, t.to, e.to) : centre(b),
+        order: 2 * order,
+      });
+    if (!e.to)
+      pending.push({
+        id: t.id,
+        end: "to",
+        vertex: t.to,
+        side: st,
+        other: e.from ? attachPoint(index, t.from, e.from) : centre(a),
+        order: 2 * order + 1,
+      });
     const key = [t.from, t.to].sort().join(" ");
     pairs.set(key, [...(pairs.get(key) ?? []), t.id]);
   });
@@ -261,7 +306,8 @@ function sGeometry(index: DocIndex, transitionId: Id): (EdgeGeometry & { info: S
   const r = resolveSEnds(index).get(transitionId);
   if (!t || e?.route !== "s" || !r) return undefined;
   const o = edgeOrigin(index, transitionId);
-  const p = attachPoint(index, t.from, r.from), q = attachPoint(index, t.to, r.to);
+  const p = attachPoint(index, t.from, r.from),
+    q = attachPoint(index, t.to, r.to);
   const jog = e.jog ? ("x" in e.jog ? { x: e.jog.x + o.x } : { y: e.jog.y + o.y }) : undefined;
   const route = sRoute(p, r.from.side, q, r.to.side, jog, r.stagger, r.lane);
   const anchor = labelAnchor(route.points).anchor;
@@ -269,7 +315,14 @@ function sGeometry(index: DocIndex, transitionId: Id): (EdgeGeometry & { info: S
   return {
     points: route.points,
     label: { x: anchor.x + rel.x, y: anchor.y + rel.y, w: rel.w },
-    info: { from: r.from, to: r.to, fromPinned: r.fromPinned, toPinned: r.toPinned, jog: route.jog, labelAnchor: anchor },
+    info: {
+      from: r.from,
+      to: r.to,
+      fromPinned: r.fromPinned,
+      toPinned: r.toPinned,
+      jog: route.jog,
+      labelAnchor: anchor,
+    },
   };
 }
 
@@ -299,7 +352,8 @@ export function edgeGeometry(index: DocIndex, transitionId: Id): EdgeGeometry | 
 
 /** Distance from point p to segment a-b. */
 export function segmentDistance(p: Point, a: Point, b: Point): number {
-  const dx = b.x - a.x, dy = b.y - a.y;
+  const dx = b.x - a.x,
+    dy = b.y - a.y;
   const len2 = dx * dx + dy * dy;
   const t = len2 > 0 ? Math.min(Math.max(((p.x - a.x) * dx + (p.y - a.y) * dy) / len2, 0), 1) : 0;
   return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));

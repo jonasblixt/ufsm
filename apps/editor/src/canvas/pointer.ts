@@ -37,7 +37,8 @@ const DRAG_THRESHOLD = 4;
 /** What the current drag does to the document at pointer world position (x, y). */
 function applyDrag(d: UfsmDocument, drag: Drag, x: number, y: number): void {
   const { grip, base } = drag;
-  const dx = x - drag.x0, dy = y - drag.y0;
+  const dx = x - drag.x0,
+    dy = y - drag.y0;
   switch (grip.kind) {
     case "move":
       moveVertices(d, drag.ids, dx, dy, grip.id);
@@ -99,10 +100,14 @@ export function pointerActions(app: App, input: InputState) {
     const d = app.ws.active;
     if (!d) return undefined;
     const [x, y] = canvas.screenToWorld(clientX, clientY);
-    return hitTransition(d.index, d.sheet, x, y, slop(), canvas.measure)?.id ?? hitTest(d.index, d.sheet, x, y, slop()).vertex?.id;
+    return (
+      hitTransition(d.index, d.sheet, x, y, slop(), canvas.measure)?.id ??
+      hitTest(d.index, d.sheet, x, y, slop()).vertex?.id
+    );
   };
   /** A click on a handle keeps the selection (the handle belongs to it). */
-  const onHandle = (): boolean => s.pressGrip !== undefined && s.pressGrip.kind !== "move" && s.pressGrip.kind !== "label";
+  const onHandle = (): boolean =>
+    s.pressGrip !== undefined && s.pressGrip.kind !== "move" && s.pressGrip.kind !== "label";
   /** Status line while dragging: position or size of what is dragged. */
   const dragStatus = (drag: Drag): string => {
     const d = app.ws.active;
@@ -179,7 +184,11 @@ export function pointerActions(app: App, input: InputState) {
     panEnd: () => canvas.canvas.classList.remove("panning"),
     zoomAtPointer: () => {
       const r = canvas.canvas.getBoundingClientRect();
-      canvas.zoomAround(input.x - r.left, input.y - r.top, Math.min(Math.max(canvas.view.scale * Math.exp(-input.wheelDeltaY * 0.0015), 0.05), 8));
+      canvas.zoomAround(
+        input.x - r.left,
+        input.y - r.top,
+        Math.min(Math.max(canvas.view.scale * Math.exp(-input.wheelDeltaY * 0.0015), 0.05), 8),
+      );
     },
     openAtPointer: () => {
       const d = app.ws.active;
@@ -235,7 +244,8 @@ export function pointerActions(app: App, input: InputState) {
       app.ws.changed("document");
     },
     hover: () => {
-      canvas.canvas.style.cursor = s.tool !== "select" ? "crosshair" : (gripUnder(input.x, input.y, input.shift)?.cursor ?? "");
+      canvas.canvas.style.cursor =
+        s.tool !== "select" ? "crosshair" : (gripUnder(input.x, input.y, input.shift)?.cursor ?? "");
     },
     beyondThreshold: () => Math.hypot(input.x - input.startX, input.y - input.startY) >= DRAG_THRESHOLD,
     pressedOnGrip: () => s.pressGrip !== undefined,

@@ -55,7 +55,7 @@ const LOG_LIMIT = 400;
 /** "P › A" for a state inside P. */
 function statePath(index: DocIndex, id: Id): string {
   const names: string[] = [];
-  for (let v = index.vertices.get(id); v; ) {
+  for (let v = index.vertices.get(id); v;) {
     names.unshift(v.vertex.name ?? v.vertex.kind);
     const owner = index.regions.get(v.region.id)?.owner;
     v = owner ? index.vertices.get(owner.id) : undefined;
@@ -84,7 +84,11 @@ function Line({ index, line, ops }: { index: DocIndex; line: LogLine; ops: SimOp
     case "transition": {
       const t = index.transitions.get(line.id);
       const it = index.internals.get(line.id);
-      const text = t ? `${vertexName(index, t.from)} → ${vertexName(index, t.to)}` : it ? `${it.state.name} (internal)` : line.id;
+      const text = t
+        ? `${vertexName(index, t.from)} → ${vertexName(index, t.to)}`
+        : it
+          ? `${it.state.name} (internal)`
+          : line.id;
       return (
         <div class="sline transition">
           <span class="sk">take</span>
@@ -131,7 +135,11 @@ function Line({ index, line, ops }: { index: DocIndex; line: LogLine; ops: SimOp
 }
 
 function Step({ index, step, ops }: { index: DocIndex; step: LogStep; ops: SimOps }) {
-  const guards = step.guards ? Object.entries(step.guards).map(([k, v]) => `${k} = ${v}`).join(", ") : "";
+  const guards = step.guards
+    ? Object.entries(step.guards)
+        .map(([k, v]) => `${k} = ${v}`)
+        .join(", ")
+    : "";
   return (
     <div class={`sstep${step.error ? " failed" : ""}`}>
       <div class="shead">
@@ -187,7 +195,9 @@ class Log extends Component<{ sim: Simulation; version: number; ops: SimOps }> {
           this.atEnd = b.scrollTop + b.clientHeight >= b.scrollHeight - 8;
         }}
       >
-        {sim.steps.length > steps.length && <div class="sline dim">{sim.steps.length - steps.length} earlier steps not shown</div>}
+        {sim.steps.length > steps.length && (
+          <div class="sline dim">{sim.steps.length - steps.length} earlier steps not shown</div>
+        )}
         {steps.map((s) => (
           <Step key={s.n} index={sim.index} step={s} ops={ops} />
         ))}
@@ -198,10 +208,22 @@ class Log extends Component<{ sim: Simulation; version: number; ops: SimOps }> {
 
 /** Where an option's value comes from, for the field's tooltip. */
 function optionTitle(p: SimProps, key: keyof SimOptions): string {
-  return key in p.overridden ? "Changed for this session; set it back to the model's value to follow the model again." : "The model's value (Project tab).";
+  return key in p.overridden
+    ? "Changed for this session; set it back to the model's value to follow the model again."
+    : "The model's value (Project tab).";
 }
 
-function NumberInput({ value, min, onCommit, title }: { value: number; min?: number; onCommit(v: number): void; title?: string }) {
+function NumberInput({
+  value,
+  min,
+  onCommit,
+  title,
+}: {
+  value: number;
+  min?: number;
+  onCommit(v: number): void;
+  title?: string;
+}) {
   return (
     <input
       type="number"
@@ -223,7 +245,17 @@ function NumberInput({ value, min, onCommit, title }: { value: number; min?: num
   );
 }
 
-function Events({ index, running, would, ops }: { index: DocIndex; running: boolean; would: SimProps["would"]; ops: SimOps }) {
+function Events({
+  index,
+  running,
+  would,
+  ops,
+}: {
+  index: DocIndex;
+  running: boolean;
+  would: SimProps["would"];
+  ops: SimOps;
+}) {
   const [filter, setFilter] = useState("");
   const events = index.doc.declarations.events;
   const shown = filter ? events.filter((e) => e.name.toLowerCase().includes(filter.toLowerCase())) : events;
@@ -251,7 +283,13 @@ function Events({ index, running, would, ops }: { index: DocIndex; running: bool
               key={e.id}
               class={`sevent${takes ? " would" : ""}`}
               disabled={!running}
-              title={running ? (takes ? `Send ${e.name}: takes ${takes} transition${takes > 1 ? "s" : ""} now` : `Send ${e.name}: nothing to take now`) : "Start the simulation first (F5)"}
+              title={
+                running
+                  ? takes
+                    ? `Send ${e.name}: takes ${takes} transition${takes > 1 ? "s" : ""} now`
+                    : `Send ${e.name}: nothing to take now`
+                  : "Start the simulation first (F5)"
+              }
               onClick={() => ops.send(e.name)}
               onPointerEnter={() => ops.hover(e.name)}
               onPointerLeave={() => ops.hover(undefined)}
@@ -296,7 +334,10 @@ function Timers({ sim, live, ops }: { sim: Simulation; live: boolean; ops: SimOp
         return (
           <div class="erow stimer" key={t.id}>
             <span class="elabel">
-              <code>{t.name}</code> <span class="dim">{owner ? `${timerDurationLabel(owner.timer)} → ${t.event}, in ${owner.state.name}` : t.event}</span>
+              <code>{t.name}</code>{" "}
+              <span class="dim">
+                {owner ? `${timerDurationLabel(owner.timer)} → ${t.event}, in ${owner.state.name}` : t.event}
+              </span>
             </span>
             <button
               type="button"
@@ -325,10 +366,21 @@ function Controls(p: SimProps) {
   return (
     <div class="pheader scontrols">
       <div class="sbuttons">
-        <button type="button" class="sbtn primary" onClick={p.ops.start} title={running ? "Restart from the initial state (F5)" : "Start the simulation (F5)"}>
+        <button
+          type="button"
+          class="sbtn primary"
+          onClick={p.ops.start}
+          title={running ? "Restart from the initial state (F5)" : "Start the simulation (F5)"}
+        >
           {running ? "↻ Restart" : "▶ Start"}
         </button>
-        <button type="button" class="sbtn" onClick={p.ops.stop} disabled={!running} title="Stop the simulation (Shift+F5)">
+        <button
+          type="button"
+          class="sbtn"
+          onClick={p.ops.stop}
+          disabled={!running}
+          title="Stop the simulation (Shift+F5)"
+        >
           ■ Stop
         </button>
       </div>
@@ -347,8 +399,9 @@ export function SimulatorTab(p: SimProps) {
       <Controls {...p} />
       {!sim && !p.error && (
         <div class="pnote">
-          Runs the machine on the reference interpreter, the definition every code generator is tested against. Active states are
-          green on the canvas. Every step is recorded as a conformance trace you can save and replay (<code>ufsm trace</code>).
+          Runs the machine on the reference interpreter, the definition every code generator is tested against. Active
+          states are green on the canvas. Every step is recorded as a conformance trace you can save and replay (
+          <code>ufsm trace</code>).
         </div>
       )}
       <Events index={index} running={live} would={live ? p.would : new Map()} ops={p.ops} />
@@ -372,7 +425,10 @@ export function SimulatorTab(p: SimProps) {
             <span class="elabel dim">
               {sim.steps.length} step{sim.steps.length === 1 ? "" : "s"} recorded
             </span>
-            <label class="check" title="Record the innermost active states after each step (the trace's `active` lists)">
+            <label
+              class="check"
+              title="Record the innermost active states after each step (the trace's `active` lists)"
+            >
               <input type="checkbox" checked={p.recordActive} onChange={() => p.ops.setRecordActive(!p.recordActive)} />
               active states
             </label>
@@ -394,14 +450,24 @@ export function SimulatorTab(p: SimProps) {
       )}
       <Section title="Options" open={false}>
         <Field label="Signal queue">
-          <NumberInput value={p.options.signalQueue} min={1} onCommit={(v) => p.ops.setOption("signalQueue", v)} title={optionTitle(p, "signalQueue")} />
+          <NumberInput
+            value={p.options.signalQueue}
+            min={1}
+            onCommit={(v) => p.ops.setOption("signalQueue", v)}
+            title={optionTitle(p, "signalQueue")}
+          />
         </Field>
         <Field label="Livelock limit">
-          <NumberInput value={p.options.maxMicrosteps} min={1} onCommit={(v) => p.ops.setOption("maxMicrosteps", v)} title={`Microsteps per event. ${optionTitle(p, "maxMicrosteps")}`} />
+          <NumberInput
+            value={p.options.maxMicrosteps}
+            min={1}
+            onCommit={(v) => p.ops.setOption("maxMicrosteps", v)}
+            title={`Microsteps per event. ${optionTitle(p, "maxMicrosteps")}`}
+          />
         </Field>
         <div class="dim snote">
-          The model's options (Project tab) unless changed here for this session; a saved trace records what was changed.
-          Used from the next start.
+          The model's options (Project tab) unless changed here for this session; a saved trace records what was
+          changed. Used from the next start.
         </div>
       </Section>
     </>

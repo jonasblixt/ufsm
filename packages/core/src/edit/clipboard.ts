@@ -91,8 +91,10 @@ export function copyFragment(index: DocIndex, ids: Iterable<Id>): Fragment | und
   const transitions = doc.machine.transitions.filter((t) => copied.has(t.from) && copied.has(t.to));
 
   const boxes = vertices.map((v) => vertexBox(index, v.id));
-  const x0 = Math.min(...boxes.map((b) => b.x)), y0 = Math.min(...boxes.map((b) => b.y));
-  const x1 = Math.max(...boxes.map((b) => b.x + b.w)), y1 = Math.max(...boxes.map((b) => b.y + b.h));
+  const x0 = Math.min(...boxes.map((b) => b.x)),
+    y0 = Math.min(...boxes.map((b) => b.y));
+  const x1 = Math.max(...boxes.map((b) => b.x + b.w)),
+    y1 = Math.max(...boxes.map((b) => b.y + b.h));
 
   const dia = doc.diagram;
   const diagram: Fragment["diagram"] = { states: {}, regions: {}, transitions: {} };
@@ -117,7 +119,8 @@ export function copyFragment(index: DocIndex, ids: Iterable<Id>): Fragment | und
       // relative to the fragment's corner instead of the source region
       outer.push(t.id);
       const o = edgeOrigin(index, t.id);
-      const dx = o.x - x0, dy = o.y - y0;
+      const dx = o.x - x0,
+        dy = o.y - y0;
       if (e.route === "s") {
         if (e.jog) e.jog = "x" in e.jog ? { x: e.jog.x + dx } : { y: e.jog.y + dy };
       } else {
@@ -151,7 +154,15 @@ export function copyFragment(index: DocIndex, ids: Iterable<Id>): Fragment | und
     const d = index.decls.get(id);
     if (d) declarations.push({ kind: d.kind, decl: clone(d.decl) });
   }
-  return { declarations, vertices: clone(vertices), transitions: clone(transitions), diagram, outer, w: x1 - x0, h: y1 - y0 };
+  return {
+    declarations,
+    vertices: clone(vertices),
+    transitions: clone(transitions),
+    diagram,
+    outer,
+    w: x1 - x0,
+    h: y1 - y0,
+  };
 }
 
 const DECL_LIST = { event: "events", signal: "signals", action: "actions", guard: "guards" } as const;
@@ -170,7 +181,13 @@ export interface PasteOptions {
  * `name_2`, ... when the name is taken by another kind). Returns the new ids: top-level vertices first, then
  * transitions, in fragment order.
  */
-export function pasteFragment(doc: UfsmDocument, frag: Fragment, regionId: Id, at: Point, opts: PasteOptions = {}): Id[] {
+export function pasteFragment(
+  doc: UfsmDocument,
+  frag: Fragment,
+  regionId: Id,
+  at: Point,
+  opts: PasteOptions = {},
+): Id[] {
   const index = indexV1(doc);
   const region = index.regions.get(regionId)?.region;
   if (!region) throw new Error(`unknown region ${regionId}`);
@@ -247,7 +264,13 @@ export function pasteFragment(doc: UfsmDocument, frag: Fragment, regionId: Id, a
     if (c.kind === "state" && v.kind === "state") {
       set(c, "entry", actions(v.entry));
       set(c, "exit", actions(v.exit));
-      if (v.timers) c.timers = v.timers.map((t): Timer => ({ ...clone(t), id: map.get(t.id)!, name: timerName(t.name), event: decl(t.event) }));
+      if (v.timers)
+        c.timers = v.timers.map((t): Timer => ({
+          ...clone(t),
+          id: map.get(t.id)!,
+          name: timerName(t.name),
+          event: decl(t.event),
+        }));
       if (v.internal) {
         c.internal = v.internal.map((t): InternalTransition => {
           const n: InternalTransition = { ...clone(t), id: map.get(t.id)!, on: decl(t.on) };
@@ -256,7 +279,8 @@ export function pasteFragment(doc: UfsmDocument, frag: Fragment, regionId: Id, a
           return n;
         });
       }
-      if (v.regions) c.regions = v.regions.map((r) => ({ ...clone(r), id: map.get(r.id)!, states: r.states.map(rewrite) }));
+      if (v.regions)
+        c.regions = v.regions.map((r) => ({ ...clone(r), id: map.get(r.id)!, states: r.states.map(rewrite) }));
     }
     return c;
   };
@@ -274,7 +298,8 @@ export function pasteFragment(doc: UfsmDocument, frag: Fragment, regionId: Id, a
   const x = Math.min(Math.max(snap(at.x), area.x0), Math.max(area.x1 - frag.w, area.x0));
   const y = Math.min(Math.max(snap(at.y), area.y0), Math.max(area.y1 - frag.h, area.y0));
   const o = regionOrigin(index, region);
-  const dx = x - o.x, dy = y - o.y;
+  const dx = x - o.x,
+    dy = y - o.y;
 
   const dia = diagramOf(doc);
   const topIds = new Set(frag.vertices.map((v) => v.id));

@@ -15,13 +15,21 @@ import { randomModel } from "./random-model";
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const traceDir = join(repoRoot, "tests/traces");
 const modelFiles = ["examples", "tests/models"].flatMap((d) =>
-  existsSync(join(repoRoot, d)) ? readdirSync(join(repoRoot, d)).filter((f) => f.endsWith(".ufsm")).map((f) => join(repoRoot, d, f)) : [],
+  existsSync(join(repoRoot, d))
+    ? readdirSync(join(repoRoot, d))
+        .filter((f) => f.endsWith(".ufsm"))
+        .map((f) => join(repoRoot, d, f))
+    : [],
 );
 
 const flatFactory: MachineFactory = (doc, host, options) => new FlatRunner(flatten(doc), host, options);
 
 describe("flat model: conformance traces", () => {
-  for (const f of existsSync(traceDir) ? readdirSync(traceDir).filter((x) => x.endsWith(".json")).sort() : []) {
+  for (const f of existsSync(traceDir)
+    ? readdirSync(traceDir)
+        .filter((x) => x.endsWith(".json"))
+        .sort()
+    : []) {
     it(f, () => {
       const path = join(traceDir, f);
       const trace = parseTrace(readFileSync(path, "utf8"));
@@ -52,6 +60,7 @@ describe("flat model matches the interpreter", () => {
   });
 
   it("on random models with a small signal queue", () => {
-    for (let seed = 1; seed <= 300; seed++) compare(randomModel(seed, { signals: 2, transitions: 18 }), seed, 30, { signalQueue: 2 });
+    for (let seed = 1; seed <= 300; seed++)
+      compare(randomModel(seed, { signals: 2, transitions: 18 }), seed, 30, { signalQueue: 2 });
   });
 });

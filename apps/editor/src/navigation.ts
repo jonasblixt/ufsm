@@ -97,7 +97,9 @@ export function createNavigation(app: App): Navigation {
       ws.select([id]);
       return;
     }
-    const vid = index.vertices.has(id) ? id : (index.internals.get(id)?.state.id ?? index.timers.get(id)?.state.id ?? index.regions.get(id)?.owner?.id);
+    const vid = index.vertices.has(id)
+      ? id
+      : (index.internals.get(id)?.state.id ?? index.timers.get(id)?.state.id ?? index.regions.get(id)?.owner?.id);
     const v = vid ? index.vertices.get(vid)?.vertex : undefined;
     if (v) revealVertex(v);
   };

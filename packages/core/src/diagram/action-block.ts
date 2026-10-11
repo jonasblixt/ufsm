@@ -151,7 +151,9 @@ function layout(index: DocIndex, s: State, width: number, stored: number | undef
     wrap(words, cols).forEach((line, k) => {
       for (let i = 0; i < line.length; i++) items.push({ kind, last: rows.length });
       rows.push({
-        segments: [k === 0 ? { icon: kind, x: ACTION_MARGIN, text: line.join(" ") } : { x: ACTION_TEXT_X, text: line.join(" ") }],
+        segments: [
+          k === 0 ? { icon: kind, x: ACTION_MARGIN, text: line.join(" ") } : { x: ACTION_TEXT_X, text: line.join(" ") },
+        ],
         continued: k > 0,
       });
     });
@@ -182,7 +184,11 @@ function layout(index: DocIndex, s: State, width: number, stored: number | undef
     const lines = wrap(internalTransitionLabel(index, t).split(" "), cols);
     lines.forEach((line, k) => {
       rows.push({
-        segments: [k === 0 ? { icon: "internal", x: ACTION_MARGIN, text: line.join(" ") } : { x: ACTION_TEXT_X, text: line.join(" ") }],
+        segments: [
+          k === 0
+            ? { icon: "internal", x: ACTION_MARGIN, text: line.join(" ") }
+            : { x: ACTION_TEXT_X, text: line.join(" ") },
+        ],
         continued: k > 0,
       });
     });
@@ -224,7 +230,8 @@ function layout(index: DocIndex, s: State, width: number, stored: number | undef
 
 /** The hidden-items marker: right-aligned, centred on the block's bottom line. */
 function hiddenMarkerOf(hidden: ActionCounts, width: number, blockHeight: number): HiddenMarker {
-  const pad = 5, gap = 4;
+  const pad = 5,
+    gap = 4;
   const build = (entries: { icon?: ActionKind; text: string }[]): { w: number; parts: HiddenMarker["parts"] } => {
     // the chevron comes first (drawn by the editor in the first HIDDEN_MARKER_ICON units)
     let x = pad + HIDDEN_MARKER_ICON;

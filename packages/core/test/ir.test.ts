@@ -7,7 +7,16 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { formatFailure, loadModel, parseTrace, runTrace, type UfsmDocument } from "../src";
-import { analyzeIr, flatten, lowerToIr, someStmt, walkStmts, type Expr, type IrModule, type Stmt } from "../src/pipeline";
+import {
+  analyzeIr,
+  flatten,
+  lowerToIr,
+  someStmt,
+  walkStmts,
+  type Expr,
+  type IrModule,
+  type Stmt,
+} from "../src/pipeline";
 import { simplify } from "../src/ir/simplify";
 import { IrRunner } from "../src/verify/ir-run";
 import { checkJoinAgreement, compareWithInterpreter, type Engine } from "./harness";
@@ -16,13 +25,21 @@ import { randomModel } from "./random-model";
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const traceDir = join(repoRoot, "tests/traces");
 const modelFiles = ["examples", "tests/models"].flatMap((d) =>
-  existsSync(join(repoRoot, d)) ? readdirSync(join(repoRoot, d)).filter((f) => f.endsWith(".ufsm")).map((f) => join(repoRoot, d, f)) : [],
+  existsSync(join(repoRoot, d))
+    ? readdirSync(join(repoRoot, d))
+        .filter((f) => f.endsWith(".ufsm"))
+        .map((f) => join(repoRoot, d, f))
+    : [],
 );
 
 const irEngine: Engine = (doc, host, options) => new IrRunner(lowerToIr(flatten(doc)), host, options);
 
 describe("IR: conformance traces", () => {
-  for (const f of existsSync(traceDir) ? readdirSync(traceDir).filter((x) => x.endsWith(".json")).sort() : []) {
+  for (const f of existsSync(traceDir)
+    ? readdirSync(traceDir)
+        .filter((x) => x.endsWith(".json"))
+        .sort()
+    : []) {
     it(f, () => {
       const path = join(traceDir, f);
       const trace = parseTrace(readFileSync(path, "utf8"));
@@ -45,10 +62,14 @@ describe("IR matches the interpreter", () => {
     });
   }
   it("on 1500 random models", () => {
-    for (let seed = 1; seed <= 1500; seed++) compareWithInterpreter(irEngine, randomModel(seed, { transitions: 16 }), seed * 31, 40);
+    for (let seed = 1; seed <= 1500; seed++)
+      compareWithInterpreter(irEngine, randomModel(seed, { transitions: 16 }), seed * 31, 40);
   });
   it("on random models with a small signal queue", () => {
-    for (let seed = 1; seed <= 300; seed++) compareWithInterpreter(irEngine, randomModel(seed, { signals: 2, transitions: 18 }), seed, 30, { signalQueue: 2 });
+    for (let seed = 1; seed <= 300; seed++)
+      compareWithInterpreter(irEngine, randomModel(seed, { signals: 2, transitions: 18 }), seed, 30, {
+        signalQueue: 2,
+      });
   });
 });
 
@@ -75,18 +96,25 @@ describe("IR shape", () => {
       all(ir, (s) => {
         if (s.op === "invoke") assert.ok(names.includes(s.fn), `${ir.name}: ${s.fn}`);
       });
-      for (const fn of [...Object.values(ir.onEvent), ...Object.values(ir.onSignal), ...(ir.eventless ? [ir.eventless] : [])]) assert.ok(names.includes(fn));
+      for (const fn of [
+        ...Object.values(ir.onEvent),
+        ...Object.values(ir.onSignal),
+        ...(ir.eventless ? [ir.eventless] : []),
+      ])
+        assert.ok(names.includes(fn));
     }
   });
 
   it("has no recursion between helper functions", () => {
     for (let seed = 1; seed <= 300; seed++) {
       const ir = lowerToIr(flatten(randomModel(seed)));
-      const calls = new Map(ir.functions.map((f) => {
-        const out: string[] = [];
-        walk(f.body, (s) => void (s.op === "invoke" && out.push(s.fn)));
-        return [f.name, out] as const;
-      }));
+      const calls = new Map(
+        ir.functions.map((f) => {
+          const out: string[] = [];
+          walk(f.body, (s) => void (s.op === "invoke" && out.push(s.fn)));
+          return [f.name, out] as const;
+        }),
+      );
       const visiting = new Set<string>();
       const check = (n: string): void => {
         assert.ok(!visiting.has(n), `${ir.name}: recursion through ${n}`);
@@ -117,7 +145,13 @@ describe("IR simplifier", () => {
 
   it("decides slot tests that an enclosing condition implies", () => {
     const out = simplify([
-      { op: "if", cond: active(1, 2), then: [{ op: "if", cond: { op: "and", exprs: [active(0, 1), { op: "not", expr: active(1, 3) }] }, then: [call] }] },
+      {
+        op: "if",
+        cond: active(1, 2),
+        then: [
+          { op: "if", cond: { op: "and", exprs: [active(0, 1), { op: "not", expr: active(1, 3) }] }, then: [call] },
+        ],
+      },
     ]);
     assert.deepEqual(out, [{ op: "if", cond: active(1, 2), then: [{ op: "if", cond: active(0, 1), then: [call] }] }]);
     const sw = simplify([{ op: "switch", on: { kind: "cfg", region: 1 }, cases: [{ slot: 2, body: [inner] }] }]);
@@ -149,7 +183,11 @@ describe("IR simplifier", () => {
 describe("IR analysis", () => {
   const lowered = (doc: UfsmDocument): IrModule => lowerToIr(flatten(doc));
   const invoked = (ir: IrModule): Set<string> => {
-    const out = new Set<string>([...Object.values(ir.onEvent), ...Object.values(ir.onSignal), ...(ir.eventless ? [ir.eventless] : [])]);
+    const out = new Set<string>([
+      ...Object.values(ir.onEvent),
+      ...Object.values(ir.onSignal),
+      ...(ir.eventless ? [ir.eventless] : []),
+    ]);
     const visit = (s: Stmt): void => void (s.op === "invoke" && out.add(s.fn));
     walkStmts(ir.start, visit);
     for (const f of ir.functions) walkStmts(f.body, visit);
@@ -166,11 +204,17 @@ describe("IR analysis", () => {
   });
 
   it("finds the queue, terminate, timers, the step counter and the functions that can fail", () => {
-    const load = (name: string): IrModule => lowered(loadModel(readFileSync(join(repoRoot, "tests/models", name), "utf8")).doc);
+    const load = (name: string): IrModule =>
+      lowered(loadModel(readFileSync(join(repoRoot, "tests/models", name), "utf8")).doc);
     const signals = analyzeIr(load("test_signals.ufsm"), 10);
     assert.ok(signals.hasQueue && !signals.hasTimers && signals.checkSteps && signals.countSteps);
-    const emitting = load("test_signals.ufsm").functions.filter((f) => someStmt({ start: [], functions: [f] }, (s) => s.op === "emit"));
-    assert.ok(emitting.length > 0 && emitting.every((f) => signals.fallible.has(f.name)), "a function that emits can fail");
+    const emitting = load("test_signals.ufsm").functions.filter((f) =>
+      someStmt({ start: [], functions: [f] }, (s) => s.op === "emit"),
+    );
+    assert.ok(
+      emitting.length > 0 && emitting.every((f) => signals.fallible.has(f.name)),
+      "a function that emits can fail",
+    );
     assert.ok(analyzeIr(load("test_terminate.ufsm"), 10).hasTerminate);
     assert.ok(analyzeIr(load("test_timers.ufsm"), 10).hasTimers);
     // without a microstep limit only emitting functions (and their callers) can fail

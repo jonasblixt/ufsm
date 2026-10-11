@@ -153,7 +153,9 @@ export function locate(index: DocIndex, id: Id): { sheet: SheetInfo; zone: strin
   const k = Math.floor((g.points.length - 1) / 2);
   const a = g.points[k]!;
   const b = g.points[Math.min(k + 1, g.points.length - 1)]!;
-  const p = g.label ? { x: g.label.x + LABEL_GAP, y: g.label.y + LABEL_FIRST_LINE - LABEL_LINE_H / 2 } : { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  const p = g.label
+    ? { x: g.label.x + LABEL_GAP, y: g.label.y + LABEL_FIRST_LINE - LABEL_LINE_H / 2 }
+    : { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
   return { sheet: sheetInfo(index, commonRegion(index, t.from, t.to)), zone: zoneOf(frame, p) };
 }
 
@@ -164,7 +166,18 @@ export function locationText(loc: { sheet: SheetInfo; zone: string | undefined }
 
 // ---------------------------------------------------------------- title block
 
-export type TitleBlockKey = "title" | "revision" | "description" | "path" | "sheet" | "file" | "date" | "size" | "author" | "company" | "document";
+export type TitleBlockKey =
+  | "title"
+  | "revision"
+  | "description"
+  | "path"
+  | "sheet"
+  | "file"
+  | "date"
+  | "size"
+  | "author"
+  | "company"
+  | "document";
 
 export interface TitleBlockCell {
   key: TitleBlockKey;
@@ -184,14 +197,46 @@ export const TITLE_CAPTION_SIZE = 10;
 
 /** Rows of the title block: height, then cells (key, caption, width). */
 const TB_ROWS: [number, [TitleBlockKey, string, number][]][] = [
-  [50, [["title", "Title", 480], ["revision", "Rev", 120]]],
+  [
+    50,
+    [
+      ["title", "Title", 480],
+      ["revision", "Rev", 120],
+    ],
+  ],
   [35, [["description", "Description", 600]]],
-  [35, [["path", "Sheet path", 480], ["sheet", "Sheet", 120]]],
-  [35, [["file", "File", 300], ["date", "Date", 180], ["size", "Size", 120]]],
-  [35, [["author", "Author", 200], ["company", "Company", 200], ["document", "Document no.", 200]]],
+  [
+    35,
+    [
+      ["path", "Sheet path", 480],
+      ["sheet", "Sheet", 120],
+    ],
+  ],
+  [
+    35,
+    [
+      ["file", "File", 300],
+      ["date", "Date", 180],
+      ["size", "Size", 120],
+    ],
+  ],
+  [
+    35,
+    [
+      ["author", "Author", 200],
+      ["company", "Company", 200],
+      ["document", "Document no.", 200],
+    ],
+  ],
 ];
 
-const FREE: Partial<Record<TitleBlockKey, keyof TitleBlock>> = { revision: "revision", date: "date", author: "author", company: "company", document: "document" };
+const FREE: Partial<Record<TitleBlockKey, keyof TitleBlock>> = {
+  revision: "revision",
+  date: "date",
+  author: "author",
+  company: "company",
+  document: "document",
+};
 
 /**
  * The title block of a sheet: every cell with its caption, value and box. `fileName` comes from the editor or the CLI
@@ -221,7 +266,13 @@ export function titleBlockCells(index: DocIndex, sheet: Region, opts: { fileName
   for (const [h, cells] of TB_ROWS) {
     let x = tb.x;
     for (const [key, caption, w] of cells) {
-      const cell: TitleBlockCell = { key, caption, value: values[key], box: { x, y, w, h }, size: key === "title" ? 24 : key === "revision" ? 18 : 14 };
+      const cell: TitleBlockCell = {
+        key,
+        caption,
+        value: values[key],
+        box: { x, y, w, h },
+        size: key === "title" ? 24 : key === "revision" ? 18 : 14,
+      };
       if (key === "title") cell.bold = true;
       const f = FREE[key];
       if (f) cell.free = f;
@@ -301,9 +352,19 @@ export function sheetFit(index: DocIndex): SheetFitProblem[] {
     const pts = edgeGeometry(index, id)?.points;
     if (!pts || pts.length < 2) continue;
     const label = transitionLabelBox(index, t);
-    const outside = pts.some((p) => !within(frame.area, { x: p.x, y: p.y, w: 0, h: 0 })) || (label !== undefined && !within(frame.area, label));
-    const over = !outside && (pts.some((p, i) => i > 0 && segmentCrosses(frame.titleBlock, pts[i - 1]!, p)) || (label !== undefined && overlaps(frame.titleBlock, label)));
-    if (outside || over) out.push({ id, sheet: sheetInfo(index, commonRegion(index, t.from, t.to)), problem: outside ? "outside" : "title-block" });
+    const outside =
+      pts.some((p) => !within(frame.area, { x: p.x, y: p.y, w: 0, h: 0 })) ||
+      (label !== undefined && !within(frame.area, label));
+    const over =
+      !outside &&
+      (pts.some((p, i) => i > 0 && segmentCrosses(frame.titleBlock, pts[i - 1]!, p)) ||
+        (label !== undefined && overlaps(frame.titleBlock, label)));
+    if (outside || over)
+      out.push({
+        id,
+        sheet: sheetInfo(index, commonRegion(index, t.from, t.to)),
+        problem: outside ? "outside" : "title-block",
+      });
   }
   return out;
 }
@@ -311,6 +372,8 @@ export function sheetFit(index: DocIndex): SheetFitProblem[] {
 /** Design rule message for a fit problem (the editor and the CLI add where: `locate`). */
 export function sheetFitMessage(index: DocIndex, p: SheetFitProblem): string {
   const t = index.transitions.get(p.id);
-  const what = t ? `transition ${vertexName(index, t.from)} -> ${vertexName(index, t.to)}` : `state '${vertexName(index, p.id)}'`;
+  const what = t
+    ? `transition ${vertexName(index, t.from)} -> ${vertexName(index, t.to)}`
+    : `state '${vertexName(index, p.id)}'`;
   return p.problem === "outside" ? `${what} lies outside the frame` : `${what} overlaps the title block`;
 }

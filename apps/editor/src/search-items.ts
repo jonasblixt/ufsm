@@ -55,7 +55,13 @@ export function createSearch(app: App): SearchController {
     const t = settings.theme;
     const entry = findTheme(t.name) ?? FALLBACK_THEME;
     const info = themeInfo(entry);
-    const themeRow = (key: string, label: string, next: ThemeSetting, checked: boolean, keywords: string): SearchItem => ({
+    const themeRow = (
+      key: string,
+      label: string,
+      next: ThemeSetting,
+      checked: boolean,
+      keywords: string,
+    ): SearchItem => ({
       key,
       kind: "setting",
       label,
@@ -65,7 +71,13 @@ export function createSearch(app: App): SearchController {
       preview: () => app.settings.previewTheme(next),
     });
     const out: SearchItem[] = THEMES.map((x) =>
-      themeRow(`set:theme:${x.id}`, `Preferences: Color Theme: ${themeInfo(x).name ?? x.id}`, { ...t, name: x.id, inputs: {} }, x.id === entry.id, "colour scheme palette"),
+      themeRow(
+        `set:theme:${x.id}`,
+        `Preferences: Color Theme: ${themeInfo(x).name ?? x.id}`,
+        { ...t, name: x.id, inputs: {} },
+        x.id === entry.id,
+        "colour scheme palette",
+      ),
     );
     if (info.modifiers.some((m) => m.name === "appearance")) {
       const choices: [AppearanceChoice, string, string][] = [
@@ -73,19 +85,49 @@ export function createSearch(app: App): SearchController {
         ["dark", "Dark", "dark mode"],
         ["light", "Light", "light mode"],
       ];
-      for (const [a, text, words] of choices) out.push(themeRow(`set:appearance:${a}`, `Preferences: Appearance: ${text}`, { ...t, appearance: a }, t.appearance === a, words));
+      for (const [a, text, words] of choices)
+        out.push(
+          themeRow(
+            `set:appearance:${a}`,
+            `Preferences: Appearance: ${text}`,
+            { ...t, appearance: a },
+            t.appearance === a,
+            words,
+          ),
+        );
     }
     for (const m of info.modifiers) {
       if (m.name === "appearance" || !modifierHasEffect(entry, theme.inputs, m.name)) continue;
       const now = theme.inputs[m.name] ?? m.default;
       for (const c of m.contexts) {
-        out.push(themeRow(`set:${entry.id}:${m.name}:${c}`, `Preferences: ${capital(m.name)}: ${capital(c)}`, { ...t, inputs: { ...t.inputs, [m.name]: c } }, c === now, `${info.name ?? entry.id} theme`));
+        out.push(
+          themeRow(
+            `set:${entry.id}:${m.name}:${c}`,
+            `Preferences: ${capital(m.name)}: ${capital(c)}`,
+            { ...t, inputs: { ...t.inputs, [m.name]: c } },
+            c === now,
+            `${info.name ?? entry.id} theme`,
+          ),
+        );
       }
     }
     for (const z of ZOOM_STEPS) {
-      out.push({ key: `set:zoom:${z}`, kind: "setting", label: `Preferences: UI Zoom: ${z}%`, checked: settings.zoom === z, keywords: "interface text size scale", run: () => app.settings.setZoom(z) });
+      out.push({
+        key: `set:zoom:${z}`,
+        kind: "setting",
+        label: `Preferences: UI Zoom: ${z}%`,
+        checked: settings.zoom === z,
+        keywords: "interface text size scale",
+        run: () => app.settings.setZoom(z),
+      });
     }
-    out.push({ key: "set:open", kind: "setting", label: "Preferences: Open Settings", keywords: "settings.json", run: () => app.shell.showPanelTab("settings") });
+    out.push({
+      key: "set:open",
+      kind: "setting",
+      label: "Preferences: Open Settings",
+      keywords: "settings.json",
+      run: () => app.shell.showPanelTab("settings"),
+    });
     return out;
   };
 
@@ -103,8 +145,22 @@ export function createSearch(app: App): SearchController {
       keywords: "sheet",
       run: () => ws.edit((y) => setPaper(y, p)),
     }));
-    out.push({ key: "proj:name", kind: "setting", label: "Project: Machine Name", detail: x.name, keywords: "rename", run: field("Machine name") });
-    out.push({ key: "proj:description", kind: "setting", label: "Project: Description", detail: x.doc ?? "", keywords: "documentation", run: field("Description") });
+    out.push({
+      key: "proj:name",
+      kind: "setting",
+      label: "Project: Machine Name",
+      detail: x.name,
+      keywords: "rename",
+      run: field("Machine name"),
+    });
+    out.push({
+      key: "proj:description",
+      kind: "setting",
+      label: "Project: Description",
+      detail: x.doc ?? "",
+      keywords: "documentation",
+      run: field("Description"),
+    });
     for (const k of TITLE_BLOCK_FIELDS) {
       out.push({
         key: `proj:title:${k}`,
@@ -116,12 +172,27 @@ export function createSearch(app: App): SearchController {
       });
     }
     for (const o of MODEL_OPTIONS) {
-      const detail = x.options?.[o.key] !== undefined ? String(x.options[o.key]) : `${OPTION_DEFAULTS[o.key]} (default)`;
-      out.push({ key: `proj:options:${o.key}`, kind: "setting", label: `Project: Options: ${o.label}`, detail, keywords: "generator simulator option", run: field(o.label) });
+      const detail =
+        x.options?.[o.key] !== undefined ? String(x.options[o.key]) : `${OPTION_DEFAULTS[o.key]} (default)`;
+      out.push({
+        key: `proj:options:${o.key}`,
+        kind: "setting",
+        label: `Project: Options: ${o.label}`,
+        detail,
+        keywords: "generator simulator option",
+        run: field(o.label),
+      });
     }
     for (const o of API_OPTION_INFO) {
       const detail = x.options?.[o.key] === true ? "on" : "off (default)";
-      out.push({ key: `proj:options:${o.key}`, kind: "setting", label: `Project: Options: ${o.label}`, detail, keywords: "generator option debug trace", run: field(o.label) });
+      out.push({
+        key: `proj:options:${o.key}`,
+        kind: "setting",
+        label: `Project: Options: ${o.label}`,
+        detail,
+        keywords: "generator option debug trace",
+        run: field(o.label),
+      });
     }
     for (const t of TARGETS) {
       const set = x.targets?.[t.key] ?? {};
@@ -152,21 +223,20 @@ export function createSearch(app: App): SearchController {
   return {
     items: () => {
       const active = ws.active;
-      const opensSearch = (menu: string, label: string): boolean => (menu === "File" && label === "Settings") || /^(Search|Command Palette|Go to Element)/.test(label);
+      const opensSearch = (menu: string, label: string): boolean =>
+        (menu === "File" && label === "Settings") || /^(Search|Command Palette|Go to Element)/.test(label);
       return [
         ...(active ? docElements(active) : []),
         ...ws.sessions.filter((d) => d !== active).flatMap(docElements),
-        ...ws.sessions.map(
-          (d): SearchItem => ({
-            key: `machine:${d.fileName}`,
-            kind: "machine",
-            label: d.fileName,
-            detail: d.path ?? (d.untitled ? "not saved yet" : d.index.doc.name),
-            doc: d.key,
-            docName: d.fileName,
-            run: () => ws.activate(d),
-          }),
-        ),
+        ...ws.sessions.map((d): SearchItem => ({
+          key: `machine:${d.fileName}`,
+          kind: "machine",
+          label: d.fileName,
+          detail: d.path ?? (d.untitled ? "not saved yet" : d.index.doc.name),
+          doc: d.key,
+          docName: d.fileName,
+          run: () => ws.activate(d),
+        })),
         ...menuCommands(app.commands.menus, opensSearch),
         ...settingItems(),
         ...(active ? projectItems(active) : []),

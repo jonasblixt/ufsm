@@ -21,6 +21,10 @@ describe("new machines", () => {
     assert.equal(nameOnSave("untitled", undefined, "blinker.ufsm"), undefined, "opened from a file");
     assert.equal(nameOnSave("untitled", "untitled", "untitled.ufsm"), undefined, "same name: no edit");
     assert.equal(nameOnSave("untitled", "untitled", ".ufsm"), undefined, "no empty name");
-    assert.equal(nameOnSave("untitled", "untitled", "notes.json"), "notes.json", "another extension stays part of the name");
+    assert.equal(
+      nameOnSave("untitled", "untitled", "notes.json"),
+      "notes.json",
+      "another extension stays part of the name",
+    );
   });
 });
