@@ -118,6 +118,40 @@ export async function saveFilesToFolder(files: readonly { name: string; text: st
   return "Downloads";
 }
 
+/** Offer every file as a download (the browser build's Generate). */
+export function downloadFiles(files: readonly { name: string; text: string }[]): void {
+  for (const f of files) download(f.text, f.name);
+}
+
+/** Let the user pick a folder, starting in `defaultPath`. Desktop only; undefined when cancelled. */
+export async function pickFolder(defaultPath?: string): Promise<string | undefined> {
+  const dir = await open({ directory: true, multiple: false, ...(defaultPath ? { defaultPath } : {}) });
+  return typeof dir === "string" ? dir : undefined;
+}
+
+/** What writing generated code did: written into `dir`, or nothing written because `dir` is outside the model's folder. */
+export type GeneratedWrite = { kind: "written"; dir: string } | { kind: "outside"; dir: string };
+
+/**
+ * Write generated files into a model's output folder (desktop only): `out` relative to the folder of `modelPath` (a
+ * file opened or saved in a dialog this run) or absolute. The shell refuses to overwrite a file uFSM did not
+ * generate, and writes outside the model's folder only with `allowOutside`.
+ */
+export async function writeGenerated(
+  modelPath: string,
+  out: string,
+  files: readonly { name: string; text: string }[],
+  allowOutside: boolean,
+): Promise<GeneratedWrite> {
+  return invoke<GeneratedWrite>("write_generated", { model: modelPath, out, files, allowOutside });
+}
+
+/** Ask the user to confirm an action. Resolves true when they agree. */
+export async function confirmAction(message: string, okLabel: string): Promise<boolean> {
+  if (inTauri) return ask(message, { title: "uFSM", kind: "warning", okLabel, cancelLabel: "Cancel" });
+  return window.confirm(message);
+}
+
 /** Put text on the system clipboard. Resolves false when the webview refuses. */
 export async function copyText(text: string): Promise<boolean> {
   try {

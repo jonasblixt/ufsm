@@ -1,6 +1,6 @@
 {
   "name": "@ufsm/core",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "description": "uFSM model, semantics and code generators. Platform neutral: no Node or DOM APIs in src/.",

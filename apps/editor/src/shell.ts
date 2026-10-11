@@ -76,6 +76,8 @@ export function createShell(app: App): Shell {
         recipe(d, id);
       }),
     say: (msg) => ws.say(msg),
+    generate: () => void app.sim.generate(),
+    chooseOut: () => void app.sim.chooseOut(),
   };
 
   const updateTitle = (): void => {

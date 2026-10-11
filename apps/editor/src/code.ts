@@ -4,7 +4,7 @@
 /**
  * Live code preview: the generated files of the active machine, regenerated only when something the generators read
  * changed (machine, declarations, name, options, targets; not the layout), and a small syntax highlighter for C, Python,
- * TypeScript and Rust. No DOM here.
+ * TypeScript, Rust, Go, C++ and C#. No DOM here.
  */
 import {
   CodegenError,
@@ -30,6 +30,9 @@ export const CODE_VIEWS: readonly CodeView[] = [
   { id: "python", label: "Python", target: "python", file: 0 },
   { id: "ts", label: "TypeScript", target: "ts", file: 0 },
   { id: "rust", label: "Rust", target: "rust", file: 0 },
+  { id: "go", label: "Go", target: "go", file: 0 },
+  { id: "cpp", label: "C++", target: "cpp", file: 0 },
+  { id: "csharp", label: "C#", target: "csharp", file: 0 },
 ];
 
 export type CodeResult = GeneratedCode | { error: string };
@@ -106,6 +109,22 @@ const WORDS: Record<CodeTarget, string> = {
     "as break const continue crate dyn else enum extern false fn for if impl in let loop match mod move mut pub ref return self " +
     "Self static struct super trait true type unsafe use where while async await u8 u16 u32 u64 usize i8 i16 i32 i64 isize " +
     "f32 f64 bool char str Option Some None Result Ok Err",
+  go:
+    "break case chan const continue default defer else fallthrough for func go goto if import interface map package range " +
+    "return select struct switch type var true false nil iota bool byte error int int8 int16 int32 int64 uint uint8 uint16 " +
+    "uint32 uint64 string any",
+  cpp:
+    "alignas alignof auto bool break case char class const constexpr const_cast continue default delete do double else enum " +
+    "explicit extern false float for friend goto if inline int long namespace new noexcept nullptr operator private protected " +
+    "public return short signed sizeof static static_assert static_cast struct switch template this throw true try typedef " +
+    "typename union unsigned using virtual void volatile while std int8_t int16_t int32_t int64_t uint8_t uint16_t uint32_t " +
+    "uint64_t size_t",
+  csharp:
+    "abstract as base bool break byte case catch char checked class const continue decimal default delegate do double else " +
+    "enum event explicit extern false finally fixed float for foreach get global goto if implicit in int interface internal " +
+    "is lock long namespace new null object operator out override params partial private protected public readonly ref " +
+    "return sbyte sealed short sizeof static string struct switch this throw true try typeof uint ulong unchecked unsafe " +
+    "ushort using var virtual void volatile while",
 };
 
 const COMMENT: Record<CodeTarget, string> = {
@@ -113,6 +132,9 @@ const COMMENT: Record<CodeTarget, string> = {
   python: String.raw`#[^\n]*`,
   ts: String.raw`\/\*[\s\S]*?\*\/|\/\/[^\n]*`,
   rust: String.raw`\/\*[\s\S]*?\*\/|\/\/[^\n]*`,
+  go: String.raw`\/\*[\s\S]*?\*\/|\/\/[^\n]*`,
+  cpp: String.raw`\/\*[\s\S]*?\*\/|\/\/[^\n]*`,
+  csharp: String.raw`\/\*[\s\S]*?\*\/|\/\/[^\n]*`,
 };
 
 const STRING: Record<CodeTarget, string> = {
@@ -121,6 +143,9 @@ const STRING: Record<CodeTarget, string> = {
   ts: String.raw`"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|\x60(?:[^\x60\\]|\\.)*\x60`,
   // a char literal holds one character, so lifetimes ('static, '_) are not strings
   rust: String.raw`"(?:[^"\\]|\\.)*"|'(?:[^'\\\n]|\\.)'`,
+  go: String.raw`"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|\x60[^\x60]*\x60`,
+  cpp: String.raw`"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'`,
+  csharp: String.raw`"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'`,
 };
 
 const patterns = new Map<CodeTarget, RegExp>();
@@ -129,7 +154,7 @@ function pattern(lang: CodeTarget): RegExp {
   let re = patterns.get(lang);
   if (!re) {
     const pre =
-      lang === "c"
+      lang === "c" || lang === "cpp" || lang === "csharp"
         ? String.raw`|(^[ \t]*#[^\n]*)`
         : lang === "rust"
           ? String.raw`|(^[ \t]*#!?\[[^\n]*)`

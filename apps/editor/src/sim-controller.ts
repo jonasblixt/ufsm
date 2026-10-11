@@ -4,13 +4,26 @@
 /**
  * The Simulator tab and the Code tab of the active machine: starting and stopping the simulation, sending events,
  * guard values and option overrides, saving the recorded trace, and the generated code (preview, copy, save, File ›
- * Generate). The simulation itself is sim.ts; what the session keeps of it is in session.ts.
+ * Generate Code into the model's output folder). The simulation itself is sim.ts; what the session keeps of it is in
+ * session.ts.
  */
-import { MachineError, behaviourOptions, formatTrace, type CodeTarget, type GeneratedFile } from "@ufsm/core";
+import { MachineError, behaviourOptions, formatTrace, selectedTarget, targetOut, type GeneratedFile } from "@ufsm/core";
+import { setTargetOption } from "@ufsm/core/edit";
 import { el, type App } from "./app";
 import { generatedCode } from "./code";
 import type { CodeOps } from "./codepanel";
-import { baseName, copyText, inTauri, saveFilesToFolder, saveTextFile } from "./platform";
+import { relativeOut } from "./out-path";
+import {
+  baseName,
+  confirmAction,
+  copyText,
+  downloadFiles,
+  inTauri,
+  pickFolder,
+  saveFilesToFolder,
+  saveTextFile,
+  writeGenerated,
+} from "./platform";
 import type { DocSession } from "./session";
 import { Simulation, relativePath } from "./sim";
 import type { SimOps, SimProps } from "./simpanel";
@@ -27,8 +40,15 @@ export interface SimController {
   readonly ops: SimOps;
   props(d: DocSession): SimProps;
   readonly codeOps: CodeOps;
-  /** Write the generated files of a target into a folder (File › Generate …). */
-  generateTo(target: CodeTarget): Promise<void>;
+  /**
+   * Generate the selected target's code into its output folder (File › Generate Code, Ctrl+Shift+B). Saves a new
+   * machine first and asks for the folder when none is set (stored relative to the model).
+   */
+  generate(): Promise<void>;
+  /** Generate the selected target's code into a folder picked now, without storing it (File › Generate Code To…). */
+  generateTo(): Promise<void>;
+  /** Pick the selected target's output folder and store it relative to the model (Project › Browse…). */
+  chooseOut(): Promise<void>;
   /** The status bar's simulation item. */
   updateStatus(): void;
 }
@@ -175,7 +195,71 @@ export function createSimController(app: App): SimController {
       void saveFilesToFolder(files)
         .then((dir) => dir && ws.say(`Wrote ${files.map((f) => f.name).join(" and ")} to ${dir}`))
         .catch((e: unknown) => ws.say(`Writing the files failed: ${String(e)}`)),
+    generate: () => void generate(),
     showProblems: () => app.shell.showPanelTab("problems"),
+  };
+
+  /** Folders outside a model's folder the user agreed to write into during this run. */
+  const allowedOutside = new Set<string>();
+
+  const cannotGenerate = (why: string): void => {
+    ws.say(`Cannot generate code: ${why}`);
+    app.shell.showPanelTab("problems", false);
+  };
+
+  /** The machine's path, after a Save As when it was never saved (the output folder is relative to it). */
+  const savedPath = async (d: DocSession): Promise<string | undefined> => {
+    if (!d.path) await app.files.saveModel();
+    return d.path;
+  };
+
+  /** Ask for the selected target's output folder (starting in the model's folder) and store it relative to the model. */
+  const askOut = async (d: DocSession): Promise<string | undefined> => {
+    const path = d.path;
+    if (!path) return undefined;
+    const target = selectedTarget(d.history.current);
+    const dir = await pickFolder(path.replace(/[\\/][^\\/]*$/, ""));
+    if (!dir || ws.active !== d) return undefined;
+    const out = relativeOut(path, dir);
+    ws.edit((x) => setTargetOption(x, target, "out", out));
+    return out;
+  };
+
+  const generate = async (): Promise<void> => {
+    const d = ws.active;
+    if (!d) return;
+    if (!inTauri) {
+      // A browser cannot write into a folder: offer the files as downloads.
+      const r = generatedCode(d.history.current, selectedTarget(d.history.current));
+      if ("error" in r) return cannotGenerate(r.error);
+      downloadFiles(r.files);
+      ws.say(`Downloaded ${r.files.map((f) => f.name).join(" and ")}`);
+      return;
+    }
+    const path = await savedPath(d);
+    if (!path || ws.active !== d) return;
+    const out = targetOut(d.history.current, selectedTarget(d.history.current)) ?? (await askOut(d));
+    if (out === undefined) return;
+    // Generated after a first save, which may have named the machine after its file.
+    const r = generatedCode(d.history.current, selectedTarget(d.history.current));
+    if ("error" in r) return cannotGenerate(r.error);
+    try {
+      const w = await writeGenerated(path, out, r.files, false);
+      if (w.kind === "outside") {
+        const ok =
+          allowedOutside.has(w.dir) ||
+          (await confirmAction(
+            `The output folder ${w.dir} is outside the folder of ${baseName(path)}. Write the generated files there?`,
+            "Write",
+          ));
+        if (!ok) return;
+        allowedOutside.add(w.dir);
+        await writeGenerated(path, out, r.files, true);
+      }
+      ws.say(`Wrote ${r.files.map((f) => f.name).join(" and ")} to ${out}`);
+    } catch (e) {
+      ws.say(`Generating failed: ${String(e)}`);
+    }
   };
 
   return {
@@ -198,20 +282,24 @@ export function createSimController(app: App): SimController {
       ops,
     }),
     codeOps,
-    generateTo: async (target) => {
+    generate,
+    generateTo: async () => {
       const d = ws.active;
       if (!d) return;
-      const r = generatedCode(d.history.current, target);
-      if ("error" in r) {
-        ws.say(`Cannot generate code: ${r.error}`);
-        return;
-      }
+      const r = generatedCode(d.history.current, selectedTarget(d.history.current));
+      if ("error" in r) return cannotGenerate(r.error);
       try {
         const dir = await saveFilesToFolder(r.files);
         if (dir) ws.say(`Wrote ${r.files.map((f) => f.name).join(" and ")} to ${dir}`);
       } catch (e) {
         ws.say(`Writing the files failed: ${String(e)}`);
       }
+    },
+    chooseOut: async () => {
+      const d = ws.active;
+      if (!d) return;
+      if (!(await savedPath(d))) return;
+      await askOut(d);
     },
     updateStatus: () => {
       const d = ws.active;

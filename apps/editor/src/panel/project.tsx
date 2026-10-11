@@ -2,14 +2,16 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 /**
- * The Project tab: the machine's name and description, paper and title block, declarations, options, and the code
- * generators' settings.
+ * The Project tab: the machine's name and description, paper and title block, declarations, the behaviour options, and
+ * the code generator: the selected language, its output folder and settings, and Generate.
  */
 import { Fragment } from "preact";
 import { Field, Section } from "../widgets";
 import { useLayoutEffect, useRef, useState } from "preact/hooks";
 import {
   OPTION_DEFAULTS,
+  selectedTarget,
+  targetOut,
   identifier,
   pascalCase,
   TITLE_BLOCK_FIELDS,
@@ -18,6 +20,7 @@ import {
   type DocIndex,
   type ApiOption,
   type BehaviourOption,
+  type CodeTarget,
   type Id,
   type Paper,
   type TitleBlock,
@@ -33,11 +36,13 @@ import {
   setPaper,
   setTitleField,
   setModelOption,
+  setTarget,
   setTargetOption,
 } from "@ufsm/core/edit";
-import { rustModuleName } from "@ufsm/core/pipeline";
+import { cppNamespace, goPackageName, rustModuleName } from "@ufsm/core/pipeline";
 import { type PanelOps, type PanelDoc } from "./types";
 import { IconButton, TextInput, declsOf } from "./fields";
+import { resolveOut } from "../out-path";
 
 type TargetSettings = Record<string, unknown>;
 
@@ -70,7 +75,7 @@ export const API_OPTION_INFO: { key: ApiOption; label: string; text: string }[] 
 ];
 
 /** Code generator settings as stored in `targets`, with the generators' defaults shown as placeholders when unset. */
-export const TARGETS: { key: string; title: string; options: TargetOption[] }[] = [
+export const TARGETS: { key: CodeTarget; title: string; options: TargetOption[] }[] = [
   {
     key: "c",
     title: "C",
@@ -106,6 +111,48 @@ export const TARGETS: { key: string; title: string; options: TargetOption[] }[] 
     options: [
       { key: "className", label: "Struct", fallback: (n) => pascalCase(n) },
       { key: "module", label: "Module", fallback: (n) => rustModuleName(n) },
+    ],
+  },
+  {
+    key: "go",
+    title: "Go",
+    options: [
+      { key: "package", label: "Package", fallback: (n) => goPackageName(n) },
+      { key: "className", label: "Type", fallback: () => "Machine" },
+      {
+        key: "file",
+        label: "File",
+        fallback: (n, set) =>
+          typeof set["package"] === "string" && set["package"] ? set["package"] : goPackageName(n),
+      },
+    ],
+  },
+  {
+    key: "cpp",
+    title: "C++",
+    options: [
+      { key: "namespace", label: "Namespace", fallback: (n) => cppNamespace(n) },
+      { key: "className", label: "Class", fallback: (n) => pascalCase(n) },
+      {
+        key: "file",
+        label: "File",
+        fallback: (n, set) =>
+          typeof set["namespace"] === "string" && set["namespace"] ? set["namespace"] : cppNamespace(n),
+      },
+    ],
+  },
+  {
+    key: "csharp",
+    title: "C#",
+    options: [
+      { key: "className", label: "Class", fallback: (n) => pascalCase(n) },
+      { key: "namespace", label: "Namespace", fallback: () => "" },
+      {
+        key: "file",
+        label: "File",
+        fallback: (n, set) =>
+          typeof set["className"] === "string" && set["className"] ? set["className"] : pascalCase(n),
+      },
     ],
   },
 ];
@@ -226,6 +273,113 @@ export const TITLE_FIELD_LABELS: Readonly<Record<keyof TitleBlock, string>> = {
   document: "Title block document number",
 };
 
+/** The output folder as stored: `/` separated, so the file reads the same on every OS. */
+const storedOut = (v: string): string | undefined => v.trim().replace(/\\/g, "/") || undefined;
+
+/** The Code generator section: the language, where its files go, its settings, and Generate. */
+function CodeGenerator({ doc, ops }: { doc: PanelDoc; ops: PanelOps }) {
+  const d = doc.index.doc;
+  const target = selectedTarget(d);
+  const t = TARGETS.find((x) => x.key === target) ?? TARGETS[0]!;
+  const set = d.targets?.[target] ?? {};
+  const out = targetOut(d, target);
+  // Only a saved desktop file has a folder to resolve against (in a browser the path is a bare file name).
+  const where = out !== undefined && doc.path && /[\\/]/.test(doc.path) ? resolveOut(doc.path, out) : undefined;
+  const overrides = API_OPTION_INFO.filter((o) => typeof set[o.key] === "boolean");
+  return (
+    <Section title="Code generator">
+      <Field label="Language">
+        <select
+          aria-label="Language"
+          value={target}
+          onChange={(e) => {
+            const v = e.currentTarget.value;
+            ops.edit((x) => setTarget(x, v));
+          }}
+        >
+          {TARGETS.map((x) => (
+            <option key={x.key} value={x.key}>
+              {x.title}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <Field label="Output">
+        <div class="title-field">
+          <TextInput
+            key={target}
+            label="Output folder"
+            placeholder="Asked on the first Generate"
+            value={out ?? ""}
+            onCommit={(v) => ops.edit((x) => setTargetOption(x, target, "out", storedOut(v)))}
+          />
+          <button type="button" class="mini" title="Pick the output folder" onClick={ops.chooseOut}>
+            Browse…
+          </button>
+        </div>
+      </Field>
+      <div class="snote out-where" title={where}>
+        {where ?? "Relative to the machine's file (or absolute)."}
+      </div>
+      {t.options.map((o) => (
+        <Field label={o.label} key={o.key}>
+          <TextInput
+            label={`${t.title} ${o.label}`}
+            placeholder={o.fallback(d.name, set)}
+            value={o.key in set ? String(set[o.key]) : ""}
+            onCommit={(v) => {
+              const s = v.trim();
+              ops.edit((x) => setTargetOption(x, target, o.key, s === "" ? undefined : s));
+            }}
+          />
+        </Field>
+      ))}
+      {API_OPTION_INFO.map((o) => (
+        <Fragment key={o.key}>
+          <Field label={o.label}>
+            <label class="check">
+              <input
+                type="checkbox"
+                aria-label={o.label}
+                checked={d.options?.[o.key] === true}
+                onChange={(e) => {
+                  const on = e.currentTarget.checked;
+                  ops.edit((x) => setModelOption(x, o.key, on ? true : undefined));
+                }}
+              />
+              {d.options?.[o.key] === true ? "on" : "off"}
+            </label>
+          </Field>
+          <div class="snote">{o.text}</div>
+        </Fragment>
+      ))}
+      {overrides.map((o) => (
+        <div class="swarn target-override" key={o.key}>
+          This file sets {o.label} {set[o.key] ? "on" : "off"} for {t.title} only.{" "}
+          <button
+            type="button"
+            class="mini"
+            title={`Use the ${o.label} setting above for ${t.title} too`}
+            onClick={() => ops.edit((x) => setTargetOption(x, target, o.key, undefined))}
+          >
+            Clear
+          </button>
+        </div>
+      ))}
+      <div class="generate-row">
+        <button
+          type="button"
+          class="sbtn primary"
+          title={`Generate ${t.title} code${out !== undefined ? ` into ${out}` : ""} (Ctrl+Shift+B)`}
+          onClick={ops.generate}
+        >
+          Generate
+        </button>
+      </div>
+    </Section>
+  );
+}
+
 /** Today as YYYY-MM-DD (local time). */
 function today(): string {
   const d = new Date();
@@ -334,7 +488,7 @@ export function Project({
           <DeclList index={index} kind={k.kind} one={k.one} ops={ops} highlight={highlight} />
         </Section>
       ))}
-      <Section title="Options">
+      <Section title="Behaviour">
         <div class="snote">
           The same for every code generator and the simulator, so the machine behaves alike in every language. Max
           microsteps: per reset or event before a livelock error (0: no check in generated code).
@@ -353,66 +507,8 @@ export function Project({
             />
           </Field>
         ))}
-        {API_OPTION_INFO.map((o) => (
-          <Fragment key={o.key}>
-            <Field label={o.label}>
-              <label class="check">
-                <input
-                  type="checkbox"
-                  aria-label={o.label}
-                  checked={d.options?.[o.key] === true}
-                  onChange={(e) => {
-                    const on = e.currentTarget.checked;
-                    ops.edit((x) => setModelOption(x, o.key, on ? true : undefined));
-                  }}
-                />
-                {d.options?.[o.key] === true ? "on" : "off"}
-              </label>
-            </Field>
-            <div class="snote">{o.text}</div>
-          </Fragment>
-        ))}
       </Section>
-      {TARGETS.map((t) => {
-        const set = d.targets?.[t.key] ?? {};
-        return (
-          <Section title={`Code generation: ${t.title}`} key={t.key}>
-            {t.options.map((o) => (
-              <Field label={o.label} key={o.key}>
-                <TextInput
-                  label={`${t.title} ${o.label}`}
-                  placeholder={o.fallback(d.name, set)}
-                  value={o.key in set ? String(set[o.key]) : ""}
-                  onCommit={(v) => {
-                    const s = v.trim();
-                    ops.edit((x) => setTargetOption(x, t.key, o.key, s === "" ? undefined : s));
-                  }}
-                />
-              </Field>
-            ))}
-            {API_OPTION_INFO.map((o) => {
-              const own = set[o.key];
-              const model = d.options?.[o.key] === true ? "on" : "off";
-              return (
-                <Field label={o.label} key={o.key}>
-                  <select
-                    aria-label={`${t.title} ${o.label}`}
-                    value={own === true ? "on" : own === false ? "off" : ""}
-                    onChange={(e) => {
-                      const v = e.currentTarget.value;
-                      ops.edit((x) => setTargetOption(x, t.key, o.key, v === "" ? undefined : v === "on"));
-                    }}
-                  >
-                    <option value="">As in Options ({model})</option>
-                    <option value="on">On</option>
-                    <option value="off">Off</option>
-                  </select>
-                </Field>
-              );
-            })}
-          </Section>
-        );
-      })}
+      <CodeGenerator doc={doc} ops={ops} />
     </>
   );
 }

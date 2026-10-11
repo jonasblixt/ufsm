@@ -32,6 +32,7 @@ const COMMAND_ACTIONS = [
   "uiZoomReset",
   "quickOpen",
   "commandPalette",
+  "generate",
   "undo",
   "redo",
   "addRegion",

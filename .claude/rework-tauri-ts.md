@@ -74,11 +74,13 @@ the generated code. Status refers to the new implementation.
 - [x] `.github/workflows/ci.yml` in the repo (tracked since commit 518e6bd)
 - [x] `npm install` re-run and `package-lock.json` committed (518e6bd)
 - [x] First commit on `ts-rewrite`: move to `old/` + scaffold + v1 (518e6bd "wip", 2026-10-09, 311 files)
-- [ ] Commit the work since 518e6bd (20 modified, 38 new files: C and Python backends, conformance suite, IR
+- [x] Commit the work since 518e6bd (20 modified, 38 new files: C and Python backends, conformance suite, IR
       simplifier, CLI, docs); suggested split: C backend / conformance suite / Python backend
-- [ ] Add `build/` to `.gitignore` (generated C/Python and test scratch land there)
-- [ ] Confirm CI green on Windows/macOS/Linux (Rust shell has only been built on Jonas's machine; tests run on
+- [x] Add `build/` to `.gitignore` (generated C/Python and test scratch land there)
+- [x] Confirm CI green on Windows/macOS/Linux (green at 8cc5061, 2026-10-11) (Rust shell has only been built on Jonas's machine; tests run on
       Ubuntu only and now require gcc, Python and pyright)
+- [ ] Merge `ts-rewrite` into master with a merge commit (never squash or rebase: `.git-blame-ignore-revs` names
+      c861e89); readthedocs: turn the project off or set its default version to v0.5.3 (`.readthedocs.yml` is in `old/`)
 
 ### Phase S — semantics (done; one review open)
 - [ ] Jonas: review the remaining semantics choices in `docs/semantics.md` ("Changes from v0.5"): B12 and
@@ -115,8 +117,23 @@ the generated code. Status refers to the new implementation.
       review the API choices (decisions log); check the oldest supported Rust (1.81) in CI, not only stable; a
       `State` enum / `is_active()` would need the state `ident` question settled (open questions); a build.rs recipe
       (generate into `OUT_DIR`) once the single-binary CLI exists?
-- [ ] B-FZ Differential fuzzer: the per-backend differential runs exist (C, Python, TypeScript and Rust, 300 random
-      models each, `UFSM_C_RANDOM`/`UFSM_PY_RANDOM`/`UFSM_TS_RANDOM`/`UFSM_RUST_RANDOM` for more); left: a long-running fuzz command or nightly CI job that
+- [x] B-GO Go backend + driver (package per machine, no imports, gofmt- and vet-clean, Go 1.20+) (2026-10-11)
+- [ ] B-GO follow-ups: Jonas to review the API (first letter capitalized, `Machine`/`New`, `*Error` sentinels, package
+      per machine) in `npm run ufsm -- generate go examples/dimmer.ufsm -o build/dimmer`; CI checks only Go stable, not
+      1.20; staticcheck on the output?
+- [x] B-CPP C++ backend + driver (header-only C++11 class template over the handler type; no heap, exceptions or RTTI;
+      warning-free as C++11/C++20 with g++/clang++ strict flags) (2026-10-11)
+- [ ] B-CPP follow-ups: Jonas to review the API (`Status` codes, handler by reference, keyword names with `_`) in
+      `npm run ufsm -- generate cpp examples/dimmer.ufsm -o build`; an MSVC step (`cl /W4 /WX /permissive-`); a
+      `std::optional`/`[[nodiscard]]` flavour for C++17 users?
+- [x] B-CS C# backend + driver (one file, C# 8+, only `global::System`, sealed partial class, XML docs; warnings as
+      errors and the analyzers' recommended set but naming) (2026-10-11)
+- [ ] B-CS follow-ups: Jonas to review the API (`I<Class>Handler`, `<Class>Exception.Code`, model names as written,
+      `TimerStart`/`TimerStop`/`Trace` in PascalCase) in `npm run ufsm -- generate csharp examples/dimmer.ufsm -o build`;
+      .NET is not on Jonas's PATH (the tests find the per-user install in `%LOCALAPPDATA%\Microsoft\dotnet`, installed
+      2026-10-11 with dotnet-install); a netstandard2.0 / .NET Framework build check?
+- [ ] B-FZ Differential fuzzer: the per-backend differential runs exist (C, C++, C#, Python, TypeScript, Rust and Go,
+      300 random models each, `UFSM_<LANG>_RANDOM` for more); left: a long-running fuzz command or nightly CI job that
       saves failing seeds
 - [x] Busy latch: a failed call (error, exception, caught panic, longjmp) or a nested `process()` leaves/meets the
       machine busy, `process()` fails with `busy` until `reset()`; interpreter, runners and all four backends; trace keys
@@ -152,7 +169,15 @@ the generated code. Status refers to the new implementation.
       records -> names, checking the fingerprint), maybe with the simulator replaying a recorded log (docs/live-trace.md);
       a `reset` trace kind (today a host infers a reset from enter reports at the root); a state `ident` override
       (open question) instead of generated identifiers like `s10_` for "10%"
-- [ ] Options follow-ups: Jonas to try the Project tab's Options section and the Simulator's options (model's values,
+- [x] Code generator settings and Generate (Jonas 2026-10-11): `target` + `targets.<name>.out` in format v1, CLI
+      `ufsm generate <model>`, Project › Behaviour and Code generator, File › Generate Code (Ctrl+Shift+B), Generate in
+      the Code tab, `write_generated` in the Rust shell with an overwrite guard (2026-10-11)
+- [ ] Generate follow-ups: Jonas to try it in `npm run dev` (Browse…, first Generate on an unsaved machine: Save As, then
+      the folder; a folder outside the model's folder asks once; a hand-written file of the same name is refused);
+      reopening a model in a later run needs its dialog grant (recent files would need persisted scope); generate on
+      save?; several targets at once (firmware C + host TS)?; File › Generate Code To… and the Code tab's Save both… still
+      overwrite anything in the picked folder (the fs plugin)
+- [ ] Options follow-ups: Jonas to try the Project tab's Behaviour section and the Simulator's options (model's values,
       session overrides, saved traces) in `npm run dev`
 
 ### Phase E — editor (plan agreed 2026-10-09)

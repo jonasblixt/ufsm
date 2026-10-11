@@ -553,7 +553,7 @@ await page.click(".menu-label >> text=View");
 await page.click(".menu-item >> text=Project");
 check(
   "View › Project shows the Project tab",
-  (await $text(".panel-tab.active")) === "Project" && /Code generation: C/.test(await $text(".panel-body")),
+  (await $text(".panel-tab.active")) === "Project" && /Code generator/.test(await $text(".panel-body")),
 );
 {
   const paperOf = async () => JSON.parse(await U("serialize")).diagram.paper;
@@ -1380,16 +1380,49 @@ await pick("eExtra");
 check("+ Add event declares one", !!(await declId("events", "eExtra")));
 await page.click("text=+ Add guard");
 await pick("gSpare");
+check(
+  "the code generator shows one language, C by default",
+  (await page.$eval('select[aria-label="Language"]', (e) => e.value)) === "c" &&
+    (await $count('input[aria-label="C Prefix"]')) === 1 &&
+    (await $count('input[aria-label="Python Class"]')) === 0 &&
+    (await $count('select[aria-label="C Trace hook"]')) === 0,
+);
 await page.fill('input[aria-label="C Prefix"]', "lamp_");
 await page.keyboard.press("Enter");
 check("code generator options are set...", (await P()).targets?.c?.prefix === "lamp_");
 await page.fill('input[aria-label="C Prefix"]', "");
 await page.keyboard.press("Enter");
 check("...and cleared back to the default", (await P()).targets === undefined);
+await page.selectOption('select[aria-label="Language"]', "rust");
 check(
-  "the common options are shown once, not per language",
+  "picking a language stores it and shows only its settings",
+  (await P()).target === "rust" &&
+    (await $count('input[aria-label="Rust Struct"]')) === 1 &&
+    (await $count('input[aria-label="C Prefix"]')) === 0,
+);
+await page.fill('input[aria-label="Output folder"]', "..\\src\\gen ");
+await page.keyboard.press("Enter");
+check(
+  "the output folder is stored per language, with /",
+  (await P()).targets?.rust?.out === "../src/gen",
+  JSON.stringify((await P()).targets),
+);
+await page.selectOption('select[aria-label="Language"]', "c");
+check(
+  "...so switching back shows C's (unset)",
+  (await page.$eval('input[aria-label="Output folder"]', (e) => e.value)) === "" &&
+    (await P()).targets?.rust?.out === "../src/gen",
+);
+await page.selectOption('select[aria-label="Language"]', "rust");
+await page.fill('input[aria-label="Output folder"]', "");
+await page.keyboard.press("Enter");
+await page.selectOption('select[aria-label="Language"]', "c");
+check("...and clearing it leaves no targets", (await P()).targets === undefined && (await P()).target === "c");
+check(
+  "the behaviour options are shown once, not per language",
   (await $count('input[aria-label="Signal queue"]')) === 1 &&
-    (await $count('input[aria-label="C Signal queue"]')) === 0,
+    (await $count('input[aria-label="C Signal queue"]')) === 0 &&
+    /Behaviour/.test(await $text(".panel-body")),
 );
 await page.fill('input[aria-label="Signal queue"]', "x");
 await page.keyboard.press("Enter");
@@ -1405,16 +1438,25 @@ await page.fill('input[aria-label="Signal queue"]', "");
 await page.keyboard.press("Enter");
 check("...and cleared back to the default", (await P()).options === undefined);
 await page.click('input[aria-label="Debug info"]');
-check("API options are switches in the options section...", (await P()).options?.debugInfo === true);
+check("API options are switches in the code generator...", (await P()).options?.debugInfo === true);
 await page.click('input[aria-label="Debug info"]');
 check("...off by default (not written)", (await P()).options === undefined);
-await page.selectOption('select[aria-label="C Trace hook"]', "on");
-check(
-  "...and may be overridden per language",
-  (await P()).targets?.c?.trace === true && (await P()).options === undefined,
-);
-await page.selectOption('select[aria-label="C Trace hook"]', "");
-check("...or follow the options section again", (await P()).targets === undefined);
+{
+  // A per-language override in the file is no longer edited here, but shown with a way to clear it.
+  const m = await P();
+  m.targets = { c: { trace: true } };
+  await U("load", JSON.stringify(m), "override.ufsm");
+  await page.click("#panel-tab-project");
+  check(
+    "a per-language override in the file is shown...",
+    /sets Trace hook on for C only/.test(await $text(".target-override")),
+    await $text(".panel-body"),
+  );
+  await page.click(".target-override button:has-text('Clear')");
+  check("...and Clear removes it", (await P()).targets === undefined && (await $count(".target-override")) === 0);
+  await U("closeTab", (await U("tabs")).length - 1, true);
+  await page.click("#panel-tab-project");
+}
 
 // Problems
 await page.click("#panel-tab-problems");
@@ -1730,11 +1772,25 @@ check(
 );
 const lines = async () => (await $text(".code .gutter")).split("\n").length;
 check("...with line numbers", (await lines()) === (await $text(".code .src")).split("\n").length - 1);
+check(
+  "...offering only the selected language's files",
+  (await $count(".cview")) === 2 && !/Python|TypeScript|Rust/.test(await $text(".cviews")),
+);
 await page.click(".cview:has-text('C source')");
 check("C source", (await $text(".cname")) === "dimmer.c" && /#include "dimmer.h"/.test(await $text(".code .src")));
-await page.click(".cview:has-text('Python')");
-check("Python", (await $text(".cname")) === "dimmer.py" && /class Dimmer:/.test(await $text(".code .src")));
-await page.click(".cview:has-text('TypeScript')");
+const codeIn = async (lang) => {
+  await page.click("#panel-tab-project");
+  await page.selectOption('select[aria-label="Language"]', lang);
+  await page.click("#panel-tab-code");
+};
+await codeIn("python");
+check(
+  "Python, once selected in the Project tab, with no file switch",
+  (await $text(".cname")) === "dimmer.py" &&
+    /class Dimmer:/.test(await $text(".code .src")) &&
+    (await $count(".cview")) === 0,
+);
+await codeIn("ts");
 check(
   "TypeScript",
   (await $text(".cname")) === "dimmer.ts" && /export class Dimmer \{/.test(await $text(".code .src")),
@@ -1749,7 +1805,7 @@ check(
   "Save… writes the file shown",
   dl3.suggestedFilename() === "dimmer.ts" && /export class Lamp/.test(readFileSync(await dl3.path(), "utf8")),
 );
-await page.click(".cview:has-text('Rust')");
+await codeIn("rust");
 check(
   "Rust",
   (await $text(".cname")) === "dimmer.rs" &&
@@ -1757,6 +1813,7 @@ check(
     (await $count(".code .src .c-pre")) > 3,
 );
 await page.click("#panel-tab-project");
+await page.selectOption('select[aria-label="Language"]', "rust");
 await page.fill('input[aria-label="Rust Struct"]', "Lamp");
 await page.keyboard.press("Enter");
 await page.click("#panel-tab-code");
@@ -1765,6 +1822,7 @@ check(
   /pub struct Lamp<H> \{/.test(await $text(".code .src")) &&
     /"rust": \{\s*"className": "Lamp"/.test(await U("serialize")),
 );
+await codeIn("c");
 await page.click(".cview:has-text('C header')");
 check(
   "the C header has the state enum and fingerprint, but no trace hook by default",
@@ -1773,15 +1831,38 @@ check(
     !/dimmer_trace\(/.test(await $text(".code .src")),
 );
 await page.click("#panel-tab-project");
-await page.selectOption('select[aria-label="C Trace hook"]', "on");
+await page.click('input[aria-label="Trace hook"]');
 await page.click("#panel-tab-code");
 check(
-  "...and the trace hook once targets.c.trace is on",
+  "...and the trace hook once options.trace is on",
   /void dimmer_trace\(void \*user, enum dimmer_trace_kind kind, uint16_t id\);/.test(await $text(".code .src")),
 );
 await page.click("#panel-tab-project");
-await page.selectOption('select[aria-label="C Trace hook"]', "");
-await page.click("#panel-tab-code");
+await page.click('input[aria-label="Trace hook"]');
+await codeIn("rust");
+{
+  // Generate writes the language picked in the Project tab (Rust here); in a browser as downloads.
+  const [dl] = await Promise.all([
+    page.waitForEvent("download"),
+    page.click(".cfile button:has-text('Generate Rust')"),
+  ]);
+  check("the Code tab's Generate writes the selected language", dl.suggestedFilename() === "dimmer.rs");
+  await page.click("#panel-tab-project");
+  await page.selectOption('select[aria-label="Language"]', "c");
+  const got = [];
+  const onDl = (d) => got.push(d.suggestedFilename());
+  page.on("download", onDl);
+  await page.click(".generate-row button:has-text('Generate')");
+  await page.waitForTimeout(300);
+  check("the Project tab's Generate writes C", got.sort().join() === "dimmer.c,dimmer.h", got.join());
+  got.length = 0;
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press("Control+Shift+B");
+  await page.waitForTimeout(300);
+  check("Ctrl+Shift+B generates too", got.sort().join() === "dimmer.c,dimmer.h", got.join());
+  page.off("download", onDl);
+  await page.click("#panel-tab-code");
+}
 const both = [];
 page.on("download", (d) => both.push(d.suggestedFilename()));
 await page.click(".cfile button:has-text('Save both…')");
@@ -2738,7 +2819,7 @@ await page.evaluate(() => localStorage.removeItem("ufsm.searchRecent"));
   r = await qp();
   check(
     "a code generator option shows its value (the default)",
-    r[0]?.label === "Project: Code Generation: C Prefix" && /\(default\)/.test(r[0].detail),
+    r[0]?.label === "Project: Code Generator: C Prefix" && /\(default\)/.test(r[0].detail),
     JSON.stringify(r[0]),
   );
   await page.keyboard.press("Enter");
@@ -2787,7 +2868,7 @@ await page.evaluate(() => localStorage.removeItem("ufsm.searchRecent"));
     "empty, it starts with what was picked lately",
     r[0]?.label === "dhcp_check" &&
       r[0].group === "recently used" &&
-      r.some((x) => x.label === "Project: Code Generation: C Prefix"),
+      r.some((x) => x.label === "Project: Code Generator: C Prefix"),
     JSON.stringify(r.map((x) => x.label)),
   );
   await page.keyboard.type("?");

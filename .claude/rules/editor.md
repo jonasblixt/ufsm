@@ -27,7 +27,8 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend, laid out after
   src/files.ts          open, File › New, save, save as, close; navigation.ts (sheets, entering states, jumping);
                         edit-commands.ts (delete, clipboard, regions, bend points, S routes, bars, off-page);
                         settings-controller.ts (settings.json, theme, UI zoom); sim-controller.ts (Simulator and Code
-                        tabs, File › Generate); search-items.ts (what the search finds, search.ts ranks); automation.ts
+                        tabs, Generate: into the selected target's output folder, out-path.ts turns a picked folder into
+                        the stored relative form); search-items.ts (what the search finds, search.ts ranks); automation.ts
                         (`window.ufsm`)
   src/hit.ts            hit testing, rubber band, bounds (no DOM: label widths come from a measure, render.ts has the
                         canvas's); render.ts draws a sheet; handles.ts (grips: what a drag at a point would do);

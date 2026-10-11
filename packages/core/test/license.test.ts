@@ -13,7 +13,17 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { OUTPUT_NOTICE, loadModel } from "../src";
-import { flatten, generateC, generatePython, generateRust, generateTypeScript, lowerToIr } from "../src/pipeline";
+import {
+  flatten,
+  generateC,
+  generateCpp,
+  generateCsharp,
+  generateGo,
+  generatePython,
+  generateRust,
+  generateTypeScript,
+  lowerToIr,
+} from "../src/pipeline";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const SPDX = "SPDX-License-Identifier: GPL-3.0-or-later";
@@ -87,6 +97,9 @@ describe("licensing", () => {
       ["dimmer.py", generatePython(ir).source],
       ["dimmer.ts", generateTypeScript(ir).source],
       ["dimmer.rs", generateRust(ir).source],
+      ["dimmer.go", generateGo(ir).source],
+      ["dimmer.hpp", generateCpp(ir).source],
+      ["Dimmer.cs", generateCsharp(ir).source],
     ] as const) {
       const head = text.split("\n").slice(0, 3).join("\n");
       assert.ok(head.includes(OUTPUT_NOTICE), `${name}: ${head}`);

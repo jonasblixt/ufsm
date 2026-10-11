@@ -27,6 +27,7 @@ model's `targets.c` section and can be overridden on the command line:
 |-----------------|------|---------|---------|
 | `prefix` | `--prefix` | model name + `_` | Prefix of every public identifier |
 | `file` | | prefix without the trailing `_` | Base name of the files: `<file>.h`, `<file>.c` |
+| `out` | `-o` | current directory | Output folder, relative to the model's file or absolute ([targets](format-v1.md#targets)) |
 
 ```jsonc
 "targets": { "c": { "prefix": "dimmer_" } }

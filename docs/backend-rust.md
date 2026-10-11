@@ -36,6 +36,7 @@ model's `targets.rust` section and can be overridden on the command line:
 |--------------------|------|---------|---------|
 | `className` | `--class-name` | model name in PascalCase (`test_guard1` → `TestGuard1`) | Name of the machine struct |
 | `module` | | model name in snake_case (`New model` → `new_model`) | File name: `<module>.rs` |
+| `out` | `-o` | current directory | Output folder, relative to the model's file or absolute ([targets](format-v1.md#targets)) |
 
 Unknown keys, and the behaviour options below, are reported as warnings and ignored there.
 

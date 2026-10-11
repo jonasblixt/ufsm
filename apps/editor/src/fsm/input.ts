@@ -38,6 +38,7 @@ const KEYS: Record<string, EditorFsmEvent> = {
   n: EditorFsmEvent.eKey_n,
   p: EditorFsmEvent.eKey_p,
   P: EditorFsmEvent.eKey_P,
+  B: EditorFsmEvent.eKey_B,
   a: EditorFsmEvent.eKey_a,
   t: EditorFsmEvent.eKey_t,
   i: EditorFsmEvent.eKey_i,
@@ -214,8 +215,8 @@ export function attachInput(
   });
 
   window.addEventListener("keydown", (e) => {
-    // Ctrl+Shift+P: some layouts and platforms report the key in lower case
-    const key = e.key === "p" && e.shiftKey ? "P" : e.key;
+    // Ctrl+Shift+P and Ctrl+Shift+B: some layouts and platforms report the key in lower case
+    const key = (e.key === "p" || e.key === "b") && e.shiftKey ? e.key.toUpperCase() : e.key;
     if (inTextField(e.target) && !(((e.ctrlKey || e.metaKey) && FIELD_KEYS.has(key)) || key === "F1")) return;
     const event = KEYS[key];
     if (event === undefined) return;

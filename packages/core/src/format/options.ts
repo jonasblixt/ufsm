@@ -12,10 +12,40 @@
  *
  * A generator resolves them in this order: `options`, then `targets.<name>` (API options only), then the caller's
  * overrides (the CLI's flags). Unset options take OPTION_DEFAULTS.
+ *
+ * Besides options, the document names the code generator to use (`target`) and each generator's output folder
+ * (`targets.<name>.out`): what the editor's Generate and `ufsm generate <model>` read.
  */
 import type { ModelOptions, UfsmDocument } from "./model";
 
 export type OptionKey = keyof ModelOptions;
+
+/** The code generators, by the name `target` and `targets` use. */
+export type CodeTarget = "c" | "python" | "ts" | "rust" | "go" | "cpp" | "csharp";
+
+export const CODE_TARGETS: readonly CodeTarget[] = ["c", "python", "ts", "rust", "go", "cpp", "csharp"];
+
+/** Is `name` one of the code generators? */
+export function isCodeTarget(name: unknown): name is CodeTarget {
+  return (CODE_TARGETS as readonly unknown[]).includes(name);
+}
+
+/** The code generator a document selects (`target`), C when it names none or one that does not exist. */
+export function selectedTarget(doc: UfsmDocument): CodeTarget {
+  return isCodeTarget(doc.target) ? doc.target : "c";
+}
+
+/** The keys of `targets.<name>` that every generator has and none reads: where its files go. */
+export const OUTPUT_KEYS = ["out"] as const;
+
+/**
+ * `targets.<target>.out`: the folder a generator's files go to, relative to the model's file or absolute, as stored
+ * (`/` separated). undefined when unset, empty or not a string.
+ */
+export function targetOut(doc: UfsmDocument, target: string): string | undefined {
+  const v = doc.targets?.[target]?.["out"];
+  return typeof v === "string" && v.trim() !== "" ? v : undefined;
+}
 
 /** The value of every option when the model does not set it; the generated code's defaults too. */
 export const OPTION_DEFAULTS: Readonly<Required<ModelOptions>> = {
@@ -72,7 +102,8 @@ export function defined<T extends object>(o: T): Partial<T> {
 
 /**
  * Split `targets.<target>` into the API options it overrides and the target's own keys (prefix, className, ...),
- * which the generator reads. Behaviour options and API options with a wrong value are reported and ignored.
+ * which the generator reads; `out` is neither (where the caller writes the files). Behaviour options, API options with
+ * a wrong value and an `out` that is not a string are reported and ignored.
  */
 export function targetSection(
   doc: UfsmDocument,
@@ -84,7 +115,9 @@ export function targetSection(
   for (const [k, v] of Object.entries(doc.targets?.[target] ?? {})) {
     if (isBehaviourOption(k))
       problems.push(`targets.${target}.${k}: changes behaviour, so it is set in options for every target (ignored)`);
-    else if (!isApiOption(k)) own.push([k, v]);
+    else if ((OUTPUT_KEYS as readonly string[]).includes(k)) {
+      if (typeof v !== "string") problems.push(`targets.${target}.${k}: expected a string`);
+    } else if (!isApiOption(k)) own.push([k, v]);
     else if (VALID[k].test(v)) api[k] = v;
     else problems.push(`targets.${target}.${k}: expected ${VALID[k].expected}`);
   }

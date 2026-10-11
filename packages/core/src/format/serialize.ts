@@ -249,6 +249,7 @@ export function toCanonicalJson(doc: UfsmDocument): Json {
     ["machine", { root: regionJ(doc.machine.root), transitions: doc.machine.transitions.map(transitionJ) }],
     ["diagram", doc.diagram ? diagramJ(doc.diagram, doc) : undefined],
     ["options", doc.options && optionsJ(doc.options)],
+    ["target", doc.target],
     ["targets", doc.targets ? sortKeysDeep(doc.targets) : undefined],
   ]);
 }

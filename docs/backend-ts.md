@@ -32,6 +32,7 @@ model's `targets.ts` section and can be overridden on the command line:
 |------------------|------|---------|---------|
 | `className` | `--class-name` | model name in PascalCase (`test_guard1` → `TestGuard1`) | Machine class; also names `<Class>Event`, `<Class>Handler`, `<Class>Error`, `<Class>ErrorCode` |
 | `module` | | model name as an identifier | File name: `<module>.ts` |
+| `out` | `-o` | current directory | Output folder, relative to the model's file or absolute ([targets](format-v1.md#targets)) |
 
 Unknown keys, and the behaviour options below, are reported as warnings and ignored there.
 

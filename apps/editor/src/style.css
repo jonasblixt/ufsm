@@ -1671,6 +1671,26 @@ button.problem:not(:disabled):hover {
   margin: 2px 0 6px;
 }
 
+/* Project › Code generator: the resolved output folder, a per-language override, the Generate button. */
+.out-where {
+  margin: 0 0 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.target-override {
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 6px 0;
+}
+
+.generate-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
 /* A title block field with an optional button (Date: Today) after it. */
 .title-field {
   display: flex;
