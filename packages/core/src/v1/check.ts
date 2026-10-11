@@ -7,6 +7,8 @@
  * warnings point at likely mistakes.
  */
 import { ancestors, indexV1, regionChain, vertexName, type DocIndex } from "./doc-index";
+import { ACTION_CHAR_W, ACTION_ICON, ACTION_ICON_GAP, actionBlock } from "./action-block";
+import { HEADER_H, isOffPage, vertexBox } from "./geometry";
 import { sheetFit, sheetFitMessage } from "./sheet";
 import { isApiOption, isBehaviourOption } from "./options";
 import { IDENTIFIER, TIMER_MAX_MS, timerMs, type Action, type DeclKind, type GuardTerm, type Id, type Transition, type UfsmDocument } from "./model";
@@ -297,6 +299,24 @@ export function checkV1(doc: UfsmDocument, prebuilt?: DocIndex): Diagnostic[] {
       doc.machine.transitions.every((t) => index.vertices.has(t.from) && index.vertices.has(t.to));
     if (geometry) {
       for (const p of sheetFit(index)) warn(p.problem === "outside" ? "outside-frame" : "title-block", sheetFitMessage(index, p), p.id);
+      // ---- action blocks fit their states. Lines hidden by a height the user set are not reported: the block marks them.
+      for (const { vertex } of index.vertices.values()) {
+        if (vertex.kind !== "state") continue;
+        const block = actionBlock(index, vertex);
+        if (block.auto === 0) continue;
+        const b = vertexBox(index, vertex.id);
+        const shown = block.summary ? [block.summaryRow] : block.rows.slice(0, block.visible).map((r) => r.segments);
+        const right = Math.max(...shown.flat().map((g) => g.x + (g.icon ? ACTION_ICON + ACTION_ICON_GAP : 0) + g.text.length * ACTION_CHAR_W));
+        if (HEADER_H + block.height > b.h || right > b.w) {
+          warn("actions-clipped", `state '${vertexName(index, vertex.id)}' is too small to show its actions, timers and internal transitions`, vertex.id);
+        }
+        const first = vertex.regions?.[0];
+        if (!first || isOffPage(index, first.id)) continue;
+        const covered = first.states.find((c) => vertexBox(index, c.id).y < b.y + HEADER_H + block.height);
+        if (covered) {
+          warn("actions-overlap", `the actions of state '${vertexName(index, vertex.id)}' are drawn over '${vertexName(index, covered.id)}'`, vertex.id);
+        }
+      }
     }
   }
 

@@ -146,3 +146,5 @@ The color palettes in `apps/editor/src/themes/` come from
 [Everforest](https://github.com/sainnhe/everforest) by sainnhe (MIT),
 [Solarized](https://github.com/altercation/solarized) by Ethan Schoonover (MIT) and
 [Catppuccin](https://github.com/catppuccin/palette) (MIT).
+The icons in a state's action block are from
+[Tabler Icons](https://github.com/tabler/tabler-icons) by Paweł Kuna (MIT).

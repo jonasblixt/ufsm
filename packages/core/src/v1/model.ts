@@ -197,6 +197,11 @@ export interface StateLayout {
   h: number;
   /** Fork/join bars only; default vertical. */
   orientation?: "horizontal" | "vertical";
+  /**
+   * States only: height of the action block (entry, exit, timers, internal transitions) when it is smaller than its
+   * lines need; the rest is hidden behind a marker. Omitted: as tall as its lines (v1/action-block.ts).
+   */
+  actionsHeight?: number;
 }
 
 export interface RegionLayout {

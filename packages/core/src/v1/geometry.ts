@@ -9,6 +9,7 @@
  * sheet where each element is drawn. A "sheet" is the root region or an
  * off-page region.
  */
+import { HEADER, actionBlock } from "./action-block";
 import { commonRegion, type DocIndex } from "./doc-index";
 import { GRID, type EdgeEnd, type Id, type LabelLayout, type Region, type Side, type State, type StateLayout } from "./model";
 import { autoSides, defaultLabel, labelAnchor, sRoute, sideLength, sideTowards, type JogAxis } from "./route";
@@ -24,9 +25,7 @@ export interface Box extends Point {
 }
 
 /** Height of a state's name header. */
-export const HEADER_H = 30;
-/** Height of one entry/exit line. */
-export const ACTION_LINE_H = 20;
+export const HEADER_H = HEADER;
 
 const ZERO: Point = { x: 0, y: 0 };
 const NO_LAYOUT: StateLayout = { x: 0, y: 0, w: 100, h: 60 };
@@ -79,10 +78,12 @@ export function vertexBox(index: DocIndex, id: Id): Box {
   return { x: o.x + l.x, y: o.y + l.y, w: l.w, h: l.h };
 }
 
-/** Space taken by the action block below the header: entry, exit, timer and internal transition lines. */
-export function actionBlockHeight(s: State): number {
-  const n = (s.entry?.length ?? 0) + (s.exit?.length ?? 0) + (s.timers?.length ?? 0) + (s.internal?.length ?? 0);
-  return n > 0 ? ACTION_LINE_H + ACTION_LINE_H * n : 0;
+/**
+ * Space taken by the action block below the header (entry, exit, timer and internal transition lines): as tall as
+ * its lines at the state's width, or the height stored for the state when that is smaller (v1/action-block.ts).
+ */
+export function actionBlockHeight(index: DocIndex, s: State): number {
+  return actionBlock(index, s).height;
 }
 
 /**
@@ -92,7 +93,7 @@ export function actionBlockHeight(s: State): number {
  */
 export function regionBoxes(index: DocIndex, s: State): { region: Region; box: Box }[] {
   const sb = vertexBox(index, s.id);
-  let y = sb.y + HEADER_H + actionBlockHeight(s);
+  let y = sb.y + HEADER_H + actionBlockHeight(index, s);
   const bottom = sb.y + sb.h;
   return (s.regions ?? []).map((region) => {
     const h = index.doc.diagram?.regions[region.id]?.h ?? Math.max(bottom - y, 0);

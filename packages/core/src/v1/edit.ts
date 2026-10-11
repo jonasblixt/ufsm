@@ -17,6 +17,7 @@
  * are derived anyway, so only their stored jog changes, and only when the whole route moves (both ends by the same
  * amount); otherwise the jog keeps its absolute position.
  */
+import { ACTION_LINE_H, ACTION_MIN_H, ACTION_PAD, actionBlock } from "./action-block";
 import { ancestors, indexV1, type DocIndex } from "./doc-index";
 import {
   HEADER_H,
@@ -214,7 +215,7 @@ export function resizeVertex(doc: UfsmDocument, id: Id, targets: EdgeTargets): v
   const b = vertexBox(index, id);
   const lim = limitsOf(index, id);
   const s = v.kind === "state" ? v : undefined;
-  const header = s ? HEADER_H + actionBlockHeight(s) : 0;
+  const header = s ? HEADER_H + actionBlockHeight(index, s) : 0;
   const regions = s?.regions ?? [];
   const bands = s ? regionBoxes(index, s) : [];
   const fixed = (k: number): number | undefined => index.doc.diagram?.regions[regions[k]!.id]?.h;
@@ -301,6 +302,51 @@ export function moveRegionSplit(doc: UfsmDocument, stateId: Id, k: number, y: nu
   regionLayoutOf(doc, s.regions[k]!.id).h = sep - a.y;
   const next = s.regions[k + 1]!;
   if (index.doc.diagram?.regions[next.id]?.h !== undefined) regionLayoutOf(doc, next.id).h = b.y + b.h - sep;
+}
+
+/**
+ * Give a state's action block the height `want` (from the header down), or its automatic height when `want` is
+ * undefined. Heights are whole lines, at least one; a height that shows every line is not stored (the block is
+ * automatic again). The first region band takes the difference, so the bands below stay where they are; the block
+ * stops at the band's contents and leaves it a minimum height.
+ */
+function applyActionsHeight(doc: UfsmDocument, stateId: Id, want: number | undefined): void {
+  const index = indexV1(doc);
+  const s = index.vertices.get(stateId)?.vertex;
+  if (s?.kind !== "state") return;
+  const block = actionBlock(index, s);
+  if (block.auto === 0) return;
+  const b = vertexBox(index, s.id);
+  const top = b.y + HEADER_H;
+  const cur = block.height;
+  const lines = (h: number): number => ACTION_PAD + ACTION_LINE_H * Math.floor((h - ACTION_PAD) / ACTION_LINE_H);
+  let h = want === undefined ? block.auto : clamp(ACTION_PAD + ACTION_LINE_H * Math.round((want - ACTION_PAD) / ACTION_LINE_H), ACTION_MIN_H, block.auto);
+  const bands = regionBoxes(index, s);
+  const first = bands[0];
+  if (first && h > cur) {
+    const hi = Math.min(first.box.y + first.box.h - MIN_BAND, ...contents(index, s, 0).map((c) => c.y)) - top;
+    h = Math.max(Math.min(h, lines(hi)), cur);
+  }
+  const l = layoutOf(doc, index, s.id);
+  if (h >= block.auto) delete l.actionsHeight;
+  else l.actionsHeight = h;
+  if (h === cur) return;
+  // the first band's bottom stays: a band with a stored height gives or takes the difference
+  if (first && index.doc.diagram?.regions[first.region.id]?.h !== undefined) {
+    regionLayoutOf(doc, first.region.id).h = Math.max(first.box.h - (h - cur), 0);
+  }
+}
+
+/** Drag the bottom line of a state's action block to absolute height `y`: whole lines, see applyActionsHeight. */
+export function setActionsHeight(doc: UfsmDocument, stateId: Id, y: number): void {
+  const index = indexV1(doc);
+  if (!index.vertices.has(stateId)) return;
+  applyActionsHeight(doc, stateId, y - vertexBox(index, stateId).y - HEADER_H);
+}
+
+/** Make a state's action block as tall as its lines again (as far as the first region band's contents allow). */
+export function resetActionsHeight(doc: UfsmDocument, stateId: Id): void {
+  applyActionsHeight(doc, stateId, undefined);
 }
 
 /**

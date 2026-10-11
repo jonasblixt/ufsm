@@ -17,6 +17,8 @@ import {
   autoSides,
   endAt,
   cannotAdd,
+  HEADER_H,
+  actionBlock,
   cannotConnect,
   checkV1,
   copyFragment,
@@ -36,12 +38,14 @@ import {
   moveVertices,
   newDocument,
   regionBoxes,
+  resetActionsHeight,
   resetJog,
   resetLabel,
   resizeVertex,
   routeInfo,
   sRoute,
   serializeV1,
+  setActionsHeight,
   setBendPoint,
   setEdgeEnd,
   setJog,
@@ -96,7 +100,7 @@ import {
   windowControls,
   writeSettings,
 } from "./platform";
-import { boxSelect, hitTest, hitTransition, pageBounds, renderPage, vertexBounds, type BoxMode, type Bounds, type SimHighlight, type View } from "./render";
+import { boxSelect, hitTest, hitTransition, pageBounds, pillAt, renderPage, vertexBounds, type BoxMode, type Bounds, type SimHighlight, type View } from "./render";
 import { C, FALLBACK_THEME, THEMES, canvasAlpha, findTheme, modifierHasEffect, resolveTheme, setCanvasTheme, themeInfo, type ResolvedTheme } from "./theme";
 import { parseSettings, serializeSettings, zoomStep, ZOOM_MAX, ZOOM_MIN, ZOOM_STEPS, type AppearanceChoice, type Settings, type ThemeSetting } from "./settings";
 import { Simulation, relativePath, type SimOptions } from "./sim";
@@ -1715,6 +1719,11 @@ function applyDrag(d: UfsmDocument, drag: Drag, x: number, y: number): void {
       moveRegionSplit(d, grip.id, grip.k, band.y + band.h + dy);
       break;
     }
+    case "actions": {
+      const s = base.vertices.get(grip.id)!.vertex as State;
+      setActionsHeight(d, grip.id, vertexBox(base, grip.id).y + HEADER_H + actionBlock(base, s).height + dy);
+      break;
+    }
     case "end":
       setEdgeEnd(d, grip.id, grip.end, { x, y });
       break;
@@ -1841,7 +1850,16 @@ api = attachInput(
       requestDraw();
     },
     selectAtPointer: () => {
-      if (!doc || onHandle()) return;
+      if (!doc) return;
+      // A click on a state's hidden-lines marker shows every line again (and selects the state).
+      const [wx, wy] = screenToWorld(input.x, input.y);
+      const marked = pillAt(doc.index, doc.page, wx, wy);
+      if (marked) {
+        select([marked.id]);
+        edit((d) => resetActionsHeight(d, marked.id));
+        return;
+      }
+      if (onHandle()) return;
       const id = pickAt(input.x, input.y);
       select(id ? [id] : []);
     },
@@ -1871,12 +1889,13 @@ api = attachInput(
     },
     openAtPointer: () => {
       if (!doc) return;
-      // On a handle or label: give a pinned S end, a jog or an S label back to automatic placement.
+      // On a handle or label: give a pinned S end, a jog, an S label or an action block's height back to automatic.
       const g = gripUnder(input.x, input.y, false)?.grip;
       if (g && g.kind !== "move") {
         const s = routeInfo(doc.index, g.id) !== undefined;
         if (g.kind === "end" && s && g.pinned) edit((d) => unpinEdgeEnd(d, g.id, g.end));
         else if (g.kind === "jog") edit((d) => resetJog(d, g.id));
+        else if (g.kind === "actions") edit((d) => resetActionsHeight(d, g.id));
         else if (g.kind === "label" && s) edit((d) => resetLabel(d, g.id));
         else if (g.kind === "bend") edit((d) => removeBendPoint(d, g.id, g.i));
         return;
@@ -2217,6 +2236,18 @@ Object.assign(window, {
     isDirty: () => (doc ? isDirty(doc) : false),
     /** Absolute world box of a vertex. */
     box: (id: string) => (doc ? vertexBox(doc.index, id) : undefined),
+    /** The design rule check's findings for the active machine. */
+    problems: () => doc?.diagnostics ?? [],
+    /** A state's action block: lines, height, what is hidden and its marker (v1/action-block.ts), with the marker's screen centre. */
+    actionBlock: (id: string) => {
+      const v = doc?.index.vertices.get(id)?.vertex;
+      if (!doc || v?.kind !== "state") return undefined;
+      const block = actionBlock(doc.index, v);
+      const b = vertexBox(doc.index, id);
+      const r = canvas.getBoundingClientRect();
+      const pill = block.pill && ([r.left + view.x + (b.x + block.pill.x + block.pill.w / 2) * view.scale, r.top + view.y + (b.y + block.pill.y + block.pill.h / 2) * view.scale] as [number, number]);
+      return { ...block, pillScreen: pill };
+    },
     /** Absolute polyline and label of a transition. */
     route: (id: string) => (doc ? edgeGeometry(doc.index, id) : undefined),
     /** Simulator: start (or restart), stop, send an event, set a guard, and what it shows. */

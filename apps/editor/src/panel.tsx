@@ -56,7 +56,7 @@ import {
   setTrigger,
   setTimer,
   stateLayout,
-  timerLabel,
+  timerText,
   timerNameProblem,
   timerDurationProblem,
   TIMER_UNITS,
@@ -634,7 +634,7 @@ function TimerProps({ index, t, ops }: { index: DocIndex; t: Timer; ops: PanelOp
   return (
     <details class="internal">
       <summary>
-        <code>{timerLabel(index, t)}</code>
+        <code>{timerText(index, t)}</code>
         <IconButton label="×" title="Delete this timer" onClick={() => ops.edit((d) => void deleteElements(d, [t.id]))} />
       </summary>
       <div class="ibody">

@@ -30,6 +30,7 @@ export * from "./v1/parse";
 export * from "./v1/schema";
 export * from "./v1/serialize";
 export * from "./v1/doc-index";
+export * from "./v1/action-block";
 export * from "./v1/geometry";
 export * from "./v1/route";
 export * from "./v1/edit";

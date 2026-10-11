@@ -557,3 +557,20 @@ Measured over the 21 valid legacy models (864 KB):
   paste renames clashing timer names `_2`, search kind `timer`, simulator Timers section with Fire (`simFire`), problem
   badges/jump on the owning state. CLI: `run` prints start/stop, `info` counts timers, `list` lists them. Windows, `CC` =
   LLVM clang: core 547/547, editor 70/70, browser check 368/368, typecheck clean.
+- 2026-10-11: **Action block rework (E-AB).** Core `v1/action-block.ts`: the block's layout from the state's width on a
+  7-unit character cell (entry and exit lists wrapped with continuation lines under the first action, timers packed 16
+  apart, one internal transition per line wrapped at spaces), height `10 + 20 × lines` (was `20 + 20 × items`), optional
+  `diagram.states[id].actionsHeight` (schema, writer, spec): first whole lines shown, hidden items counted per kind, the
+  marker's box (per-kind counts, `+N` when the state is too narrow), one-line summary of counts at the minimum.
+  `actionBlockHeight(index, s)` now needs the index. Edits `setActionsHeight`/`resetActionsHeight` (whole lines, not
+  stored once every line shows, the first region band takes the difference, stops above its contents). Design rules
+  `actions-clipped` and `actions-overlap`; lines hidden by a stored height are not reported. Editor: `icons.ts` (Tabler
+  login/logout/hourglass/repeat/bolt/chevrons as Path2D, MIT, credited in README), monospace font sized so a character
+  is exactly one cell, marker drawn on the block's bottom line, grip `actions` (bar handle on a selected state, drag,
+  double-click = automatic), a click on the marker = automatic and selects, `window.ufsm.actionBlock(id)` and
+  `problems()`. The cell is 7 and not 8 so every block of canvas.ufsm and the examples still fits its state (8 clipped
+  19 of them); three states of editor.ufsm grew by 10 (Tools, PanPressed, Place) for their wrapped internal
+  transitions. Cloud workspace (gcc, Python, pyright, rustc): core 565/565 (18 new in `action-block.test.ts`), editor
+  70/70, browser check 386/386 (18 new), typecheck clean. Not run on Windows yet.
+- 2026-10-11: Properties › Timers rows read `travel(20 s, eTimeout)` without the `t/` prefix (new `timerText` in
+  labels.ts; `timerLabel` keeps the prefix for the CLI and the search). Browser check 386/386 in the cloud workspace.

@@ -33,9 +33,9 @@ known issues) is imported below. Read these only when needed:
 packages/core/          @ufsm/core: model, v0 reader, v1 format, checks, semantics, interpreter, IR, backends
   src/v1/               current file format (model, schema (TypeBox: the reader's definition, the JSON Schema is
                         generated from it, model.ts is checked against it at compile time), parse, serialize, doc-index,
-                        geometry, route, labels, check, migrate, load, options (the `options` section: defaults, behaviour vs
+                        geometry, action-block (layout of a state's entry/exit/timer/internal lines: wrapping, height, hidden lines), route, labels, check, migrate, load, options (the `options` section: defaults, behaviour vs
                         API options, what `targets.<name>` may override)) and edit.ts (layout edits the editor's drags make: move, resize, region split, ends, jog,
-                        bend points, labels, S/free conversion; diagram-only, snapped, children kept inside, free routes
+                        bend points, labels, S/free conversion, the action block's height; diagram-only, snapped, children kept inside, free routes
                         follow); structure edits: ids.ts (id allocation), create.ts (add vertex/region/transition with
                         validity checks, delete with cascade), clipboard.ts (copy/paste fragments); props.ts (property
                         edits: names, actions, triggers, guards, internal transitions, regions, declarations, targets,
@@ -167,11 +167,14 @@ Build Tools "Desktop development with C++"), TypeScript 6, Vite 7, Tauri 2.
 - Triggers: `on` (event/signal id) | `auto: true` | `completion: true`.
 - A state's `internal` list holds internal transitions (visualSTATE: static reactions):
   `{id, on, guard?, do?}`, no target, never leave the state; drawn as text in the
-  action block after entry/exit. Prefer them to self-transitions unless exit/re-entry is wanted.
+  action block after entry/exit and timers. Prefer them to self-transitions unless exit/re-entry is wanted.
 - A state's `timers` list: `{id, name, after|every, unit (ms|s|min|h), event}`; started after entry actions, stopped
   before exit actions, all stopped by reset()/terminate; the application runs the clock and sends `event` on expiry
   (semantics.md "Timers"). Generated code has a timer API only when the model has timers; traces list the calls as
   `start:<name>(<ms> ms)` / `start:<name>(every <ms> ms)` / `stop:<name>`.
+- The action block is derived from the state's width (`core/src/v1/action-block.ts`, format-v1.md "Action block"): an
+  icon per kind, entry and exit lists wrapped, timers packed, 7-unit character cells, `10 + 20 × lines` tall. A state's
+  optional `actionsHeight` in the diagram makes it smaller: the first lines show and a marker counts the rest.
 - Guards: list of terms ANDed (`{call}`, `{call, not}`, `{in}`, `{in, not}`);
   guard functions take no arguments and return a boolean (no compare terms;
   v0 compares are converted to derived guards). Actions: `{call}` | `{emit}`.

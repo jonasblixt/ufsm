@@ -227,7 +227,8 @@
         "y": { "type": "number" },
         "w": { "type": "number" },
         "h": { "type": "number" },
-        "orientation": { "enum": ["horizontal", "vertical"] }
+        "orientation": { "enum": ["horizontal", "vertical"] },
+        "actionsHeight": { "type": "number" }
       },
       "additionalProperties": false
     },

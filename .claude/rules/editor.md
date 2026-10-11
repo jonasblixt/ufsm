@@ -21,6 +21,7 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend. Window laid ou
   src/history.ts        undo/redo: Immer patches; interactive edits preview from their start, commit one step
   src/handles.ts        grips: selection handles, labels, movable vertices; what a drag at a point would do
   src/preview.ts        tool previews drawn over the page (ghost of a vertex to place, transition being drawn)
+  src/icons.ts          canvas icons as Path2D strokes (Tabler outlines, MIT): the kinds of action block lines, chevrons
   src/sim.ts            the simulator: interpreter on a snapshot of the document, step log, canvas highlight, every step
                         recorded as a conformance trace; out of date once machine or declarations change (no DOM, tested)
   src/code.ts           code preview: generated files cached per machine/declarations/name/targets, syntax highlighter
@@ -49,6 +50,9 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend. Window laid ou
   handles, geometry) is rebuilt from it.
   Avoid APIs newer than Safari 15 (macOS 12 WKWebView), e.g. use the manual
   `roundedRect` helper instead of `ctx.roundRect`.
+- A state's action block (entry, exit, timers, internal transitions) is laid out in core (`v1/action-block.ts`: lines,
+  wrapping, height, hidden counts, the marker's box) on a 7-unit character cell; `render.ts` only draws that layout, in
+  a monospace font sized so one character is exactly one cell (`blockFont`). Never measure its text in the editor.
 - Host access goes through `apps/editor/src/platform.ts` only, so the
   frontend also works in a plain browser (`dev:web`).
 - Colors: never write a color literal in the editor's CSS or TS. Add a token to `src/themes/ui.tokens.json` (an
@@ -62,14 +66,14 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend. Window laid ou
 
 The editor exposes `window.ufsm` for automation: `load(text, name)`, `newModel()`,
 `worldToScreen(x, y)`, `selectedName()`, `selectedIds()`, `select(ids)`, `serialize()`,
-`box(id)`, `route(id)`, `handles()` (with screen positions), `undo()`, `redo()`,
+`box(id)`, `route(id)`, `actionBlock(id)` (a state's action block layout from core, plus `pillScreen`, the screen centre of its hidden-lines marker), `problems()` (the design rule check's findings), `handles()` (with screen positions), `undo()`, `redo()`,
 `canUndo()`, `canRedo()`, `isDirty()`, `tabs()`, `activateTab(i)`, `closeTab(i, force)`, `view()`,
 `tool()`, `pickTool(id)`, `status()`, `panelTab()`, `openSearch(text)`, `search(text)` (the rows the search lists: label, kind, detail, machine, checked), `theme()` (id, inputs, appearance), `zoom()` (UI zoom %), `settings()` (settings.json text), simulator: `simStart()`, `simStop()`, `simSend(event)`,
 `simGuard(name, true|false)`, `sim()` (steps, active, fired, last calls, hovered event and its transitions, trace text),
 `simError()` (all act on the active tab; `load` opens a new one). `apps/editor/test/browser/check.mjs` bundles
 `apps/editor/src/main.ts` with esbuild (stubbing `@tauri-apps/*`), serves it and drives
 it with Playwright (~350 checks; the page emulates a dark OS, mostly on `test/browser/edit.ufsm`: select, drag, resize,
-separators, transition handles, labels, undo/redo, pan/zoom, then menus, search field,
+separators, transition handles, labels, undo/redo, pan/zoom, the action block (wrapping, icons, its resize handle, the hidden-lines marker), then menus, search field,
 panel keys, Properties/Project, sash, several machines in tabs, File › New, adding/deleting (tools,
 transitions, regions, bend points, Delete, copy/cut/paste) and properties (e/a keys, pickers,
 guards, internal transitions, declarations, options, Problems tab), then the simulator (F5, events, guards, canvas

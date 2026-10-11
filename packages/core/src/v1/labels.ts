@@ -55,9 +55,14 @@ export function timerDurationLabel(t: Timer): string {
   return t.every !== undefined ? `every ${t.every} ${t.unit}` : `${t.after} ${t.unit}`;
 }
 
-/** A timer as it is listed in its state: `t/travel(20 s, eTravelTimeout)`, `t/poll(every 500 ms, ePoll)`. */
+/** A timer where the context already says it is one (the Properties panel's Timers list): `travel(20 s, eTravelTimeout)`. */
+export function timerText(index: DocIndex, t: Timer): string {
+  return `${t.name}(${timerDurationLabel(t)}, ${declName(index, t.event)})`;
+}
+
+/** A timer in a list of mixed things (the CLI, the search): `t/travel(20 s, eTravelTimeout)`, `t/poll(every 500 ms, ePoll)`. */
 export function timerLabel(index: DocIndex, t: Timer): string {
-  return `t/${t.name}(${timerDurationLabel(t)}, ${declName(index, t.event)})`;
+  return `t/${timerText(index, t)}`;
 }
 
 /** `eButton [ready()] / lamp_on(), ^sDone` */

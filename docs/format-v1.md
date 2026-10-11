@@ -113,7 +113,7 @@ in generated code.
 A state's `internal` list holds transitions that react to an event without
 leaving the state (UML internal transitions). No exit or entry actions run, 
 and the state's regions keep their configuration. They have no diagram 
-layout: the editor lists them as text in the state's action block, after `entry`, `exit` and `timers`.
+layout: the editor lists them in the state's action block, after `entry`, `exit` and `timers`.
 
 ```jsonc
 { "id": "t7", "on": "ev2", "guard": [{ "call": "grd1" }], "do": [{ "call": "act3" }], "doc": "…" }
@@ -135,7 +135,9 @@ entered (after its `entry` actions) and stops when it is left (before its
 `exit` actions). The application runs them and, when one expires, sends its
 `event` through `process()`. They have no diagram layout: the editor lists
 them in the state's action block after `entry` and `exit`, as
-`t/travel(20 s, eTravelTimeout)` or `t/poll(every 500 ms, ePoll)`.
+`20 s → eTravelTimeout` behind an icon that tells a one-shot timer from a
+periodic one (lists such as the CLI's write `t/travel(20 s, eTravelTimeout)`
+or `t/poll(every 500 ms, ePoll)`).
 
 ```jsonc
 { "id": "tm1", "name": "travel", "after": 20, "unit": "s", "event": "ev3" }
@@ -204,7 +206,8 @@ comparison in the model; the model only knows its own states (`in`).
   "paper": "A3",
   "titleBlock":  { "revision": "B", "date": "2026-10-10", "author": "Jonas Blixt" },
   "states":      { "s1": { "x": 340, "y": 370, "w": 290, "h": 220 },
-                   "s9": { "x": 40, "y": 220, "w": 170, "h": 10, "orientation": "horizontal" } },
+                   "s9": { "x": 40, "y": 220, "w": 170, "h": 10, "orientation": "horizontal" },
+                   "s4": { "x": 40, "y": 300, "w": 300, "h": 200, "actionsHeight": 90 } },
   "regions":     { "r1": { "h": 940 }, "r2": { "h": 300, "offPage": true } },
   "transitions": { "t1": { "from": { "side": "right", "offset": 70 },
                            "to":   { "side": "left",  "offset": 70 },
@@ -306,11 +309,44 @@ corner of its state.
 
 ### State bands
 
-A state is drawn as a 30-unit name header, then (if it has entry/exit
-actions or internal transitions) an action block of
-`20 + 20 × (entries + exits + internal transitions)` units, then its
+A state is drawn as a 30-unit name header, then (if it has entry or exit
+actions, timers or internal transitions) an action block, then its
 regions stacked top-down. Each region takes `diagram.regions[id].h`; a region
 without `h` fills the rest of the state.
+
+### Action block
+
+The action block lists, in this order, the entry actions, the exit actions,
+the timers and the internal transitions. Every line starts with an icon for
+its kind (entry, exit, one-shot timer, periodic timer, internal transition)
+and is written in a fixed-width font. The layout is derived from the state's
+width `w`, with a text cell of 7 units and 20-unit lines:
+
+- text starts 30 units from the state's left edge (10 margin, a 16-unit icon,
+  4 between them) and ends 10 units before the right edge, so a line holds
+  `floor((w - 40) / 7)` characters, at least one;
+- the entry actions share a line, separated by `, `; a list that is too long
+  wraps between actions and the following lines start under the first action
+  (no icon). The exit actions start a new line and wrap the same way;
+- timers stand side by side, 16 units apart, each with its icon, while they
+  fit before the right margin; the next one starts a new line;
+- every internal transition starts a line (`event [guards] / actions`) and
+  wraps at spaces.
+
+The block is `10 + 20 × lines` units tall. `diagram.states[id].actionsHeight`
+(states only, optional) makes it smaller: it then shows the first
+`floor((actionsHeight - 10) / 20)` lines, at least one, and a marker on its
+bottom line counts the hidden actions, timers and internal transitions per
+kind (one total when the state is too narrow for that). When only one line is
+left of several, the block shows the number of items of each kind instead of
+the first line. A value that is not smaller than the block's own height has
+no effect, and the editor does not write one. The regions start below the
+block as drawn.
+
+The design rule check warns when a state is too low or too narrow for what
+its block shows (`actions-clipped`) and when the block reaches over a vertex
+in the state's first region (`actions-overlap`). Lines hidden by
+`actionsHeight` are not reported.
 
 `orientation` applies to `fork`/`join` only (`vertical` by default).
 

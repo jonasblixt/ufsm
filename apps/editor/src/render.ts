@@ -7,12 +7,17 @@
  * comes from @ufsm/core (relative layout -> absolute sheet coordinates).
  */
 import {
+  ACTION_CHAR_W,
+  ACTION_ICON,
+  ACTION_ICON_GAP,
+  ACTION_LINE_H,
+  ACTION_MARGIN,
+  ACTION_PAD,
+  ACTION_PILL_ICON,
   HEADER_H,
   TITLE_CAPTION_SIZE,
-  actionBlockHeight,
+  actionBlock,
   actionLabel,
-  internalTransitionLabel,
-  timerLabel,
   edgeGeometry,
   guardLabel,
   isOffPage,
@@ -25,6 +30,9 @@ import {
   triggerLabel,
   vertexBox,
   zoneRowLabel,
+  type ActionBlock,
+  type ActionPill,
+  type ActionSegment,
   type Box,
   type DocIndex,
   type Region,
@@ -33,6 +41,7 @@ import {
   type Vertex,
 } from "@ufsm/core";
 import type { Handle } from "./handles";
+import { drawIcon } from "./icons";
 import { C, canvasAlpha } from "./theme";
 
 /** Diagram colors come from the active theme (theme.ts); re-exported for the previews. */
@@ -240,6 +249,87 @@ function clipRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number
   ctx.clip();
 }
 
+/** Fixed-width font of the action block. */
+const MONO = 'ui-monospace, "Cascadia Mono", Consolas, Menlo, "DejaVu Sans Mono", monospace';
+let blockFontCss: string | undefined;
+
+/**
+ * The action block's font at the size where one character is exactly ACTION_CHAR_W wide, so the text takes the room
+ * core's layout gave it whatever monospace font the platform has (about 11.7 px for a 0.6 em font).
+ */
+function blockFont(ctx: CanvasRenderingContext2D): string {
+  if (!blockFontCss) {
+    ctx.font = `100px ${MONO}`;
+    const advance = ctx.measureText("0").width / 100;
+    const size = advance > 0.3 && advance < 1 ? ACTION_CHAR_W / advance : 11.7;
+    blockFontCss = `${Math.round(size * 100) / 100}px ${MONO}`;
+  }
+  return blockFontCss;
+}
+
+/** Opacity of the icons and marks of the action block (the text is full ink). */
+const BLOCK_ICON_ALPHA = 0.75;
+
+/** Lines of a state's action block (or its one-line summary); (x, top) is the block's top-left corner. */
+function drawActionBlock(ctx: CanvasRenderingContext2D, block: ActionBlock, x: number, top: number): void {
+  if (block.height === 0) return;
+  ctx.fillStyle = C.ink;
+  ctx.strokeStyle = canvasAlpha("ink", BLOCK_ICON_ALPHA);
+  ctx.font = blockFont(ctx);
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  const segment = (g: ActionSegment, yc: number, tail = ""): void => {
+    if (g.icon) drawIcon(ctx, g.icon, x + g.x, yc - ACTION_ICON / 2, ACTION_ICON);
+    ctx.fillText(g.text + tail, x + g.x + (g.icon ? ACTION_ICON + ACTION_ICON_GAP : 0), yc + 1);
+  };
+  const centre = (i: number): number => top + ACTION_PAD / 2 + ACTION_LINE_H * (i + 0.5);
+  if (block.summary) {
+    drawIcon(ctx, "chevron-right", x + ACTION_MARGIN, centre(0) - ACTION_ICON / 2, ACTION_ICON);
+    for (const g of block.summaryRow) segment(g, centre(0));
+    return;
+  }
+  block.rows.slice(0, block.visible).forEach((row, i) => {
+    const last = block.cut && i === block.visible - 1;
+    row.segments.forEach((g, k) => segment(g, centre(i), last && k === row.segments.length - 1 ? " \u2026" : ""));
+  });
+}
+
+/** The marker for hidden lines on the block's bottom line; (x, y) is the state's top-left corner. */
+function drawPill(ctx: CanvasRenderingContext2D, pill: ActionPill, x: number, y: number): void {
+  const px = x + pill.x, py = y + pill.y, yc = py + pill.h / 2;
+  ctx.save();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = C.ink;
+  ctx.fillStyle = C.stateFill;
+  roundedRect(ctx, px, py, pill.w, pill.h, pill.h / 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.strokeStyle = canvasAlpha("ink", BLOCK_ICON_ALPHA);
+  ctx.fillStyle = C.ink;
+  ctx.font = blockFont(ctx);
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  drawIcon(ctx, "chevron-down", px + 5, yc - ACTION_PILL_ICON / 2, ACTION_PILL_ICON);
+  for (const p of pill.parts) {
+    if (p.icon) drawIcon(ctx, p.icon, px + p.x, yc - ACTION_PILL_ICON / 2, ACTION_PILL_ICON);
+    ctx.fillText(p.text, px + p.x + (p.icon ? ACTION_PILL_ICON + 1 : 0), yc + 1);
+  }
+  ctx.restore();
+}
+
+/** The state whose hidden-lines marker is at world point (x, y) on `page` (a click on it shows every line again). */
+export function pillAt(index: DocIndex, page: Region, x: number, y: number): State | undefined {
+  let found: State | undefined;
+  forEachVisible(index, page, (v) => {
+    if (v.kind !== "state") return;
+    const pill = actionBlock(index, v).pill;
+    if (!pill) return;
+    const b = vertexBox(index, v.id);
+    if (x >= b.x + pill.x && x <= b.x + pill.x + pill.w && y >= b.y + pill.y && y <= b.y + pill.y + pill.h) found = v;
+  });
+  return found;
+}
+
 function drawState(ctx: CanvasRenderingContext2D, index: DocIndex, s: State, look: SimLook, selected: boolean): void {
   const { x, y, w, h } = vertexBox(index, s.id);
   const outline = outlineStyle(look, selected);
@@ -276,46 +366,27 @@ function drawState(ctx: CanvasRenderingContext2D, index: DocIndex, s: State, loo
   }
   ctx.restore();
 
-  const actionBlock = actionBlockHeight(s);
+  const block = actionBlock(index, s);
   ctx.save();
-  clipRect(ctx, x + 2, y + HEADER_H, w - 4, actionBlock);
-  ctx.fillStyle = C.ink;
-  ctx.font = `14px ${FONT}`;
-  let line = y + HEADER_H + 20;
-  for (const [prefix, list] of [
-    ["e/ ", s.entry],
-    ["x/ ", s.exit],
-  ] as const) {
-    for (const a of list ?? []) {
-      ctx.fillText(prefix + actionLabel(index, a), x + 10, line);
-      line += 20;
-    }
-  }
-  // Timers, after entry and exit: `t/name(20 s, eEvent)`.
-  for (const t of s.timers ?? []) {
-    ctx.fillText(timerLabel(index, t), x + 10, line);
-    line += 20;
-  }
-  // Internal transitions (visualSTATE: static reactions), after timers: `event [guard] / actions`.
-  for (const t of s.internal ?? []) {
-    ctx.fillText(internalTransitionLabel(index, t), x + 10, line);
-    line += 20;
-  }
+  clipRect(ctx, x + 2, y + HEADER_H, w - 4, block.height);
+  drawActionBlock(ctx, block, x, y + HEADER_H);
   ctx.restore();
   ctx.restore();
 
   ctx.lineWidth = 2;
   ctx.strokeStyle = C.ink;
   ctx.beginPath();
-  if (actionBlock > 0 && HEADER_H < h) {
+  if (block.height > 0 && HEADER_H < h) {
     ctx.moveTo(x, y + HEADER_H);
     ctx.lineTo(x + w, y + HEADER_H);
   }
-  if (s.regions?.length && HEADER_H + actionBlock < h) {
-    ctx.moveTo(x, y + HEADER_H + actionBlock);
-    ctx.lineTo(x + w, y + HEADER_H + actionBlock);
+  // The block's bottom line: above the regions, and under a block that hides lines (its marker sits on it).
+  if ((s.regions?.length || block.limited) && HEADER_H + block.height < h) {
+    ctx.moveTo(x, y + HEADER_H + block.height);
+    ctx.lineTo(x + w, y + HEADER_H + block.height);
   }
   ctx.stroke();
+  if (block.pill && HEADER_H + block.height < h) drawPill(ctx, block.pill, x, y);
 
   // Region bands: name, dashed separator between bands, off-page marker.
   const bands = regionBoxes(index, s);

@@ -728,7 +728,7 @@ await page.selectOption('select[aria-label="One-shot or periodic"]', "every");
 await page.selectOption('select[aria-label="Unit"]', "min");
 tms = (await vtx("s5")).timers;
 check("...then name it, set its duration, make it periodic, change the unit", JSON.stringify(tms) === JSON.stringify([{ id: tms[0].id, name: "travel", every: 20, unit: "min", event: evTimeout }]), JSON.stringify(tms));
-check("its row reads like the action block", (await page.locator('details.internal > summary:has-text("t/travel") code').textContent()) === "t/travel(every 20 min, eTimeout)");
+check("its row names it, without a t/ prefix under the Timers heading", (await page.locator('details.internal > summary:has-text("travel(") code').textContent()) === "travel(every 20 min, eTimeout)");
 await page.fill('input[aria-label="Duration"]', "0");
 await page.keyboard.press("Enter");
 check("a duration of 0 is refused with a reason", /whole number/.test(await $text(".perror")) && (await vtx("s5")).timers[0].every === 20);
@@ -999,13 +999,111 @@ await U("closeTab", (await U("tabs")).findIndex((t) => t.active), true);
     }, [a, b, c, d, SHEET]);
   };
   // beside the state, clear of the grid dots (every 20 units): nothing of its name, entry action or region name
-  const spill = (await inked(184, 104, 199, 126)) + (await inked(184, 136, 199, 158)) + (await inked(184, 176, 199, 198));
+  // (the name's row is sampled below the warning badge on the state's top-right corner: the state is too small for its action)
+  const spill = (await inked(184, 116, 199, 126)) + (await inked(184, 136, 199, 158)) + (await inked(184, 176, 199, 198));
   check("texts are clipped to a state that is too small for them: nothing spills out", spill === 0, String(spill));
   check("...and they are still drawn inside it", (await inked(104, 104, 176, 126)) > 20 && (await inked(104, 136, 176, 158)) > 20 && (await inked(104, 176, 176, 198)) > 20);
+  check("...and the design rule check says the state is too small for its actions", (await U("problems")).some((d) => d.code === "actions-clipped" && d.id === "s1"));
   await page.click("#panel-tab-project");
   check("Project warns when states lie beyond the sheet", /1 element lies outside the frame on A4/.test((await $text(".paper-warn")) ?? ""), String(await $text(".paper-warn")));
   await page.selectOption('select[aria-label="Paper size"]', "A3");
   check("...and the warning goes once the sheet is big enough", (await $count(".paper-warn")) === 0 && JSON.parse(await U("serialize")).diagram.paper === "A3");
+  await U("closeTab", (await U("tabs")).findIndex((t) => t.active), true);
+}
+// ---------------------------------------------------------------- action block: icons, wrapping, resizing, hidden lines
+{
+  const acts = ["initMotor", "ledOn", "startLog", "armWatchdog", "openValve", "clearFault", "stopMotor", "ledOff", "stopLog", "closeValve", "aInt", "poll", "count"];
+  const blockDoc = {
+    format: "ufsm", version: 1, name: "block",
+    declarations: {
+      events: [{ id: "ev1", name: "eTimeout" }, { id: "ev2", name: "eTick" }, { id: "ev3", name: "eIdle" }, { id: "ev4", name: "eInt" }],
+      signals: [], actions: acts.map((name, i) => ({ id: `act${i + 1}`, name })), guards: [{ id: "grd1", name: "gReady" }],
+    },
+    machine: {
+      root: { id: "r0", states: [
+        { id: "s1", kind: "initial" },
+        {
+          id: "s2", kind: "state", name: "P",
+          entry: [1, 2, 3, 4, 5, 6].map((i) => ({ call: `act${i}` })), exit: [7, 8, 9, 10].map((i) => ({ call: `act${i}` })),
+          timers: [{ id: "tm1", name: "travel", after: 2, unit: "s", event: "ev1" }, { id: "tm2", name: "poll", every: 100, unit: "ms", event: "ev2" }, { id: "tm3", name: "idle", after: 5, unit: "min", event: "ev3" }],
+          internal: [{ id: "t2", on: "ev4", do: [{ call: "act11" }] }, { id: "t3", on: "ev2", guard: [{ call: "grd1" }], do: [{ call: "act12" }, { call: "act13" }] }],
+          regions: [{ id: "r1", states: [{ id: "s3", kind: "initial" }, { id: "s4", kind: "state", name: "A" }] }, { id: "r2", states: [{ id: "s5", kind: "initial" }, { id: "s6", kind: "state", name: "B" }] }],
+        },
+      ] },
+      transitions: [{ id: "t1", from: "s1", to: "s2" }, { id: "t4", from: "s3", to: "s4" }, { id: "t5", from: "s5", to: "s6" }],
+    },
+    diagram: {
+      paper: "A4",
+      states: { s1: { x: 40, y: 60, w: 20, h: 20 }, s2: { x: 100, y: 40, w: 300, h: 520 }, s3: { x: 20, y: 250, w: 20, h: 20 }, s4: { x: 80, y: 240, w: 100, h: 50 }, s5: { x: 20, y: 420, w: 20, h: 20 }, s6: { x: 80, y: 410, w: 100, h: 50 } },
+      regions: { r1: { h: 150 } },
+      transitions: { t1: { route: "s" }, t4: { route: "s" }, t5: { route: "s" } },
+    },
+  };
+  await page.evaluate(([t]) => window.ufsm.load(t, "block.ufsm"), [JSON.stringify(blockDoc)]);
+  await page.waitForTimeout(200);
+  const AB = () => U("actionBlock", "s2");
+  const layout = () => U("serialize").then((t) => JSON.parse(t).diagram);
+  const kb = await scale();
+  let ab = await AB();
+  check("the action block wraps entry and exit lists to the state's width and packs the timers", ab.rows.length === 9 && ab.height === 190 && ab.rows[1].continued && ab.rows[5].segments.length === 2 && !ab.pill, JSON.stringify(ab.rows.map((r) => r.segments.map((g) => g.text))));
+  check("no problems: everything fits", (await U("problems")).filter((d) => d.code.startsWith("actions-")).length === 0, JSON.stringify(await U("problems")));
+  // an icon is drawn in the gutter of the first line (state at 100,40: header 30, first line centred 15 below it)
+  const gutter = await page.evaluate(async ([a, b, c, d]) => {
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const cv = document.getElementById("canvas"), r = cv.getBoundingClientRect(), k = window.devicePixelRatio || 1;
+    const img = cv.getContext("2d").getImageData(Math.round((a - r.left) * k), Math.round((b - r.top) * k), Math.max(1, Math.round((c - a) * k)), Math.max(1, Math.round((d - b) * k)));
+    const first = [img.data[0], img.data[1], img.data[2]].join();
+    let n = 0;
+    for (let i = 0; i < img.data.length; i += 4) if ([img.data[i], img.data[i + 1], img.data[i + 2]].join() !== first) n++;
+    return n;
+  }, [...(await w2s(110, 77)), ...(await w2s(126, 93))]);
+  check("each kind of line starts with its icon", gutter > 10, String(gutter));
+  await U("select", ["s2"]);
+  let grip = (await handles()).find((h) => h.kind === "actions");
+  check("a selected state has a handle on the bottom line of its action block", !!grip && Math.abs(grip.screen[1] - (await w2s(0, 40 + 30 + 190))[1]) < 1, JSON.stringify(await handles()));
+  await page.mouse.move(grip.screen[0] - 60 * kb, grip.screen[1]);
+  check("...that grabs along the whole line", (await cursor()) === "ns-resize", await cursor());
+  await drag([grip.screen[0] - 60 * kb, grip.screen[1]], [grip.screen[0] - 60 * kb, grip.screen[1] - 96 * kb]);
+  ab = await AB();
+  let dia = await layout();
+  check("dragging it up hides whole lines: the height is stored", dia.states.s2.actionsHeight === 90 && ab.visible === 4 && ab.height === 90, JSON.stringify(dia.states.s2));
+  check("...the marker counts what is hidden, per kind", !!ab.pill && ab.pill.parts.map((p) => `${p.icon}${p.text}`).join() === "exit1,after2,every1,internal2" && ab.cut, JSON.stringify(ab.pill));
+  check("...the first region band takes the room, the separator below it stays", dia.regions.r1.h === 250, JSON.stringify(dia.regions));
+  check("...and nothing is reported: the lines are hidden on purpose", (await U("problems")).filter((d) => d.code.startsWith("actions-")).length === 0);
+  check("...in one undo step", (await U("undo"), (await layout()).states.s2.actionsHeight === undefined && (await layout()).regions.r1.h === 150) && (await U("redo"), (await layout()).states.s2.actionsHeight === 90));
+  await page.mouse.move(5, 5);
+  await page.mouse.click(...ab.pillScreen);
+  await page.waitForTimeout(100);
+  dia = await layout();
+  check("a click on the marker shows every line again", dia.states.s2.actionsHeight === undefined && dia.regions.r1.h === 150 && !(await AB()).pill, JSON.stringify(dia.states.s2));
+  grip = (await handles()).find((h) => h.kind === "actions");
+  await drag(grip.screen, [grip.screen[0], grip.screen[1] - 400 * kb]);
+  ab = await AB();
+  check("dragged to the top, one line is left: the number of items per kind", (await layout()).states.s2.actionsHeight === 30 && ab.summary && ab.summaryRow.map((g) => `${g.icon}${g.text}`).join() === "entry6,exit4,after2,every1,internal2", JSON.stringify(ab.summaryRow));
+  // A is moved up: the block may grow down to the last whole line above it
+  await U("select", ["s4"]);
+  let [ax, ay] = await center("s4");
+  await drag([ax, ay], [ax, ay - 40 * kb]);
+  check("(A moved up by 40)", (await box("s4")).y === 240, JSON.stringify(await box("s4")));
+  await U("select", ["s2"]);
+  grip = (await handles()).find((h) => h.kind === "actions");
+  await drag(grip.screen, [grip.screen[0], grip.screen[1] + 400 * kb]);
+  dia = await layout();
+  check("dragging down stops above the first region's contents, at a whole line", dia.states.s2.actionsHeight === 170 && (await AB()).visible === 8, JSON.stringify(dia.states.s2));
+  await page.mouse.click(...(await w2s(50, 400)));
+  check("(nothing selected)", (await sel()).length === 0);
+  await page.mouse.click(...(await AB()).pillScreen);
+  await page.waitForTimeout(100);
+  check("the marker also works on a state that is not selected: it selects it, and the same limit holds", (await sel()).join() === "s2" && (await layout()).states.s2.actionsHeight === 170, JSON.stringify(await sel()));
+  await U("select", ["s4"]);
+  [ax, ay] = await center("s4");
+  await drag([ax, ay], [ax, ay + 40 * kb]);
+  await U("select", ["s2"]);
+  grip = (await handles()).find((h) => h.kind === "actions");
+  await page.mouse.dblclick(grip.screen[0] - 60 * kb, grip.screen[1]);
+  await page.waitForTimeout(100);
+  check("a double-click on the handle makes the block automatic again", (await layout()).states.s2.actionsHeight === undefined && (await AB()).height === 190, JSON.stringify((await layout()).states.s2));
+  if (shots) await page.screenshot({ path: `${shots}/action-block.png` });
   await U("closeTab", (await U("tabs")).findIndex((t) => t.active), true);
 }
 // ---------------------------------------------------------------- Settings: color theme

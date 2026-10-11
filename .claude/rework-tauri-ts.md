@@ -243,6 +243,15 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [ ] Mouse-button follow-ups: Jonas to try it in `npm run dev` (WebView2 reports the side buttons as 3/4; macOS WKWebView
       and Linux WebKitGTK not yet checked); forward button: enter the selected state (Enter), or a page history (back/forward
       through visited sheets, as VS Code's Alt+Left/Right) instead of the hierarchy?
+- [x] E-AB Action block rework: icon gutter instead of `e/` `x/` `t/`, entry and exit lists wrapped on their own lines,
+      timers packed, 10-unit padding, resizable block (`actionsHeight`, whole lines, double-click = automatic), marker
+      with hidden counts per kind, one-line summary at the minimum, design rules `actions-clipped`/`actions-overlap`
+      (2026-10-11)
+- [ ] E-AB follow-ups: Jonas to try it in `npm run dev` on Windows (the monospace font there is Cascadia Mono or
+      Consolas; `npm test` and the browser check were run in the cloud workspace only); the timer's name is not drawn on
+      the canvas (only in Properties, search and the CLI): show it dimmed when the state is selected?; resizing a state
+      narrower re-wraps the block, which can push it over the first region's contents (reported as `actions-overlap`,
+      not prevented); an ellipsis on a cut line can be clipped at the right edge when the line is full
 - [ ] E7 Polish: export SVG/PDF/print, Tauri hardening (CSP; dialog-picked paths only is done: fs plugin, 2026-10-10),
       autosave/recovery
 - [x] File access through `tauri-plugin-fs` instead of own read/write commands: only paths picked in a dialog this run
@@ -327,6 +336,12 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
   start/stop itself).
 - In the Properties panel, Esc in the "Add timer" event picker leaves an empty event button until the state is reselected
   (internal transitions behave the same).
+- The action block's height follows the state's width (lines wrap), so adding an action, or making a state narrower,
+  moves the first region band's top; contents do not move with it. The design rule check reports a block drawn over a
+  vertex (`actions-overlap`); only dragging the block's own handle keeps the bands below in place.
+- Action block text assumes a monospace font is available (`ui-monospace`, Cascadia Mono, Consolas, Menlo, DejaVu Sans
+  Mono, `monospace`); the font size is derived from the measured advance, so a fallback to a proportional font would
+  show uneven spacing but still fit roughly.
 - The sheet fit check does not measure transition labels (their size depends on the font), so a label can stick out of the
   frame or over the title block without a warning. The title block is drawn under the diagram, so a state over it hides it
   (and gets a `title-block` warning).

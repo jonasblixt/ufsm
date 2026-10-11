@@ -3,12 +3,14 @@
 
 /**
  * Grips: what a left-button drag would do at a point. The selection shows handles (region separators, transition
- * ends, S jogs, free bend points); a single selected vertex can also be resized by any of its sides (the whole side
+ * ends, S jogs, free bend points, the bottom line of a state's action block); a single selected vertex can also be resized by any of its sides (the whole side
  * grabs, with no handle drawn) and by its corners (both ways at once). Besides those, a transition label can be
  * dragged, and a vertex moves the selection (a composite state only by its header and action block unless it is
  * selected, so a rubber band can still start inside it). The edits themselves are in @ufsm/core (v1/edit.ts).
  */
 import {
+  HEADER_H,
+  actionBlock,
   edgeGeometry,
   regionBoxes,
   resizableEdges,
@@ -26,6 +28,7 @@ export type Grip =
   | { kind: "move"; id: Id }
   | { kind: "resize"; id: Id; edges: Edge[] }
   | { kind: "split"; id: Id; k: number }
+  | { kind: "actions"; id: Id }
   | { kind: "end"; id: Id; end: EdgeEndName; pinned: boolean }
   | { kind: "jog"; id: Id }
   | { kind: "bend"; id: Id; i: number }
@@ -79,6 +82,11 @@ export function handlesFor(index: DocIndex, page: Region, selection: ReadonlySet
       out.push(h);
     }
     if (v.kind === "state") {
+      // the bottom line of the action block: drag it to hide lines, or to show them again
+      const block = actionBlock(index, v);
+      if (block.auto > 0 && HEADER_H + block.height < b.h) {
+        out.push({ grip: { kind: "actions", id }, x: b.x + b.w / 2, y: b.y + HEADER_H + block.height, shape: "bar", span: [b.x, b.x + b.w], cursor: "ns-resize" });
+      }
       const bands = regionBoxes(index, v);
       bands.slice(0, -1).forEach(({ box }, k) => {
         out.push({ grip: { kind: "split", id, k }, x: box.x + box.w / 2, y: box.y + box.h, shape: "bar", span: [box.x, box.x + box.w], cursor: "ns-resize" });

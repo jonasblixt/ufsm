@@ -201,7 +201,7 @@ export function addRegion(doc: UfsmDocument, stateId: Id, opts: AddOptions & { n
   const b = vertexBox(index, s.id);
   const bands = regionBoxes(index, s);
   const last = bands[bands.length - 1];
-  const top = b.y + HEADER_H + actionBlockHeight(s);
+  const top = b.y + HEADER_H + actionBlockHeight(index, s);
   const grow = last ? NEW_BAND : Math.max(0, NEW_BAND - (b.y + b.h - top));
   const id = (opts.ids ?? new IdAllocator(doc)).take(ID_PREFIX.region);
   const region: Region = opts.name ? { id, name: opts.name, states: [] } : { id, states: [] };

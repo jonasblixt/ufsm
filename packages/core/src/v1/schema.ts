@@ -102,7 +102,7 @@ const defs = {
   ),
   machine: Type.Object({ root: ref("region"), transitions: list("transition") }, closed),
   stateLayout: Type.Object(
-    { x: num(), y: num(), w: num(), h: num(), orientation: opt(Type.Enum(["horizontal", "vertical"])) },
+    { x: num(), y: num(), w: num(), h: num(), orientation: opt(Type.Enum(["horizontal", "vertical"])), actionsHeight: opt(num()) },
     closed,
   ),
   regionLayout: Type.Object({ h: opt(num()), offPage: opt(ref("flag")) }, closed),

@@ -301,7 +301,8 @@ describe("internal transitions in the format", () => {
     assert.equal(index.internals.get("t9")?.state.name, "A");
     const a = doc.machine.root.states[1]!;
     assert.ok(a.kind === "state");
-    assert.equal(actionBlockHeight(a), 20 + 20 * 2, "one entry action and one internal transition");
+    const wide = indexV1({ ...doc, diagram: { paper: "A4", states: { s2: { x: 0, y: 0, w: 300, h: 200 } }, regions: {}, transitions: {} } });
+    assert.equal(actionBlockHeight(wide, a), 10 + 20 * 2, "one line of entry actions and one internal transition");
   });
 });
 
@@ -348,7 +349,8 @@ describe("timers in the format", () => {
     assert.equal(index.timers.get("tm2")?.state.name, "A");
     const a = doc.machine.root.states[1]!;
     assert.ok(a.kind === "state");
-    assert.equal(actionBlockHeight(a), 20 + 20 * 4, "one entry action, two timers and one internal transition");
+    const wide = indexV1({ ...doc, diagram: { paper: "A4", states: { s2: { x: 0, y: 0, w: 300, h: 200 } }, regions: {}, transitions: {} } });
+    assert.equal(actionBlockHeight(wide, a), 10 + 20 * 3, "entry actions, two timers side by side and one internal transition");
     assert.deepEqual(a.timers!.map((t) => timerLabel(index, t)), ["t/travel(20 s, e1)", "t/poll(every 500 ms, e1)"]);
     assert.deepEqual(a.timers!.map(timerMs), [20000, 500]);
   });

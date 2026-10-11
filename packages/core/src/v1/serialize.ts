@@ -117,7 +117,7 @@ function transitionJ(t: Transition): Json {
 }
 
 const stateLayoutJ = (l: StateLayout): Json =>
-  ordered([["x", num(l.x)], ["y", num(l.y)], ["w", num(l.w)], ["h", num(l.h)], ["orientation", l.orientation]]);
+  ordered([["x", num(l.x)], ["y", num(l.y)], ["w", num(l.w)], ["h", num(l.h)], ["orientation", l.orientation], ["actionsHeight", l.actionsHeight === undefined ? undefined : num(l.actionsHeight)]]);
 
 const regionLayoutJ = (l: RegionLayout): Json =>
   ordered([["h", l.h === undefined ? undefined : num(l.h)], ["offPage", l.offPage]]);

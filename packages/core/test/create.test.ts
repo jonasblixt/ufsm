@@ -223,7 +223,7 @@ describe("structure edits: adding", () => {
     assert.deepEqual(regionBoxes(index, p).map((b) => b.box.h), [130, 140, NEW_BAND]);
     // a simple state gets at least NEW_BAND below its header
     const c = addRegion(doc, "s5")!;
-    assert.equal(doc.diagram!.states["s5"]!.h, 30 + 60 + NEW_BAND, "header, entry + internal lines, band");
+    assert.equal(doc.diagram!.states["s5"]!.h, 30 + 50 + NEW_BAND, "header, action block (an entry line and an internal transition), band");
     assert.deepEqual(indexV1(doc).regions.get(c)!.owner!.id, "s5");
     assert.equal(addRegion(doc, "s1"), undefined, "not a state");
     assert.deepEqual(broken(doc), []);
