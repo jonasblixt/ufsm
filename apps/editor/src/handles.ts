@@ -10,8 +10,8 @@
  */
 import { type DocIndex, type Id, type Region } from "@ufsm/core";
 import { resizableEdges, type Edge, type EdgeEndName } from "@ufsm/core/edit";
-import { HEADER_H, actionBlock, edgeGeometry, regionBoxes, routeInfo, type Point } from "@ufsm/core/diagram";
-import { drawnBox, forEachVisible, hitTest, hitTransition } from "./render";
+import { HEADER_H, actionBlock, edgeGeometry, regionBoxes, routeInfo, type MeasureText, type Point } from "@ufsm/core/diagram";
+import { drawnBox, forEachVisible, hitTest, hitTransition } from "./hit";
 
 export type Grip =
   | { kind: "move"; id: Id }
@@ -129,6 +129,7 @@ export function gripAt(
   y: number,
   scale: number,
   shift: boolean,
+  measure?: MeasureText,
 ): { grip: Grip; cursor: string } | undefined {
   const r = GRAB_PX / scale;
   let best: Handle | undefined;
@@ -147,7 +148,7 @@ export function gripAt(
   }
   if (best) return { grip: best.grip, cursor: best.cursor };
   if (shift) return undefined;
-  const t = hitTransition(index, sheet, x, y, 6 / scale);
+  const t = hitTransition(index, sheet, x, y, 6 / scale, measure);
   if (t) return t.label ? { grip: { kind: "label", id: t.id }, cursor: "move" } : undefined;
   const hit = hitTest(index, sheet, x, y, 6 / scale);
   if (hit.vertex && (selection.has(hit.vertex.id) || !hit.region)) return { grip: { kind: "move", id: hit.vertex.id }, cursor: "move" };

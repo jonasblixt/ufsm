@@ -22,7 +22,6 @@ import {
   IDENTIFIER,
   actionLabel,
   identifier,
-  guardLabel,
   internalTransitionLabel,
   pascalCase,
   TITLE_BLOCK_FIELDS,
