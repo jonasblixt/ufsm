@@ -19,7 +19,7 @@
  */
 import { commonRegion, vertexName, type DocIndex } from "./doc-index";
 import { edgeGeometry, isSheet, sheetOfRegion, sheetOfVertex, vertexBox, type Box, type Point } from "./geometry";
-import { PAPER_SIZES, type Id, type Paper, type Region, type State, type TitleBlock } from "./model";
+import { PAPER_SIZES, type Id, type Paper, type Region, type State, type TitleBlock } from "../format/model";
 
 /** Paper edge to the edge of the drawing area (8.8 mm). */
 export const FRAME_MARGIN = 50;

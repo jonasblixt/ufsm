@@ -7,8 +7,8 @@
  * matches the reference interpreter, a backend that prints the IR
  * faithfully matches it too.
  */
-import type { Id } from "../v1/model";
-import { OPTION_DEFAULTS } from "../v1/options";
+import type { Id } from "../format/model";
+import { OPTION_DEFAULTS } from "../format/options";
 import { MachineError, busyError, type MachineHost, type RunOptions } from "../runtime/contract";
 import type { Expr, IrFunction, IrModule, Stmt, SwitchOn, TraceKind } from "./ir";
 

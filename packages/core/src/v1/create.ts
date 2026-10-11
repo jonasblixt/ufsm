@@ -13,8 +13,8 @@
 import { ancestors, commonRegion, indexV1, type DocIndex } from "./doc-index";
 import { endAt, followTransitions, nearestEnd,regionLayoutOf, diagramOf, snap, MIN_BAR, MIN_STATE } from "./edit";
 import { HEADER_H, actionBlockHeight, isOffPage, isSheet, regionBoxes, regionOrigin, stateLayout, vertexBox, edgeGeometry, edgeOrigin, type Box, type Point } from "./geometry";
-import { IdAllocator, ID_PREFIX } from "./ids";
-import { GRID, type EdgeEnd, type EdgeLayout, type GuardTerm, type Id, type Region, type State, type StateLayout, type Transition, type UfsmDocument, type Vertex } from "./model";
+import { IdAllocator, ID_PREFIX } from "../format/ids";
+import { GRID, type EdgeEnd, type EdgeLayout, type GuardTerm, type Id, type Region, type State, type StateLayout, type Transition, type UfsmDocument, type Vertex } from "../format/model";
 import { defaultLabel, labelAnchor } from "./route";
 
 export type VertexKind = Vertex["kind"];

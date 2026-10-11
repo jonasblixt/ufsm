@@ -33,7 +33,7 @@ import {
   type Box,
   type Point,
 } from "./geometry";
-import { GRID, type Diagram, type EdgeEnd, type FreeEdgeLayout, type Id, type RegionLayout, type Side, type State, type StateLayout, type UfsmDocument } from "./model";
+import { GRID, type Diagram, type EdgeEnd, type FreeEdgeLayout, type Id, type RegionLayout, type Side, type State, type StateLayout, type UfsmDocument } from "../format/model";
 import { followOffset, followPolyline, sideLength } from "./route";
 
 /** Smallest region band. */

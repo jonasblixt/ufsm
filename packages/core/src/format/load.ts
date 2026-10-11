@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
-import { UfsmFormatError } from "../errors";
+import { UfsmFormatError } from "./errors";
 import { parseV0 } from "../v0/parse";
 import { migrateV0, type MigrationNote } from "./migrate";
 import type { UfsmDocument } from "./model";

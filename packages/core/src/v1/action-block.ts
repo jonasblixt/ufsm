@@ -20,7 +20,7 @@
  */
 import { declName, type DocIndex } from "./doc-index";
 import { actionLabel, internalTransitionLabel } from "./labels";
-import type { Action, Id, State, Timer } from "./model";
+import type { Action, Id, State, Timer } from "../format/model";
 
 /** Height of a state's name header (geometry.ts exports it as HEADER_H). */
 export const HEADER = 30;

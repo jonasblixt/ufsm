@@ -11,7 +11,7 @@ import { commonRegion, indexV1, type DocIndex } from "./doc-index";
 import { diagramOf, snap, topLevelVertices } from "./edit";
 import { edgeOrigin, regionOrigin, vertexBox, type Point } from "./geometry";
 import { regionArea } from "./create";
-import { DECL_PREFIX, ID_PREFIX, IdAllocator } from "./ids";
+import { DECL_PREFIX, ID_PREFIX, IdAllocator } from "../format/ids";
 import type {
   Action,
   Decl,
@@ -27,7 +27,7 @@ import type {
   Transition,
   UfsmDocument,
   Vertex,
-} from "./model";
+} from "../format/model";
 
 export interface Fragment {
   /** Declarations the copied elements use, with their kind (pasting matches them by kind and name). */

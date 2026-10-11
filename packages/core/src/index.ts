@@ -25,26 +25,26 @@
 
 export { UFSM_VERSION } from "./version";
 
-export { UfsmFormatError } from "./errors";
-export * from "./v1/model";
-export * from "./v1/parse";
-export * from "./v1/schema";
-export * from "./v1/serialize";
+export { UfsmFormatError } from "./format/errors";
+export * from "./format/model";
+export * from "./format/parse";
+export * from "./format/schema";
+export * from "./format/serialize";
 export * from "./v1/doc-index";
 export * from "./v1/action-block";
 export * from "./v1/geometry";
 export * from "./v1/route";
 export * from "./v1/edit";
-export * from "./v1/ids";
+export * from "./format/ids";
 export * from "./v1/create";
 export * from "./v1/clipboard";
 export * from "./v1/props";
 export * from "./v1/labels";
 export * from "./v1/sheet";
 export * from "./v1/check";
-export * from "./v1/options";
-export * from "./v1/migrate";
-export * from "./v1/load";
+export * from "./format/options";
+export * from "./format/migrate";
+export * from "./format/load";
 export * from "./semantics/structure";
 export * from "./semantics/flatten";
 export * from "./semantics/flat-run";

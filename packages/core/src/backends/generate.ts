@@ -7,7 +7,7 @@
  * there), then overrides (the CLI's flags). Used by `ufsm generate` and by the editor's code preview.
  */
 import { checkV1 } from "../v1/check";
-import type { UfsmDocument } from "../v1/model";
+import type { UfsmDocument } from "../format/model";
 import { flatten } from "../semantics/flatten";
 import { lowerToIr } from "../ir/lower";
 import type { IrModule } from "../ir/ir";

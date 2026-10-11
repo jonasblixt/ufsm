@@ -3,9 +3,9 @@
 A `.ufsm` file is a UTF-8 JSON document describing one hierarchical state
 machine. Machine-readable definitions:
 
-- TypeScript types: [`packages/core/src/v1/model.ts`](../packages/core/src/v1/model.ts)
+- TypeScript types: [`packages/core/src/format/model.ts`](../packages/core/src/format/model.ts)
 - JSON Schema (draft-07): [`packages/core/schema/ufsm-v1.schema.json`](../packages/core/schema/ufsm-v1.schema.json),
-  generated from `packages/core/src/v1/schema.ts` (the definition the reader validates against) by
+  generated from `packages/core/src/format/schema.ts` (the definition the reader validates against) by
   `npm run gen:schema` (`ufsm schema`); never edit the JSON by hand
 
 What a machine does at run time is defined in [semantics.md](semantics.md).

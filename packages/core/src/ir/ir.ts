@@ -57,7 +57,7 @@
  * next reset(); a process() call from inside an action or guard is refused
  * the same way. Nothing catches the application's exceptions.
  */
-import type { Id } from "../v1/model";
+import type { Id } from "../format/model";
 
 /** What the trace hook reports, in the order of the generated trace-kind enums (event = 0 ... exit = 4). */
 export const TRACE_KINDS = ["event", "signal", "transition", "enter", "exit"] as const;

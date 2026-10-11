@@ -23,8 +23,8 @@
  * `<prefix>timer_stop()` for the application to implement, and
  * `<prefix>timer_event()`, the event to process when a timer expires.
  */
-import type { UfsmDocument } from "../v1/model";
-import { IDENTIFIER } from "../v1/model";
+import type { UfsmDocument } from "../format/model";
+import { IDENTIFIER } from "../format/model";
 import { UFSM_VERSION } from "../version";
 import type { Expr, IrFunction, IrHistory, IrModule, Stmt, SwitchOn, TraceKind } from "../ir/ir";
 import { TRACE_KINDS } from "../ir/ir";

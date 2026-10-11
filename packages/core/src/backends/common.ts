@@ -6,8 +6,8 @@
  * options every target takes, reading `targets.<name>`, the checks and analysis a printer starts with, and a line
  * writer. Language-specific printing stays in each backend's own file; backends never import each other.
  */
-import type { ModelOptions, UfsmDocument } from "../v1/model";
-import { OPTION_DEFAULTS, defined, targetSection } from "../v1/options";
+import type { ModelOptions, UfsmDocument } from "../format/model";
+import { OPTION_DEFAULTS, defined, targetSection } from "../format/options";
 import type { IrModule } from "../ir/ir";
 import { analyzeIr, type IrAnalysis } from "../ir/analyze";
 

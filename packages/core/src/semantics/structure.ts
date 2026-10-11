@@ -16,7 +16,7 @@
  * the same structure.
  */
 import { indexV1, type DocIndex } from "../v1/doc-index";
-import { timerMs, type Action, type GuardTerm, type Id, type PseudoKind, type Region, type State, type Transition, type UfsmDocument, type Vertex } from "../v1/model";
+import { timerMs, type Action, type GuardTerm, type Id, type PseudoKind, type Region, type State, type Transition, type UfsmDocument, type Vertex } from "../format/model";
 
 export interface SemRegion {
   id: Id;

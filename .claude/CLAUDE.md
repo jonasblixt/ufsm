@@ -98,7 +98,7 @@ old/                    v0.5.x C/GTK editor, Python generator, C tests (referenc
 | `npm run ufsm -- generate c <model> -o <dir>` | Generate `<name>.h`/`<name>.c` (`--prefix`, `--signal-queue`, `--max-microsteps`, `--debug-info`, `--trace`) |
 | `npm run ufsm -- generate python <model> -o <dir>` | Generate `<name>.py` (`--class-name`, `--signal-queue`, `--max-microsteps`, `--debug-info`, `--trace`) |
 | `npm run ufsm -- generate ts <model> -o <dir>` | Generate `<name>.ts` (`--class-name`, `--signal-queue`, `--max-microsteps`, `--debug-info`, `--trace`) |
-| `npm run gen:schema` | Regenerate `packages/core/schema/ufsm-v1.schema.json` from `src/v1/schema.ts` |
+| `npm run gen:schema` | Regenerate `packages/core/schema/ufsm-v1.schema.json` from `src/format/schema.ts` |
 | `npm run ufsm -- generate rust <model> -o <dir>` | Generate `<name>.rs` (`--class-name` names the struct, `--signal-queue`, `--max-microsteps`, `--debug-info`, `--trace`) |
 
 Toolchain: Node 24 LTS (>= 22.18), Rust stable (MSVC on Windows, needs VS
@@ -153,7 +153,7 @@ Build Tools "Desktop development with C++"), TypeScript 6, Vite 7, Tauri 2.
 - Sections: `declarations` (events, signals, actions, guards), `machine`
   (root region, transitions), `diagram` (layout keyed by id), `options`
   (shared by every generator, the interpreter and the simulator: `signalQueue`,
-  `maxMicrosteps`; behaviour options are set only there, `core/src/v1/options.ts`),
+  `maxMicrosteps`; behaviour options are set only there, `core/src/format/options.ts`),
   `targets` (per-generator settings: prefix, className, ...).
 - All references are by id; ids unique per document; generated ids are
   `ev1`, `sig1`, `act1`, `grd1`, `r0`, `s1`, `t1`.

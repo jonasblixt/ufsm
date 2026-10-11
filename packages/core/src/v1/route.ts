@@ -19,7 +19,7 @@
  * grid-aligned too.
  */
 import type { Box } from "./geometry";
-import { GRID, type Side } from "./model";
+import { GRID, type Side } from "../format/model";
 
 export interface Pt {
   x: number;

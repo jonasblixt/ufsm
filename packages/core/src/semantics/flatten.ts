@@ -20,7 +20,7 @@
  * (docs/semantics.md); packages/core/test/flat.test.ts checks that with the
  * conformance traces and random models.
  */
-import type { Action, Id, UfsmDocument } from "../v1/model";
+import type { Action, Id, UfsmDocument } from "../format/model";
 import { SemanticsError, buildStructure, type CompoundTransition, type SemRegion, type SemVertex, type Structure, type Trigger } from "./structure";
 
 export interface FlatVertex {

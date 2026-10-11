@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 import Value from "typebox/value";
-import { UfsmFormatError } from "../errors";
+import { UfsmFormatError } from "./errors";
 import type { EdgeLayout, UfsmDocument } from "./model";
 import { V1_DEFS, V1_SCHEMA } from "./schema";
 

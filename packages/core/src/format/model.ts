@@ -283,7 +283,7 @@ export interface Diagram {
 
 // ---------------------------------------------------------------- options
 
-/** The `options` section, shared by every code generator, the interpreter and the simulator (`v1/options.ts`). */
+/** The `options` section, shared by every code generator, the interpreter and the simulator (`format/options.ts`). */
 export interface ModelOptions {
   /** Capacity of the signal queue; emitting into a full queue is an error. Default 16. */
   signalQueue?: number;

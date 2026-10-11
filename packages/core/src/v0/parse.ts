@@ -17,7 +17,7 @@ import {
   type V0Transition,
 } from "./format";
 
-import { UfsmFormatError } from "../errors";
+import { UfsmFormatError } from "../format/errors";
 
 export { UfsmFormatError };
 

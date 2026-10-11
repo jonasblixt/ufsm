@@ -10,8 +10,8 @@
  * action trace for the same inputs.
  */
 import { checkV1 } from "../v1/check";
-import { defined, behaviourOptions } from "../v1/options";
-import type { Action, GuardTerm, Id, UfsmDocument } from "../v1/model";
+import { defined, behaviourOptions } from "../format/options";
+import type { Action, GuardTerm, Id, UfsmDocument } from "../format/model";
 import { MachineError, busyError, type MachineHost, type RunOptions, type StepEvent } from "../runtime/contract";
 import {
   buildStructure,

@@ -11,9 +11,9 @@
  *       { "reset": true, "expect": ["eA"] },
  *       { "guards": { "g1": true }, "send": "e1", "expect": ["xA", "eB"], "active": ["B"] } ] }
  */
-import { UfsmFormatError } from "../errors";
-import type { Id, ModelOptions, UfsmDocument } from "../v1/model";
-import { BEHAVIOUR_OPTIONS, defined, isBehaviourOption, behaviourOptions, type BehaviourOption } from "../v1/options";
+import { UfsmFormatError } from "../format/errors";
+import type { Id, ModelOptions, UfsmDocument } from "../format/model";
+import { BEHAVIOUR_OPTIONS, defined, isBehaviourOption, behaviourOptions, type BehaviourOption } from "../format/options";
 import { MachineError, type MachineHost, type RunOptions, type RunningMachine } from "../runtime/contract";
 import { Interpreter } from "./interpreter";
 

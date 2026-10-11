@@ -25,8 +25,8 @@
  * timers in the model: `<Class>Timer` (an IntEnum), `timer_start()` and
  * `timer_stop()` on the handler, and the module function `<module>_timer_event()`.
  */
-import type { UfsmDocument } from "../v1/model";
-import { IDENTIFIER } from "../v1/model";
+import type { UfsmDocument } from "../format/model";
+import { IDENTIFIER } from "../format/model";
 import { UFSM_VERSION } from "../version";
 import type { Expr, IrHistory, IrModule, Stmt, SwitchOn } from "../ir/ir";
 import { TRACE_KINDS } from "../ir/ir";

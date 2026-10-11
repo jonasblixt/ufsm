@@ -13,7 +13,7 @@
  * path repeats (two "Idle" in two regions of one state), the state id is
  * appended.
  */
-import type { Id } from "../v1/model";
+import type { Id } from "../format/model";
 
 export interface NamedState {
   id: Id;

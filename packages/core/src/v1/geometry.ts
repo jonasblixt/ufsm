@@ -11,7 +11,7 @@
  */
 import { HEADER, actionBlock } from "./action-block";
 import { commonRegion, type DocIndex } from "./doc-index";
-import { GRID, type EdgeEnd, type Id, type LabelLayout, type Region, type Side, type State, type StateLayout } from "./model";
+import { GRID, type EdgeEnd, type Id, type LabelLayout, type Region, type Side, type State, type StateLayout } from "../format/model";
 import { autoSides, defaultLabel, labelAnchor, sRoute, sideLength, sideTowards, type JogAxis } from "./route";
 
 export interface Point {

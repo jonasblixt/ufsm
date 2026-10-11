@@ -10,8 +10,8 @@ import { ancestors, indexV1, regionChain, vertexName, type DocIndex } from "./do
 import { ACTION_CHAR_W, ACTION_ICON, ACTION_ICON_GAP, actionBlock } from "./action-block";
 import { HEADER_H, isOffPage, vertexBox } from "./geometry";
 import { sheetFit, sheetFitMessage } from "./sheet";
-import { isApiOption, isBehaviourOption } from "./options";
-import { IDENTIFIER, TIMER_MAX_MS, timerMs, type Action, type DeclKind, type GuardTerm, type Id, type Transition, type UfsmDocument, type Vertex } from "./model";
+import { isApiOption, isBehaviourOption } from "../format/options";
+import { IDENTIFIER, TIMER_MAX_MS, timerMs, type Action, type DeclKind, type GuardTerm, type Id, type Transition, type UfsmDocument, type Vertex } from "../format/model";
 
 export type Severity = "error" | "warning";
 

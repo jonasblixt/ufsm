@@ -15,8 +15,8 @@
 import { commonRegion, indexV1, type DocIndex } from "./doc-index";
 import { diagramOf, regionLayoutOf } from "./edit";
 import { regionBoxes, stateLayout, vertexBox } from "./geometry";
-import { DECL_PREFIX, ID_PREFIX, IdAllocator } from "./ids";
-import type { OptionKey } from "./options";
+import { DECL_PREFIX, ID_PREFIX, IdAllocator } from "../format/ids";
+import type { OptionKey } from "../format/options";
 import {
   IDENTIFIER,
   TIMER_MAX_MS,
@@ -36,7 +36,7 @@ import {
   type TitleBlock,
   type Transition,
   type UfsmDocument,
-} from "./model";
+} from "../format/model";
 
 export const DECL_LISTS = { event: "events", signal: "signals", action: "actions", guard: "guards" } as const;
 

@@ -7,8 +7,8 @@
  * It exists to prove the flat tables right (it must match the reference
  * interpreter step for step) and to document what backends emit.
  */
-import type { Action, Id } from "../v1/model";
-import { OPTION_DEFAULTS, defined } from "../v1/options";
+import type { Action, Id } from "../format/model";
+import { OPTION_DEFAULTS, defined } from "../format/options";
 import { MachineError, busyError, type MachineHost, type RunOptions } from "../runtime/contract";
 import type { EntryOp, FlatGuard, FlatModel, FlatTransition, Offer, RegionOp } from "./flatten";
 

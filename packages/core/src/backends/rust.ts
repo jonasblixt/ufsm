@@ -27,8 +27,8 @@
  * in the model: `Timer` (with `COUNT`, `event()` and `index()`) and
  * `timer_start()`/`timer_stop()` methods on `Handler`.
  */
-import type { UfsmDocument } from "../v1/model";
-import { IDENTIFIER } from "../v1/model";
+import type { UfsmDocument } from "../format/model";
+import { IDENTIFIER } from "../format/model";
 import { UFSM_VERSION } from "../version";
 import type { Expr, IrFunction, IrHistory, IrModule, Stmt, SwitchOn } from "../ir/ir";
 import { walkStmts } from "../ir/analyze";

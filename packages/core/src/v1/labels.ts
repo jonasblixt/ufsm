@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 import { declName, vertexName, type DocIndex } from "./doc-index";
-import type { Action, GuardTerm, InternalTransition, Timer, Transition } from "./model";
+import type { Action, GuardTerm, InternalTransition, Timer, Transition } from "../format/model";
 
 /** `lamp_off()` or `^sDone`. */
 export function actionLabel(index: DocIndex, a: Action): string {

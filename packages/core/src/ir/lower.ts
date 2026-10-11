@@ -8,7 +8,7 @@
  * was taken". Exit, history recording and default entry become one helper
  * function per region that needs it.
  */
-import type { Action } from "../v1/model";
+import type { Action } from "../format/model";
 import type { EntryOp, FlatGuard, FlatModel, FlatTransition, Offer, RegionOp } from "../semantics/flatten";
 import type { Expr, IrFunction, IrHistory, IrModule, IrTimer, IrTransition, Stmt } from "./ir";
 import { emitsSignals, walkStmts } from "./analyze";
