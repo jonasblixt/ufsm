@@ -613,3 +613,10 @@ Measured over the 21 valid legacy models (864 KB):
   70-name import is three imports, the CLI takes `flatten`/`lowerToIr`/`printIr`/`hex32` from `/pipeline`, tests import
   oracles by path. The browser check resolves the subpaths from package.json (an esbuild plugin instead of an alias).
   Tests 566/566 + 70/70, browser check 386/386, golden output unchanged.
+- 2026-10-11: **Review R12, one backend contract suite.** `test/backend-contract.ts`: `describeBackend(spec)` runs the
+  conformance traces, the differential passes (joins, expression model, repo models plus the keyword model, random
+  models, debugInfo + trace, small queue), the hand-built IR shapes and the tail-return module, and contract checks on
+  generated files (deterministic, timer API only with timers, `targets.<name>` API options read and behaviour options /
+  wrong types / unknown keys reported, CodegenError for queue 0 and model errors). The drift is gone: C now runs the IR
+  shapes, every backend the keyword model and the tail return. `harness.recordScript` records in-process runs (TS) as the
+  drivers do. Backend test files: 1,312 -> 794 lines. C skipped on this machine (no compiler); Python, TS, Rust pass.

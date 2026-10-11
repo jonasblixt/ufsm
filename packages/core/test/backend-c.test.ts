@@ -4,101 +4,21 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { CodegenError, formatFailure, loadModel, parseTrace, runTrace, type UfsmDocument, traceOptions } from "../src";
+import { join } from "node:path";
+import { CodegenError, type UfsmDocument } from "../src";
 import { cOptionsFromTargets, flatten, generateC, lowerToIr } from "../src/pipeline";
-import { DIFF_QUEUE, assertMatchesInterpreter, expressionModel, hookDiffs, joinAgreementModel, randomScript, replayResults, type BackendDiff } from "./harness";
-import { findCompiler, removeTempDir, runC, strictFlags, type CUnit } from "./c-harness";
-import { randomModel } from "./random-model";
+import { findCompiler, removeTempDir, runC, strictFlags } from "./c-harness";
+import { describeBackend, load, modelFiles, repoRoot } from "./backend-contract";
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-const traceDir = join(repoRoot, "tests/traces");
-const modelFiles = ["examples", "tests/models"].flatMap((d) =>
-  existsSync(join(repoRoot, d)) ? readdirSync(join(repoRoot, d)).filter((f) => f.endsWith(".ufsm")).map((f) => join(repoRoot, d, f)) : [],
-);
 // The C tests skip without a working compiler; UFSM_REQUIRE_CC=1 (CI) turns that into a failure.
 const { cc, problem } = findCompiler();
 if (!cc && process.env["UFSM_REQUIRE_CC"]) throw new Error(`UFSM_REQUIRE_CC is set but ${problem}`);
 const skip = cc ? false : (problem ?? "no C compiler");
 const ir = (doc: UfsmDocument) => lowerToIr(flatten(doc));
-const load = (path: string): UfsmDocument => loadModel(readFileSync(path, "utf8")).doc;
 
-type Diff = BackendDiff;
-const MAX_STEPS = 300;
-
-/** Differential runs; with `hooks`, generated with debugInfo and trace, comparing hook calls and is_active() too. */
-async function compareAll(diffs: Diff[], hooks = false): Promise<void> {
-  const irs = diffs.map((d) => lowerToIr(flatten(d.doc), { trace: hooks }));
-  const units: CUnit[] = diffs.map((d, k) => ({
-    ir: irs[k]!,
-    options: { maxMicrosteps: MAX_STEPS, signalQueue: d.signalQueue ?? DIFF_QUEUE, debugInfo: hooks },
-    script: d.script,
-    autoReset: true,
-  }));
-  assertMatchesInterpreter(diffs, await runC(cc!, units), MAX_STEPS, "C", hooks ? irs : undefined);
-}
-
-describe("C backend: conformance traces", { skip }, () => {
-  const files = existsSync(traceDir) ? readdirSync(traceDir).filter((x) => x.endsWith(".json")).sort() : [];
-  it(`${files.length} traces`, async () => {
-    const traces = files.map((f) => {
-      const path = join(traceDir, f);
-      const trace = parseTrace(readFileSync(path, "utf8"));
-      return { f, trace, doc: load(resolve(dirname(path), trace.model)) };
-    });
-    const results = await runC(
-      cc!,
-      traces.map(({ trace, doc }) => ({ ir: ir(doc), options: traceOptions(doc, trace), script: trace.steps, autoReset: false })),
-    );
-    const failures = traces.flatMap(({ f, trace, doc }, k) => runTrace(doc, trace, {}, replayResults(results[k]!, "C driver")).map((x) => `${f}: ${formatFailure(trace, x)}`));
-    assert.equal(failures.length, 0, failures.join("\n"));
-  });
-});
-
-describe("C backend matches the interpreter", { skip }, () => {
-  it("on joins whose sources agree or disagree", async () => {
-    await compareAll([false, true].map((agree) => ({ label: `joins ${agree}`, doc: joinAgreementModel(agree), script: [{ reset: true }, { send: "e1" }, { send: "e1" }] })));
-  });
-  it("on a model that needs every expression form", async () => {
-    const doc = expressionModel();
-    await compareAll([1, 2, 3, 4, 5, 6, 7, 8].map((seed) => ({ label: `expressions seed ${seed}`, doc, script: randomScript(doc, seed, 80) })));
-  });
-  it("on random events in every repo model", async () => {
-    await compareAll(
-      modelFiles.flatMap((f) => {
-        const doc = load(f);
-        return [1, 2, 3, 4, 5].map((seed) => ({ label: `${f.slice(repoRoot.length + 1)} seed ${seed}`, doc, script: randomScript(doc, seed, 120) }));
-      }),
-    );
-  });
-  // UFSM_C_RANDOM=<n> runs more random models (default 300), e.g. as a longer fuzz run before a release.
-  const count = Number(process.env["UFSM_C_RANDOM"] ?? 300);
-  it(`on ${count} random models`, async () => {
-    for (let from = 1; from <= count; from += 150) {
-      await compareAll(
-        Array.from({ length: Math.min(150, count - from + 1) }, (_, i) => {
-          const seed = from + i;
-          const doc = randomModel(seed, { transitions: 16 });
-          return { label: `random model ${seed}`, doc, script: randomScript(doc, seed * 31, 40) };
-        }),
-      );
-    }
-  });
-  it(`with debugInfo and trace: hooks, names and is_active() on every repo model and ${Math.ceil(count / 3)} random models`, async () => {
-    await compareAll(hookDiffs(modelFiles.map((f) => ({ label: f.slice(repoRoot.length + 1), doc: load(f) })), Math.ceil(count / 3)), true);
-  });
-  it("on random models with a small signal queue", async () => {
-    await compareAll(
-      Array.from({ length: 100 }, (_, i) => {
-        const doc = randomModel(i + 1, { signals: 2, transitions: 18 });
-        return { label: `random model ${i + 1}, queue 2`, doc, script: randomScript(doc, i + 1, 30), signalQueue: 2 };
-      }),
-    );
-  });
-});
+describeBackend({ name: "C", target: "c", randomEnv: "UFSM_C_RANDOM", skip, run: (units) => runC(cc!, units), timerApi: /_timer_start\(void \*user/ });
 
 describe("C backend: generated files", () => {
   it("compile without warnings as freestanding C99, also with debugInfo and trace", { skip }, () => {
@@ -180,11 +100,6 @@ describe("C backend: generated files", () => {
   it("keep the queue bound exact: the last free slot can be used (B3)", () => {
     const src = generateC(ir(load(join(repoRoot, "tests/models/test_chained_signals.ufsm"))), { signalQueue: 3 }).source;
     assert.match(src, /if \(m->queue_len == 3u\) \{\n\s+return TEST_CHAINED_SIGNALS_ERR_QUEUE_FULL;/);
-  });
-
-  it("are the same for the same input", () => {
-    const doc = load(join(repoRoot, "tests/models/canvas.ufsm"));
-    assert.deepEqual(generateC(ir(doc)), generateC(ir(doc)));
   });
 
   it("reject names that clash in C", () => {

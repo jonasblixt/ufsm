@@ -4,22 +4,16 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { CodegenError, formatFailure, generateFiles, loadModel, parseTrace, runTrace, type UfsmDocument, traceOptions } from "../src";
+import { join } from "node:path";
+import { CodegenError, generateFiles, type UfsmDocument } from "../src";
 import { flatten, generateRust, lowerToIr, rustModuleName, rustOptionsFromTargets, type Expr, type IrModule } from "../src/pipeline";
-import { DIFF_QUEUE, assertMatchesInterpreter, hookDiffs, expressionModel, joinAgreementModel, randomScript, replayResults, type BackendDiff, type ScriptStep } from "./harness";
 import { removeTempDir } from "./c-harness";
-import { buildLib, CLIPPY_FLAGS, findRust, RUSTC_FLAGS, runRust, type RustUnit } from "./rust-harness";
+import { buildLib, CLIPPY_FLAGS, findRust, RUSTC_FLAGS, runRust } from "./rust-harness";
 import { randomModel } from "./random-model";
+import { describeBackend, keywordModel, load, modelFiles, repoRoot } from "./backend-contract";
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-const traceDir = join(repoRoot, "tests/traces");
-const modelFiles = ["examples", "tests/models"].flatMap((d) =>
-  existsSync(join(repoRoot, d)) ? readdirSync(join(repoRoot, d)).filter((f) => f.endsWith(".ufsm")).map((f) => join(repoRoot, d, f)) : [],
-);
 // The Rust tests skip without rustc; UFSM_REQUIRE_RUST=1 (CI) turns that into a failure, and also requires
 // clippy-driver and rustfmt (both in rustup's default profile).
 const tools = findRust();
@@ -32,21 +26,7 @@ const skip = tools.rustc ? false : (tools.problem ?? "no rustc");
 const skipClippy = skip || (tools.clippy ? false : "clippy-driver not found");
 const skipFmt = skip || (tools.rustfmt ? false : "rustfmt not found");
 const ir = (doc: UfsmDocument) => lowerToIr(flatten(doc));
-const load = (path: string): UfsmDocument => loadModel(readFileSync(path, "utf8")).doc;
 const baseName = (f: string): string => f.replace(/^.*[\\/]/, "").replace(/\.ufsm$/, "");
-const MAX_STEPS = 300;
-
-/** Differential runs; with `hooks`, generated with debugInfo and trace, comparing hook calls and is_active() too. */
-async function compareAll(diffs: BackendDiff[], hooks = false): Promise<void> {
-  const irs = diffs.map((d) => lowerToIr(flatten(d.doc), { trace: hooks }));
-  const units: RustUnit[] = diffs.map((d, k) => ({
-    ir: irs[k]!,
-    options: { maxMicrosteps: MAX_STEPS, signalQueue: d.signalQueue ?? DIFF_QUEUE, debugInfo: hooks },
-    script: d.script,
-    autoReset: true,
-  }));
-  assertMatchesInterpreter(diffs, await runRust(tools, units), MAX_STEPS, "Rust", hooks ? irs : undefined);
-}
 
 /** Every repo model as a module of one `#![no_std]` library crate; one of them through `include!`. */
 function writeRepoCrate(dir: string): string[] {
@@ -77,131 +57,7 @@ function docExample(): string {
   return example;
 }
 
-describe("Rust backend: conformance traces", { skip }, () => {
-  const files = existsSync(traceDir) ? readdirSync(traceDir).filter((x) => x.endsWith(".json")).sort() : [];
-  it(`${files.length} traces`, async () => {
-    const traces = files.map((f) => {
-      const path = join(traceDir, f);
-      const trace = parseTrace(readFileSync(path, "utf8"));
-      return { f, trace, doc: load(resolve(dirname(path), trace.model)) };
-    });
-    const results = await runRust(
-      tools,
-      traces.map(({ trace, doc }) => ({ ir: ir(doc), options: traceOptions(doc, trace), script: trace.steps, autoReset: false })),
-    );
-    const failures = traces.flatMap(({ f, trace, doc }, k) => runTrace(doc, trace, {}, replayResults(results[k]!, "Rust driver")).map((x) => `${f}: ${formatFailure(trace, x)}`));
-    assert.equal(failures.length, 0, failures.join("\n"));
-  });
-});
-
-describe("Rust backend matches the interpreter", { skip }, () => {
-  it("on joins whose sources agree or disagree", async () => {
-    await compareAll([false, true].map((agree) => ({ label: `joins ${agree}`, doc: joinAgreementModel(agree), script: [{ reset: true }, { send: "e1" }, { send: "e1" }] })));
-  });
-  it("on a model whose names are Rust keywords", async () => {
-    const doc = keywordModel();
-    await compareAll([1, 2, 3].map((seed) => ({ label: `keywords seed ${seed}`, doc, script: randomScript(doc, seed, 40) })));
-  });
-  it("on a model that needs every expression form", async () => {
-    const doc = expressionModel();
-    await compareAll([1, 2, 3, 4, 5, 6, 7, 8].map((seed) => ({ label: `expressions seed ${seed}`, doc, script: randomScript(doc, seed, 80) })));
-  });
-  it("on random events in every repo model", async () => {
-    await compareAll(
-      modelFiles.flatMap((f) => {
-        const doc = load(f);
-        return [1, 2, 3, 4, 5].map((seed) => ({ label: `${f.slice(repoRoot.length + 1)} seed ${seed}`, doc, script: randomScript(doc, seed, 120) }));
-      }),
-    );
-  });
-  // UFSM_RUST_RANDOM=<n> runs more random models (default 300), e.g. as a longer fuzz run before a release.
-  const count = Number(process.env["UFSM_RUST_RANDOM"] ?? 300);
-  it(`on ${count} random models`, async () => {
-    for (let from = 1; from <= count; from += 150) {
-      await compareAll(
-        Array.from({ length: Math.min(150, count - from + 1) }, (_, i) => {
-          const seed = from + i;
-          const doc = randomModel(seed, { transitions: 16 });
-          return { label: `random model ${seed}`, doc, script: randomScript(doc, seed * 31, 40) };
-        }),
-      );
-    }
-  });
-  it(`with debugInfo and trace: hooks, names and is_active() on every repo model, the keyword model and ${Math.ceil(count / 3)} random models`, async () => {
-    const keywords = keywordModel();
-    await compareAll(
-      [
-        ...hookDiffs(modelFiles.map((f) => ({ label: f.slice(repoRoot.length + 1), doc: load(f) })), Math.ceil(count / 3)),
-        ...[1, 2].map((seed) => ({ label: `keywords seed ${seed} (hooks)`, doc: keywords, script: randomScript(keywords, seed, 40) })),
-      ],
-      true,
-    );
-  });
-  it("on random models with a small signal queue", async () => {
-    await compareAll(
-      Array.from({ length: 100 }, (_, i) => {
-        const doc = randomModel(i + 1, { signals: 2, transitions: 18 });
-        return { label: `random model ${i + 1}, queue 2`, doc, script: randomScript(doc, i + 1, 30), signalQueue: 2 };
-      }),
-    );
-  });
-  it("on expression shapes the models rarely or never produce (hand-built IR)", async () => {
-    const mod = shapesModule();
-    const script: ScriptStep[] = [{ reset: true }];
-    const expected: string[] = ["|s1|-"];
-    for (let bits = 0; bits < 8; bits++) {
-      const [a, b, c] = [(bits & 1) === 1, ((bits >> 1) & 1) === 1, ((bits >> 2) & 1) === 1];
-      for (const [n, , truth] of SHAPES) {
-        script.push({ guards: { a, b, c }, send: n });
-        expected.push(`${truth(a, b, c) ? "hit" : ""}|s1|-`);
-      }
-    }
-    const [results] = await runRust(tools, [{ ir: mod, script, autoReset: false }]);
-    assert.deepEqual(results!.map((r) => `${r.calls.join(" ")}|${r.active.join(",")}|${r.error ?? "-"}`), expected);
-  });
-  it("keep the value of a final return (hand-built eventless step that ends in `return false`)", async () => {
-    // eventless: count a microstep; in A with g set, go to B and return true; else return false (the tail).
-    // Printed as `true`, settle would loop until the livelock limit.
-    const mod: IrModule = {
-      name: "tail",
-      regions: 1,
-      regionNames: ["root"],
-      states: [{ id: "a", name: "A", ident: "A", label: "A", region: 0, slot: 1, final: false }, { id: "b", name: "B", ident: "B", label: "B", region: 0, slot: 2, final: false }],
-      history: [],
-      transitions: [],
-      trace: false,
-      fingerprint: 0,
-      timers: [],
-      events: [{ id: "ev1", name: "e1" }],
-      signals: [],
-      actions: [{ id: "act1", name: "moved" }],
-      guards: [{ id: "g", name: "g" }],
-      start: [{ op: "set", region: 0, slot: 1 }],
-      onEvent: {},
-      onSignal: {},
-      eventless: "eventless",
-      functions: [
-        {
-          name: "eventless",
-          returns: "bool",
-          flags: [],
-          body: [
-            { op: "microstep" },
-            {
-              op: "if",
-              cond: { op: "and", exprs: [{ op: "active", region: 0, slot: 1 }, g("g")] },
-              then: [{ op: "set", region: 0, slot: 2 }, { op: "call", action: "act1" }, { op: "return", value: true }],
-            },
-            { op: "return", value: false },
-          ],
-        },
-      ],
-    };
-    const script: ScriptStep[] = [{ reset: true }, { send: "e1" }, { guards: { g: true }, send: "e1" }, { send: "e1" }];
-    const [results] = await runRust(tools, [{ ir: mod, options: { maxMicrosteps: 5 }, script, autoReset: false }]);
-    assert.deepEqual(results!.map((r) => `${r.calls.join(" ")}|${r.active.join(",")}|${r.error ?? "-"}`), ["|a|-", "|a|-", "moved|b|-", "|b|-"]);
-  });
-});
+describeBackend({ name: "Rust", target: "rust", randomEnv: "UFSM_RUST_RANDOM", skip, run: (units) => runRust(tools, units), timerApi: /fn timer_start\(&mut self/ });
 
 describe("Rust backend: generated files", () => {
   it("build without warnings in a #![no_std] crate, as module files and through include!, editions 2021 and 2024", { skip }, async () => {
@@ -310,11 +166,6 @@ describe("Rust backend: generated files", () => {
     assert.doesNotMatch(noCheck, /self\.steps|fn microstep/);
   });
 
-  it("are the same for the same input", () => {
-    const doc = load(join(repoRoot, "tests/models/canvas.ufsm"));
-    assert.deepEqual(generateRust(ir(doc)), generateRust(ir(doc)));
-  });
-
   it("emit the timer API only for a model with timers", () => {
     const none = generateRust(ir(load(join(repoRoot, "tests/models/test_guard1.ufsm"))), { debugInfo: true }).source;
     assert.doesNotMatch(none, /timer/i);
@@ -360,49 +211,6 @@ describe("Rust backend: generated files", () => {
 
 const g = (n: string): Expr => ({ op: "guard", guard: n });
 
-/** Event name, condition, and what it should be for guard values a, b, c. */
-const SHAPES: [string, Expr, (a: boolean, b: boolean, c: boolean) => boolean][] = [
-  ["or_in_and", { op: "and", exprs: [{ op: "or", exprs: [g("a"), g("b")] }, g("c")] }, (a, b, c) => (a || b) && c],
-  ["and_in_or", { op: "or", exprs: [g("a"), { op: "and", exprs: [g("b"), g("c")] }] }, (a, b, c) => a || (b && c)],
-  ["not_and", { op: "not", expr: { op: "and", exprs: [g("a"), g("b")] } }, (a, b) => !(a && b)],
-  ["not_or_in_and", { op: "and", exprs: [{ op: "not", expr: { op: "or", exprs: [g("a"), g("b")] } }, g("c")] }, (a, b, c) => !(a || b) && c],
-  ["not_in_or", { op: "or", exprs: [g("a"), { op: "not", expr: g("b") }] }, (a, b) => a || !b],
-  ["not_guard", { op: "not", expr: g("a") }, (a) => !a],
-  ["nots_in_and", { op: "and", exprs: [{ op: "not", expr: g("a") }, { op: "not", expr: g("c") }] }, (a, _b, c) => !a && !c],
-  // cfg[0] is 1 (state A) throughout
-  ["in_slots", { op: "and", exprs: [{ op: "activeIn", region: 0, slots: [1, 2] }, g("a")] }, (a) => a],
-  ["not_in_slots", { op: "and", exprs: [{ op: "not", expr: { op: "activeIn", region: 0, slots: [2, 3] } }, g("a")] }, (a) => a],
-  ["not_active", { op: "or", exprs: [{ op: "not", expr: { op: "active", region: 0, slot: 1 } }, g("b")] }, (_a, b) => b],
-];
-
-function shapesModule(): IrModule {
-  return {
-    name: "shapes",
-    regions: 1,
-    regionNames: ["root"],
-    states: [{ id: "s1", name: "A", ident: "A", label: "A", region: 0, slot: 1, final: false }],
-    history: [],
-    transitions: [],
-    trace: false,
-    fingerprint: 0,
-    timers: [],
-    events: SHAPES.map(([n]) => ({ id: `ev_${n}`, name: n })),
-    signals: [],
-    actions: [{ id: "act1", name: "hit" }],
-    guards: ["a", "b", "c"].map((n) => ({ id: n, name: n })),
-    start: [{ op: "set", region: 0, slot: 1 }],
-    onEvent: Object.fromEntries(SHAPES.map(([n]) => [`ev_${n}`, `step_${n}`])),
-    onSignal: {},
-    eventless: undefined,
-    functions: SHAPES.map(([n, cond]) => ({
-      name: `step_${n}`,
-      returns: "bool" as const,
-      flags: [],
-      body: [{ op: "if" as const, cond, then: [{ op: "call" as const, action: "act1" }] }, { op: "return" as const, value: false }],
-    })),
-  };
-}
-
 /** Long names everywhere: conditions, else-if chains and match arms too wide for one line. */
 function wideModule(): IrModule {
   const guards = Array.from({ length: 8 }, (_, i) => ({ id: `g${i}`, name: `a_rather_long_guard_name_number_${i}` }));
@@ -443,13 +251,4 @@ function wideModule(): IrModule {
       },
     ],
   };
-}
-
-/** test_guard1 with Rust keywords and blanket-impl method names as declaration names. */
-function keywordModel(): UfsmDocument {
-  const doc = load(join(repoRoot, "tests/models/test_guard1.ufsm"));
-  const names: Record<string, string> = { e1: "type", e2: "self", eA: "match", xA: "into", eB: "clone", xB: "Self", g1: "async", g2: "gen" };
-  const d = doc.declarations;
-  for (const x of [...d.events, ...d.signals, ...d.actions, ...d.guards]) x.name = names[x.name] ?? x.name;
-  return doc;
 }

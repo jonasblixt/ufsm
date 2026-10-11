@@ -51,3 +51,7 @@ paths:
   per section of the output. A new backend copies that shape and imports only `common.ts` and the IR, never another
   backend. Refactorings of a printer must keep the output byte-identical (generate every repo model and some random
   models before and after, with and without `debugInfo`/`trace`, and compare).
+- `test/backend-contract.ts` holds every test all backends share (traces, differential runs incl. the keyword model,
+  debugInfo + trace hooks, small queue, hand-built IR shapes and tail return, determinism, timer API presence,
+  `targets.<name>` reading, CodegenError); a backend's test file is a `BackendSpec` (`run`, for in-process languages
+  also `machines`) plus its language-specific tests. In-process backends record script results with `recordScript`.

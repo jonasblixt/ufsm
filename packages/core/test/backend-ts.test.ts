@@ -4,26 +4,18 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import ts from "typescript";
-import { CodegenError, formatFailure, loadModel, parseTrace, runTrace, type UfsmDocument, traceOptions } from "../src";
-import { flatten, generateTypeScript, lowerToIr, tsOptionsFromTargets, type Expr, type IrModule } from "../src/pipeline";
-import { DIFF_QUEUE, compareWithInterpreter, expressionModel, joinAgreementModel, randomScript, runScript } from "./harness";
+import { CodegenError, type UfsmDocument } from "../src";
+import { flatten, generateTypeScript, lowerToIr, tsOptionsFromTargets } from "../src/pipeline";
 import { removeTempDir } from "./c-harness";
+import { recordScript } from "./harness";
 import { loadTs } from "./ts-harness";
-import { randomModel } from "./random-model";
+import { describeBackend, load, modelFiles, repoRoot } from "./backend-contract";
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-const traceDir = join(repoRoot, "tests/traces");
-const modelFiles = ["examples", "tests/models"].flatMap((d) =>
-  existsSync(join(repoRoot, d)) ? readdirSync(join(repoRoot, d)).filter((f) => f.endsWith(".ufsm")).map((f) => join(repoRoot, d, f)) : [],
-);
 const ir = (doc: UfsmDocument) => lowerToIr(flatten(doc));
-const load = (path: string): UfsmDocument => loadModel(readFileSync(path, "utf8")).doc;
-const MAX_STEPS = 300;
 
 /** The strictest settings a consumer is likely to use; generated code must compile under all of them. */
 const STRICT: ts.CompilerOptions = {
@@ -56,122 +48,24 @@ function typeCheck(files: string[], lib: string[]): { file: string; line: number
   }));
 }
 
-/**
- * Differential runs: every doc gets a generated machine with the interpreter's limits. With `hooks`, the machines are
- * generated with debugInfo and trace, and the trace hook calls, names and isActive() are compared too.
- */
-async function compareAll(cases: { doc: UfsmDocument; seeds: number[]; steps: number; signalQueue?: number }[], hooks = false): Promise<void> {
-  const { units, cleanup } = await loadTs(
-    cases.map((c) => ({
-      ir: lowerToIr(flatten(c.doc), { trace: hooks }),
-      options: { maxMicrosteps: MAX_STEPS, signalQueue: c.signalQueue ?? DIFF_QUEUE, debugInfo: hooks },
-    })),
-  );
-  try {
-    cases.forEach((c, k) => {
-      for (const seed of c.seeds) compareWithInterpreter((_doc, host) => units[k]!.make(host), c.doc, seed, c.steps, { signalQueue: c.signalQueue ?? DIFF_QUEUE }, hooks);
-    });
-  } finally {
-    cleanup();
-  }
-}
-
-describe("TypeScript backend: conformance traces", () => {
-  const files = existsSync(traceDir) ? readdirSync(traceDir).filter((x) => x.endsWith(".json")).sort() : [];
-  it(`${files.length} traces`, async () => {
-    const traces = files.map((f) => {
-      const path = join(traceDir, f);
-      const trace = parseTrace(readFileSync(path, "utf8"));
-      return { f, trace, doc: load(resolve(dirname(path), trace.model)) };
-    });
-    const { units, cleanup } = await loadTs(traces.map(({ trace, doc }) => ({ ir: ir(doc), options: traceOptions(doc, trace) })));
+describeBackend({
+  name: "TypeScript",
+  target: "ts",
+  randomEnv: "UFSM_TS_RANDOM",
+  skip: false,
+  run: async (units) => {
+    const { units: loaded, cleanup } = await loadTs(units);
     try {
-      const failures = traces.flatMap(({ f, trace, doc }, k) => runTrace(doc, trace, {}, (_d, host) => units[k]!.make(host)).map((x) => `${f}: ${formatFailure(trace, x)}`));
-      assert.equal(failures.length, 0, failures.join("\n"));
+      return units.map((u, k) => recordScript((host) => loaded[k]!.make(host), u.script, u.autoReset));
     } finally {
       cleanup();
     }
-  });
-});
-
-describe("TypeScript backend matches the interpreter", () => {
-  it("on joins whose sources agree or disagree", async () => {
-    await compareAll([false, true].map((agree) => ({ doc: joinAgreementModel(agree), seeds: [1, 2, 3], steps: 20 })));
-  });
-  it("on a model that needs every expression form", async () => {
-    await compareAll([{ doc: expressionModel(), seeds: [1, 2, 3, 4, 5, 6, 7, 8], steps: 80 }]);
-  });
-  it("on random events in every repo model", async () => {
-    await compareAll(modelFiles.map((f) => ({ doc: load(f), seeds: [1, 2, 3, 4, 5], steps: 120 })));
-  });
-  // UFSM_TS_RANDOM=<n> runs more random models (default 300).
-  const count = Number(process.env["UFSM_TS_RANDOM"] ?? 300);
-  it(`on ${count} random models`, async () => {
-    await compareAll(Array.from({ length: count }, (_, i) => ({ doc: randomModel(i + 1, { transitions: 16 }), seeds: [(i + 1) * 31], steps: 40 })));
-  });
-  it(`with debugInfo and trace: hooks, names and isActive() on every repo model and ${Math.ceil(count / 3)} random models`, async () => {
-    await compareAll(
-      [
-        ...modelFiles.map((f) => ({ doc: load(f), seeds: [1, 2], steps: 120 })),
-        ...Array.from({ length: Math.ceil(count / 3) }, (_, i) => ({ doc: randomModel(i + 1, { signals: 2, transitions: 16 }), seeds: [(i + 1) * 37], steps: 40 })),
-      ],
-      true,
-    );
-  });
-  it("on random models with a small signal queue", async () => {
-    await compareAll(Array.from({ length: 100 }, (_, i) => ({ doc: randomModel(i + 1, { signals: 2, transitions: 18 }), seeds: [i + 1], steps: 30, signalQueue: 2 })));
-  });
-  it("on expression shapes the models rarely or never produce (hand-built IR)", async () => {
-    const g = (n: string): Expr => ({ op: "guard", guard: n });
-    const cases: [string, Expr, (a: boolean, b: boolean, c: boolean) => boolean][] = [
-      ["or_in_and", { op: "and", exprs: [{ op: "or", exprs: [g("a"), g("b")] }, g("c")] }, (a, b, c) => (a || b) && c],
-      ["and_in_or", { op: "or", exprs: [g("a"), { op: "and", exprs: [g("b"), g("c")] }] }, (a, b, c) => a || (b && c)],
-      ["not_and", { op: "not", expr: { op: "and", exprs: [g("a"), g("b")] } }, (a, b) => !(a && b)],
-      ["not_or_in_and", { op: "and", exprs: [{ op: "not", expr: { op: "or", exprs: [g("a"), g("b")] } }, g("c")] }, (a, b, c) => !(a || b) && c],
-      ["not_in_or", { op: "or", exprs: [g("a"), { op: "not", expr: g("b") }] }, (a, b) => a || !b],
-      ["not_guard", { op: "not", expr: g("a") }, (a) => !a],
-      ["nots_in_and", { op: "and", exprs: [{ op: "not", expr: g("a") }, { op: "not", expr: g("c") }] }, (a, _b, c) => !a && !c],
-      // cfg[0] is 1 (state A) throughout
-      ["in_slots", { op: "and", exprs: [{ op: "activeIn", region: 0, slots: [1, 2] }, g("a")] }, (a) => a],
-      ["not_in_slots", { op: "and", exprs: [{ op: "not", expr: { op: "activeIn", region: 0, slots: [2, 3] } }, g("a")] }, (a) => a],
-      ["not_active", { op: "or", exprs: [{ op: "not", expr: { op: "active", region: 0, slot: 1 } }, g("b")] }, (_a, b) => b],
-    ];
-    const mod: IrModule = {
-      name: "precedence",
-      regions: 1,
-      regionNames: ["root"],
-      states: [{ id: "s1", name: "A", ident: "A", label: "A", region: 0, slot: 1, final: false }],
-      history: [],
-      transitions: [],
-      trace: false,
-      fingerprint: 0,
-      timers: [],
-      events: cases.map(([n]) => ({ id: `ev_${n}`, name: n })),
-      signals: [],
-      actions: [{ id: "act1", name: "hit" }],
-      guards: ["a", "b", "c"].map((n) => ({ id: n, name: n })),
-      start: [{ op: "set", region: 0, slot: 1 }],
-      onEvent: Object.fromEntries(cases.map(([n]) => [`ev_${n}`, `step_${n}`])),
-      onSignal: {},
-      eventless: undefined,
-      functions: cases.map(([n, cond]) => ({ name: `step_${n}`, returns: "bool" as const, flags: [], body: [{ op: "if" as const, cond, then: [{ op: "call" as const, action: "act1" }] }, { op: "return" as const, value: false }] })),
-    };
-    const { units, cleanup } = await loadTs([{ ir: mod }]);
-    try {
-      const script: { reset?: true; send?: string; guards?: Record<string, boolean> }[] = [{ reset: true }];
-      const expected: string[] = ["reset:  | s1"];
-      for (let bits = 0; bits < 8; bits++) {
-        const [a, b, c] = [(bits & 1) === 1, ((bits >> 1) & 1) === 1, ((bits >> 2) & 1) === 1];
-        for (const [n, , truth] of cases) {
-          script.push({ guards: { a, b, c }, send: n });
-          expected.push(`${n}: ${truth(a, b, c) ? "hit" : ""} | s1`);
-        }
-      }
-      assert.deepEqual(runScript((host) => units[0]!.make(host), script), expected);
-    } finally {
-      cleanup();
-    }
-  });
+  },
+  machines: async (units) => {
+    const { units: loaded, cleanup } = await loadTs(units);
+    return { make: (k, host) => loaded[k]!.make(host), cleanup };
+  },
+  timerApi: /timer_start\(timer:/,
 });
 
 describe("TypeScript backend: generated files", () => {
@@ -303,11 +197,6 @@ describe("TypeScript backend: generated files", () => {
     const doc = load(join(repoRoot, "tests/models/test_timers.ufsm"));
     doc.declarations.actions[0]!.name = "timer_start";
     assert.throws(() => generateTypeScript(ir(doc)), /action 'timer_start' is the name of a timer function of the handler/);
-  });
-
-  it("are the same for the same input", () => {
-    const doc = load(join(repoRoot, "tests/models/canvas.ufsm"));
-    assert.deepEqual(generateTypeScript(ir(doc)), generateTypeScript(ir(doc)));
   });
 
   it("reject names that every JavaScript object has", () => {

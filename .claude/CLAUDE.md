@@ -59,6 +59,8 @@ packages/core/          @ufsm/core: model, v0 reader, v1 format, checks, semanti
                         point for the CLI and the editor's code preview)
   schema/               ufsm-v1.schema.json (JSON Schema draft-07, generated: `npm run gen:schema`; a test checks it)
   test/                 node:test suites (run with tsx); harness.ts (scripts, differential runs), random-model.ts,
+                        backend-contract.ts (describeBackend: what every backend's tests share; backend-*.test.ts are
+                        a spec each plus language-specific tests), gate.test.ts (the validity gate),
                         c-harness.ts (links many generated C machines into one driver, needs a C compiler),
                         py-harness.ts (runs many generated Python modules in one process, needs Python 3.8+),
                         ts-harness.ts (imports generated TypeScript into the test process),

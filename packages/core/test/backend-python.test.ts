@@ -4,22 +4,15 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { CodegenError, formatFailure, loadModel, parseTrace, pascalCase, runTrace, type UfsmDocument, traceOptions } from "../src";
-import { flatten, generatePython, lowerToIr, pythonOptionsFromTargets, type Expr, type IrModule } from "../src/pipeline";
-import { DIFF_QUEUE, assertMatchesInterpreter, expressionModel, hookDiffs, joinAgreementModel, randomScript, replayResults, type BackendDiff } from "./harness";
+import { join } from "node:path";
+import { CodegenError, pascalCase, type UfsmDocument } from "../src";
+import { flatten, generatePython, lowerToIr, pythonOptionsFromTargets } from "../src/pipeline";
 import { removeTempDir } from "./c-harness";
 import { MIN_PYTHON, findPyright, findPython, runPyright, runPython } from "./py-harness";
-import { randomModel } from "./random-model";
+import { describeBackend, load, modelFiles, repoRoot } from "./backend-contract";
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-const traceDir = join(repoRoot, "tests/traces");
-const modelFiles = ["examples", "tests/models"].flatMap((d) =>
-  existsSync(join(repoRoot, d)) ? readdirSync(join(repoRoot, d)).filter((f) => f.endsWith(".ufsm")).map((f) => join(repoRoot, d, f)) : [],
-);
 // The Python tests skip without Python 3.8+; UFSM_REQUIRE_PYTHON=1 (CI) turns that into a failure.
 const { python, problem } = findPython();
 if (!python && process.env["UFSM_REQUIRE_PYTHON"]) throw new Error(`UFSM_REQUIRE_PYTHON is set but ${problem}`);
@@ -29,18 +22,6 @@ const { pyright, problem: pyrightProblem } = findPyright();
 if (!pyright && process.env["UFSM_REQUIRE_PYRIGHT"]) throw new Error(`UFSM_REQUIRE_PYRIGHT is set but ${pyrightProblem}`);
 const skipPyright = pyright ? false : (pyrightProblem ?? "no pyright");
 const ir = (doc: UfsmDocument) => lowerToIr(flatten(doc));
-const load = (path: string): UfsmDocument => loadModel(readFileSync(path, "utf8")).doc;
-const MAX_STEPS = 300;
-
-/** Differential runs; with `hooks`, generated with debugInfo and trace, comparing hook calls and is_active() too. */
-function compareAll(diffs: BackendDiff[], hooks = false): void {
-  const irs = diffs.map((d) => lowerToIr(flatten(d.doc), { trace: hooks }));
-  const results = runPython(
-    python!,
-    diffs.map((d, k) => ({ ir: irs[k]!, options: { maxMicrosteps: MAX_STEPS, signalQueue: d.signalQueue ?? DIFF_QUEUE, debugInfo: hooks }, script: d.script, autoReset: true })),
-  );
-  assertMatchesInterpreter(diffs, results, MAX_STEPS, "Python", hooks ? irs : undefined);
-}
 
 /** Run a Python snippet in a directory; returns stdout. */
 function py(dir: string, code: string): string {
@@ -48,110 +29,13 @@ function py(dir: string, code: string): string {
   return execFileSync(cmd!, [...args, "-B", "-c", code], { cwd: dir, encoding: "utf8", stdio: "pipe" });
 }
 
-describe("Python backend: conformance traces", { skip }, () => {
-  const files = existsSync(traceDir) ? readdirSync(traceDir).filter((x) => x.endsWith(".json")).sort() : [];
-  it(`${files.length} traces`, () => {
-    const traces = files.map((f) => {
-      const path = join(traceDir, f);
-      const trace = parseTrace(readFileSync(path, "utf8"));
-      return { f, trace, doc: load(resolve(dirname(path), trace.model)) };
-    });
-    const results = runPython(python!, traces.map(({ trace, doc }) => ({ ir: ir(doc), options: traceOptions(doc, trace), script: trace.steps, autoReset: false })));
-    const failures = traces.flatMap(({ f, trace, doc }, k) => runTrace(doc, trace, {}, replayResults(results[k]!, "Python driver")).map((x) => `${f}: ${formatFailure(trace, x)}`));
-    assert.equal(failures.length, 0, failures.join("\n"));
-  });
-});
-
-describe("Python backend matches the interpreter", { skip }, () => {
-  it("on joins whose sources agree or disagree", () => {
-    compareAll([false, true].map((agree) => ({ label: `joins ${agree}`, doc: joinAgreementModel(agree), script: [{ reset: true }, { send: "e1" }, { send: "e1" }] })));
-  });
-  it("on a model that needs every expression form", () => {
-    const doc = expressionModel();
-    compareAll([1, 2, 3, 4, 5, 6, 7, 8].map((seed) => ({ label: `expressions seed ${seed}`, doc, script: randomScript(doc, seed, 80) })));
-  });
-  it("on random events in every repo model", () => {
-    compareAll(
-      modelFiles.flatMap((f) => {
-        const doc = load(f);
-        return [1, 2, 3, 4, 5].map((seed) => ({ label: `${f.slice(repoRoot.length + 1)} seed ${seed}`, doc, script: randomScript(doc, seed, 120) }));
-      }),
-    );
-  });
-  // UFSM_PY_RANDOM=<n> runs more random models (default 300).
-  const count = Number(process.env["UFSM_PY_RANDOM"] ?? 300);
-  it(`on ${count} random models`, () => {
-    for (let from = 1; from <= count; from += 150) {
-      compareAll(
-        Array.from({ length: Math.min(150, count - from + 1) }, (_, i) => {
-          const seed = from + i;
-          const doc = randomModel(seed, { transitions: 16 });
-          return { label: `random model ${seed}`, doc, script: randomScript(doc, seed * 31, 40) };
-        }),
-      );
-    }
-  });
-  it(`with debugInfo and trace: hooks, names and is_active() on every repo model and ${Math.ceil(count / 3)} random models`, () => {
-    compareAll(hookDiffs(modelFiles.map((f) => ({ label: f.slice(repoRoot.length + 1), doc: load(f) })), Math.ceil(count / 3)), true);
-  });
-  it("on expression shapes the models rarely or never produce (hand-built IR)", () => {
-    // One step function per expression; it calls `hit` when the expression is true. Guards a, b, c take every true/false value.
-    const g = (n: string): Expr => ({ op: "guard", guard: n });
-    const cases: [string, Expr, (a: boolean, b: boolean, c: boolean) => boolean][] = [
-      ["or_in_and", { op: "and", exprs: [{ op: "or", exprs: [g("a"), g("b")] }, g("c")] }, (a, b, c) => (a || b) && c],
-      ["and_in_or", { op: "or", exprs: [g("a"), { op: "and", exprs: [g("b"), g("c")] }] }, (a, b, c) => a || (b && c)],
-      ["not_and", { op: "not", expr: { op: "and", exprs: [g("a"), g("b")] } }, (a, b) => !(a && b)],
-      ["not_or_in_and", { op: "and", exprs: [{ op: "not", expr: { op: "or", exprs: [g("a"), g("b")] } }, g("c")] }, (a, b, c) => !(a || b) && c],
-      ["not_in_or", { op: "or", exprs: [g("a"), { op: "not", expr: g("b") }] }, (a, b) => a || !b],
-      ["not_guard", { op: "not", expr: g("a") }, (a) => !a],
-      ["nots_in_and", { op: "and", exprs: [{ op: "not", expr: g("a") }, { op: "not", expr: g("c") }] }, (a, _b, c) => !a && !c],
-      // cfg[0] is 1 (state A) throughout
-      ["in_slots", { op: "and", exprs: [{ op: "activeIn", region: 0, slots: [1, 2] }, g("a")] }, (a) => a],
-      ["not_in_slots", { op: "and", exprs: [{ op: "not", expr: { op: "activeIn", region: 0, slots: [2, 3] } }, g("a")] }, (a) => a],
-      ["not_active", { op: "or", exprs: [{ op: "not", expr: { op: "active", region: 0, slot: 1 } }, g("b")] }, (_a, b) => b],
-    ];
-    const mod: IrModule = {
-      name: "precedence",
-      regions: 1,
-      regionNames: ["root"],
-      states: [{ id: "s1", name: "A", ident: "A", label: "A", region: 0, slot: 1, final: false }],
-      history: [],
-      transitions: [],
-      trace: false,
-      fingerprint: 0,
-      timers: [],
-      events: cases.map(([n]) => ({ id: `ev_${n}`, name: n })),
-      signals: [],
-      actions: [{ id: "act1", name: "hit" }],
-      guards: ["a", "b", "c"].map((n) => ({ id: n, name: n })),
-      start: [{ op: "set", region: 0, slot: 1 }],
-      onEvent: Object.fromEntries(cases.map(([n]) => [`ev_${n}`, `step_${n}`])),
-      onSignal: {},
-      eventless: undefined,
-      functions: cases.map(([n, cond]) => ({ name: `step_${n}`, returns: "bool" as const, flags: [], body: [{ op: "if" as const, cond, then: [{ op: "call" as const, action: "act1" }] }, { op: "return" as const, value: false }] })),
-    };
-    const script: { reset?: true; send?: string; guards?: Record<string, boolean> }[] = [{ reset: true }];
-    const expected: string[] = [];
-    for (let bits = 0; bits < 8; bits++) {
-      const [a, b, c] = [(bits & 1) === 1, ((bits >> 1) & 1) === 1, ((bits >> 2) & 1) === 1];
-      for (const [n, , truth] of cases) {
-        script.push({ guards: { a, b, c }, send: n });
-        expected.push(`${n} a=${a} b=${b} c=${c}: ${truth(a, b, c) ? "hit" : "-"}`);
-      }
-    }
-    const [res] = runPython(python!, [{ ir: mod, script, autoReset: false }]);
-    const sends = script.filter((x) => x.send !== undefined);
-    const actual = res!.slice(1).map((r, i) => `${sends[i]!.send} a=${sends[i]!.guards!["a"]} b=${sends[i]!.guards!["b"]} c=${sends[i]!.guards!["c"]}: ${r.calls.length ? r.calls.join(" ") : "-"}`);
-    assert.deepEqual(actual, expected);
-  });
-  it("on random models with a small signal queue", () => {
-    compareAll(
-      Array.from({ length: 100 }, (_, i) => {
-        const doc = randomModel(i + 1, { signals: 2, transitions: 18 });
-        return { label: `random model ${i + 1}, queue 2`, doc, script: randomScript(doc, i + 1, 30), signalQueue: 2 };
-      }),
-    );
-  });
+describeBackend({
+  name: "Python",
+  target: "python",
+  randomEnv: "UFSM_PY_RANDOM",
+  skip,
+  run: async (units) => runPython(python!, units),
+  timerApi: /def timer_start\(self/,
 });
 
 describe("Python backend: generated files", () => {
@@ -277,11 +161,6 @@ print(bad)`,
     const doc = load(join(repoRoot, "tests/models/test_timers.ufsm"));
     doc.declarations.actions[0]!.name = "timer_stop";
     assert.throws(() => generatePython(ir(doc)), /action 'timer_stop' is the name of a timer function of the handler/);
-  });
-
-  it("are the same for the same input", () => {
-    const doc = load(join(repoRoot, "tests/models/canvas.ufsm"));
-    assert.deepEqual(generatePython(ir(doc)), generatePython(ir(doc)));
   });
 
   it("reject names Python cannot use", () => {

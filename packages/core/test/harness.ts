@@ -183,6 +183,44 @@ export function runScript(make: (host: MachineHost) => RunningMachine, script: S
 }
 
 /**
+ * Run a script on a live machine and record every reset/send step as the C, Python and Rust drivers do, for backends
+ * that run in this process. With `autoReset`, a failed step is followed by a reset that is not recorded; if that fails
+ * too, the remaining steps are skipped.
+ */
+export function recordScript(make: (host: MachineHost) => RunningMachine, script: ScriptStep[], autoReset: boolean): StepResult[] {
+  const guards = new Map<string, boolean>();
+  const out: StepResult[] = [];
+  let calls: string[] = [];
+  const m = make({
+    call: (n) => void calls.push(n),
+    guard: (n) => guards.get(n) ?? false,
+    timerStart: (n, _id, ms, periodic) => void calls.push(timerStartCall(n, ms, periodic)),
+    timerStop: (n) => void calls.push(timerStopCall(n)),
+  });
+  for (const step of script) {
+    for (const [k, v] of Object.entries(step.guards ?? {})) guards.set(k, v);
+    if (!step.reset && step.send === undefined) continue;
+    calls = [];
+    try {
+      if (step.reset) m.reset();
+      else m.process(step.send!);
+      out.push({ calls, active: m.activeIds() });
+    } catch (e) {
+      if (!(e instanceof MachineError)) throw e;
+      out.push({ calls, active: [], error: e.code });
+      if (!autoReset) continue;
+      calls = [];
+      try {
+        m.reset();
+      } catch {
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+/**
  * A RunningMachine that replays results recorded from generated code (C, Python, ...), so that
  * runTrace can check them against a trace: every reset/send step consumes one result.
  */

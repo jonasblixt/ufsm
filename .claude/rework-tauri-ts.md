@@ -281,7 +281,7 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [ ] R9 Key map generated from editor.ufsm
 - [x] R10 Vocabulary: StepEvent/onStep, sheet not page, hidden marker not pill (2026-10-11)
 - [ ] R11 Formatter and import-boundary check
-- [ ] R12 One backend contract suite
+- [x] R12 One backend contract suite (`test/backend-contract.ts`) (2026-10-11)
 
 ### Open questions
 - Event parameters, machine variables, expression guards (`&&`/`||`/`!`)? Guards are bool-only
