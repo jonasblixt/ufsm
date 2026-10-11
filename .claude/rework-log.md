@@ -656,3 +656,6 @@ Measured over the 21 valid legacy models (864 KB):
 - 2026-10-11: **README for the merge to master.** History section from the old README.rst (0.1 to 0.5, plus 0.6),
   a disclaimer, logo and CI badge; Rust added where it was missing (output exception, Code tab, Generate menu). No
   readthedocs. CI green at 8cc5061; stale housekeeping items ticked.
+- 2026-10-11: **Release assets.** CI job `release`: a pushed tag `v<version>` (must equal package.json's version) gathers
+  the editor installers of the three OS builds and creates a draft GitHub release with them (`gh release create
+  --draft --generate-notes`); publishing stays manual. Installers are unsigned.

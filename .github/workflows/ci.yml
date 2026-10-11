@@ -72,3 +72,38 @@ jobs:
             apps/editor/src-tauri/target/release/bundle/**/*.AppImage
             apps/editor/src-tauri/target/release/bundle/**/*.deb
           if-no-files-found: ignore
+
+  release:
+    name: Draft release
+    # a pushed tag v<version> collects the installers into a draft GitHub release (publish it by hand)
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: editor
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Tag matches the version in package.json
+        run: |
+          version="v$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "$version" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match package.json version $version"
+            exit 1
+          fi
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: ufsm-editor-*
+          path: dist
+          merge-multiple: true
+      - name: Create the draft release with the installers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mapfile -t files < <(find dist -type f)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "::error::no installers found"
+            exit 1
+          fi
+          printf '%s\n' "${files[@]}"
+          gh release create "$GITHUB_REF_NAME" "${files[@]}" --draft --verify-tag \
+            --title "uFSM ${GITHUB_REF_NAME#v}" --generate-notes
