@@ -2,9 +2,9 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 /**
- * The Code tab: a live preview of what `ufsm generate` writes for the active machine (C header and source, Python,
- * TypeScript), with the options from the Project tab. Updates as the machine changes; layout edits do not
- * regenerate anything.
+ * The Code tab: a live preview of what `ufsm generate` writes for the active machine, in the language selected in the
+ * Project tab (C header and source, Python, TypeScript or Rust), with its options. Updates as the machine changes;
+ * layout edits do not regenerate anything.
  */
 import { Component } from "preact";
 import { selectedTarget, targetOut, type GeneratedFile, type UfsmDocument } from "@ufsm/core";
@@ -49,30 +49,33 @@ class Source extends Component<{ text: string; view: CodeView }> {
 }
 
 export function CodeTab({ doc, view: viewId, ops }: CodeProps) {
-  const view = CODE_VIEWS.find((v) => v.id === viewId) ?? CODE_VIEWS[0]!;
+  // Only the language selected in the Project tab (the one Generate writes); the stored view picks among its files.
+  const target = selectedTarget(doc);
+  const views = CODE_VIEWS.filter((v) => v.target === target);
+  const view = views.find((v) => v.id === viewId) ?? views[0]!;
   const result = generatedCode(doc, view.target);
   const file = "files" in result ? result.files[view.file] : undefined;
-  // Generate writes the language selected in the Project tab, which need not be the one shown here.
-  const target = selectedTarget(doc);
   const language = TARGETS.find((t) => t.key === target)?.title ?? target;
   const out = targetOut(doc, target);
   return (
     <div class="codetab">
       <div class="pheader ctools">
-        <div class="cviews" role="radiogroup" aria-label="Generated file">
-          {CODE_VIEWS.map((v) => (
-            <button
-              type="button"
-              key={v.id}
-              role="radio"
-              aria-checked={v.id === view.id}
-              class={`cview${v.id === view.id ? " active" : ""}`}
-              onClick={() => ops.setView(v.id)}
-            >
-              {v.label}
-            </button>
-          ))}
-        </div>
+        {views.length > 1 && (
+          <div class="cviews" role="radiogroup" aria-label="Generated file">
+            {views.map((v) => (
+              <button
+                type="button"
+                key={v.id}
+                role="radio"
+                aria-checked={v.id === view.id}
+                class={`cview${v.id === view.id ? " active" : ""}`}
+                onClick={() => ops.setView(v.id)}
+              >
+                {v.label}
+              </button>
+            ))}
+          </div>
+        )}
         {file && "files" in result && (
           <div class="cfile">
             <span class="cname" title={`${file.text.split("\n").length - 1} lines`}>

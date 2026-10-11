@@ -669,3 +669,6 @@ Measured over the 21 valid legacy models (864 KB):
   Clear, Generate), File › Generate Code (Ctrl+Shift+B: `eKey_B` + `generate` in editor.ufsm, Tools grew to 620) and
   Generate Code To…, a Generate button in the Code tab; the browser build downloads. Rust `write_generated` (scope
   check, overwrite guard, outside-folder confirm). `out-path.ts` (relative/resolve, tested). Browser check updated.
+- 2026-10-11: **Code tab shows the selected language only** (Jonas): the preview follows the Project tab's `target`;
+  C keeps its header/source switch, the single-file languages show none. Browser check switches language through the
+  Project tab (395 pass on Windows).

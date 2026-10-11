@@ -1772,17 +1772,30 @@ check(
 );
 const lines = async () => (await $text(".code .gutter")).split("\n").length;
 check("...with line numbers", (await lines()) === (await $text(".code .src")).split("\n").length - 1);
+check(
+  "...offering only the selected language's files",
+  (await $count(".cview")) === 2 && !/Python|TypeScript|Rust/.test(await $text(".cviews")),
+);
 await page.click(".cview:has-text('C source')");
 check("C source", (await $text(".cname")) === "dimmer.c" && /#include "dimmer.h"/.test(await $text(".code .src")));
-await page.click(".cview:has-text('Python')");
-check("Python", (await $text(".cname")) === "dimmer.py" && /class Dimmer:/.test(await $text(".code .src")));
-await page.click(".cview:has-text('TypeScript')");
+const codeIn = async (lang) => {
+  await page.click("#panel-tab-project");
+  await page.selectOption('select[aria-label="Language"]', lang);
+  await page.click("#panel-tab-code");
+};
+await codeIn("python");
+check(
+  "Python, once selected in the Project tab, with no file switch",
+  (await $text(".cname")) === "dimmer.py" &&
+    /class Dimmer:/.test(await $text(".code .src")) &&
+    (await $count(".cview")) === 0,
+);
+await codeIn("ts");
 check(
   "TypeScript",
   (await $text(".cname")) === "dimmer.ts" && /export class Dimmer \{/.test(await $text(".code .src")),
 );
 await page.click("#panel-tab-project");
-await page.selectOption('select[aria-label="Language"]', "ts");
 await page.fill('input[aria-label="TypeScript Class"]', "Lamp");
 await page.keyboard.press("Enter");
 await page.click("#panel-tab-code");
@@ -1792,7 +1805,7 @@ check(
   "Save… writes the file shown",
   dl3.suggestedFilename() === "dimmer.ts" && /export class Lamp/.test(readFileSync(await dl3.path(), "utf8")),
 );
-await page.click(".cview:has-text('Rust')");
+await codeIn("rust");
 check(
   "Rust",
   (await $text(".cname")) === "dimmer.rs" &&
@@ -1809,6 +1822,7 @@ check(
   /pub struct Lamp<H> \{/.test(await $text(".code .src")) &&
     /"rust": \{\s*"className": "Lamp"/.test(await U("serialize")),
 );
+await codeIn("c");
 await page.click(".cview:has-text('C header')");
 check(
   "the C header has the state enum and fingerprint, but no trace hook by default",
@@ -1825,7 +1839,7 @@ check(
 );
 await page.click("#panel-tab-project");
 await page.click('input[aria-label="Trace hook"]');
-await page.click("#panel-tab-code");
+await codeIn("rust");
 {
   // Generate writes the language picked in the Project tab (Rust here); in a browser as downloads.
   const [dl] = await Promise.all([
