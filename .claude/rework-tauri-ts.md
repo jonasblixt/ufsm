@@ -311,6 +311,13 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
       check (`test/boundaries.test.ts`) (2026-10-11)
 - [x] R12 One backend contract suite (`test/backend-contract.ts`) (2026-10-11)
 
+### Phase M — modelling additions (2026-10-11)
+- [ ] Choice pseudo-state (decisions log 2026-10-11): format (`kind: "choice"`, `else: true` on a branch), design rules
+      (else required, no trigger on branches, no cycles, allowed targets), semantics.md + hand-derived traces, interpreter,
+      flat tables, IR, every backend, editor tool and drawing
+- [ ] Junction pseudo-state (decisions log 2026-10-11): format, design rules, expansion in flattening, numbering, editor
+      tool (drawn distinct from an initial state); junction then choice must work
+
 ### Open questions
 - Event parameters, machine variables, expression guards (`&&`/`||`/`!`)? Guards are bool-only
   (decided 2026-10-09); conditions on data beyond named predicates would come with model-owned variables, not with
