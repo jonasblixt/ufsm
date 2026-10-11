@@ -323,6 +323,25 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [ ] Junction pseudo-state (decisions log 2026-10-11): format, design rules, expansion in flattening, numbering, editor
       tool (drawn distinct from an initial state); junction then choice must work
 
+### Phase V — verifier (decisions log 2026-10-11)
+- [ ] V1 Outer search in core (`analysis/` or similar; boundaries test updated): configuration + history graph over the
+      flat-table or IR runner with a branching guard oracle; inner per-macrostep search for livelock and queue size; state
+      budget with a partial report. First measure the state-space size on every repo model (canvas.ufsm, deep history)
+- [ ] V2 Findings: states never active, transitions never fired / always losing, unused events, actions, signals and
+      timers, impossible completions and joins, state and system dead ends (SCCs), livelock, signal queue size needed
+      ("can be N", "overflow reachable", "unbounded")
+- [ ] V3 Witness traces: shortest path per finding and `--trace-to <state>…`, written as trace JSON; trace format
+      extension for a guard that needs several values in one step (a list consumed in call order)
+- [ ] V4 `ufsm verify <model> [--json] [--strict-timers] [--max-states N] [--trace-to …] [-o dir]`; docs page
+- [ ] V5 Tests: every witness replays on the interpreter and reaches its claim; random simulation never reaches what the
+      verifier calls unreachable; hand-derived small models, one concept each; generated code with exactly the reported
+      queue size never overflows on random sequences
+- [ ] V6 Editor: run in a Web Worker, "Verification" section in Problems, Show trace opens simulator replay (needs the E6
+      replay follow-up)
+- [ ] V7 Later: guard exclusion declarations (fewer impossible witnesses); simple properties ("never A and B",
+      "Idle always reachable"); a "verified" generation profile that drops run-time checks the verifier proved
+      unnecessary; optional SMV/Promela export, checked against the interpreter on random models
+
 ### Open questions
 - Event parameters, machine variables, expression guards (`&&`/`||`/`!`)? Guards are bool-only
   (decided 2026-10-09); conditions on data beyond named predicates would come with model-owned variables, not with
