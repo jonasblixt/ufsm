@@ -16,11 +16,11 @@
     "diagram": { "$ref": "#/definitions/diagram" },
     "options": { "$ref": "#/definitions/options" },
     "target": {
-      "description": "The code generator the editor's Generate and `ufsm generate <model>` use: c, python, ts, rust or go.",
+      "description": "The code generator the editor's Generate and `ufsm generate <model>` use: c, python, ts, rust, go or cpp.",
       "type": "string"
     },
     "targets": {
-      "description": "Per code generator settings, keyed by target name (c, python, ts, rust, go, ...): the generator's own keys, out (the output folder, relative to the model's file or absolute) and overrides of API options; behaviour options belong in options.",
+      "description": "Per code generator settings, keyed by target name (c, python, ts, rust, go, cpp, ...): the generator's own keys, out (the output folder, relative to the model's file or absolute) and overrides of API options; behaviour options belong in options.",
       "type": "object",
       "additionalProperties": { "type": "object", "additionalProperties": {} }
     }

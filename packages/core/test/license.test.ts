@@ -16,6 +16,7 @@ import { OUTPUT_NOTICE, loadModel } from "../src";
 import {
   flatten,
   generateC,
+  generateCpp,
   generateGo,
   generatePython,
   generateRust,
@@ -96,6 +97,7 @@ describe("licensing", () => {
       ["dimmer.ts", generateTypeScript(ir).source],
       ["dimmer.rs", generateRust(ir).source],
       ["dimmer.go", generateGo(ir).source],
+      ["dimmer.hpp", generateCpp(ir).source],
     ] as const) {
       const head = text.split("\n").slice(0, 3).join("\n");
       assert.ok(head.includes(OUTPUT_NOTICE), `${name}: ${head}`);

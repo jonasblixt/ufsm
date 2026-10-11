@@ -121,8 +121,13 @@ the generated code. Status refers to the new implementation.
 - [ ] B-GO follow-ups: Jonas to review the API (first letter capitalized, `Machine`/`New`, `*Error` sentinels, package
       per machine) in `npm run ufsm -- generate go examples/dimmer.ufsm -o build/dimmer`; CI checks only Go stable, not
       1.20; staticcheck on the output?
-- [ ] B-FZ Differential fuzzer: the per-backend differential runs exist (C, Python, TypeScript, Rust and Go, 300
-      random models each, `UFSM_C_RANDOM`/`UFSM_PY_RANDOM`/`UFSM_TS_RANDOM`/`UFSM_RUST_RANDOM`/`UFSM_GO_RANDOM` for more); left: a long-running fuzz command or nightly CI job that
+- [x] B-CPP C++ backend + driver (header-only C++11 class template over the handler type; no heap, exceptions or RTTI;
+      warning-free as C++11/C++20 with g++/clang++ strict flags) (2026-10-11)
+- [ ] B-CPP follow-ups: Jonas to review the API (`Status` codes, handler by reference, keyword names with `_`) in
+      `npm run ufsm -- generate cpp examples/dimmer.ufsm -o build`; an MSVC step (`cl /W4 /WX /permissive-`); a
+      `std::optional`/`[[nodiscard]]` flavour for C++17 users?
+- [ ] B-FZ Differential fuzzer: the per-backend differential runs exist (C, C++, Python, TypeScript, Rust and Go,
+      300 random models each, `UFSM_<LANG>_RANDOM` for more); left: a long-running fuzz command or nightly CI job that
       saves failing seeds
 - [x] Busy latch: a failed call (error, exception, caught panic, longjmp) or a nested `process()` leaves/meets the
       machine busy, `process()` fails with `busy` until `reset()`; interpreter, runners and all four backends; trace keys

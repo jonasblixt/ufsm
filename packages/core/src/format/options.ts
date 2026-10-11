@@ -21,9 +21,9 @@ import type { ModelOptions, UfsmDocument } from "./model";
 export type OptionKey = keyof ModelOptions;
 
 /** The code generators, by the name `target` and `targets` use. */
-export type CodeTarget = "c" | "python" | "ts" | "rust" | "go";
+export type CodeTarget = "c" | "python" | "ts" | "rust" | "go" | "cpp";
 
-export const CODE_TARGETS: readonly CodeTarget[] = ["c", "python", "ts", "rust", "go"];
+export const CODE_TARGETS: readonly CodeTarget[] = ["c", "python", "ts", "rust", "go", "cpp"];
 
 /** Is `name` one of the code generators? */
 export function isCodeTarget(name: unknown): name is CodeTarget {

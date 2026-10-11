@@ -10,6 +10,7 @@ import { CodegenError, generateFiles, loadModel, modelIr, type UfsmDocument } fr
 import {
   flatten,
   generateC,
+  generateCpp,
   generateGo,
   generatePython,
   generateRust,
@@ -29,6 +30,7 @@ describe("generateFiles", () => {
       python: { className: "Dim" },
       rust: { module: "dim" },
       go: { package: "dim" },
+      cpp: { namespace: "dim" },
     };
     const ir = lowerToIr(flatten(doc));
     const c = generateC(ir, { prefix: "dim_", maxMicrosteps: 7 });
@@ -44,6 +46,8 @@ describe("generateFiles", () => {
     assert.deepEqual(generateFiles(doc, "rust").files, [{ name: "dim.rs", text: rs.source }]);
     const go = generateGo(ir, { package: "dim", maxMicrosteps: 7 });
     assert.deepEqual(generateFiles(doc, "go").files, [{ name: "dim.go", text: go.source }]);
+    const cpp = generateCpp(ir, { namespace: "dim", maxMicrosteps: 7 });
+    assert.deepEqual(generateFiles(doc, "cpp").files, [{ name: "dim.hpp", text: cpp.source }]);
   });
 
   it("resolves options, then targets (never behaviour options there), then overrides", () => {
@@ -82,6 +86,8 @@ describe("generateFiles", () => {
     assert.match(rs.files[0]!.text, /^pub struct Lamp<H> \{$/m);
     const go = generateFiles(doc, "go", { prefix: "ignored_", className: "Lamp", signalQueue: 3 });
     assert.match(go.files[0]!.text, /^type Lamp struct \{$/m);
+    const cpp = generateFiles(doc, "cpp", { prefix: "ignored_", className: "Lamp", signalQueue: 3 });
+    assert.match(cpp.files[0]!.text, /^class Lamp \{$/m);
   });
 
   it("refuses a model with errors", () => {

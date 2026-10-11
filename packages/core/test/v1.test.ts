@@ -529,7 +529,11 @@ describe("design rule check", () => {
       [
         ["warning", "target-option", "targets.c.out is ignored: expected a folder name"],
         ["warning", "target-option", "targets.ts.out is ignored: expected a folder name"],
-        ["warning", "unknown-target", "target 'cobol' is not a code generator (c, python, ts, rust, go); C is used"],
+        [
+          "warning",
+          "unknown-target",
+          "target 'cobol' is not a code generator (c, python, ts, rust, go, cpp); C is used",
+        ],
       ],
     );
     assert.deepEqual(generateFiles(back, "c").problems, ["targets.c.out: expected a string"]);

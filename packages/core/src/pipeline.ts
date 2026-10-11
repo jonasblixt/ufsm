@@ -18,3 +18,4 @@ export * from "./backends/python";
 export * from "./backends/ts";
 export * from "./backends/rust";
 export * from "./backends/go";
+export * from "./backends/cpp";

@@ -4,7 +4,7 @@
 /**
  * Live code preview: the generated files of the active machine, regenerated only when something the generators read
  * changed (machine, declarations, name, options, targets; not the layout), and a small syntax highlighter for C, Python,
- * TypeScript, Rust and Go. No DOM here.
+ * TypeScript, Rust, Go and C++. No DOM here.
  */
 import {
   CodegenError,
@@ -31,6 +31,7 @@ export const CODE_VIEWS: readonly CodeView[] = [
   { id: "ts", label: "TypeScript", target: "ts", file: 0 },
   { id: "rust", label: "Rust", target: "rust", file: 0 },
   { id: "go", label: "Go", target: "go", file: 0 },
+  { id: "cpp", label: "C++", target: "cpp", file: 0 },
 ];
 
 export type CodeResult = GeneratedCode | { error: string };
@@ -111,6 +112,12 @@ const WORDS: Record<CodeTarget, string> = {
     "break case chan const continue default defer else fallthrough for func go goto if import interface map package range " +
     "return select struct switch type var true false nil iota bool byte error int int8 int16 int32 int64 uint uint8 uint16 " +
     "uint32 uint64 string any",
+  cpp:
+    "alignas alignof auto bool break case char class const constexpr const_cast continue default delete do double else enum " +
+    "explicit extern false float for friend goto if inline int long namespace new noexcept nullptr operator private protected " +
+    "public return short signed sizeof static static_assert static_cast struct switch template this throw true try typedef " +
+    "typename union unsigned using virtual void volatile while std int8_t int16_t int32_t int64_t uint8_t uint16_t uint32_t " +
+    "uint64_t size_t",
 };
 
 const COMMENT: Record<CodeTarget, string> = {
@@ -119,6 +126,7 @@ const COMMENT: Record<CodeTarget, string> = {
   ts: String.raw`\/\*[\s\S]*?\*\/|\/\/[^\n]*`,
   rust: String.raw`\/\*[\s\S]*?\*\/|\/\/[^\n]*`,
   go: String.raw`\/\*[\s\S]*?\*\/|\/\/[^\n]*`,
+  cpp: String.raw`\/\*[\s\S]*?\*\/|\/\/[^\n]*`,
 };
 
 const STRING: Record<CodeTarget, string> = {
@@ -128,6 +136,7 @@ const STRING: Record<CodeTarget, string> = {
   // a char literal holds one character, so lifetimes ('static, '_) are not strings
   rust: String.raw`"(?:[^"\\]|\\.)*"|'(?:[^'\\\n]|\\.)'`,
   go: String.raw`"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|\x60[^\x60]*\x60`,
+  cpp: String.raw`"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'`,
 };
 
 const patterns = new Map<CodeTarget, RegExp>();
@@ -136,7 +145,7 @@ function pattern(lang: CodeTarget): RegExp {
   let re = patterns.get(lang);
   if (!re) {
     const pre =
-      lang === "c"
+      lang === "c" || lang === "cpp"
         ? String.raw`|(^[ \t]*#[^\n]*)`
         : lang === "rust"
           ? String.raw`|(^[ \t]*#!?\[[^\n]*)`

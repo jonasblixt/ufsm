@@ -39,6 +39,12 @@ paths:
   no trailing comments on statements). Its tests skip without go (`$GO`, else `go`; gofmt from `$GOFMT`, else
   `GOROOT/bin`); CI sets `UFSM_REQUIRE_GO`. `UFSM_GO_RANDOM=<n>` runs more random models. The driver builds one module
   (package `u<k>` per unit) with `GOTOOLCHAIN=local GOPROXY=off`.
+  Generated C++ is one header-only class template per machine (namespace from `targets.cpp.namespace`), includes only
+  `<cstdint>`, needs no heap, exceptions or RTTI, and compiles as C++11 and C++20 with `-fno-exceptions -fno-rtti` and
+  the flags in `CXX_STRICT_FLAGS` (`test/cpp-harness.ts`), every member instantiated with a stub handler. Its tests skip
+  without a C++ compiler (`$CXX`, else the C++ driver next to `$CC`, else `c++`/`g++`/`clang++`); CI sets
+  `UFSM_REQUIRE_CXX`. `UFSM_CPP_RANDOM=<n>` runs more random models. The driver's own TUs are C++14 (Microsoft's
+  standard library has no C++11 mode); it reads the configuration through an accessor it splices into the class.
 - Timers: a test driver implements `timer_start`/`timer_stop` and logs them
   among the action calls as `~start:<name>:<ms>:<0|1>` / `~stop:<name>`
   (`driverCall` in `test/harness.ts` turns them into the trace spelling); it

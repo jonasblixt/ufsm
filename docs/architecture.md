@@ -21,7 +21,7 @@ machine does). Words used here are in the [glossary](glossary.md); recipes for c
             diagram/ geometry, routes,                 │                                         │
                      action block, labels, sheets      ▼                                         ▼
             edit/   what the editor's edits do   interp/ reference interpreter ◄── compared ── backends/ C, Python,
-                                                  (simulator, test oracle)           with          TypeScript, Rust, Go
+                                                  (simulator, test oracle)           with          TypeScript, Rust, Go, C++
 ```
 
 One TypeScript core (`packages/core`) holds everything that is not UI. The editor and the CLI are thin users of it, and
@@ -89,7 +89,7 @@ each at one stage, so a failure points at the stage that is wrong.
 | Interpreter | `interp/interpreter.ts` | the model, directly, written to read like semantics.md | the conformance traces (`tests/traces/*.json`), whose expectations are derived from semantics.md by hand |
 | Flat runner | `verify/flat-run.ts` | the flat tables | traces + random models against the interpreter (`flat.test.ts`) |
 | IR runner | `verify/ir-run.ts` | the IR | traces + random models against the interpreter (`ir.test.ts`) |
-| C, Python, TypeScript, Rust, Go | generated code | the printed IR | `test/backend-contract.ts` for each: traces, differential runs against the interpreter on every repo model and random models, plus compilers, type checkers and linters on the output |
+| C, C++, Python, TypeScript, Rust, Go | generated code | the printed IR | `test/backend-contract.ts` for each: traces, differential runs against the interpreter on every repo model and random models, plus compilers, type checkers and linters on the output |
 
 The editor's simulator runs the interpreter (`apps/editor/src/sim.ts`); nothing ships the flat runner or the IR runner.
 

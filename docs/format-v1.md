@@ -41,7 +41,7 @@ The editor and the `ufsm` CLI read both this format and the legacy v0 format
   "machine": { … },
   "diagram": { … },          // optional
   "options": { … },          // optional, shared by every generator and the simulator
-  "target": "c",             // optional, the code generator to use (c, python, ts, rust, go; default c)
+  "target": "c",             // optional, the code generator to use (c, python, ts, rust, go, cpp; default c)
   "targets": { … }           // optional, per code generator settings
 }
 ```
@@ -364,7 +364,7 @@ are optional; unknown keys are an error.
 |-----|---------|---------|
 | `signalQueue` | 16 | Capacity of the signal queue; emitting into a full queue is a `queue-overflow` error. At least 1 when the model emits signals |
 | `maxMicrosteps` | 10000 | Microsteps per reset/process call before a `livelock` error; in generated code 0 removes the check |
-| `debugInfo` | false | Generated code can look up event, signal and state names and ask whether a state is active (costs the name strings in flash in C and Rust) |
+| `debugInfo` | false | Generated code can look up event, signal and state names and ask whether a state is active (costs the name strings in flash in C, C++ and Rust) |
 | `trace` | false | Generated code calls a trace hook the application implements, with ids only: event received, signal taken, transition taken, state entered, state exited ([semantics](semantics.md#numbering-and-trace-hooks)) |
 
 There are two kinds of option:
@@ -410,7 +410,7 @@ before it writes outside the model's folder.
 Settings of the generators: [C](backend-c.md#generating) (`c`),
 [Python](backend-python.md#generating) (`python`),
 [TypeScript](backend-ts.md#generating) (`ts`), [Rust](backend-rust.md#generating) (`rust`),
-[Go](backend-go.md#generating) (`go`).
+[Go](backend-go.md#generating) (`go`), [C++](backend-cpp.md#generating) (`cpp`).
 
 ## Canonical form
 

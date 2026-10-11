@@ -306,7 +306,7 @@ export interface UfsmDocument {
   machine: Machine;
   diagram?: Diagram;
   options?: ModelOptions;
-  /** The code generator the editor's Generate and `ufsm generate <model>` use (`c`, `python`, `ts`, `rust`, `go`). */
+  /** The code generator the editor's Generate and `ufsm generate <model>` use (`c`, `python`, `ts`, `rust`, `go`, `cpp`). */
   target?: string;
   /**
    * Per code generator settings, e.g. { "c": { "prefix": "dimmer_", "out": "gen" } }: the generator's own keys, `out`

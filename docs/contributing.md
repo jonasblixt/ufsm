@@ -8,7 +8,7 @@ make most.
 
 - `npm run typecheck`, `npm test` and `npm run format:check` pass (CI runs all three; `npm run format` fixes the
   formatting). The tests skip generated-code checks when a tool is missing: C needs a compiler (`CC`, else `cc`, `gcc`
-  or `clang`), Python 3.8+ and pyright, Rust needs rustc, clippy and rustfmt, Go needs go (1.20+) and gofmt. CI has all of them.
+  or `clang`), C++ one too (`CXX`, else next to `CC`, else `c++`, `g++` or `clang++`), Python 3.8+ and pyright, Rust needs rustc, clippy and rustfmt, Go needs go (1.20+) and gofmt. CI has all of them.
 - Editor changes that touch drawing, hit testing or interaction: run the browser check too
   (`apps/editor/test/browser/check.mjs`; `.claude/rules/editor.md` says how).
 - Every source file starts with the SPDX licence header (a test checks it); generated code never does.

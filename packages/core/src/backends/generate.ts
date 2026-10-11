@@ -18,6 +18,7 @@ import { generatePython, pythonOptionsFromTargets, type PythonOptions } from "./
 import { generateTypeScript, tsOptionsFromTargets, type TsOptions } from "./ts";
 import { generateRust, rustOptionsFromTargets, type RustOptions } from "./rust";
 import { generateGo, goOptionsFromTargets, type GoOptions } from "./go";
+import { cppOptionsFromTargets, generateCpp, type CppOptions } from "./cpp";
 
 export interface GeneratedFile {
   name: string;
@@ -35,7 +36,7 @@ export interface GeneratedCode {
 export interface GenerateOverrides {
   /** C only. */
   prefix?: string;
-  /** Python, TypeScript, Rust and Go only. */
+  /** Python, TypeScript, Rust, Go and C++ only. */
   className?: string;
   /** Overrides `options.signalQueue` for this run. */
   signalQueue?: number;
@@ -96,7 +97,7 @@ export function generateFiles(
   return { files: [{ name: out.fileName, text: out.source }], problems };
 }
 
-type SingleFileOptions = TsOptions & PythonOptions & RustOptions & GoOptions;
+type SingleFileOptions = TsOptions & PythonOptions & RustOptions & GoOptions & CppOptions;
 
 /** The targets that write one file: how to read their `targets.<name>` and generate. */
 const SINGLE_FILE: Record<
@@ -110,4 +111,5 @@ const SINGLE_FILE: Record<
   ts: { read: tsOptionsFromTargets, generate: generateTypeScript },
   rust: { read: rustOptionsFromTargets, generate: generateRust },
   go: { read: goOptionsFromTargets, generate: generateGo },
+  cpp: { read: cppOptionsFromTargets, generate: generateCpp },
 };
