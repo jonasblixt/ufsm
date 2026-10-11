@@ -1,6 +1,6 @@
 {
   "model": "../models/test_internal.ufsm",
-  "doc": "Internal transitions (a state's `internal` list; visualSTATE: static reactions): no exit or entry, substates keep their configuration, selected and conflict-checked like a transition from the state to itself, after the state's outgoing transitions.",
+  "doc": "Internal transitions (a state's `internal` list; also called static reactions): no exit or entry, substates keep their configuration, selected and conflict-checked like a transition from the state to itself, after the state's outgoing transitions.",
   "steps": [
     { "reset": true, "expect": ["eP", "eA", "eB"] },
     { "send": "eCount", "expect": ["count"], "active": ["P", "A", "B"], "doc": "No exit or entry actions." },

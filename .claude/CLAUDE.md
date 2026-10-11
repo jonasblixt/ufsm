@@ -1,8 +1,8 @@
 # uFSM — project context
 
-uFSM is a tool for drawing hierarchical state machines (UML statecharts, in
-the spirit of IAR visualSTATE) and generating code from them. Owner: Jonas
-Blixt (jonas@blxt.se). Repository: github.com/jonasblixt/ufsm.
+uFSM is a tool for drawing hierarchical state machines (UML statecharts) and
+generating code from them. Owner: Jonas Blixt (jonas@blxt.se). Repository:
+github.com/jonasblixt/ufsm.
 
 The project is being rewritten from C/GTK + Python to TypeScript + Tauri on
 the `ts-rewrite` branch.

@@ -78,7 +78,7 @@ export interface State {
   entry?: Action[];
   exit?: Action[];
   /**
-   * Internal transitions (UML; visualSTATE: static reactions): react to an event without leaving the state, so no
+   * Internal transitions (UML; also called static reactions): react to an event without leaving the state, so no
    * exit or entry actions run and the state's regions keep their configuration. Drawn as text in the action block.
    */
   internal?: InternalTransition[];
