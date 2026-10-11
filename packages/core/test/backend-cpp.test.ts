@@ -126,15 +126,22 @@ describe("C++ backend: generated files", () => {
     const dir = mkdtempSync(join(tmpdir(), "ufsm-cpp-"));
     try {
       writeFileSync(join(dir, "dimmer.hpp"), generateCpp(ir(load(join(repoRoot, "examples/dimmer.ufsm")))).source);
-      writeFileSync(
-        join(dir, "main.cpp"),
-        '#include "dimmer.hpp"\nstruct Lamp { void lamp_off() {} };\n' +
-          "int main() { Lamp l; dimmer::Dimmer<Lamp> m(l); m.reset(); m.process(5); return 0; }\n",
+      // One mistake per file: g++ stops at the conversion error before it instantiates the template.
+      const compile = (event: string): string => {
+        writeFileSync(
+          join(dir, "main.cpp"),
+          '#include "dimmer.hpp"\nstruct Lamp { void lamp_off() {} };\n' +
+            `int main() { Lamp l; dimmer::Dimmer<Lamp> m(l); m.reset(); m.process(${event}); return 0; }\n`,
+        );
+        const r = spawnSync(cxx!, ["-std=c++14", "-c", "main.cpp"], { cwd: dir, encoding: "utf8" });
+        assert.notEqual(r.status, 0, event);
+        return r.stderr;
+      };
+      assert.match(compile("dimmer::Event::eButton"), /lamp_(10|30|50|100)_percent/);
+      assert.match(
+        compile("5"),
+        /cannot convert|cannot initialize|no viable conversion|no matching|invalid conversion/,
       );
-      const r = spawnSync(cxx!, ["-std=c++14", "-c", "main.cpp"], { cwd: dir, encoding: "utf8" });
-      assert.notEqual(r.status, 0);
-      assert.match(r.stderr, /lamp_(10|30|50|100)_percent/);
-      assert.match(r.stderr, /cannot convert|cannot initialize|no viable conversion|no matching|invalid conversion/);
     } finally {
       removeTempDir(dir);
     }

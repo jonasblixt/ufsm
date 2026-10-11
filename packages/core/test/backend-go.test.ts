@@ -185,7 +185,7 @@ describe("Go backend: generated files", () => {
     assert.throws(() => generateGo(ir(ok), { file: "x_test" }), /not a plain file name/);
   });
 
-  it("read targets.go: its own settings, never behaviour options", () => {
+  it("read targets.go, its own settings, never behaviour options", () => {
     const doc = load(join(repoRoot, "tests/models/test_guard1.ufsm"));
     doc.targets = { go: { className: "G", package: "guards", signalQueue: 8, colour: "red", file: 3 } };
     const { options, problems } = goOptionsFromTargets(doc);
