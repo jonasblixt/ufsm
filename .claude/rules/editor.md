@@ -98,7 +98,7 @@ guards, internal transitions, declarations, options, Problems tab), then the sim
 highlight read back as pixels, log, saved traces, out of date, a model with errors), the code preview on repository
 models (C, Python, TypeScript, Rust) and the Settings tab (all six gruvbox variants and Everforest/Solarized/Catppuccin dark and light read back as pixels,
 Catppuccin's flavor, following the OS, kept across a reload; UI zoom with the canvas unchanged), then the search
-(Ctrl+P/Ctrl+Shift+P/F1, other machines, focus order, commands, settings preview, Project settings, prefixes),
+(Ctrl+P/Ctrl+Shift+P/F1, other machines, focus order, commands, settings (no preview while highlighted), Project settings, prefixes),
 the sheet frame and title block (frame, zones, off-page marker, fields, double-click, fit findings with sheet and zone), the mouse's back button (sent through CDP, so the webview's history navigation is covered), no webview context menu outside text fields;
 with a second argument
 it writes screenshots there); it needs esbuild and

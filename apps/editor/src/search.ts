@@ -63,8 +63,6 @@ export interface SearchItem {
   prefix?: string;
   /** Commands and settings: what picking does. */
   run?(): void;
-  /** Shown while the row is highlighted (a color theme), undone when the search closes without picking it. */
-  preview?(): void;
 }
 
 export type Mode = "all" | "commands" | "machine" | "machines" | "help";

@@ -706,3 +706,6 @@ Measured over the 21 valid legacy models (864 KB):
   entry; submenus in the title bar's menus (`MenuItem.submenu`, `detail`, `title`); the command palette expands them.
   Unit test for the palette rows, browser check for the submenu (397 passed); Tauri side checked with `cargo clippy`
   only, not yet run in `npm run dev`.
+- 2026-10-11: **Search: no theme preview**. Highlighting or hovering a color-theme/appearance row no longer applies it
+  (`SearchItem.preview`, the quick pick's `onPreview` and `previewTheme`/`endPreview` removed); picking still applies and
+  saves. Browser checks now assert that nothing changes until a row is picked (396 passed).

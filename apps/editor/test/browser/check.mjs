@@ -2783,7 +2783,7 @@ await page.evaluate(() => localStorage.removeItem("ufsm.searchRecent"));
   check("Ctrl+Shift+P goes back to commands", (await searchValue()) === ">delete");
   await page.keyboard.press("Escape");
 
-  // settings: a theme row previews while highlighted, as VS Code's color theme picker does; Enter keeps it
+  // settings: a highlighted theme row changes nothing until it is picked; Enter applies and saves it
   await page.keyboard.press("Control+Shift+P");
   await page.keyboard.type("appearance light");
   r = await qp();
@@ -2793,11 +2793,11 @@ await page.evaluate(() => localStorage.removeItem("ufsm.searchRecent"));
     JSON.stringify(r.slice(0, 3)),
   );
   check(
-    "the highlighted appearance is previewed, not saved",
-    (await U("theme")).appearance === "light" && !/light/.test(await U("settings")),
+    "the highlighted appearance is not previewed, nor saved",
+    (await U("theme")).appearance === "dark" && !/light/.test(await U("settings")),
   );
   await page.keyboard.press("Escape");
-  check("Esc puts the theme back", (await U("theme")).appearance === "dark");
+  check("Esc leaves the theme as it was", (await U("theme")).appearance === "dark");
   await page.keyboard.press("Control+Shift+P");
   await page.keyboard.type("appearance light");
   await page.keyboard.press("Enter");
@@ -2820,9 +2820,9 @@ await page.evaluate(() => localStorage.removeItem("ufsm.searchRecent"));
   );
   await page.keyboard.press("Control+Shift+P");
   await page.keyboard.type("theme catpp");
-  check("hovering a theme row previews it too", (await U("theme")).id === "catppuccin");
+  await page.hover(".qp-row >> nth=0");
+  check("highlighting or hovering a theme row does not preview it", (await U("theme")).id === "gruvbox");
   await page.keyboard.press("Escape");
-  check("...and Esc restores it", (await U("theme")).id === "gruvbox");
 
   // project settings of the machine in focus
   await U("activateTab", 0);

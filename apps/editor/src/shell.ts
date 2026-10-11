@@ -122,7 +122,6 @@ export function createShell(app: App): Shell {
         activeDoc: d?.key,
         recent: search.recent,
         onPick: search.onPick,
-        onPreview: search.onPreview,
       },
       windowControls: customWindowControls,
       mac: isMac && inTauri,

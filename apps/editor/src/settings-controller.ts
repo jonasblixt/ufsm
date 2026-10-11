@@ -2,8 +2,7 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 /**
- * Global settings (settings.json): the color theme (following the OS appearance when asked), previewing a theme from
- * the search, and the UI zoom. Settings are read from the browser-storage copy at once, so the first paint has the
+ * Global settings (settings.json): the color theme (following the OS appearance when asked) and the UI zoom. Settings are read from the browser-storage copy at once, so the first paint has the
  * right colors, then from settings.json; every change is applied at once and saved.
  */
 import type { App } from "./app";
@@ -39,9 +38,6 @@ export interface SettingsController {
   uiZoom(): number;
   /** The OS switched between dark and light. */
   onSystemDark(dark: boolean): void;
-  /** Show a theme highlighted in the search until the search closes; picking it saves it. */
-  previewTheme(t: ThemeSetting): void;
-  endPreview(): void;
 }
 
 export function createSettingsController(app: App): SettingsController {
@@ -50,11 +46,10 @@ export function createSettingsController(app: App): SettingsController {
   let systemDark = systemPrefersDark();
   let theme!: ResolvedTheme;
   let themeProblems: string[] = [];
-  let previewing = false;
 
-  /** Resolve the theme for the current settings and OS appearance (or a previewed one), and apply it to the CSS and the canvas. */
-  const applyTheme = (preview?: ThemeSetting): void => {
-    const r = resolveTheme(preview ?? settings.theme, systemDark);
+  /** Resolve the theme for the current settings and OS appearance, and apply it to the CSS and the canvas. */
+  const applyTheme = (): void => {
+    const r = resolveTheme(settings.theme, systemDark);
     theme = r.theme;
     themeProblems = r.problems;
     const root = document.documentElement;
@@ -132,17 +127,6 @@ export function createSettingsController(app: App): SettingsController {
       if (settings.theme.appearance !== "system") return;
       applyTheme();
       app.ws.changed("shell");
-    },
-    previewTheme: (t) => {
-      previewing = true;
-      applyTheme(t);
-      app.canvas.requestDraw();
-    },
-    endPreview: () => {
-      if (!previewing) return;
-      previewing = false;
-      applyTheme();
-      app.canvas.requestDraw();
     },
   };
 }

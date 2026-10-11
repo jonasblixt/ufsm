@@ -3,8 +3,8 @@
 
 /**
  * What the search field (Ctrl+P, Ctrl+Shift+P) can find: elements of every open machine (the focused one first), the
- * machines, every enabled command, the settings and the focused machine's Project settings; and what picking or
- * highlighting a row does. Ranking is search.ts.
+ * machines, every enabled command, the settings and the focused machine's Project settings; and what picking a row
+ * does. Ranking is search.ts.
  */
 import {
   OPTION_DEFAULTS,
@@ -29,7 +29,6 @@ export interface SearchController {
   /** Keys of recently picked rows, most recent first. */
   recent(): readonly string[];
   onPick(it: SearchItem): void;
-  onPreview(it: SearchItem | undefined): void;
 }
 
 const RECENT_KEY = "ufsm.searchRecent";
@@ -76,7 +75,6 @@ export function createSearch(app: App): SearchController {
       checked,
       keywords,
       run: () => app.settings.setTheme(next),
-      preview: () => app.settings.previewTheme(next),
     });
     const out: SearchItem[] = THEMES.map((x) =>
       themeRow(
@@ -260,7 +258,6 @@ export function createSearch(app: App): SearchController {
     },
     recent: () => recentPicks,
     onPick: (it) => {
-      app.settings.endPreview();
       recentPicks = remember(recentPicks, it.key);
       try {
         localStorage.setItem(RECENT_KEY, JSON.stringify(recentPicks));
@@ -275,10 +272,6 @@ export function createSearch(app: App): SearchController {
           app.nav.revealElement(it.id);
         }
       }
-    },
-    onPreview: (it) => {
-      if (it?.preview) it.preview();
-      else app.settings.endPreview();
     },
   };
 }

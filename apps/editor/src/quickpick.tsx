@@ -22,8 +22,6 @@ export interface QuickPickProps {
   /** Keys of recently picked items, most recent first (read when the list opens). */
   recent(): readonly string[];
   onPick(item: SearchItem): void;
-  /** The highlighted row changed (undefined: the list closed without a pick). */
-  onPreview(item: SearchItem | undefined): void;
 }
 
 /** Lets main.ts open the field (Ctrl+P, Ctrl+Shift+P, menus) with some text in it. */
@@ -179,7 +177,6 @@ export function QuickPick(p: QuickPickProps) {
     isOpen.current = false;
     setOpen(false);
     setText("");
-    props.current.onPreview(undefined);
     const el = input.current;
     const back = before.current;
     before.current = null;
@@ -202,11 +199,10 @@ export function QuickPick(p: QuickPickProps) {
     props.current.onPick(it);
   };
 
-  // the highlighted row: keep it in view, preview it (a color theme)
+  // keep the highlighted row in view
   useLayoutEffect(() => {
     if (!open) return;
     list.current?.querySelector<HTMLElement>("[aria-selected=true]")?.scrollIntoView({ block: "nearest" });
-    props.current.onPreview(current?.item);
   }, [open, current]);
 
   // a press anywhere else closes the list
