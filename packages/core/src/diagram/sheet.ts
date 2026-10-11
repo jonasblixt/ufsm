@@ -19,6 +19,7 @@
  */
 import { commonRegion, vertexName, type DocIndex } from "../model/doc-index";
 import { edgeGeometry, isSheet, sheetOfRegion, sheetOfVertex, vertexBox, type Box, type Point } from "./geometry";
+import { LABEL_FIRST_LINE, LABEL_GAP, LABEL_LINE_H, transitionLabelBox } from "./label-layout";
 import { PAPER_SIZES, type Id, type Paper, type Region, type State, type TitleBlock } from "../format/model";
 
 /** Paper edge to the edge of the drawing area (8.8 mm). */
@@ -152,7 +153,7 @@ export function locate(index: DocIndex, id: Id): { sheet: SheetInfo; zone: strin
   const k = Math.floor((g.points.length - 1) / 2);
   const a = g.points[k]!;
   const b = g.points[Math.min(k + 1, g.points.length - 1)]!;
-  const p = g.label ? { x: g.label.x + 10, y: g.label.y + 30 } : { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  const p = g.label ? { x: g.label.x + LABEL_GAP, y: g.label.y + LABEL_FIRST_LINE - LABEL_LINE_H / 2 } : { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
   return { sheet: sheetInfo(index, commonRegion(index, t.from, t.to)), zone: zoneOf(frame, p) };
 }
 
@@ -276,7 +277,8 @@ function segmentCrosses(r: Box, p: Point, q: Point): boolean {
 /**
  * What does not fit on its sheet: vertices and transition routes outside the drawing area or over the title block, in
  * document order. Only the outermost element is listed: the contents of a listed state, and transitions to or from
- * listed vertices, are not. Labels are not measured here (their text size depends on the font).
+ * listed vertices, are not. A transition's label counts as part of it, at the width estimateLabelWidth gives (the
+ * editor's font may draw it a little wider or narrower).
  */
 export function sheetFit(index: DocIndex): SheetFitProblem[] {
   const frame = sheetFrame(paperOf(index));
@@ -298,8 +300,9 @@ export function sheetFit(index: DocIndex): SheetFitProblem[] {
     if (covered.has(t.from) || covered.has(t.to)) continue;
     const pts = edgeGeometry(index, id)?.points;
     if (!pts || pts.length < 2) continue;
-    const outside = pts.some((p) => !within(frame.area, { x: p.x, y: p.y, w: 0, h: 0 }));
-    const over = !outside && pts.some((p, i) => i > 0 && segmentCrosses(frame.titleBlock, pts[i - 1]!, p));
+    const label = transitionLabelBox(index, t);
+    const outside = pts.some((p) => !within(frame.area, { x: p.x, y: p.y, w: 0, h: 0 })) || (label !== undefined && !within(frame.area, label));
+    const over = !outside && (pts.some((p, i) => i > 0 && segmentCrosses(frame.titleBlock, pts[i - 1]!, p)) || (label !== undefined && overlaps(frame.titleBlock, label)));
     if (outside || over) out.push({ id, sheet: sheetInfo(index, commonRegion(index, t.from, t.to)), problem: outside ? "outside" : "title-block" });
   }
   return out;

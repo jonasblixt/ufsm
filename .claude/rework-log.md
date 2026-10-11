@@ -620,3 +620,10 @@ Measured over the 21 valid legacy models (864 KB):
   wrong types / unknown keys reported, CodegenError for queue 0 and model errors). The drift is gone: C now runs the IR
   shapes, every backend the keyword model and the tail return. `harness.recordScript` records in-process runs (TS) as the
   drivers do. Backend test files: 1,312 -> 794 lines. C skipped on this machine (no compiler); Python, TS, Rust pass.
+- 2026-10-11: **Review R7, label layout in core.** `diagram/label-layout.ts`: `transitionLabelItems` (bracket and comma
+  rules), `layoutTransitionLabel(index, t, at, measure)`, `transitionLabelBox`, constants `LABEL_FIRST_LINE` (40),
+  `LABEL_TOP` (26), `LABEL_LINE_H`, `LABEL_GAP`, `LABEL_FONT_SIZE`, and `estimateLabelWidth` (7 per character) for callers
+  without a canvas. The injected-measure variant: the editor draws exactly as before (its canvas measures), the `+ 40`
+  in the layout edits and the `+ 30` in `locate` are the named constants. The sheet fit check now includes labels:
+  one finding in the repo models (test_external_transitions t6, past the right edge; listed as known in sheet.test).
+  Browser check 386/386, tests 581.

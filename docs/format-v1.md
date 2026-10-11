@@ -431,7 +431,8 @@ duplicate state names in a region, two timers that can run at the same time (on 
 it, or states in orthogonal regions) firing the same event (`timer-same-event`), unused declarations, behaviour options
 under `targets` and API options there that are not `true`/`false`, stale or missing
 layout, and drawings that do not fit their sheet (outside the drawing frame,
-or over the title block; see "Drawing frame and title block").
+or over the title block; see "Drawing frame and title block"; a transition's label counts, its width estimated at
+7 units per character).
 
 ## Converting from v0
 

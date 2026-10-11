@@ -39,6 +39,7 @@ import {
 } from "../diagram/geometry";
 import { GRID, type Diagram, type EdgeEnd, type FreeEdgeLayout, type Id, type Region, type RegionLayout, type Side, type State, type StateLayout, type UfsmDocument } from "../format/model";
 import { followOffset, followPolyline, sideLength } from "../diagram/route";
+import { LABEL_FIRST_LINE } from "../diagram/label-layout";
 
 /** Smallest region band. */
 export const MIN_BAND = 40;
@@ -165,7 +166,7 @@ export function followTransitions(doc: UfsmDocument, before: DocIndex, change: (
     }
     if (e.label && was.label) {
       // the label hangs above its text line: follow the point where the first line is drawn
-      const d = followOffset(was.points, { x: was.label.x, y: was.label.y + 40 }, ds, de);
+      const d = followOffset(was.points, { x: was.label.x, y: was.label.y + LABEL_FIRST_LINE }, ds, de);
       const x = Math.round(was.label.x + d.x - o.x), y = Math.round(was.label.y + d.y - o.y);
       if (x !== e.label.x || y !== e.label.y) e.label = { x, y, w: e.label.w };
     }

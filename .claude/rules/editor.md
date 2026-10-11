@@ -53,6 +53,9 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend. Window laid ou
 - A state's action block (entry, exit, timers, internal transitions) is laid out in core (`diagram/action-block.ts`: lines,
   wrapping, height, hidden counts, the marker's box) on a 7-unit character cell; `render.ts` only draws that layout, in
   a monospace font sized so one character is exactly one cell (`blockFont`). Never measure its text in the editor.
+- Transition labels are laid out in core too (`diagram/label-layout.ts`: items, wrapping, the box, the line offsets as
+  constants); labels keep a proportional font, so the editor passes its canvas measure (`labelFont` in render.ts) and
+  core falls back to `estimateLabelWidth` (the sheet fit check).
 - Host access goes through `apps/editor/src/platform.ts` only, so the
   frontend also works in a plain browser (`dev:web`).
 - Colors: never write a color literal in the editor's CSS or TS. Add a token to `src/themes/ui.tokens.json` (an

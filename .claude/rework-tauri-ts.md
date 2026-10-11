@@ -276,7 +276,7 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
       (2026-10-11)
 - [x] R5 Public surface of core (subpath exports; oracles out of the main entry) (2026-10-11)
 - [x] R6 Core folders by domain (2026-10-11)
-- [ ] R7 Transition label layout in core
+- [x] R7 Transition label layout in core (`diagram/label-layout.ts`) (2026-10-11)
 - [ ] R8 Split the editor's `main.ts`
 - [ ] R9 Key map generated from editor.ufsm
 - [x] R10 Vocabulary: StepEvent/onStep, sheet not page, hidden marker not pill (2026-10-11)
@@ -359,8 +359,9 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - Action block text assumes a monospace font is available (`ui-monospace`, Cascadia Mono, Consolas, Menlo, DejaVu Sans
   Mono, `monospace`); the font size is derived from the measured advance, so a fallback to a proportional font would
   show uneven spacing but still fit roughly.
-- The sheet fit check does not measure transition labels (their size depends on the font), so a label can stick out of the
-  frame or over the title block without a warning. The title block is drawn under the diagram, so a state over it hides it
+- The sheet fit check measures transition labels with `estimateLabelWidth` (7 units per character), not the editor's
+  font, so a label near the edge can be reported a little early or late. test_external_transitions has one such
+  finding (t6's label past the right edge; the converted file stays as it is). The title block is drawn under the diagram, so a state over it hides it
   (and gets a `title-block` warning).
 
 ## 9. Handy facts

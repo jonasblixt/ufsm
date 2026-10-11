@@ -33,6 +33,9 @@ import {
   type HiddenMarker,
   type ActionSegment,
   type Box,
+  LABEL_FONT_SIZE,
+  layoutTransitionLabel,
+  type MeasureText,
 } from "@ufsm/core/diagram";
 import type { Handle } from "./handles";
 import { drawIcon } from "./icons";
@@ -483,47 +486,10 @@ function drawPseudo(ctx: CanvasRenderingContext2D, index: DocIndex, v: Vertex, l
   }
 }
 
-/** Label pieces with the old editor's bracket and comma rules. */
-function labelItems(index: DocIndex, t: Transition): string[] {
-  const items = [triggerLabel(index, t)];
-  const g = (t.guard ?? []).map((x) => guardLabel(index, x));
-  g.forEach((txt, i) => items.push(`${i === 0 ? "[" : ""}${txt}${i === g.length - 1 ? "]" : ", "}`));
-  const a = (t.do ?? []).map((x) => actionLabel(index, x));
-  a.forEach((txt, i) => items.push(`${i === 0 ? " / " : ""}${txt}${i === a.length - 1 ? "" : ", "}`));
-  return items;
-}
-
-interface LabelLayout {
-  items: { text: string; x: number; y: number }[];
-  /** Where the text is drawn (from the top of the first line to the bottom of the last). */
-  box: Box;
-}
-
-/** Lay out a transition's label in the old editor's way: items wrap at the label width, 20 units per line. */
-function layoutLabel(ctx: CanvasRenderingContext2D, index: DocIndex, t: Transition, tb: { x: number; y: number; w: number }): LabelLayout {
-  ctx.font = `14px ${FONT}`;
-  let x = tb.x;
-  let line = 0;
-  let space = tb.w;
-  let right = tb.x;
-  const items = labelItems(index, t).map((text, i) => {
-    const w = ctx.measureText(text).width;
-    if (i > 0) {
-      space -= w + 10;
-      if (space < 10) {
-        line++;
-        space = tb.w;
-        x = tb.x;
-      }
-    } else {
-      space -= w;
-    }
-    const item = { text, x, y: tb.y + 40 + 20 * line };
-    right = Math.max(right, x + w);
-    x += w + 10;
-    return item;
-  });
-  return { items, box: { x: tb.x, y: tb.y + 26, w: Math.max(right - tb.x, 10), h: 20 * line + 20 } };
+/** Label text at LABEL_FONT_SIZE, measured as it is drawn. */
+function labelFont(ctx: CanvasRenderingContext2D): MeasureText {
+  ctx.font = `${LABEL_FONT_SIZE}px ${FONT}`;
+  return (text) => ctx.measureText(text).width;
 }
 
 let measureCtx: CanvasRenderingContext2D | undefined;
@@ -537,7 +503,7 @@ export function labelBox(index: DocIndex, t: Transition): Box | undefined {
   if (cache.has(t.id)) return cache.get(t.id);
   const label = edgeGeometry(index, t.id)?.label;
   measureCtx ??= document.createElement("canvas").getContext("2d")!;
-  const box = label && layoutLabel(measureCtx, index, t, label).box;
+  const box = label && layoutTransitionLabel(index, t, label, labelFont(measureCtx)).box;
   cache.set(t.id, box);
   return box;
 }
@@ -588,7 +554,7 @@ function drawTransition(ctx: CanvasRenderingContext2D, index: DocIndex, t: Trans
   ctx.fill();
 
   if (!g.label) return;
-  for (const item of layoutLabel(ctx, index, t, g.label).items) ctx.fillText(item.text, item.x, item.y);
+  for (const item of layoutTransitionLabel(index, t, g.label, labelFont(ctx)).items) ctx.fillText(item.text, item.x, item.y);
   ctx.fillStyle = C.ink;
 }
 
@@ -745,7 +711,7 @@ function drawHandles(ctx: CanvasRenderingContext2D, handles: readonly Handle[], 
 function drawLabelOutline(ctx: CanvasRenderingContext2D, index: DocIndex, t: Transition, scale: number): void {
   const g = edgeGeometry(index, t.id);
   if (!g?.label) return;
-  const b = layoutLabel(ctx, index, t, g.label).box;
+  const b = layoutTransitionLabel(index, t, g.label, labelFont(ctx)).box;
   const pad = 3 / scale;
   ctx.save();
   ctx.strokeStyle = C.selection;

@@ -24,6 +24,10 @@ import {
   sheets,
   titleBlockCells,
   zoneOf,
+  LABEL_FIRST_LINE,
+  LABEL_TOP,
+  layoutTransitionLabel,
+  transitionLabelItems,
 } from "../src/diagram";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
@@ -285,7 +289,11 @@ describe("fit on the sheet", () => {
       "apps/editor/test/browser/edit.ufsm",
     ];
     assert.ok(rels.length >= 40, `${rels.length} models`);
-    for (const rel of rels) assert.deepEqual(codes(load(rel)), [], rel);
+    // The label of t6 runs past the right edge of the frame in the converted v0 file, which must stay as converted.
+    const known: Record<string, string[]> = {
+      "tests/models/test_external_transitions.ufsm": ["outside-frame t6: transition P -> P lies outside the frame (sheet 1, A6)"],
+    };
+    for (const rel of rels) assert.deepEqual(codes(load(rel)), known[rel] ?? [], rel);
   });
 
   it("the v0 converter takes the smallest paper (no smaller than v0's) on which the drawing fits", () => {
@@ -329,5 +337,26 @@ describe("fit on the sheet", () => {
         assert.ok(!covering.some((a) => listed.has(a)), `${rel}: ${p.id} is inside or attached to a listed element`);
       }
     }
+  });
+});
+
+describe("transition labels", () => {
+  it("are laid out in core: items wrap at the label width, 20 units per line", () => {
+    const doc = load("tests/models/test_external_transitions.ufsm");
+    const index = indexV1(doc);
+    const t = index.transitions.get("t6")!;
+    assert.deepEqual(transitionLabelItems(index, t), ["selfP", " / aP()"]);
+    const at = { x: 100, y: 200, w: 120 };
+    const one = layoutTransitionLabel(index, t, at, (text) => text.length * 7);
+    assert.deepEqual(one.items.map((i) => [i.x, i.y]), [[100, 200 + LABEL_FIRST_LINE], [145, 200 + LABEL_FIRST_LINE]]);
+    assert.deepEqual(one.box, { x: 100, y: 200 + LABEL_TOP, w: 94, h: 20 });
+    const narrow = layoutTransitionLabel(index, t, { ...at, w: 60 }, (text) => text.length * 7);
+    assert.deepEqual(narrow.items.map((i) => [i.x, i.y]), [[100, 240], [100, 260]], "the second item wraps");
+    assert.equal(narrow.box.h, 40);
+  });
+
+  it("count in the sheet fit: a label past the frame is reported for its transition", () => {
+    const doc = load("tests/models/test_external_transitions.ufsm");
+    assert.deepEqual(sheetFit(indexV1(doc)).map((p) => `${p.id} ${p.problem}`), ["t6 outside"]);
   });
 });
