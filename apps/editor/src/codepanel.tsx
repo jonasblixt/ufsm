@@ -7,7 +7,8 @@
  * regenerate anything.
  */
 import { Component } from "preact";
-import type { GeneratedFile, UfsmDocument } from "@ufsm/core";
+import { selectedTarget, targetOut, type GeneratedFile, type UfsmDocument } from "@ufsm/core";
+import { TARGETS } from "./panel/project";
 import { CODE_VIEWS, generatedCode, highlight, type CodeView } from "./code";
 
 export interface CodeOps {
@@ -16,6 +17,8 @@ export interface CodeOps {
   save(file: GeneratedFile): void;
   /** Write every file of the target (a folder is asked for). */
   saveAll(files: GeneratedFile[]): void;
+  /** Generate the selected target's code into its output folder (File › Generate Code). */
+  generate(): void;
   showProblems(): void;
 }
 
@@ -49,6 +52,10 @@ export function CodeTab({ doc, view: viewId, ops }: CodeProps) {
   const view = CODE_VIEWS.find((v) => v.id === viewId) ?? CODE_VIEWS[0]!;
   const result = generatedCode(doc, view.target);
   const file = "files" in result ? result.files[view.file] : undefined;
+  // Generate writes the language selected in the Project tab, which need not be the one shown here.
+  const target = selectedTarget(doc);
+  const language = TARGETS.find((t) => t.key === target)?.title ?? target;
+  const out = targetOut(doc, target);
   return (
     <div class="codetab">
       <div class="pheader ctools">
@@ -72,6 +79,14 @@ export function CodeTab({ doc, view: viewId, ops }: CodeProps) {
               {file.name}
             </span>
             <span class="statusbar-fill" />
+            <button
+              type="button"
+              class="mini"
+              title={`Generate ${language} code${out !== undefined ? ` into ${out}` : ""}, as set in the Project tab (Ctrl+Shift+B)`}
+              onClick={ops.generate}
+            >
+              Generate {language}
+            </button>
             <button type="button" class="mini" title="Copy this file" onClick={() => ops.copy(file.text, file.name)}>
               Copy
             </button>

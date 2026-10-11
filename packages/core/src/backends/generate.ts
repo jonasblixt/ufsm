@@ -11,15 +11,12 @@ import type { UfsmDocument } from "../format/model";
 import { flatten } from "../semantics/flatten";
 import { lowerToIr } from "../ir/lower";
 import type { IrModule } from "../ir/ir";
+import type { CodeTarget } from "../format/options";
 import { CodegenError, resolveOptions } from "./common";
 import { cOptionsFromTargets, generateC, type COptions } from "./c";
 import { generatePython, pythonOptionsFromTargets, type PythonOptions } from "./python";
 import { generateTypeScript, tsOptionsFromTargets, type TsOptions } from "./ts";
 import { generateRust, rustOptionsFromTargets, type RustOptions } from "./rust";
-
-export type CodeTarget = "c" | "python" | "ts" | "rust";
-
-export const CODE_TARGETS: readonly CodeTarget[] = ["c", "python", "ts", "rust"];
 
 export interface GeneratedFile {
   name: string;

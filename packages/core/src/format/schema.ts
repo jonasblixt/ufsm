@@ -216,10 +216,16 @@ const defs = {
       machine: ref("machine"),
       diagram: opt(ref("diagram")),
       options: opt(ref("options")),
+      target: opt(
+        Type.String({
+          description:
+            "The code generator the editor's Generate and `ufsm generate <model>` use: c, python, ts or rust.",
+        }),
+      ),
       targets: opt(
         Type.Record(str(), Type.Record(str(), Type.Unknown()), {
           description:
-            "Per code generator settings, keyed by target name (c, python, ts, rust, ...); behaviour options belong in options.",
+            "Per code generator settings, keyed by target name (c, python, ts, rust, ...): the generator's own keys, out (the output folder, relative to the model's file or absolute) and overrides of API options; behaviour options belong in options.",
         }),
       ),
     },

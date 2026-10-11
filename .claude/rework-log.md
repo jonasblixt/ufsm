@@ -659,3 +659,13 @@ Measured over the 21 valid legacy models (864 KB):
 - 2026-10-11: **Release assets.** CI job `release`: a pushed tag `v<version>` (must equal package.json's version) gathers
   the editor installers of the three OS builds and creates a draft GitHub release with them (`gh release create
   --draft --generate-notes`); publishing stays manual. Installers are unsigned.
+- 2026-10-11: **Code generator settings and Generate.** Format v1: top-level `target` (selected generator, default C;
+  `unknown-target` warning) and `targets.<name>.out` (output folder relative to the model; `target-option` warning when
+  not a folder name; generators do not report it); schema, writer order (`options`, `target`, `targets`),
+  `selectedTarget`/`targetOut`/`CODE_TARGETS` moved to `format/options.ts` (check may not import backends),
+  `setTarget` edit. CLI: `ufsm generate <model>` uses both; `generate <lang> <model>` without `-o` uses
+  `targets.<lang>.out`, creates the folder. Editor: Project tab "Behaviour" + "Code generator" (language select, output
+  folder field + Browse…, resolved path, selected language's fields, debugInfo/trace switches, override note with
+  Clear, Generate), File › Generate Code (Ctrl+Shift+B: `eKey_B` + `generate` in editor.ufsm, Tools grew to 620) and
+  Generate Code To…, a Generate button in the Code tab; the browser build downloads. Rust `write_generated` (scope
+  check, overwrite guard, outside-folder confirm). `out-path.ts` (relative/resolve, tested). Browser check updated.

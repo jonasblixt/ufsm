@@ -306,7 +306,12 @@ export interface UfsmDocument {
   machine: Machine;
   diagram?: Diagram;
   options?: ModelOptions;
-  /** Per code generator settings, e.g. { "c": { "prefix": "dimmer_" } }; API options from `options` may be overridden here. */
+  /** The code generator the editor's Generate and `ufsm generate <model>` use (`c`, `python`, `ts`, `rust`). */
+  target?: string;
+  /**
+   * Per code generator settings, e.g. { "c": { "prefix": "dimmer_", "out": "gen" } }: the generator's own keys, `out`
+   * (the output folder, relative to the model's file) and overrides of the API options in `options`.
+   */
   targets?: Record<string, Record<string, unknown>>;
 }
 

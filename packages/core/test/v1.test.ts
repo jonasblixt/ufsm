@@ -15,6 +15,8 @@ import {
   migrateV0,
   generateFiles,
   CODE_TARGETS,
+  selectedTarget,
+  targetOut,
   parseV1,
   serializeV1,
   v0,
@@ -499,6 +501,39 @@ describe("design rule check", () => {
       checkV1(ok).map((d) => [d.severity, d.code, d.message]),
       [["warning", "target-option", "targets.rust.trace is ignored: expected true or false"]],
     );
+  });
+
+  it("reads and writes the selected target and output folders, and checks them", () => {
+    const doc = load("tests/models/test_options.ufsm");
+    doc.target = "rust";
+    doc.targets = { c: { out: "gen/c" }, rust: { out: "../src/gen", className: "Opts" } };
+    const text = serializeV1(doc);
+    assert.match(text, /"options": [^]*"target": "rust",\n  "targets": /, "target sits between options and targets");
+    const back = parseV1(text);
+    assert.equal(back.target, "rust");
+    assert.deepEqual(back.targets, doc.targets);
+    assert.equal(selectedTarget(back), "rust");
+    assert.equal(targetOut(back, "rust"), "../src/gen");
+    assert.equal(targetOut(back, "python"), undefined);
+    assert.deepEqual(codes(back), []);
+    // generators do not read `out`, so they do not report it
+    assert.deepEqual(generateFiles(back, "c").problems, []);
+    assert.deepEqual(generateFiles(back, "rust").problems, []);
+
+    back.target = "go";
+    back.targets = { c: { out: 3 }, ts: { out: " " } };
+    assert.equal(selectedTarget(back), "c", "an unknown target falls back to C");
+    assert.equal(targetOut(back, "c"), undefined);
+    assert.deepEqual(
+      checkV1(back).map((d) => [d.severity, d.code, d.message]),
+      [
+        ["warning", "target-option", "targets.c.out is ignored: expected a folder name"],
+        ["warning", "target-option", "targets.ts.out is ignored: expected a folder name"],
+        ["warning", "unknown-target", "target 'go' is not a code generator (c, python, ts, rust); C is used"],
+      ],
+    );
+    assert.deepEqual(generateFiles(back, "c").problems, ["targets.c.out: expected a string"]);
+    assert.throws(() => parseV1(text.replace('"target": "rust"', '"target": 1')), /target/);
   });
 
   it("reads and writes the API options debugInfo and trace, and rejects other values", () => {

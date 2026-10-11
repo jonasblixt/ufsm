@@ -226,6 +226,12 @@ export function setTargetOption(
   if (t[key] !== value) t[key] = value;
 }
 
+/** Select the code generator (`target`), or remove the selection with undefined. */
+export function setTarget(doc: UfsmDocument, target: string | undefined): void {
+  if (target === undefined) delete doc.target;
+  else if (doc.target !== target) doc.target = target;
+}
+
 /** Rename a state (free text), or name a pseudo state (empty removes the name). */
 export function renameVertex(doc: UfsmDocument, id: Id, name: string): void {
   const v = indexV1(doc).vertices.get(id)?.vertex;

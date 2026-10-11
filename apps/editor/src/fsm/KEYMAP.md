@@ -42,6 +42,7 @@ an action with the name of a command runs that command (`commands.ts`), the othe
 | Tools | p | `ctrl()` `<Idle>` | `quickOpen()` | (stays) |
 | Tools | P | `ctrl()` `<Idle>` | `commandPalette()` | (stays) |
 | Tools | F1 | `<Idle>` | `commandPalette()` | (stays) |
+| Tools | B | `ctrl()` `<Idle>` | `generate()` | (stays) |
 | Zoom | f |  | `fit()` | Tools |
 | Zoom | n |  | `zoomNormal()` | Tools |
 | Zoom | Esc |  |  | Tools |

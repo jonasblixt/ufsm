@@ -154,7 +154,15 @@ the generated code. Status refers to the new implementation.
       records -> names, checking the fingerprint), maybe with the simulator replaying a recorded log (docs/live-trace.md);
       a `reset` trace kind (today a host infers a reset from enter reports at the root); a state `ident` override
       (open question) instead of generated identifiers like `s10_` for "10%"
-- [ ] Options follow-ups: Jonas to try the Project tab's Options section and the Simulator's options (model's values,
+- [x] Code generator settings and Generate (Jonas 2026-10-11): `target` + `targets.<name>.out` in format v1, CLI
+      `ufsm generate <model>`, Project › Behaviour and Code generator, File › Generate Code (Ctrl+Shift+B), Generate in
+      the Code tab, `write_generated` in the Rust shell with an overwrite guard (2026-10-11)
+- [ ] Generate follow-ups: Jonas to try it in `npm run dev` (Browse…, first Generate on an unsaved machine: Save As, then
+      the folder; a folder outside the model's folder asks once; a hand-written file of the same name is refused);
+      reopening a model in a later run needs its dialog grant (recent files would need persisted scope); generate on
+      save?; several targets at once (firmware C + host TS)?; File › Generate Code To… and the Code tab's Save both… still
+      overwrite anything in the picked folder (the fs plugin)
+- [ ] Options follow-ups: Jonas to try the Project tab's Behaviour section and the Simulator's options (model's values,
       session overrides, saved traces) in `npm run dev`
 
 ### Phase E — editor (plan agreed 2026-10-09)

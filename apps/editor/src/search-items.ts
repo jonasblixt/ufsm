@@ -6,7 +6,15 @@
  * machines, every enabled command, the settings and the focused machine's Project settings; and what picking or
  * highlighting a row does. Ranking is search.ts.
  */
-import { OPTION_DEFAULTS, PAPER_SIZES, TITLE_BLOCK_FIELDS, type DocIndex, type Paper } from "@ufsm/core";
+import {
+  OPTION_DEFAULTS,
+  PAPER_SIZES,
+  TITLE_BLOCK_FIELDS,
+  selectedTarget,
+  targetOut,
+  type DocIndex,
+  type Paper,
+} from "@ufsm/core";
 import { setPaper } from "@ufsm/core/edit";
 import type { App } from "./app";
 import { API_OPTION_INFO, MODEL_OPTIONS, TARGETS, TITLE_FIELD_LABELS, TITLE_FIELD_NAMES } from "./panel";
@@ -177,10 +185,40 @@ export function createSearch(app: App): SearchController {
       out.push({
         key: `proj:options:${o.key}`,
         kind: "setting",
-        label: `Project: Options: ${o.label}`,
+        label: `Project: Behaviour: ${o.label}`,
         detail,
         keywords: "generator simulator option",
         run: field(o.label),
+      });
+    }
+    // The code generator: only the selected language's settings are shown, so only they are found.
+    const target = selectedTarget(x);
+    const t = TARGETS.find((y) => y.key === target) ?? TARGETS[0]!;
+    const set = x.targets?.[target] ?? {};
+    out.push({
+      key: "proj:generator:language",
+      kind: "setting",
+      label: "Project: Code Generator: Language",
+      detail: t.title,
+      keywords: "generator target c python typescript rust",
+      run: field("Language"),
+    });
+    out.push({
+      key: "proj:generator:out",
+      kind: "setting",
+      label: "Project: Code Generator: Output Folder",
+      detail: targetOut(x, target) ?? "not set",
+      keywords: "generator output directory path",
+      run: field("Output folder"),
+    });
+    for (const o of t.options) {
+      out.push({
+        key: `proj:${t.key}:${o.key}`,
+        kind: "setting",
+        label: `Project: Code Generator: ${t.title} ${o.label}`,
+        detail: o.key in set ? String(set[o.key]) : `${o.fallback(x.name, set)} (default)`,
+        keywords: "generator target option",
+        run: field(`${t.title} ${o.label}`),
       });
     }
     for (const o of API_OPTION_INFO) {
@@ -188,34 +226,11 @@ export function createSearch(app: App): SearchController {
       out.push({
         key: `proj:options:${o.key}`,
         kind: "setting",
-        label: `Project: Options: ${o.label}`,
+        label: `Project: Code Generator: ${o.label}`,
         detail,
         keywords: "generator option debug trace",
         run: field(o.label),
       });
-    }
-    for (const t of TARGETS) {
-      const set = x.targets?.[t.key] ?? {};
-      for (const o of API_OPTION_INFO) {
-        out.push({
-          key: `proj:${t.key}:${o.key}`,
-          kind: "setting",
-          label: `Project: Code Generation: ${t.title} ${o.label}`,
-          detail: set[o.key] === true ? "on" : set[o.key] === false ? "off" : "as in Options",
-          keywords: "generator target option debug trace",
-          run: field(`${t.title} ${o.label}`),
-        });
-      }
-      for (const o of t.options) {
-        out.push({
-          key: `proj:${t.key}:${o.key}`,
-          kind: "setting",
-          label: `Project: Code Generation: ${t.title} ${o.label}`,
-          detail: o.key in set ? String(set[o.key]) : `${o.fallback(x.name, set)} (default)`,
-          keywords: "generator target option",
-          run: field(`${t.title} ${o.label}`),
-        });
-      }
     }
     return out;
   };

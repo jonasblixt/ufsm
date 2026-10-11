@@ -41,6 +41,7 @@ The editor and the `ufsm` CLI read both this format and the legacy v0 format
   "machine": { … },
   "diagram": { … },          // optional
   "options": { … },          // optional, shared by every generator and the simulator
+  "target": "c",             // optional, the code generator to use (c, python, ts, rust; default c)
   "targets": { … }           // optional, per code generator settings
 }
 ```
@@ -387,12 +388,24 @@ A code generator resolves an option from `options`, then `targets.<name>`
 ## Targets
 
 Settings per code generator, keyed by target name: the target's own keys
-(`prefix`, `className`, ...) and overrides of API options. Unknown targets are
-preserved.
+(`prefix`, `className`, ...), the output folder `out`, and overrides of API
+options. Unknown targets are preserved.
 
 ```jsonc
-"targets": { "c": { "prefix": "dimmer_", "trace": true } }
+"target": "c",
+"targets": { "c": { "prefix": "dimmer_", "out": "../src/gen", "trace": true } }
 ```
+
+`target` names the code generator the editor's Generate (Project › Code
+generator, <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd>) and
+`ufsm generate <model>` use; without it, or with a name that is not a
+generator (a warning), C is used. `out` is the folder that generator writes
+its files into: relative to the folder of the model's file, or absolute, with
+`/` as the separator on every OS. The CLI's `-o` overrides it; without either
+the CLI writes into the current directory and the editor asks for a folder
+the first time (and stores it). The editor creates the folder when needed,
+only overwrites files uFSM generated (their first line says so), and asks
+before it writes outside the model's folder.
 
 Settings of the generators: [C](backend-c.md#generating) (`c`),
 [Python](backend-python.md#generating) (`python`),
@@ -429,7 +442,8 @@ and no guard; a state's outgoing transitions come before its internal ones),
 regions entered by default without an initial state,
 duplicate state names in a region, two timers that can run at the same time (on one state, a state and one inside
 it, or states in orthogonal regions) firing the same event (`timer-same-event`), unused declarations, behaviour options
-under `targets` and API options there that are not `true`/`false`, stale or missing
+under `targets`, API options there that are not `true`/`false` and an `out` that is not a folder name
+(`target-option`), a `target` that is not a code generator (`unknown-target`), stale or missing
 layout, and drawings that do not fit their sheet (outside the drawing frame,
 or over the title block; see "Drawing frame and title block"; a transition's label counts, its width estimated at
 7 units per character).

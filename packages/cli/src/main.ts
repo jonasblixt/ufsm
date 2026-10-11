@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
-import { readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import {
   UFSM_VERSION,
@@ -12,6 +12,9 @@ import {
   MachineError,
   checkV1,
   generateFiles,
+  isCodeTarget,
+  selectedTarget,
+  targetOut,
   formatFailure,
   indexV1,
   loadModel,
@@ -45,7 +48,9 @@ Usage:
   ufsm trace <trace.json>...             Replay conformance traces (exit 2 on failure)
   ufsm flatten <model.ufsm> [--json]     Show the static tables code generators work from
   ufsm ir <model.ufsm> [--json]          Show the IR every backend prints, as pseudo-code
-  ufsm generate c <model.ufsm> [-o dir]  Generate <name>.h and <name>.c (default: current directory)
+  ufsm generate <model.ufsm> [-o dir]    Generate code for the model's target into its output folder
+                                         (target and targets.<name>.out; C and the current directory by default)
+  ufsm generate c <model.ufsm> [-o dir]  Generate <name>.h and <name>.c (default: targets.c.out, else current directory)
          [--prefix p] [--signal-queue n] [--max-microsteps n] [--debug-info] [--trace]
                                          (override targets.c and options in the model; see docs/backend-c.md)
   ufsm generate python <model.ufsm> [-o dir]
@@ -334,29 +339,34 @@ function main(argv: string[]): number {
       return 0;
     }
     case "generate": {
-      const [given, model] = files;
+      // `generate <model>` takes the target from the model; `generate <target> <model>` names it.
+      const named = files.length >= 2;
+      const [given, model] = named ? files : [undefined, files[0]];
       const target = given === "typescript" ? "ts" : given;
-      if (target !== "c" && target !== "python" && target !== "ts" && target !== "rust") {
+      if (named && !isCodeTarget(target)) {
         console.error(`ufsm generate: unknown target '${given}' (available: c, python, ts, rust)`);
         return 1;
       }
       if (!model) {
-        console.error(`ufsm generate: missing model file\n\n${USAGE}`);
+        console.error(`ufsm generate: missing model file
+
+${USAGE}`);
         return 1;
       }
+      const m = load(model);
+      printNotes(m, model);
+      const t = isCodeTarget(target) ? target : selectedTarget(m.doc);
       for (const [flag, targets] of [
         ["prefix", ["c"]],
         ["class-name", ["python", "ts", "rust"]],
       ] as const) {
-        if (values[flag] !== undefined && !(targets as readonly string[]).includes(target)) {
+        if (values[flag] !== undefined && !(targets as readonly string[]).includes(t)) {
           console.error(
             `ufsm generate: --${flag} only applies to ${targets.slice(0, -1).join(", ")}${targets.length > 1 ? " and " : ""}${targets[targets.length - 1]}`,
           );
           return 1;
         }
       }
-      const m = load(model);
-      printNotes(m, model);
       const errors = checkV1(m.doc).filter((d) => d.severity === "error");
       if (errors.length) {
         for (const d of errors) console.error(`error: ${d.message}  [${d.code}${d.id ? ` ${d.id}` : ""}]`);
@@ -369,13 +379,21 @@ function main(argv: string[]): number {
       Object.assign(overrides, optionFlags());
       if (values["debug-info"]) overrides.debugInfo = true;
       if (values.trace) overrides.trace = true;
-      const out = generateFiles(m.doc, target, overrides);
+      const out = generateFiles(m.doc, t, overrides);
       for (const p of out.problems) console.error(`warning: ${p}`);
-      const written = out.files.map((f) => [f.name, f.text] as const);
-      const dir = userPath(values.output ?? ".");
-      for (const [name, text] of written) {
-        writeFileSync(join(dir, name), text);
-        console.log(`wrote ${join(values.output ?? ".", name)}`);
+      // -o is relative to where the command runs; the model's out folder to the model's file.
+      const stored = targetOut(m.doc, t);
+      const dir =
+        values.output !== undefined
+          ? userPath(values.output)
+          : stored !== undefined
+            ? resolve(dirname(userPath(model)), stored)
+            : userPath(".");
+      mkdirSync(dir, { recursive: true });
+      const shown = relative(userPath("."), dir) || ".";
+      for (const f of out.files) {
+        writeFileSync(join(dir, f.name), f.text);
+        console.log(`wrote ${join(shown, f.name)}`);
       }
       return 0;
     }

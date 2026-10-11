@@ -69,6 +69,7 @@ Other scripts, run from the repository root:
 | `npm test` | Unit tests and conformance tests (core, CLI, editor; generated code is compiled and run when gcc/clang, Python, pyright and Rust are found) |
 | `npm run typecheck` | `tsc` across all packages |
 | `npm run ufsm -- check examples/dimmer.ufsm` | CLI: `info`, `check`, `list`, `migrate`, `fmt`, `run`, `trace`, `flatten`, `ir`, `generate`, `schema` |
+| `npm run ufsm -- generate examples/dimmer.ufsm` | Generate code for the model's selected language into its output folder ([targets](docs/format-v1.md#targets)) |
 | `npm run ufsm -- generate c examples/dimmer.ufsm -o build` | Generate C ([docs/backend-c.md](docs/backend-c.md)) |
 | `npm run ufsm -- generate python examples/dimmer.ufsm -o build` | Generate Python ([docs/backend-python.md](docs/backend-python.md)) |
 | `npm run ufsm -- generate ts examples/dimmer.ufsm -o build` | Generate TypeScript ([docs/backend-ts.md](docs/backend-ts.md)) |
@@ -106,7 +107,7 @@ The key map follows the old editor; two-key commands start with <kbd>A</kbd> (ad
 | Problems | Problems tab (live; click one to go to it); badges on the canvas; the count in the status bar opens the tab | |
 | Simulate | Run › Start Simulation; Simulator tab: click an event to send it (marked when it would take a transition now; hover to see which), set guard values, follow the log; active states are green on the canvas | <kbd>F5</kbd> start / restart, <kbd>Shift</kbd>+<kbd>F5</kbd> stop |
 | Record a conformance trace | every simulation step is recorded: Simulator › Trace › Save trace… (replay with `ufsm trace`) | |
-| Generated code | Code tab: C header and source, Python, TypeScript, Rust, live; Copy, Save…; File › Generate C / Python / TypeScript / Rust Code… writes the files into a folder | |
+| Generated code | Code tab: C header and source, Python, TypeScript, Rust, live; Copy, Save…. Project › Code generator: the language, its output folder (relative to the model) and settings; Generate (also File › Generate Code and the Code tab) writes the files there, File › Generate Code To… into a folder picked once | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> generate |
 | Open state (off-page region, or zoom in) | double-click | <kbd>Enter</kbd> |
 | Up to parent page / root | breadcrumb, ↑, the mouse's back button | <kbd>Backspace</kbd>, <kbd>J</kbd> <kbd>A</kbd> / <kbd>J</kbd> <kbd>R</kbd> |
 | Show / hide the explorer (tools and machine trees) | View › Explorer | <kbd>N</kbd> |

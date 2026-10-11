@@ -23,6 +23,10 @@ export interface PanelOps {
   use(choice: Choice, recipe: (d: UfsmDocument, id: Id) => void): void;
   /** A message in the status line. */
   say(msg: string): void;
+  /** Generate the selected target's code into its output folder (the Project tab's Generate). */
+  generate(): void;
+  /** Pick the selected target's output folder (the Project tab's Browse…). */
+  chooseOut(): void;
 }
 
 /** What the panel shows about the active machine. */

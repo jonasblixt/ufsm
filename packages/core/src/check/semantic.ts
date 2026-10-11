@@ -9,7 +9,7 @@
  */
 import { ancestors, indexV1, regionChain, vertexName, type DocIndex } from "../model/doc-index";
 import type { Diagnostic } from "./diagnostic";
-import { isApiOption, isBehaviourOption } from "../format/options";
+import { CODE_TARGETS, isApiOption, isBehaviourOption, isCodeTarget } from "../format/options";
 import {
   IDENTIFIER,
   TIMER_MAX_MS,
@@ -383,9 +383,13 @@ export function checkSemantics(doc: UfsmDocument, prebuilt?: DocIndex): Diagnost
         );
       } else if (isApiOption(k) && typeof set[k] !== "boolean") {
         warn("target-option", `targets.${target}.${k} is ignored: expected true or false`);
+      } else if (k === "out" && (typeof set[k] !== "string" || set[k].trim() === "")) {
+        warn("target-option", `targets.${target}.out is ignored: expected a folder name`);
       }
     }
   }
+  if (doc.target !== undefined && !isCodeTarget(doc.target))
+    warn("unknown-target", `target '${doc.target}' is not a code generator (${CODE_TARGETS.join(", ")}); C is used`);
 
   return out;
 }

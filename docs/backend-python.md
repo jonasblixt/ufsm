@@ -26,6 +26,7 @@ model's `targets.python` section and can be overridden on the command line:
 |----------------------|------|---------|---------|
 | `className` | `--class-name` | model name in PascalCase (`test_guard1` → `TestGuard1`) | Machine class; also names `<Class>Event`, `<Class>Handler` and `<Class>Error` |
 | `module` | | model name as an identifier | File name: `<module>.py` |
+| `out` | `-o` | current directory | Output folder, relative to the model's file or absolute ([targets](format-v1.md#targets)) |
 
 ```jsonc
 "targets": { "python": { "className": "Dimmer" } }
