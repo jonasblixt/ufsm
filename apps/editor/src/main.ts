@@ -90,6 +90,7 @@ onCloseRequested(
 app.ws.activate(undefined, true);
 onSystemAppearance(app.settings.onSystemDark);
 void app.settings.load();
+void app.files.loadRecent();
 // The panel's tab strip exists once the panel has rendered (Preact keeps the element).
 const panelTabsEl = el("panel").querySelector<HTMLElement>(".panel-tabs");
 if (panelTabsEl) wheelScrollsHorizontally(panelTabsEl);

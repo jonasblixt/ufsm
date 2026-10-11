@@ -174,7 +174,7 @@ the generated code. Status refers to the new implementation.
       the Code tab, `write_generated` in the Rust shell with an overwrite guard (2026-10-11)
 - [ ] Generate follow-ups: Jonas to try it in `npm run dev` (Browse…, first Generate on an unsaved machine: Save As, then
       the folder; a folder outside the model's folder asks once; a hand-written file of the same name is refused);
-      reopening a model in a later run needs its dialog grant (recent files would need persisted scope); generate on
+      reopening a model in a later run needs its dialog grant (File › Open Recent grants it again); generate on
       save?; several targets at once (firmware C + host TS)?; File › Generate Code To… and the Code tab's Save both… still
       overwrite anything in the picked folder (the fs plugin)
 - [ ] Options follow-ups: Jonas to try the Project tab's Behaviour section and the Simulator's options (model's values,
@@ -207,6 +207,11 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
       VS Code's Shift+F12) instead of only the declaration; while simulating, events as rows ("Simulator: Send eButton");
       `:` sheet and zone (VS Code's go to line) once the drawing frame has zones; show Cmd instead of Ctrl on macOS
       (menus too); search the documentation texts?; frequency as well as recency (VS Code's MRU only)
+- [x] File › Open Recent: the last 10 machines opened or saved (desktop; `recent.json` kept by the Rust shell), a submenu
+      with each file's folder and Clear Recently Opened, also in the command palette (2026-10-11)
+- [ ] Open Recent follow-ups: Jonas to try it in `npm run dev` (open, restart, reopen from the list, then Save and
+      Generate on it; a moved file is taken off the list); a key for the last machine (needs editor.ufsm); recent machines
+      in the empty explorer and in the Ctrl+P search without `>`; restore the machines open at exit (uses the same list)
 - [ ] File › New follow-ups: Jonas to try the first save in `npm run dev` (native dialog; machine renamed to the file);
       a starting template (an initial state and one state) instead of an empty sheet?; choose the paper size on New?
 - [ ] E-UI follow-ups: Jonas to check in `npm run dev` on Windows (drag the title bar, double-click maximizes, resize at
@@ -282,8 +287,8 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [x] File access through `tauri-plugin-fs` instead of own read/write commands: only paths picked in a dialog this run
       (2026-10-10)
 - [ ] fs-plugin follow-ups: Jonas to try open, save, Save As, File › Generate into a folder and Save trace in `npm run dev`;
-      reopening files by path in a later run (recent files, restoring open machines) needs `tauri-plugin-persisted-scope`
-      or a static scope, since dialog grants last only until the app exits
+      dialog grants last only until the app exits; File › Open Recent grants a listed file again (`open_recent`), and
+      restoring the open machines could go the same way
 - [x] One schema source for format v1: TypeBox definitions in `core/src/v1/schema.ts` drive the reader and generate
       `schema/ufsm-v1.schema.json`; `model.ts` checked against them at compile time (2026-10-10)
 - [ ] Later: live tracing from a target (compact replay log of events + guard bits, keyframes, timeline in the

@@ -697,6 +697,26 @@ check(
   (await newTabs()) === "untitled.ufsm,untitled2.ufsm,untitled3.ufsm*",
   await newTabs(),
 );
+// File › Open Recent: a submenu at the right of its item (the browser build has no recent machines).
+await page.click(".menu-label >> text=File");
+await page.hover('.menu-item:has-text("Open Recent")');
+const recentSub = await page.evaluate(() => {
+  const item = [...document.querySelectorAll(".menu-item")].find((b) => b.textContent?.includes("Open Recent"));
+  const sub = document.querySelector(".menu-dropdown.submenu");
+  const rows = sub ? [...sub.querySelectorAll(".menu-item")] : [];
+  return {
+    rows: rows.map((b) => `${b.querySelector(".text")?.textContent}:${b.disabled}`).join(),
+    beside: !!item && !!sub && sub.getBoundingClientRect().left >= item.getBoundingClientRect().right - 2,
+  };
+});
+check(
+  "File › Open Recent opens a submenu beside it, empty in the browser",
+  recentSub.rows === "No Recent Machines:true" && recentSub.beside,
+  JSON.stringify(recentSub),
+);
+await page.hover('.menu-item:has-text("Save As")');
+check("moving to another item closes the submenu", (await $count(".menu-dropdown.submenu")) === 0);
+await page.keyboard.press("Escape");
 await page.keyboard.press("a");
 await page.keyboard.press("s");
 {

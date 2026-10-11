@@ -4,13 +4,25 @@
 /**
  * Machines as files: open (v0 files are converted in memory and never overwritten silently), File › New, save and
  * save as (the first save of a new machine names it after its file), close (asking first when there are unsaved
- * changes). Each open machine gets its tab and its section in the explorer.
+ * changes). Each open machine gets its tab and its section in the explorer. The desktop app remembers the machines
+ * opened or saved last (File › Open Recent).
  */
 import { UfsmFormatError, loadModel, serializeV1, type DocIndex, type LoadedModel } from "@ufsm/core";
 import { newDocument, setMachineName } from "@ufsm/core/edit";
 import { el, type App } from "./app";
 import { explorerEntry } from "./explorer";
-import { baseName, confirmDiscard, inTauri, openModelFile, saveModelFile } from "./platform";
+import {
+  addRecent,
+  baseName,
+  confirmDiscard,
+  forgetRecent,
+  inTauri,
+  openModelFile,
+  openRecentFile,
+  recentFiles,
+  saveModelFile,
+  type OpenedFile,
+} from "./platform";
 import type { DocSession } from "./session";
 import { buildTree, type Tree } from "./tree";
 import { nameOnSave, untitledName } from "./untitled";
@@ -19,6 +31,13 @@ export interface Files {
   /** Open a model in a new tab and show it. */
   showModel(loaded: LoadedModel, fileName: string, path: string | undefined, untitled?: string): DocSession;
   openModel(): Promise<void>;
+  /** The machines opened or saved last, most recent first (paths; empty in the browser build). */
+  readonly recent: readonly string[];
+  /** Read the recent list (at start). */
+  loadRecent(): Promise<void>;
+  /** Open a machine from the recent list; one that cannot be read is taken off it. */
+  openRecent(path: string): Promise<void>;
+  clearRecent(): Promise<void>;
   /** File › New: an empty machine in a new tab, named untitled (untitled2, ... while those are open). */
   newModel(): void;
   saveModel(saveAs?: boolean): Promise<void>;
@@ -31,6 +50,16 @@ export function createFiles(app: App): Files {
   const explorerEl = el<HTMLElement>("explorer");
   const explorerEmptyEl = el<HTMLElement>("explorer-empty");
   const fileInput = el<HTMLInputElement>("file-input");
+  let recent: readonly string[] = [];
+
+  /** Put a path first in the recent list (desktop only; a failure only costs the list entry). */
+  const remember = (path: string): void => {
+    if (!inTauri) return;
+    addRecent(path).then(
+      (list) => (recent = list),
+      (e: unknown) => console.error(e),
+    );
+  };
 
   const closeDoc = async (d: DocSession | undefined, force = false): Promise<boolean> => {
     if (!d) return false;
@@ -86,23 +115,70 @@ export function createFiles(app: App): Files {
     return d;
   };
 
+  /** Show a file that was read: in a new tab, or the tab that already has it. */
+  const showOpened = (file: OpenedFile): void => {
+    // The same file twice would be two diverging copies: show the open one instead.
+    const open = inTauri ? ws.sessions.find((d) => d.path === file.path) : undefined;
+    if (open) {
+      ws.activate(open);
+      app.shell.setStatus(`${open.fileName} is already open`);
+      return;
+    }
+    showModel(loadModel(file.text), file.name, inTauri ? file.path : undefined);
+    remember(file.path);
+  };
+  const openFailed = (e: unknown): void => {
+    app.shell.setStatus(e instanceof UfsmFormatError ? `Not a valid uFSM model: ${e.message}` : String(e));
+    console.error(e);
+  };
+
   return {
     showModel,
     openModel: async () => {
       try {
         const file = await openModelFile(fileInput);
-        if (!file) return;
-        // The same file twice would be two diverging copies: show the open one instead.
-        const open = inTauri ? ws.sessions.find((d) => d.path === file.path) : undefined;
-        if (open) {
-          ws.activate(open);
-          app.shell.setStatus(`${open.fileName} is already open`);
-          return;
-        }
-        showModel(loadModel(file.text), file.name, inTauri ? file.path : undefined);
+        if (file) showOpened(file);
       } catch (e) {
-        app.shell.setStatus(e instanceof UfsmFormatError ? `Not a valid uFSM model: ${e.message}` : String(e));
+        openFailed(e);
+      }
+    },
+    get recent() {
+      return recent;
+    },
+    loadRecent: async () => {
+      try {
+        recent = await recentFiles();
+      } catch (e) {
         console.error(e);
+      }
+    },
+    openRecent: async (path) => {
+      const open = ws.sessions.find((d) => d.path === path);
+      if (open) {
+        ws.activate(open);
+        return;
+      }
+      let file: OpenedFile;
+      try {
+        file = await openRecentFile(path);
+      } catch (e) {
+        // Moved, deleted or unreadable: it would fail the same way next time.
+        recent = await forgetRecent(path).catch(() => recent.filter((p) => p !== path));
+        app.shell.setStatus(`Could not open ${path} (${String(e)}); removed it from Open Recent`);
+        console.error(e);
+        return;
+      }
+      try {
+        showOpened(file);
+      } catch (e) {
+        openFailed(e);
+      }
+    },
+    clearRecent: async () => {
+      try {
+        recent = await forgetRecent();
+      } catch (e) {
+        app.shell.setStatus(`Could not clear the recent list: ${String(e)}`);
       }
     },
     newModel: () => {
@@ -128,6 +204,7 @@ export function createFiles(app: App): Files {
         );
         if (!written) return;
         d.path = inTauri ? written : undefined;
+        remember(written);
         d.fileName = baseName(written);
         d.savedVersion = version;
         d.untitled = undefined;

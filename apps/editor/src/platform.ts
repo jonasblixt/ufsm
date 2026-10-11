@@ -53,6 +53,30 @@ export async function openModelFile(fileInput: HTMLInputElement): Promise<Opened
 }
 
 /**
+ * The machines opened or saved last, most recent first (File › Open Recent). The desktop app keeps them in recent.json
+ * next to settings.json; the browser build cannot reopen a file by name, so it has none.
+ */
+export async function recentFiles(): Promise<string[]> {
+  return inTauri ? invoke<string[]>("recent_files") : [];
+}
+
+/** Put a machine opened or saved in a dialog this run first in the recent list. Returns the new list. */
+export async function addRecent(path: string): Promise<string[]> {
+  return inTauri ? invoke<string[]>("add_recent", { path }) : [];
+}
+
+/** Take a machine off the recent list, or clear it (no path). Returns the new list. */
+export async function forgetRecent(path?: string): Promise<string[]> {
+  return inTauri ? invoke<string[]>("forget_recent", { path: path ?? null }) : [];
+}
+
+/** Read a machine from the recent list; it can then be saved as if it had been picked in a dialog. Desktop only. */
+export async function openRecentFile(path: string): Promise<OpenedFile> {
+  const text = await invoke<string>("open_recent", { path });
+  return { path, name: baseName(path), text };
+}
+
+/**
  * Write a model. With `path` the file is overwritten directly; without it the
  * user picks a destination (Save As). `make` builds the text once the path is
  * known (a new machine is named after its file); in a browser the file is

@@ -700,3 +700,9 @@ Measured over the 21 valid legacy models (864 KB):
   recommended set (only the naming rules CA1707/1708/1716/1720 off: the names are the model's), the doc example, a
   compile-time handler check. .NET 8 SDK installed per user on Jonas's machine for this (dotnet-install). CLI, editor,
   shell guard (`.cs`), CI (`setup-dotnet`, `UFSM_REQUIRE_DOTNET`), docs/backend-csharp.md.
+- 2026-10-11: **File › Open Recent**: Rust commands `recent_files`, `add_recent`, `forget_recent`, `open_recent`
+  (`recent.json` in the config folder, 10 entries; only dialog-granted paths are added, only listed paths are read and
+  then granted for the run); `platform.ts` wrappers; `files.ts` remembers every open and save and drops an unreadable
+  entry; submenus in the title bar's menus (`MenuItem.submenu`, `detail`, `title`); the command palette expands them.
+  Unit test for the palette rows, browser check for the submenu (397 passed); Tauri side checked with `cargo clippy`
+  only, not yet run in `npm run dev`.

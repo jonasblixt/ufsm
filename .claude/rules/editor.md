@@ -24,8 +24,8 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend, laid out after
   src/canvas/           view.ts (drawing a frame, pan/zoom, coordinates), state.ts (tool, placing, link, drag, lasso),
                         keys.ts / pointer.ts / tools.ts (the editor model's actions and guards, by its regions Keys,
                         Pointer and Tool)
-  src/files.ts          open, File › New, save, save as, close; navigation.ts (sheets, entering states, jumping);
-                        edit-commands.ts (delete, clipboard, regions, bend points, S routes, bars, off-page);
+  src/files.ts          open, Open Recent (list kept by the Rust shell), File › New, save, save as, close;
+                        navigation.ts (sheets, entering states, jumping); edit-commands.ts (delete, clipboard, regions, bend points, S routes, bars, off-page);
                         settings-controller.ts (settings.json, theme, UI zoom); sim-controller.ts (Simulator and Code
                         tabs, Generate: into the selected target's output folder, out-path.ts turns a picked folder into
                         the stored relative form); search-items.ts (what the search finds, search.ts ranks); automation.ts

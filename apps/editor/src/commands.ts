@@ -10,7 +10,7 @@
 import { UFSM_VERSION } from "@ufsm/core";
 import type { App } from "./app";
 import { TOOL_KEYS, TOOL_NAMES, type ToolId } from "./palette";
-import { inTauri, windowControls } from "./platform";
+import { baseName, inTauri, windowControls } from "./platform";
 import { ZOOM_MAX, ZOOM_MIN } from "./settings";
 import type { Menu, MenuEntry, MenuItem } from "./titlebar";
 
@@ -34,11 +34,36 @@ export function createCommands(app: App): Commands {
   const singleTransition = (): boolean => ws.singleTransition() !== undefined;
   const notRoot = (): boolean => !!ws.active && ws.active.sheet !== ws.active.index.doc.machine.root;
   const hasSteps = (): boolean => (ws.active?.sim?.steps.length ?? 0) > 0;
+  /** File › Open Recent: the machines opened or saved last, the last one first. */
+  const recentMenu = (): MenuEntry[] => {
+    const recent = app.files.recent;
+    if (recent.length === 0) return [{ label: "No Recent Machines", run: () => undefined, enabled: () => false }];
+    return [
+      ...recent.map((path): MenuItem => ({
+        label: baseName(path),
+        detail: path.slice(0, path.length - baseName(path).length).replace(/[\\/]$/, ""),
+        title: path,
+        run: () => void app.files.openRecent(path),
+      })),
+      "-",
+      { label: "Clear Recently Opened", run: () => void app.files.clearRecent() },
+    ];
+  };
 
   const list: Command[] = [
     // File
     { id: "newModel", label: "New", keys: "Ctrl+N", run: () => app.files.newModel() },
     { id: "openFile", label: "Open…", keys: "O", run: () => void app.files.openModel() },
+    {
+      id: "openRecent",
+      label: "Open Recent",
+      // Run directly: the last machine that is not open.
+      run: () => {
+        const path = app.files.recent.find((p) => !ws.sessions.some((d) => d.path === p));
+        if (path) void app.files.openRecent(path);
+      },
+      submenu: recentMenu,
+    },
     { id: "save", label: "Save", keys: "S", run: () => void app.files.saveModel(), enabled: hasDoc },
     { id: "saveAs", label: "Save As…", keys: "Shift+S", run: () => void app.files.saveModel(true), enabled: hasDoc },
     {
@@ -294,6 +319,7 @@ export function createCommands(app: App): Commands {
     menu("File", [
       "newModel",
       "openFile",
+      "openRecent",
       "-",
       "save",
       "saveAs",

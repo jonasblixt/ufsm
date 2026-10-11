@@ -225,8 +225,34 @@ body {
   font-size: 12px;
 }
 
-.menu-item:hover:not(:disabled) .keys {
+.menu-item .detail {
+  max-width: 320px;
+  margin-left: 16px;
+  overflow: hidden;
+  color: var(--fg4);
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.menu-item:hover:not(:disabled) .keys,
+.menu-item:hover:not(:disabled) .detail {
   color: inherit;
+}
+
+/* An item with a submenu (File › Open Recent): the submenu opens at its right. */
+.menu-sub {
+  position: relative;
+}
+
+.menu-sub:hover > .menu-item:not(:disabled) {
+  color: var(--bg-dark);
+  background: var(--orange);
+}
+
+.menu-dropdown.submenu {
+  top: -5px;
+  left: 100%;
 }
 
 .menu-sep {

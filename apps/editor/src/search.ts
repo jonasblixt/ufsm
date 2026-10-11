@@ -546,16 +546,27 @@ export function remember(recent: readonly string[], key: string, max = 30): stri
 
 // ---------------------------------------------------------------- commands from the menus
 
+interface MenuItemLike {
+  label: string | (() => string);
+  keys?: string;
+  detail?: string;
+  title?: string;
+  run(): void;
+  enabled?(): boolean;
+  checked?(): boolean;
+  submenu?(): ("-" | MenuItemLike)[];
+}
+
 export interface MenuLike {
   label: string;
-  items: (
-    "-" | { label: string | (() => string); keys?: string; run(): void; enabled?(): boolean; checked?(): boolean }
-  )[];
+  items: ("-" | MenuItemLike)[];
 }
 
 /**
  * Every enabled menu item as a command, labelled VS Code style with its menu as the category ("Edit: Undo"). Items
  * whose label changes ("Start Simulation" / "Restart Simulation") are keyed by the menu and position, so recency survives.
+ * A submenu's items stand for it, under both names ("File: Open Recent: dimmer.ufsm", keyed by their tooltip too: two
+ * recent files can share a name).
  */
 export function menuCommands(
   menus: readonly MenuLike[],
@@ -568,12 +579,18 @@ export function menuCommands(
       const text = typeof it.label === "function" ? it.label() : it.label;
       if (skip(menu.label, text)) return;
       const label = `${menu.label}: ${text.replace(/…$/, "")}`;
-      const key = typeof it.label === "function" ? `cmd:${menu.label}#${i}` : `cmd:${label}`;
+      if (it.submenu) {
+        out.push(...menuCommands([{ label, items: it.submenu() }], skip));
+        return;
+      }
+      const key =
+        typeof it.label === "function" ? `cmd:${menu.label}#${i}` : `cmd:${label}${it.title ? `@${it.title}` : ""}`;
       out.push({
         key,
         kind: "command",
         label,
         run: it.run,
+        ...(it.detail ? { detail: it.detail } : {}),
         ...(it.keys ? { keys: it.keys } : {}),
         ...(it.checked ? { checked: it.checked() } : {}),
       });
