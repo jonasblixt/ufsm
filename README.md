@@ -6,7 +6,7 @@
 
 uFSM is a tool for drawing hierarchical state machines (UML statecharts) and
 generating code from them. Version 0.6 is a rewrite: a TypeScript core with
-code generator backends for C, C++, Python, TypeScript/JavaScript, Rust and Go, and a
+code generator backends for C, C++, C#, Python, TypeScript/JavaScript, Rust and Go, and a
 cross-platform desktop editor built with [Tauri](https://tauri.app).
 
 The previous C/GTK editor and Python generator (v0.5.x) are kept in
@@ -66,7 +66,7 @@ Other scripts, run from the repository root:
 |---------|--------------|
 | `npm run dev:web` | Frontend only in a browser at http://localhost:1420 (no Rust needed) |
 | `npm run build` | Release build and installers in `apps/editor/src-tauri/target/release/bundle/` |
-| `npm test` | Unit tests and conformance tests (core, CLI, editor; generated code is compiled and run when gcc/clang (C and C++), Python, pyright, Rust and Go are found) |
+| `npm test` | Unit tests and conformance tests (core, CLI, editor; generated code is compiled and run when gcc/clang (C and C++), Python, pyright, Rust, Go and .NET are found) |
 | `npm run typecheck` | `tsc` across all packages |
 | `npm run ufsm -- check examples/dimmer.ufsm` | CLI: `info`, `check`, `list`, `migrate`, `fmt`, `run`, `trace`, `flatten`, `ir`, `generate`, `schema` |
 | `npm run ufsm -- generate examples/dimmer.ufsm` | Generate code for the model's selected language into its output folder ([targets](docs/format-v1.md#targets)) |
@@ -76,6 +76,7 @@ Other scripts, run from the repository root:
 | `npm run ufsm -- generate rust examples/dimmer.ufsm -o build` | Generate Rust ([docs/backend-rust.md](docs/backend-rust.md)) |
 | `npm run ufsm -- generate go examples/dimmer.ufsm -o build/dimmer` | Generate Go ([docs/backend-go.md](docs/backend-go.md)) |
 | `npm run ufsm -- generate cpp examples/dimmer.ufsm -o build` | Generate C++ ([docs/backend-cpp.md](docs/backend-cpp.md)) |
+| `npm run ufsm -- generate csharp examples/dimmer.ufsm -o build` | Generate C# ([docs/backend-csharp.md](docs/backend-csharp.md)) |
 
 ### Editor controls
 
@@ -109,7 +110,7 @@ The key map follows the old editor; two-key commands start with <kbd>A</kbd> (ad
 | Problems | Problems tab (live; click one to go to it); badges on the canvas; the count in the status bar opens the tab | |
 | Simulate | Run › Start Simulation; Simulator tab: click an event to send it (marked when it would take a transition now; hover to see which), set guard values, follow the log; active states are green on the canvas | <kbd>F5</kbd> start / restart, <kbd>Shift</kbd>+<kbd>F5</kbd> stop |
 | Record a conformance trace | every simulation step is recorded: Simulator › Trace › Save trace… (replay with `ufsm trace`) | |
-| Generated code | Code tab: C header and source, C++, Python, TypeScript, Rust, Go, live; Copy, Save…. Project › Code generator: the language, its output folder (relative to the model) and settings; Generate (also File › Generate Code and the Code tab) writes the files there, File › Generate Code To… into a folder picked once | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> generate |
+| Generated code | Code tab: C header and source, C++, C#, Python, TypeScript, Rust, Go, live; Copy, Save…. Project › Code generator: the language, its output folder (relative to the model) and settings; Generate (also File › Generate Code and the Code tab) writes the files there, File › Generate Code To… into a folder picked once | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> generate |
 | Open state (off-page region, or zoom in) | double-click | <kbd>Enter</kbd> |
 | Up to parent page / root | breadcrumb, ↑, the mouse's back button | <kbd>Backspace</kbd>, <kbd>J</kbd> <kbd>A</kbd> / <kbd>J</kbd> <kbd>R</kbd> |
 | Show / hide the explorer (tools and machine trees) | View › Explorer | <kbd>N</kbd> |
@@ -137,6 +138,7 @@ render; the committed small sizes were rendered one by one).
 - [x] [Rust backend](docs/backend-rust.md) (`no_std`, no heap), tested against the interpreter
 - [x] [Go backend](docs/backend-go.md) (no imports, gofmt and vet clean), tested against the interpreter
 - [x] [C++ backend](docs/backend-cpp.md) (header-only C++11 template, no heap, exceptions or RTTI), tested against the interpreter
+- [x] [C# backend](docs/backend-csharp.md) (one file, no usings, warning- and analyzer-clean), tested against the interpreter
 - [x] Editor: move, resize, transition handles, undo/redo
 - [x] Editor window after VS Code: menu and search in the title bar, machines in tabs, explorer, Properties/Project panel
 - [x] Editor: search after VS Code's Quick Open and command palette (Ctrl+P, Ctrl+Shift+P): states, transitions and
@@ -162,7 +164,7 @@ render; the committed small sizes were rendered one by one).
 - **0.6.x**: a rewrite in TypeScript. A JSON file format (v1) with a design
   rule check, written-down [execution semantics](docs/semantics.md) with
   UML/SCXML transition priority, a reference interpreter that every code
-  generator is tested against, backends for C, C++, Python, TypeScript, Rust and Go,
+  generator is tested against, backends for C, C++, C#, Python, TypeScript, Rust and Go,
   and a new desktop editor with a simulator, built with Tauri. This fixes
   several bugs in the 0.5 generator, among them conflicting transitions that
   both fired and a signal queue that was never drained.
@@ -173,7 +175,7 @@ uFSM is free software under the GNU General Public License, version 3 or
 (at your option) any later version: see [LICENSE](LICENSE).
 
 **Generated code is yours.** The [output exception](LICENSE-EXCEPTION) lets
-you use, modify and distribute the C, C++, Python, TypeScript, Rust and Go code uFSM
+you use, modify and distribute the C, C++, C#, Python, TypeScript, Rust and Go code uFSM
 generates under any terms, in open or closed products alike; your models
 are yours too. The GPL covers uFSM itself: the editor, the CLI and the
 `@ufsm/core` library (a program that embeds the library or its interpreter

@@ -126,7 +126,13 @@ the generated code. Status refers to the new implementation.
 - [ ] B-CPP follow-ups: Jonas to review the API (`Status` codes, handler by reference, keyword names with `_`) in
       `npm run ufsm -- generate cpp examples/dimmer.ufsm -o build`; an MSVC step (`cl /W4 /WX /permissive-`); a
       `std::optional`/`[[nodiscard]]` flavour for C++17 users?
-- [ ] B-FZ Differential fuzzer: the per-backend differential runs exist (C, C++, Python, TypeScript, Rust and Go,
+- [x] B-CS C# backend + driver (one file, C# 8+, only `global::System`, sealed partial class, XML docs; warnings as
+      errors and the analyzers' recommended set but naming) (2026-10-11)
+- [ ] B-CS follow-ups: Jonas to review the API (`I<Class>Handler`, `<Class>Exception.Code`, model names as written,
+      `TimerStart`/`TimerStop`/`Trace` in PascalCase) in `npm run ufsm -- generate csharp examples/dimmer.ufsm -o build`;
+      .NET is not on Jonas's PATH (the tests find the per-user install in `%LOCALAPPDATA%\Microsoft\dotnet`, installed
+      2026-10-11 with dotnet-install); a netstandard2.0 / .NET Framework build check?
+- [ ] B-FZ Differential fuzzer: the per-backend differential runs exist (C, C++, C#, Python, TypeScript, Rust and Go,
       300 random models each, `UFSM_<LANG>_RANDOM` for more); left: a long-running fuzz command or nightly CI job that
       saves failing seeds
 - [x] Busy latch: a failed call (error, exception, caught panic, longjmp) or a nested `process()` leaves/meets the

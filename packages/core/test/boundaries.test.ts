@@ -101,7 +101,7 @@ describe("import boundaries", () => {
   });
 
   it("a backend imports no other backend, only backends/common.ts", () => {
-    const printers = ["c", "python", "ts", "rust", "go", "cpp"];
+    const printers = ["c", "python", "ts", "rust", "go", "cpp", "csharp"];
     const problems: string[] = [];
     for (const p of printers) {
       const file = join(coreSrc, "backends", `${p}.ts`);

@@ -184,8 +184,9 @@ describe("trace hooks", () => {
 describe("generated names", () => {
   it("refuse an action named like the trace hook, but only with trace on", () => {
     const doc = hookModel();
-    doc.declarations.actions[0]!.name = "trace";
     for (const target of CODE_TARGETS) {
+      // the hook is `Trace` in C# (and Go exports it so; `trace` becomes `Trace` there too)
+      doc.declarations.actions[0]!.name = target === "csharp" ? "Trace" : "trace";
       assert.doesNotThrow(() => generateFiles(doc, target, { prefix: target === "c" ? "" : undefined }), target);
       assert.throws(
         () => generateFiles(doc, target, { trace: true, ...(target === "c" ? { prefix: "" } : {}) }),

@@ -532,7 +532,7 @@ describe("design rule check", () => {
         [
           "warning",
           "unknown-target",
-          "target 'cobol' is not a code generator (c, python, ts, rust, go, cpp); C is used",
+          "target 'cobol' is not a code generator (c, python, ts, rust, go, cpp, csharp); C is used",
         ],
       ],
     );

@@ -11,6 +11,7 @@ import {
   flatten,
   generateC,
   generateCpp,
+  generateCsharp,
   generateGo,
   generatePython,
   generateRust,
@@ -31,6 +32,7 @@ describe("generateFiles", () => {
       rust: { module: "dim" },
       go: { package: "dim" },
       cpp: { namespace: "dim" },
+      csharp: { className: "Dim" },
     };
     const ir = lowerToIr(flatten(doc));
     const c = generateC(ir, { prefix: "dim_", maxMicrosteps: 7 });
@@ -48,6 +50,8 @@ describe("generateFiles", () => {
     assert.deepEqual(generateFiles(doc, "go").files, [{ name: "dim.go", text: go.source }]);
     const cpp = generateCpp(ir, { namespace: "dim", maxMicrosteps: 7 });
     assert.deepEqual(generateFiles(doc, "cpp").files, [{ name: "dim.hpp", text: cpp.source }]);
+    const cs = generateCsharp(ir, { className: "Dim", maxMicrosteps: 7 });
+    assert.deepEqual(generateFiles(doc, "csharp").files, [{ name: "Dim.cs", text: cs.source }]);
   });
 
   it("resolves options, then targets (never behaviour options there), then overrides", () => {
@@ -88,6 +92,8 @@ describe("generateFiles", () => {
     assert.match(go.files[0]!.text, /^type Lamp struct \{$/m);
     const cpp = generateFiles(doc, "cpp", { prefix: "ignored_", className: "Lamp", signalQueue: 3 });
     assert.match(cpp.files[0]!.text, /^class Lamp \{$/m);
+    const cs = generateFiles(doc, "csharp", { prefix: "ignored_", className: "Lamp", signalQueue: 3 });
+    assert.match(cs.files[0]!.text, /^public sealed partial class Lamp$/m);
   });
 
   it("refuses a model with errors", () => {

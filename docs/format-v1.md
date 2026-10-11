@@ -41,7 +41,7 @@ The editor and the `ufsm` CLI read both this format and the legacy v0 format
   "machine": { … },
   "diagram": { … },          // optional
   "options": { … },          // optional, shared by every generator and the simulator
-  "target": "c",             // optional, the code generator to use (c, python, ts, rust, go, cpp; default c)
+  "target": "c",             // optional, the code generator to use (c, python, ts, rust, go, cpp, csharp; default c)
   "targets": { … }           // optional, per code generator settings
 }
 ```
@@ -410,7 +410,8 @@ before it writes outside the model's folder.
 Settings of the generators: [C](backend-c.md#generating) (`c`),
 [Python](backend-python.md#generating) (`python`),
 [TypeScript](backend-ts.md#generating) (`ts`), [Rust](backend-rust.md#generating) (`rust`),
-[Go](backend-go.md#generating) (`go`), [C++](backend-cpp.md#generating) (`cpp`).
+[Go](backend-go.md#generating) (`go`), [C++](backend-cpp.md#generating) (`cpp`),
+[C#](backend-csharp.md#generating) (`csharp`).
 
 ## Canonical form
 

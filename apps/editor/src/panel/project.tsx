@@ -141,6 +141,20 @@ export const TARGETS: { key: CodeTarget; title: string; options: TargetOption[] 
       },
     ],
   },
+  {
+    key: "csharp",
+    title: "C#",
+    options: [
+      { key: "className", label: "Class", fallback: (n) => pascalCase(n) },
+      { key: "namespace", label: "Namespace", fallback: () => "" },
+      {
+        key: "file",
+        label: "File",
+        fallback: (n, set) =>
+          typeof set["className"] === "string" && set["className"] ? set["className"] : pascalCase(n),
+      },
+    ],
+  },
 ];
 
 const KIND_TITLES: { kind: DeclKind; title: string; one: string }[] = [

@@ -49,7 +49,7 @@ normatively, the definition there wins.
 | IR | The imperative code every backend prints, lowered from the flat tables; every semantic decision is made in the lowering | `ir/ir.ts`, `ir/lower.ts` |
 | fallible | An IR function that can fail (it emits a signal, counts a microstep, or calls one that can): printed with an error return | `ir/analyze.ts` |
 | fingerprint | A 32-bit hash of the numbering of events, signals, states and transitions; a host decoding trace hooks checks it | `ir/ids.ts` |
-| target | A code generator (`c`, `python`, `ts`, `rust`, `go`, `cpp`) and its settings under `targets.<name>` | [format-v1.md](format-v1.md#targets) |
+| target | A code generator (`c`, `python`, `ts`, `rust`, `go`, `cpp`, `csharp`) and its settings under `targets.<name>` | [format-v1.md](format-v1.md#targets) |
 | behaviour option, API option | Options that change what the machine does (`signalQueue`, `maxMicrosteps`; set in `options` only) or only the generated API (`debugInfo`, `trace`; overridable per target) | `format/options.ts` |
 
 ## Four meanings of "trace", and the other words for them

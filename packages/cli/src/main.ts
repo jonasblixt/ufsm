@@ -69,6 +69,9 @@ Usage:
   ufsm generate cpp <model.ufsm> [-o dir]
          [--class-name C] [--signal-queue n] [--max-microsteps n] [--debug-info] [--trace]
                                          Generate <name>.hpp (overrides targets.cpp, options; docs/backend-cpp.md)
+  ufsm generate csharp <model.ufsm> [-o dir]
+         [--class-name C] [--signal-queue n] [--max-microsteps n] [--debug-info] [--trace]
+                                         Generate <Class>.cs (overrides targets.csharp, options; docs/backend-csharp.md)
   ufsm schema [-o file]                  The JSON Schema of format v1 (stdout without -o)
   ufsm --version
 
@@ -349,7 +352,8 @@ function main(argv: string[]): number {
       // `generate <model>` takes the target from the model; `generate <target> <model>` names it.
       const named = files.length >= 2;
       const [given, model] = named ? files : [undefined, files[0]];
-      const target = given === "typescript" ? "ts" : given === "c++" ? "cpp" : given;
+      const target =
+        given === "typescript" ? "ts" : given === "c++" ? "cpp" : given === "cs" || given === "c#" ? "csharp" : given;
       if (named && !isCodeTarget(target)) {
         console.error(`ufsm generate: unknown target '${given}' (available: ${CODE_TARGETS.join(", ")})`);
         return 1;
@@ -365,7 +369,7 @@ ${USAGE}`);
       const t = isCodeTarget(target) ? target : selectedTarget(m.doc);
       for (const [flag, targets] of [
         ["prefix", ["c"]],
-        ["class-name", ["python", "ts", "rust", "go", "cpp"]],
+        ["class-name", ["python", "ts", "rust", "go", "cpp", "csharp"]],
       ] as const) {
         if (values[flag] !== undefined && !(targets as readonly string[]).includes(t)) {
           console.error(

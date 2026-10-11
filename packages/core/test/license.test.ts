@@ -17,6 +17,7 @@ import {
   flatten,
   generateC,
   generateCpp,
+  generateCsharp,
   generateGo,
   generatePython,
   generateRust,
@@ -98,6 +99,7 @@ describe("licensing", () => {
       ["dimmer.rs", generateRust(ir).source],
       ["dimmer.go", generateGo(ir).source],
       ["dimmer.hpp", generateCpp(ir).source],
+      ["Dimmer.cs", generateCsharp(ir).source],
     ] as const) {
       const head = text.split("\n").slice(0, 3).join("\n");
       assert.ok(head.includes(OUTPUT_NOTICE), `${name}: ${head}`);

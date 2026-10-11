@@ -3,7 +3,7 @@
 
 /**
  * The Code tab: a live preview of what `ufsm generate` writes for the active machine, in the language selected in the
- * Project tab (C header and source, Python, TypeScript, Rust, Go or C++), with its options. Updates as the machine changes;
+ * Project tab (C header and source, Python, TypeScript, Rust, Go, C++ or C#), with its options. Updates as the machine changes;
  * layout edits do not regenerate anything.
  */
 import { Component } from "preact";

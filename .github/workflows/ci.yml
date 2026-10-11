@@ -32,15 +32,20 @@ jobs:
         with:
           go-version: stable
           cache: false
+      - name: .NET for the generated C#
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
       - run: npm test
         env:
-          # fail instead of skipping the generated-code tests if gcc/g++, Python, pyright, Rust or Go is missing
+          # fail instead of skipping the generated-code tests if gcc/g++, Python, pyright, Rust, Go or .NET is missing
           UFSM_REQUIRE_CC: 1
           UFSM_REQUIRE_CXX: 1
           UFSM_REQUIRE_PYTHON: 1
           UFSM_REQUIRE_PYRIGHT: 1
           UFSM_REQUIRE_RUST: 1
           UFSM_REQUIRE_GO: 1
+          UFSM_REQUIRE_DOTNET: 1
 
   editor:
     name: Editor (${{ matrix.os }})

@@ -36,8 +36,8 @@ The plan (old-generator bugs, strategy, task list, known issues) is imported bel
 ## Goals and constraints
 
 - Desktop only: Windows, macOS, Linux. No phones or tablets.
-- Code generation for several languages: C, C++, Python, TypeScript/JavaScript,
-  Rust and Go today; later possibly C#.
+- Code generation for several languages: C, C++, C#, Python,
+  TypeScript/JavaScript, Rust and Go.
 - Generated C must stay small and static (embedded targets, no malloc).
 - Jonas works on Windows (`C:\Users\jonas\work\ufsm`); CI covers all three OSes.
 
@@ -47,12 +47,12 @@ The plan (old-generator bugs, strategy, task list, known issues) is imported bel
 packages/core/          @ufsm/core: everything that is not UI (folders and rules: docs/architecture.md)
   schema/               ufsm-v1.schema.json (generated: `npm run gen:schema`; a test checks it)
   test/                 node:test suites (tsx); harness.ts (scripts, differential runs), random-model.ts,
-                        backend-contract.ts (what every backend's tests share), {c,cpp,py,ts,rust,go}-harness.ts,
+                        backend-contract.ts (what every backend's tests share), {c,cpp,csharp,py,ts,rust,go}-harness.ts,
                         gate.test.ts (the validity gate), boundaries.test.ts (import rules)
 packages/cli/           @ufsm/cli: `ufsm` command (info, check, list, migrate, fmt, run, trace, flatten, ir, generate, schema)
 apps/editor/            @ufsm/editor: Vite + TypeScript frontend after VS Code (file map in .claude/rules/editor.md)
 apps/editor/src-tauri/  Rust shell: window, dialog and fs plugins (fs reaches only dialog-picked paths), settings.json, icons
-docs/                   architecture, glossary, contributing; format-v1, semantics (normative); backend-{c,cpp,python,ts,rust,go}
+docs/                   architecture, glossary, contributing; format-v1, semantics (normative); backend-{c,cpp,csharp,python,ts,rust,go}
 examples/, tests/models/  models in v1 format (tests/models has canvas.ufsm, the old editor's own logic)
 tests/traces/           conformance traces (JSON): steps + expected action calls, by name
 old/                    v0.5.x C/GTK editor, Python generator, C tests (reference only)
@@ -74,7 +74,7 @@ old/                    v0.5.x C/GTK editor, Python generator, C tests (referenc
 | `npm run ufsm -- trace tests/traces/*.json` | Replay conformance traces on the interpreter |
 | `npm run ufsm -- flatten <model> [--json]` | Show the flat tables (regions/slots, transitions, offers) |
 | `npm run ufsm -- ir <model> [--json]` | Show the IR as pseudo-code (what backends emit) |
-| `npm run ufsm -- generate <c\|cpp\|python\|ts\|rust\|go> <model> -o <dir>` | Generate code (`--prefix` for C, `--class-name` for the others, `--signal-queue`, `--max-microsteps`, `--debug-info`, `--trace`) |
+| `npm run ufsm -- generate <c\|cpp\|csharp\|python\|ts\|rust\|go> <model> -o <dir>` | Generate code (`--prefix` for C, `--class-name` for the others, `--signal-queue`, `--max-microsteps`, `--debug-info`, `--trace`) |
 | `npm run gen:editor-fsm` | Regenerate the editor model's `editor-fsm.ts` and `KEYMAP.md` after editing `editor.ufsm` |
 | `npm run gen:schema` | Regenerate `packages/core/schema/ufsm-v1.schema.json` from `src/format/schema.ts` |
 
