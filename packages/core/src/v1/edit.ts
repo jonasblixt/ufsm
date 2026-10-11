@@ -18,7 +18,7 @@
  * amount); otherwise the jog keeps its absolute position.
  */
 import { ACTION_LINE_H, ACTION_MIN_H, ACTION_PAD, actionBlock } from "./action-block";
-import { ancestors, indexV1, type DocIndex } from "./doc-index";
+import { ancestors, indexV1, type DocIndex } from "../model/doc-index";
 import {
   HEADER_H,
   actionBlockHeight,

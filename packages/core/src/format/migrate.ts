@@ -27,7 +27,7 @@ import {
   type V0State,
 } from "../v0/format";
 import { indexV0, regionsTopDown } from "../v0/index-model";
-import { indexV1 } from "../v1/doc-index";
+import { indexV1 } from "../model/doc-index";
 import { edgeOrigin } from "../v1/geometry";
 import { sheetFit } from "../v1/sheet";
 import {

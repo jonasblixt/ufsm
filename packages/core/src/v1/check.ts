@@ -6,7 +6,7 @@
  * cannot express. Errors make code generation impossible or wrong;
  * warnings point at likely mistakes.
  */
-import { ancestors, indexV1, regionChain, vertexName, type DocIndex } from "./doc-index";
+import { ancestors, indexV1, regionChain, vertexName, type DocIndex } from "../model/doc-index";
 import { ACTION_CHAR_W, ACTION_ICON, ACTION_ICON_GAP, actionBlock } from "./action-block";
 import { HEADER_H, isOffPage, vertexBox } from "./geometry";
 import { sheetFit, sheetFitMessage } from "./sheet";

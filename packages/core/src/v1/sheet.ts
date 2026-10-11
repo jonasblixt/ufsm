@@ -17,7 +17,7 @@
  *
  * Platform neutral: the editor draws from these boxes, and so will SVG/PDF export.
  */
-import { commonRegion, vertexName, type DocIndex } from "./doc-index";
+import { commonRegion, vertexName, type DocIndex } from "../model/doc-index";
 import { edgeGeometry, isSheet, sheetOfRegion, sheetOfVertex, vertexBox, type Box, type Point } from "./geometry";
 import { PAPER_SIZES, type Id, type Paper, type Region, type State, type TitleBlock } from "../format/model";
 

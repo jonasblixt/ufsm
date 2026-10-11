@@ -18,8 +18,8 @@
  * Then only the first lines are shown and a marker on the block's bottom line counts what is hidden, per kind. At
  * the smallest height (one line) the block shows only the number of items of each kind.
  */
-import { declName, type DocIndex } from "./doc-index";
-import { actionLabel, internalTransitionLabel } from "./labels";
+import { declName, type DocIndex } from "../model/doc-index";
+import { actionLabel, internalTransitionLabel } from "../model/labels";
 import type { Action, Id, State, Timer } from "../format/model";
 
 /** Height of a state's name header (geometry.ts exports it as HEADER_H). */

@@ -12,7 +12,7 @@
  * References are by id, so renaming a declaration or a state changes nothing else: every label, guard and generated
  * name follows. Deleting a declaration removes its uses (see deleteDecl).
  */
-import { commonRegion, indexV1, type DocIndex } from "./doc-index";
+import { commonRegion, indexV1, type DocIndex } from "../model/doc-index";
 import { diagramOf, regionLayoutOf } from "./edit";
 import { regionBoxes, stateLayout, vertexBox } from "./geometry";
 import { DECL_PREFIX, ID_PREFIX, IdAllocator } from "../format/ids";

@@ -7,7 +7,7 @@
  * relative to the fragment's top-left corner. Pasting gives every element a fresh id, so a fragment can be pasted
  * any number of times, into the same machine or another one.
  */
-import { commonRegion, indexV1, type DocIndex } from "./doc-index";
+import { commonRegion, indexV1, type DocIndex } from "../model/doc-index";
 import { diagramOf, snap, topLevelVertices } from "./edit";
 import { edgeOrigin, regionOrigin, vertexBox, type Point } from "./geometry";
 import { regionArea } from "./create";

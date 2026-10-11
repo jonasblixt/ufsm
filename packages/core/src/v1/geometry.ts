@@ -10,7 +10,7 @@
  * off-page region.
  */
 import { HEADER, actionBlock } from "./action-block";
-import { commonRegion, type DocIndex } from "./doc-index";
+import { commonRegion, type DocIndex } from "../model/doc-index";
 import { GRID, type EdgeEnd, type Id, type LabelLayout, type Region, type Side, type State, type StateLayout } from "../format/model";
 import { autoSides, defaultLabel, labelAnchor, sRoute, sideLength, sideTowards, type JogAxis } from "./route";
 

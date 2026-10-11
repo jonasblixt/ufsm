@@ -10,7 +10,7 @@
  * Validity is checked where the user acts (`cannotAdd`, `cannotConnect`), not after the fact: the design rule check
  * still reports everything else (a transition without a trigger, a region without an initial state, ...).
  */
-import { ancestors, commonRegion, indexV1, type DocIndex } from "./doc-index";
+import { ancestors, commonRegion, indexV1, type DocIndex } from "../model/doc-index";
 import { endAt, followTransitions, nearestEnd,regionLayoutOf, diagramOf, snap, MIN_BAR, MIN_STATE } from "./edit";
 import { HEADER_H, actionBlockHeight, isOffPage, isSheet, regionBoxes, regionOrigin, stateLayout, vertexBox, edgeGeometry, edgeOrigin, type Box, type Point } from "./geometry";
 import { IdAllocator, ID_PREFIX } from "../format/ids";
