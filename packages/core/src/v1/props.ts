@@ -14,7 +14,7 @@
  */
 import { commonRegion, indexV1, type DocIndex } from "../model/doc-index";
 import { diagramOf, regionLayoutOf } from "./edit";
-import { regionBoxes, stateLayout, vertexBox } from "./geometry";
+import { regionBoxes, stateLayout, vertexBox } from "../diagram/geometry";
 import { DECL_PREFIX, ID_PREFIX, IdAllocator } from "../format/ids";
 import type { OptionKey } from "../format/options";
 import {

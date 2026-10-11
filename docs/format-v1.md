@@ -232,7 +232,7 @@ from the model (see below).
 ### Drawing frame and title block
 
 Every sheet is drawn as a sheet of paper with a drawing frame in the manner
-of ISO 5457 (`core/src/v1/sheet.ts`):
+of ISO 5457 (`core/src/diagram/sheet.ts`):
 
 - The **drawing area** starts 50 units (8.8 mm) inside the paper edge on all
   four sides; its top-left corner is the sheet's origin `(0, 0)`. So the

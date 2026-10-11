@@ -9,7 +9,7 @@
  */
 import { commonRegion, indexV1, type DocIndex } from "../model/doc-index";
 import { diagramOf, snap, topLevelVertices } from "./edit";
-import { edgeOrigin, regionOrigin, vertexBox, type Point } from "./geometry";
+import { edgeOrigin, regionOrigin, vertexBox, type Point } from "../diagram/geometry";
 import { regionArea } from "./create";
 import { DECL_PREFIX, ID_PREFIX, IdAllocator } from "../format/ids";
 import type {

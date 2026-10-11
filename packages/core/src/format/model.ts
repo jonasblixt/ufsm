@@ -199,7 +199,7 @@ export interface StateLayout {
   orientation?: "horizontal" | "vertical";
   /**
    * States only: height of the action block (entry, exit, timers, internal transitions) when it is smaller than its
-   * lines need; the rest is hidden behind a marker. Omitted: as tall as its lines (v1/action-block.ts).
+   * lines need; the rest is hidden behind a marker. Omitted: as tall as its lines (diagram/action-block.ts).
    */
   actionsHeight?: number;
 }
@@ -238,7 +238,7 @@ export interface FreeEdgeLayout {
 }
 
 /**
- * Orthogonal S route (`route: "s"`): the geometry is derived (v1/route.ts),
+ * Orthogonal S route (`route: "s"`): the geometry is derived (diagram/route.ts),
  * so the transition follows its states. An end without `from`/`to` picks its
  * side and offset automatically; a given one is pinned. `jog` is the position
  * of the movable segment, on the axis it was set for, relative to the same

@@ -159,11 +159,11 @@ Build Tools "Desktop development with C++"), TypeScript 6, Vite 7, Tauri 2.
   `ev1`, `sig1`, `act1`, `grd1`, `r0`, `s1`, `t1`.
 - Coordinates are relative: state x/y to the owning state's top-left (or the
   sheet origin for the root region and off-page regions: the top-left corner of the drawing area inside the frame,
-  50 units in from the paper edge; `core/src/v1/sheet.ts`); transition `via`/`label`
+  50 units in from the paper edge; `core/src/diagram/sheet.ts`); transition `via`/`label`
   to the innermost region containing both endpoints. Use
-  `core/src/v1/geometry.ts` for absolute positions, never re-derive.
+  `core/src/diagram/geometry.ts` for absolute positions, never re-derive.
 - Transition layouts: `route` absent/`"free"` = stored polyline (`from`, `via`, `to`;
-  what v0 converts to); `"route": "s"` = derived orthogonal route (`core/src/v1/route.ts`)
+  what v0 converts to); `"route": "s"` = derived orthogonal route (`core/src/diagram/route.ts`)
   with optional pinned `from`/`to`, `jog` `{x}` or `{y}` (region-relative) and `label`
   relative to the route's label anchor. Nothing derived is stored; derived defaults keep to the 10-unit grid.
   New transitions use S (the straight tool makes free ones). An initial state is never a target in the editor.
@@ -177,7 +177,7 @@ Build Tools "Desktop development with C++"), TypeScript 6, Vite 7, Tauri 2.
   before exit actions, all stopped by reset()/terminate; the application runs the clock and sends `event` on expiry
   (semantics.md "Timers"). Generated code has a timer API only when the model has timers; traces list the calls as
   `start:<name>(<ms> ms)` / `start:<name>(every <ms> ms)` / `stop:<name>`.
-- The action block is derived from the state's width (`core/src/v1/action-block.ts`, format-v1.md "Action block"): an
+- The action block is derived from the state's width (`core/src/diagram/action-block.ts`, format-v1.md "Action block"): an
   icon per kind, entry and exit lists wrapped, timers packed, 7-unit character cells, `10 + 20 × lines` tall. A state's
   optional `actionsHeight` in the diagram makes it smaller: the first lines show and a marker counts the rest.
 - Guards: list of terms ANDed (`{call}`, `{call, not}`, `{in}`, `{in, not}`);

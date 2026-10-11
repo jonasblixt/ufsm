@@ -7,9 +7,9 @@
  * warnings point at likely mistakes.
  */
 import { ancestors, indexV1, regionChain, vertexName, type DocIndex } from "../model/doc-index";
-import { ACTION_CHAR_W, ACTION_ICON, ACTION_ICON_GAP, actionBlock } from "./action-block";
-import { HEADER_H, isOffPage, vertexBox } from "./geometry";
-import { sheetFit, sheetFitMessage } from "./sheet";
+import { ACTION_CHAR_W, ACTION_ICON, ACTION_ICON_GAP, actionBlock } from "../diagram/action-block";
+import { HEADER_H, isOffPage, vertexBox } from "../diagram/geometry";
+import { sheetFit, sheetFitMessage } from "../diagram/sheet";
 import { isApiOption, isBehaviourOption } from "../format/options";
 import { IDENTIFIER, TIMER_MAX_MS, timerMs, type Action, type DeclKind, type GuardTerm, type Id, type Transition, type UfsmDocument, type Vertex } from "../format/model";
 

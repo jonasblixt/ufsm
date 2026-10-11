@@ -28,8 +28,8 @@ import {
 } from "../v0/format";
 import { indexV0, regionsTopDown } from "../v0/index-model";
 import { indexV1 } from "../model/doc-index";
-import { edgeOrigin } from "../v1/geometry";
-import { sheetFit } from "../v1/sheet";
+import { edgeOrigin } from "../diagram/geometry";
+import { sheetFit } from "../diagram/sheet";
 import {
   IDENTIFIER,
   PAPER_SIZES,

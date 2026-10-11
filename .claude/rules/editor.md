@@ -50,7 +50,7 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend. Window laid ou
   handles, geometry) is rebuilt from it.
   Avoid APIs newer than Safari 15 (macOS 12 WKWebView), e.g. use the manual
   `roundedRect` helper instead of `ctx.roundRect`.
-- A state's action block (entry, exit, timers, internal transitions) is laid out in core (`v1/action-block.ts`: lines,
+- A state's action block (entry, exit, timers, internal transitions) is laid out in core (`diagram/action-block.ts`: lines,
   wrapping, height, hidden counts, the marker's box) on a 7-unit character cell; `render.ts` only draws that layout, in
   a monospace font sized so one character is exactly one cell (`blockFont`). Never measure its text in the editor.
 - Host access goes through `apps/editor/src/platform.ts` only, so the

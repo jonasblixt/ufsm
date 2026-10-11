@@ -17,7 +17,7 @@
  * are derived anyway, so only their stored jog changes, and only when the whole route moves (both ends by the same
  * amount); otherwise the jog keeps its absolute position.
  */
-import { ACTION_LINE_H, ACTION_MIN_H, ACTION_PAD, actionBlock } from "./action-block";
+import { ACTION_LINE_H, ACTION_MIN_H, ACTION_PAD, actionBlock } from "../diagram/action-block";
 import { ancestors, indexV1, type DocIndex } from "../model/doc-index";
 import {
   HEADER_H,
@@ -29,12 +29,13 @@ import {
   regionBoxes,
   routeInfo,
   stateLayout,
+  segmentDistance,
   vertexBox,
   type Box,
   type Point,
-} from "./geometry";
+} from "../diagram/geometry";
 import { GRID, type Diagram, type EdgeEnd, type FreeEdgeLayout, type Id, type RegionLayout, type Side, type State, type StateLayout, type UfsmDocument } from "../format/model";
-import { followOffset, followPolyline, sideLength } from "./route";
+import { followOffset, followPolyline, sideLength } from "../diagram/route";
 
 /** Smallest region band. */
 export const MIN_BAND = 40;
@@ -507,12 +508,4 @@ export function removeBendPoint(doc: UfsmDocument, transitionId: Id, i: number):
   if (!e || e.route === "s" || !e.via?.[i]) return;
   if (e.via.length === 1) delete e.via;
   else e.via.splice(i, 1);
-}
-
-/** Distance from point p to segment a-b. */
-export function segmentDistance(p: Point, a: Point, b: Point): number {
-  const dx = b.x - a.x, dy = b.y - a.y;
-  const len2 = dx * dx + dy * dy;
-  const t = len2 > 0 ? clamp(((p.x - a.x) * dx + (p.y - a.y) * dy) / len2, 0, 1) : 0;
-  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
 }

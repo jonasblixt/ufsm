@@ -80,7 +80,7 @@ export function vertexBox(index: DocIndex, id: Id): Box {
 
 /**
  * Space taken by the action block below the header (entry, exit, timer and internal transition lines): as tall as
- * its lines at the state's width, or the height stored for the state when that is smaller (v1/action-block.ts).
+ * its lines at the state's width, or the height stored for the state when that is smaller (diagram/action-block.ts).
  */
 export function actionBlockHeight(index: DocIndex, s: State): number {
   return actionBlock(index, s).height;
@@ -295,4 +295,12 @@ export function edgeGeometry(index: DocIndex, transitionId: Id): EdgeGeometry | 
   ];
   const label = e.label ? { x: o.x + e.label.x, y: o.y + e.label.y, w: e.label.w } : undefined;
   return { points, label };
+}
+
+/** Distance from point p to segment a-b. */
+export function segmentDistance(p: Point, a: Point, b: Point): number {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const len2 = dx * dx + dy * dy;
+  const t = len2 > 0 ? Math.min(Math.max(((p.x - a.x) * dx + (p.y - a.y) * dy) / len2, 0), 1) : 0;
+  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
 }

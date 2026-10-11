@@ -23,6 +23,7 @@ import {
   isOffPage,
   paperOf,
   regionBoxes,
+  segmentDistance,
   sheetFrame,
   sheetInfo,
   stateLayout,
@@ -546,13 +547,6 @@ export function labelBox(index: DocIndex, t: Transition): Box | undefined {
   const box = label && layoutLabel(measureCtx, index, t, label).box;
   cache.set(t.id, box);
   return box;
-}
-
-function segmentDistance(p: { x: number; y: number }, a: { x: number; y: number }, b: { x: number; y: number }): number {
-  const dx = b.x - a.x, dy = b.y - a.y;
-  const len2 = dx * dx + dy * dy;
-  const u = len2 > 0 ? Math.min(Math.max(((p.x - a.x) * dx + (p.y - a.y) * dy) / len2, 0), 1) : 0;
-  return Math.hypot(p.x - a.x - u * dx, p.y - a.y - u * dy);
 }
 
 /**

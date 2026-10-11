@@ -2240,7 +2240,7 @@ Object.assign(window, {
     box: (id: string) => (doc ? vertexBox(doc.index, id) : undefined),
     /** The design rule check's findings for the active machine. */
     problems: () => doc?.diagnostics ?? [],
-    /** A state's action block: lines, height, what is hidden and its marker (v1/action-block.ts), with the marker's screen centre. */
+    /** A state's action block: lines, height, what is hidden and its marker (diagram/action-block.ts), with the marker's screen centre. */
     actionBlock: (id: string) => {
       const v = doc?.index.vertices.get(id)?.vertex;
       if (!doc || v?.kind !== "state") return undefined;
