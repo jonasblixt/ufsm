@@ -11,5 +11,5 @@ indent_size = 2
 [*.rs]
 indent_size = 4
 
-[old/**]
+[tests/v0/**]
 indent_size = unset

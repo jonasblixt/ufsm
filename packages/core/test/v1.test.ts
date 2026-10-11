@@ -3,8 +3,8 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { basename, dirname, join, relative, sep } from "node:path";
+import { readdirSync, readFileSync } from "node:fs";
+import { basename, dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv from "ajv";
 import {
@@ -31,10 +31,9 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..")
 const schema = JSON.parse(readFileSync(join(repoRoot, "packages/core/schema/ufsm-v1.schema.json"), "utf8"));
 const load = (f: string): UfsmDocument => loadModel(readFileSync(join(repoRoot, f), "utf8")).doc;
 
-function ufsmFiles(dir: string, exclude: string[] = []): string[] {
-  if (!existsSync(dir)) return [];
+function ufsmFiles(dir: string): string[] {
   return readdirSync(dir, { recursive: true, encoding: "utf8" })
-    .filter((f) => f.endsWith(".ufsm") && !exclude.some((ex) => f.startsWith(ex)))
+    .filter((f) => f.endsWith(".ufsm"))
     .map((f) => join(dir, f))
     .sort();
 }
@@ -45,8 +44,8 @@ const v1Files = [
   ...ufsmFiles(join(repoRoot, "tests/models")),
   ...ufsmFiles(join(repoRoot, "apps/editor/src/fsm")),
 ];
-/** Legacy v0 models (old/compose/tests holds pre-0.4 drafts that are not JSON). */
-const v0Files = ufsmFiles(join(repoRoot, "old"), [join("compose", "tests") + sep]);
+/** The v0.5.3 models (tests/v0/README.md). */
+const v0Files = ufsmFiles(join(repoRoot, "tests/v0"));
 
 const rel = (p: string): string => relative(repoRoot, p);
 
@@ -132,7 +131,7 @@ describe("a new document", () => {
   });
 });
 
-describe("v0 -> v1 migration", { skip: v0Files.length === 0 && "old/ not present" }, () => {
+describe("v0 -> v1 migration", () => {
   for (const path of v0Files) {
     it(`${rel(path)} converts without losing structure or geometry`, () => {
       const text = readFileSync(path, "utf8");
@@ -210,9 +209,7 @@ describe("v0 -> v1 migration", { skip: v0Files.length === 0 && "old/ not present
   });
 
   it("turns v0 compare terms into calls of new boolean guards", () => {
-    const path = v0Files.find((p) => p.endsWith(join("compose", "src", "canvas.ufsm")));
-    if (!path) return;
-    const v0doc = v0.parseV0(readFileSync(path, "utf8"));
+    const v0doc = v0.parseV0(readFileSync(join(repoRoot, "tests/v0/canvas.ufsm"), "utf8"));
     const count = v0doc.guards.find((g) => g.name === "canvas_selection_count")!;
     const refs = (r: typeof v0doc.region): v0.V0GuardRef[] =>
       r.states.flatMap((s) => [...s.transitions.flatMap((t) => t.guards), ...s.region.flatMap(refs)]);

@@ -709,3 +709,6 @@ Measured over the 21 valid legacy models (864 KB):
 - 2026-10-11: **Search: no theme preview**. Highlighting or hovering a color-theme/appearance row no longer applies it
   (`SearchItem.preview`, the quick pick's `onPreview` and `previewTheme`/`endPreview` removed); picking still applies and
   saves. Browser checks now assert that nothing changes until a row is picked (396 passed).
+- 2026-10-11: **`old/` removed** (tag v0.5.3 keeps it). The README logo moved to `docs/logo.png`. The 21 v0 models moved
+  unchanged to `tests/v0/` (README there); `v0.test.ts`, `v1.test.ts` and `sheet.test.ts` read them and no longer skip,
+  the BSD licence test is gone; remaining mentions in code comments, trace docs, CLAUDE.md and the rules point at v0.5.3.
