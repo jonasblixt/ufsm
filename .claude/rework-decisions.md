@@ -6,6 +6,25 @@ decision (date, decision, why).
 
 ---
 
+## The decisions that shape the code today
+
+Ten rows to read first; search the table below for the date and the words in bold. docs/architecture.md describes the
+result.
+
+1. 2026-10-08 **TypeScript core + Tauri 2 shell**: one language for core, CLI and editor; the core is platform neutral.
+2. 2026-10-08 **v1 format: references by id, relative coordinates, layout in the same file**; the editor writes only v1.
+3. 2026-10-09 **Run-time semantics written down in `docs/semantics.md`** (SCXML-based), with the **selection redefined
+   so it can be precomputed**; traces are derived from the document by hand.
+4. 2026-10-09 **Flat model** and **IR = structured statements**: the semantics are decided once, in the lowering, and
+   every backend only prints (2026-10-11: reachability too, and one shared backend layer).
+5. 2026-10-09 **Transition routing: the file stores intent**, a pure function in core derives the geometry.
+6. 2026-10-09 **Editor: dogfood uFSM** (its interaction logic is a uFSM model) and **Editor stack: Preact, Immer patches**
+   (the document is the only state).
+7. 2026-10-10 **Busy latch instead of catching application exceptions**, and the **common `options` section**.
+8. 2026-10-10 **Format v1 schema written once, in TypeBox**.
+9. 2026-10-11 **The design rule check is the one validity gate**.
+10. 2026-10-11 **Core grouped by domain** with entry points, and **editor state in one store** with typed changes.
+
 ## 5. Decisions log
 
 | Date | Decision | Why |

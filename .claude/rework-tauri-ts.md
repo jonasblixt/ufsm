@@ -266,10 +266,11 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [ ] Later: `"auto"` route via libavoid-js (trial on canvas.ufsm first; LGPL-2.1+, compatible with uFSM's GPL-3; keep its
       licence notice and source link)
 
-### Phase R — review 2026-10-11 (`docs/review-2026-10-11.md`, section 6)
+### Phase R — review 2026-10-11 (`docs/review-2026-10-11.md`, section 6; all done 2026-10-11)
 - [x] R1 One validity gate: the structural rules of `semantics/` are design rules (`fork-no-outgoing`, `fork-cycle`,
       `join-incoming`, `initial-target`); throws in structure/flatten are assertions; mutation test (2026-10-11)
-- [ ] R2 Human documentation: `docs/architecture.md`, `docs/glossary.md`, `docs/contributing.md`
+- [x] R2 Human documentation: `docs/architecture.md`, `docs/glossary.md`, `docs/contributing.md`; CLAUDE.md points
+      there; summary at the top of the decisions log (2026-10-11)
 - [x] R3 Runtime contract out of the interpreter (`runtime/contract.ts`; `MachineHost`, `RunOptions`, `MachineError`,
       `RunningMachine`) (2026-10-11)
 - [x] R4 Shared backend layer (`ir/analyze.ts`, `backends/common.ts`, resolved options, printers in named parts)
@@ -281,7 +282,8 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
       (2026-10-11)
 - [x] R9 Key map generated from editor.ufsm (`apps/editor/src/fsm/KEYMAP.md`) (2026-10-11)
 - [x] R10 Vocabulary: StepEvent/onStep, sheet not page, hidden marker not pill (2026-10-11)
-- [ ] R11 Formatter and import-boundary check
+- [x] R11 Formatter (Prettier, printWidth 120, CI `format:check`, `.git-blame-ignore-revs`) and import-boundary
+      check (`test/boundaries.test.ts`) (2026-10-11)
 - [x] R12 One backend contract suite (`test/backend-contract.ts`) (2026-10-11)
 
 ### Open questions

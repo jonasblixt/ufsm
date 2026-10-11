@@ -641,3 +641,15 @@ Measured over the 21 valid legacy models (864 KB):
   transition and internal transition, by region Keys/Pointer/Tool: state, key or pointer event, guards, actions, target);
   `npm run gen:editor-fsm` writes it next to editor-fsm.ts, `test/keymap.test.ts` keeps it fresh. Action names are command
   ids (commands.ts) or handler-part actions, so a key is one grep from its code.
+- 2026-10-11: **Review R11, tooling.** `test/boundaries.test.ts` checks every import against the layer table of
+  docs/architecture.md (core folders, platform neutrality, backends never import each other, Tauri only in platform.ts,
+  the editor and CLI only through entry points; checked to fail on planted violations). Prettier 3.9.10 (`printWidth:
+  120`, generated editor-fsm.ts and old/ excluded), `npm run format`/`format:check`, a CI step; the one-time formatting
+  commit is listed in `.git-blame-ignore-revs`. All tests (C with LLVM clang: core 596/596, nothing skipped), browser
+  check 386/386 and the generated code of every repo model unchanged after formatting.
+- 2026-10-11: **Review R2, documentation.** `docs/architecture.md` (parts, layer table with import rules, entry points,
+  pipeline, the seven engines and who checks whom, conventions incl. the caching contract, the editor's data flow and
+  why it has its own state machine), `docs/glossary.md` (models and diagrams, semantics and code generation, the four
+  meanings of "trace", editor words), `docs/contributing.md` (rules for every change; recipes: design rule, editor
+  command, generator option, backend). `.claude/CLAUDE.md` points to them instead of repeating them; the decisions log
+  starts with a ten-row summary. The review's twelve steps are done.
