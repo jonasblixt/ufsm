@@ -6,7 +6,7 @@
  * `options`, then `targets.<name>` (the target's own settings and API options; behaviour options are not taken from
  * there), then overrides (the CLI's flags). Used by `ufsm generate` and by the editor's code preview.
  */
-import { checkV1 } from "../v1/check";
+import { checkSemantics } from "../check/semantic";
 import type { UfsmDocument } from "../format/model";
 import { flatten } from "../semantics/flatten";
 import { lowerToIr } from "../ir/lower";
@@ -54,7 +54,7 @@ export interface GenerateOverrides {
  * resolved `trace` option). Throws CodegenError when the model has errors.
  */
 export function modelIr(doc: UfsmDocument, trace = false): IrModule {
-  const errors = checkV1(doc).filter((d) => d.severity === "error");
+  const errors = checkSemantics(doc).filter((d) => d.severity === "error");
   if (errors.length) throw new CodegenError(`the model has ${errors.length} error${errors.length > 1 ? "s" : ""}: ${errors.map((e) => e.message).join("; ")}`);
   return lowerToIr(flatten(doc), { trace });
 }

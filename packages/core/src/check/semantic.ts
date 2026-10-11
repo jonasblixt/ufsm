@@ -2,31 +2,19 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 /**
- * Design rule check for v1 documents: things the JSON structure alone
- * cannot express. Errors make code generation impossible or wrong;
- * warnings point at likely mistakes.
+ * Semantic design rules: what the JSON structure alone cannot express about the machine (references, names, triggers,
+ * initializers, forks and joins, timers, options). Every error here makes simulation or code generation impossible or
+ * wrong; after no errors, every later stage succeeds (the validity gate, test/gate.test.ts). Warnings point at likely
+ * mistakes. Nothing here looks at the diagram.
  */
 import { ancestors, indexV1, regionChain, vertexName, type DocIndex } from "../model/doc-index";
-import { ACTION_CHAR_W, ACTION_ICON, ACTION_ICON_GAP, actionBlock } from "../diagram/action-block";
-import { HEADER_H, isOffPage, vertexBox } from "../diagram/geometry";
-import { sheetFit, sheetFitMessage } from "../diagram/sheet";
+import type { Diagnostic } from "./diagnostic";
 import { isApiOption, isBehaviourOption } from "../format/options";
 import { IDENTIFIER, TIMER_MAX_MS, timerMs, type Action, type DeclKind, type GuardTerm, type Id, type Transition, type UfsmDocument, type Vertex } from "../format/model";
 
-export type Severity = "error" | "warning";
-
-export interface Diagnostic {
-  severity: Severity;
-  /** Stable identifier for tests and filtering, e.g. "dangling-ref". */
-  code: string;
-  message: string;
-  /** Element the diagnostic is about, when there is one. */
-  id?: Id;
-}
-
 const INITIALIZERS = new Set(["initial", "shallow-history", "deep-history"]);
 
-export function checkV1(doc: UfsmDocument, prebuilt?: DocIndex): Diagnostic[] {
+export function checkSemantics(doc: UfsmDocument, prebuilt?: DocIndex): Diagnostic[] {
   const index = prebuilt ?? indexV1(doc);
   const out: Diagnostic[] = [];
   const err = (code: string, message: string, id?: Id): void => {
@@ -328,40 +316,6 @@ export function checkV1(doc: UfsmDocument, prebuilt?: DocIndex): Diagnostic[] {
         warn("target-option", `targets.${target}.${k} is ignored: it changes behaviour, so it is set in options for every target`);
       } else if (isApiOption(k) && typeof set[k] !== "boolean") {
         warn("target-option", `targets.${target}.${k} is ignored: expected true or false`);
-      }
-    }
-  }
-
-  // ---- diagram consistency
-  const dia = doc.diagram;
-  if (dia) {
-    for (const id of Object.keys(dia.states)) if (!index.vertices.has(id)) warn("stale-layout", `diagram has layout for unknown state '${id}'`, id);
-    for (const id of Object.keys(dia.regions)) if (!index.regions.has(id)) warn("stale-layout", `diagram has layout for unknown region '${id}'`, id);
-    for (const id of Object.keys(dia.transitions)) if (!index.transitions.has(id)) warn("stale-layout", `diagram has layout for unknown transition '${id}'`, id);
-    for (const id of index.vertices.keys()) if (!dia.states[id]) warn("missing-layout", `state '${vertexName(index, id)}' has no diagram position`, id);
-    // ---- fit on the sheet (needs every position and both ends of every transition)
-    const geometry =
-      !out.some((d) => d.code === "missing-layout" || d.code === "duplicate-id") &&
-      doc.machine.transitions.every((t) => index.vertices.has(t.from) && index.vertices.has(t.to));
-    if (geometry) {
-      for (const p of sheetFit(index)) warn(p.problem === "outside" ? "outside-frame" : "title-block", sheetFitMessage(index, p), p.id);
-      // ---- action blocks fit their states. Lines hidden by a height the user set are not reported: the block marks them.
-      for (const { vertex } of index.vertices.values()) {
-        if (vertex.kind !== "state") continue;
-        const block = actionBlock(index, vertex);
-        if (block.auto === 0) continue;
-        const b = vertexBox(index, vertex.id);
-        const shown = block.summary ? [block.summaryRow] : block.rows.slice(0, block.visible).map((r) => r.segments);
-        const right = Math.max(...shown.flat().map((g) => g.x + (g.icon ? ACTION_ICON + ACTION_ICON_GAP : 0) + g.text.length * ACTION_CHAR_W));
-        if (HEADER_H + block.height > b.h || right > b.w) {
-          warn("actions-clipped", `state '${vertexName(index, vertex.id)}' is too small to show its actions, timers and internal transitions`, vertex.id);
-        }
-        const first = vertex.regions?.[0];
-        if (!first || isOffPage(index, first.id)) continue;
-        const covered = first.states.find((c) => vertexBox(index, c.id).y < b.y + HEADER_H + block.height);
-        if (covered) {
-          warn("actions-overlap", `the actions of state '${vertexName(index, vertex.id)}' are drawn over '${vertexName(index, covered.id)}'`, vertex.id);
-        }
       }
     }
   }

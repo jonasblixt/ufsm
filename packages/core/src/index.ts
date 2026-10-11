@@ -41,7 +41,7 @@ export * from "./edit/clipboard";
 export * from "./edit/props";
 export * from "./model/labels";
 export * from "./diagram/sheet";
-export * from "./v1/check";
+export * from "./check/index";
 export * from "./format/options";
 export * from "./format/migrate";
 export * from "./format/load";

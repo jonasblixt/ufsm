@@ -133,7 +133,7 @@ export interface Structure {
 }
 
 /**
- * A construct the semantics cannot give a meaning to. Every one of them is a design rule error (v1/check.ts), so after
+ * A construct the semantics cannot give a meaning to. Every one of them is a design rule error (check/semantic.ts), so after
  * checkV1 reports no errors this is never thrown: the throws below are assertions, not the place to add a rule.
  */
 export class SemanticsError extends Error {

@@ -9,7 +9,7 @@
  * Not optimised; clarity first. Generated code must produce the same
  * action trace for the same inputs.
  */
-import { checkV1 } from "../v1/check";
+import { checkSemantics } from "../check/semantic";
 import { defined, behaviourOptions } from "../format/options";
 import type { Action, GuardTerm, Id, UfsmDocument } from "../format/model";
 import { MachineError, busyError, type MachineHost, type RunOptions, type StepEvent } from "../runtime/contract";
@@ -40,7 +40,7 @@ export class Interpreter {
   private steps = 0;
 
   constructor(doc: UfsmDocument, host: MachineHost = {}, options: RunOptions = {}) {
-    const errors = checkV1(doc).filter((d) => d.severity === "error");
+    const errors = checkSemantics(doc).filter((d) => d.severity === "error");
     if (errors.length > 0) {
       throw new MachineError("invalid-model", `model has ${errors.length} error(s): ${errors.map((e) => e.message).join("; ")}`);
     }
