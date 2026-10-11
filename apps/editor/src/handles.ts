@@ -63,10 +63,10 @@ const RESIZE: { edges: Edge[]; fx: number; fy: number; cursor: string }[] = [
   { edges: ["left"], fx: 0, fy: 0.5, cursor: "ew-resize" },
 ];
 
-/** Handles of the selected elements drawn on `page`. Resize and separator handles only for a single selected vertex. */
-export function handlesFor(index: DocIndex, page: Region, selection: ReadonlySet<Id>): Handle[] {
+/** Handles of the selected elements drawn on `sheet`. Resize and separator handles only for a single selected vertex. */
+export function handlesFor(index: DocIndex, sheet: Region, selection: ReadonlySet<Id>): Handle[] {
   const visible = new Set<Id>();
-  forEachVisible(index, page, (v) => visible.add(v.id));
+  forEachVisible(index, sheet, (v) => visible.add(v.id));
   const out: Handle[] = [];
   const vertices = [...selection].filter((id) => visible.has(id));
   if (vertices.length === 1) {
@@ -133,7 +133,7 @@ const GRAB_PX = 7;
  */
 export function gripAt(
   index: DocIndex,
-  page: Region,
+  sheet: Region,
   selection: ReadonlySet<Id>,
   handles: readonly Handle[],
   x: number,
@@ -158,9 +158,9 @@ export function gripAt(
   }
   if (best) return { grip: best.grip, cursor: best.cursor };
   if (shift) return undefined;
-  const t = hitTransition(index, page, x, y, 6 / scale);
+  const t = hitTransition(index, sheet, x, y, 6 / scale);
   if (t) return t.label ? { grip: { kind: "label", id: t.id }, cursor: "move" } : undefined;
-  const hit = hitTest(index, page, x, y, 6 / scale);
+  const hit = hitTest(index, sheet, x, y, 6 / scale);
   if (hit.vertex && (selection.has(hit.vertex.id) || !hit.region)) return { grip: { kind: "move", id: hit.vertex.id }, cursor: "move" };
   return undefined;
 }

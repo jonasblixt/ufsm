@@ -66,20 +66,20 @@ export interface Bounds {
   y1: number;
 }
 
-/** Visit every vertex drawn on a page (off-page region contents are skipped), parents first. */
-export function forEachVisible(index: DocIndex, page: Region, fn: (v: Vertex) => void): void {
+/** Visit every vertex drawn on a sheet (off-page region contents are skipped), parents first. */
+export function forEachVisible(index: DocIndex, sheet: Region, fn: (v: Vertex) => void): void {
   const visit = (r: Region): void => {
     for (const v of r.states) {
       fn(v);
       if (v.kind === "state") for (const child of v.regions ?? []) if (!isOffPage(index, child.id)) visit(child);
     }
   };
-  visit(page);
+  visit(sheet);
 }
 
-/** Transitions whose source is drawn on the page. */
-export function forEachVisibleTransition(index: DocIndex, page: Region, fn: (t: Transition) => void): void {
-  forEachVisible(index, page, (v) => index.outgoing.get(v.id)?.forEach(fn));
+/** Transitions whose source is drawn on the sheet. */
+export function forEachVisibleTransition(index: DocIndex, sheet: Region, fn: (t: Transition) => void): void {
+  forEachVisible(index, sheet, (v) => index.outgoing.get(v.id)?.forEach(fn));
 }
 
 export interface Hit {
@@ -107,12 +107,12 @@ function grow(b: Box, by: number): Box {
 }
 
 /**
- * What is under world point (x, y) on `page`. The last drawn vertex wins,
+ * What is under world point (x, y) on `sheet`. The last drawn vertex wins,
  * which is also the most deeply nested one. `slop` widens small targets.
  */
-export function hitTest(index: DocIndex, page: Region, x: number, y: number, slop = 4): Hit {
+export function hitTest(index: DocIndex, sheet: Region, x: number, y: number, slop = 4): Hit {
   const hit: Hit = {};
-  forEachVisible(index, page, (v) => {
+  forEachVisible(index, sheet, (v) => {
     const b = drawnBox(index, v);
     if (inside(v.kind === "state" ? b : grow(b, slop), x, y)) hit.vertex = v;
   });
@@ -168,19 +168,19 @@ function segmentHits(r: Bounds, p: { x: number; y: number }, q: { x: number; y: 
 }
 
 /**
- * Ids of the vertices and transitions on `page` picked by world rectangle
+ * Ids of the vertices and transitions on `sheet` picked by world rectangle
  * `r`, at every nesting level. A transition is enclosed when both its ends
  * are inside. In `touching` mode a state that contains the whole rectangle
  * is not picked (dragging inside a composite should not select it).
  */
-export function boxSelect(index: DocIndex, page: Region, r: Bounds, mode: BoxMode): string[] {
+export function boxSelect(index: DocIndex, sheet: Region, r: Bounds, mode: BoxMode): string[] {
   const ids: string[] = [];
-  forEachVisible(index, page, (v) => {
+  forEachVisible(index, sheet, (v) => {
     const b = drawnBox(index, v);
     const encloses = b.x <= r.x0 && b.y <= r.y0 && b.x + b.w >= r.x1 && b.y + b.h >= r.y1;
     if (contains(r, b) || (mode === "touching" && overlaps(r, b) && !encloses)) ids.push(v.id);
   });
-  forEachVisibleTransition(index, page, (t) => {
+  forEachVisibleTransition(index, sheet, (t) => {
     const pts = edgeGeometry(index, t.id)?.points;
     if (!pts || pts.length < 2) return;
     const picked =
@@ -197,8 +197,8 @@ export function vertexBounds(index: DocIndex, id: string): Bounds {
   return { x0: b.x, y0: b.y, x1: b.x + b.w, y1: b.y + b.h };
 }
 
-/** Content bounds of one page. */
-export function pageBounds(index: DocIndex, page: Region): Bounds | undefined {
+/** Content bounds of one sheet. */
+export function sheetBounds(index: DocIndex, sheet: Region): Bounds | undefined {
   let b: Bounds | undefined;
   const add = (x: number, y: number, w: number, h: number): void => {
     if (!b) b = { x0: x, y0: y, x1: x + w, y1: y + h };
@@ -209,11 +209,11 @@ export function pageBounds(index: DocIndex, page: Region): Bounds | undefined {
       b.y1 = Math.max(b.y1, y + h);
     }
   };
-  forEachVisible(index, page, (v) => {
+  forEachVisible(index, sheet, (v) => {
     const vb = vertexBox(index, v.id);
     add(vb.x, vb.y, vb.w, vb.h);
   });
-  forEachVisibleTransition(index, page, (t) => {
+  forEachVisibleTransition(index, sheet, (t) => {
     const g = edgeGeometry(index, t.id);
     if (!g) return;
     g.points.forEach((p) => add(p.x, p.y, 0, 0));
@@ -317,10 +317,10 @@ function drawPill(ctx: CanvasRenderingContext2D, pill: ActionPill, x: number, y:
   ctx.restore();
 }
 
-/** The state whose hidden-lines marker is at world point (x, y) on `page` (a click on it shows every line again). */
-export function pillAt(index: DocIndex, page: Region, x: number, y: number): State | undefined {
+/** The state whose hidden-lines marker is at world point (x, y) on `sheet` (a click on it shows every line again). */
+export function pillAt(index: DocIndex, sheet: Region, x: number, y: number): State | undefined {
   let found: State | undefined;
-  forEachVisible(index, page, (v) => {
+  forEachVisible(index, sheet, (v) => {
     if (v.kind !== "state") return;
     const pill = actionBlock(index, v).pill;
     if (!pill) return;
@@ -556,12 +556,12 @@ function segmentDistance(p: { x: number; y: number }, a: { x: number; y: number 
 }
 
 /**
- * The transition on `page` under world point (x, y): its label, or its line within `slop`. A label wins over a line,
+ * The transition on `sheet` under world point (x, y): its label, or its line within `slop`. A label wins over a line,
  * and the nearest line over farther ones.
  */
-export function hitTransition(index: DocIndex, page: Region, x: number, y: number, slop = 4): { id: string; label: boolean } | undefined {
+export function hitTransition(index: DocIndex, sheet: Region, x: number, y: number, slop = 4): { id: string; label: boolean } | undefined {
   let best: { id: string; label: boolean; d: number } | undefined;
-  forEachVisibleTransition(index, page, (t) => {
+  forEachVisibleTransition(index, sheet, (t) => {
     const lb = labelBox(index, t);
     if (lb && inside(lb, x, y)) {
       if (!best || !best.label) best = { id: t.id, label: true, d: 0 };
@@ -625,7 +625,7 @@ function drawWould(ctx: CanvasRenderingContext2D, index: DocIndex, t: Transition
  * The sheet of paper with its drawing frame (sheet.ts): outer border, the drawing area's edge, zone ticks and references
  * in the band between, the grid inside the drawing area only, and the title block in its bottom-right corner.
  */
-function drawSheet(ctx: CanvasRenderingContext2D, index: DocIndex, page: Region, fileName: string | undefined): void {
+function drawSheet(ctx: CanvasRenderingContext2D, index: DocIndex, region: Region, fileName: string | undefined): void {
   const { sheet, border, area, xs, ys } = sheetFrame(paperOf(index));
   ctx.fillStyle = C.paper;
   ctx.fillRect(sheet.x, sheet.y, sheet.w, sheet.h);
@@ -673,18 +673,18 @@ function drawSheet(ctx: CanvasRenderingContext2D, index: DocIndex, page: Region,
     ctx.fillText(zoneRowLabel(i), right, y);
   }
   ctx.restore();
-  drawTitleBlock(ctx, index, page, fileName);
+  drawTitleBlock(ctx, index, region, fileName);
 }
 
 /** Title block: a caption in the top-left of every cell, the value along its bottom (clipped to the cell). */
-function drawTitleBlock(ctx: CanvasRenderingContext2D, index: DocIndex, page: Region, fileName: string | undefined): void {
+function drawTitleBlock(ctx: CanvasRenderingContext2D, index: DocIndex, sheet: Region, fileName: string | undefined): void {
   const tb = sheetFrame(paperOf(index)).titleBlock;
   ctx.save();
   ctx.fillStyle = C.paper;
   ctx.fillRect(tb.x, tb.y, tb.w, tb.h);
   ctx.strokeStyle = C.ink;
   ctx.lineWidth = 1;
-  const cells = titleBlockCells(index, page, fileName === undefined ? {} : { fileName });
+  const cells = titleBlockCells(index, sheet, fileName === undefined ? {} : { fileName });
   for (const c of cells) ctx.strokeRect(c.box.x, c.box.y, c.box.w, c.box.h);
   ctx.lineWidth = 2;
   ctx.strokeRect(tb.x, tb.y, tb.w, tb.h);
@@ -708,7 +708,7 @@ function drawTitleBlock(ctx: CanvasRenderingContext2D, index: DocIndex, page: Re
 }
 
 export interface RenderOptions {
-  /** Ids of selected vertices and transitions; drawn in the selection color when they are on this page. */
+  /** Ids of selected vertices and transitions; drawn in the selection color when they are on this sheet. */
   selection?: ReadonlySet<string>;
   /** Drag handles of the selection (handles.ts), drawn at a constant screen size on top. */
   handles?: readonly Handle[];
@@ -783,7 +783,7 @@ function drawTransitionSelection(ctx: CanvasRenderingContext2D, index: DocIndex,
 }
 
 /** Problem badges, a constant size on screen: red for errors, yellow for warnings. */
-function drawMarks(ctx: CanvasRenderingContext2D, index: DocIndex, page: Region, marks: ReadonlyMap<string, "error" | "warning">, scale: number): void {
+function drawMarks(ctx: CanvasRenderingContext2D, index: DocIndex, sheet: Region, marks: ReadonlyMap<string, "error" | "warning">, scale: number): void {
   const r = 6 / scale;
   const badge = (x: number, y: number, sev: "error" | "warning"): void => {
     ctx.fillStyle = sev === "error" ? C.refuse : C.warning;
@@ -795,13 +795,13 @@ function drawMarks(ctx: CanvasRenderingContext2D, index: DocIndex, page: Region,
     ctx.fillRect(x - r / 6, y + r * 0.3, r / 3, r / 3);
   };
   ctx.save();
-  forEachVisible(index, page, (v) => {
+  forEachVisible(index, sheet, (v) => {
     const sev = marks.get(v.id);
     if (!sev) return;
     const b = drawnBox(index, v);
     badge(b.x + b.w, b.y, sev);
   });
-  forEachVisibleTransition(index, page, (t) => {
+  forEachVisibleTransition(index, sheet, (t) => {
     const sev = marks.get(t.id);
     const pts = sev && edgeGeometry(index, t.id)?.points;
     if (!sev || !pts || pts.length < 2) return;
@@ -811,11 +811,11 @@ function drawMarks(ctx: CanvasRenderingContext2D, index: DocIndex, page: Region,
   ctx.restore();
 }
 
-/** Draw one page (the root region or an off-page region). `width`/`height` are CSS pixels. */
-export function renderPage(
+/** Draw one sheet (the root region or an off-page region). `width`/`height` are CSS pixels. */
+export function renderSheet(
   ctx: CanvasRenderingContext2D,
   index: DocIndex,
-  page: Region,
+  sheet: Region,
   view: View,
   width: number,
   height: number,
@@ -827,28 +827,28 @@ export function renderPage(
   ctx.translate(view.x, view.y);
   ctx.scale(view.scale, view.scale);
 
-  drawSheet(ctx, index, page, opts.fileName);
+  drawSheet(ctx, index, sheet, opts.fileName);
 
   const sel = opts.selection;
   const selectedT: Transition[] = [];
   const sim = opts.sim;
-  forEachVisible(index, page, (v) => {
+  forEachVisible(index, sheet, (v) => {
     const look: SimLook = sim?.leaves.has(v.id) ? "leaf" : sim?.active.has(v.id) ? "active" : undefined;
     // A selected vertex is drawn in the selection color (no extra box around it).
     const picked = sel?.has(v.id) === true;
     if (v.kind === "state") drawState(ctx, index, v, look, picked);
     else drawPseudo(ctx, index, v, look, picked);
   });
-  forEachVisibleTransition(index, page, (t) => {
+  forEachVisibleTransition(index, sheet, (t) => {
     if (sel?.has(t.id)) selectedT.push(t);
     drawTransition(ctx, index, t, sim?.fired.has(t.id));
   });
-  if (sim?.would.size) forEachVisibleTransition(index, page, (t) => void (sim.would.has(t.id) && drawWould(ctx, index, t, view.scale)));
+  if (sim?.would.size) forEachVisibleTransition(index, sheet, (t) => void (sim.would.has(t.id) && drawWould(ctx, index, t, view.scale)));
   for (const t of selectedT) {
     drawTransitionSelection(ctx, index, t, view.scale);
     drawLabelOutline(ctx, index, t, view.scale);
   }
-  if (opts.marks?.size) drawMarks(ctx, index, page, opts.marks, view.scale);
+  if (opts.marks?.size) drawMarks(ctx, index, sheet, opts.marks, view.scale);
   if (opts.handles) drawHandles(ctx, opts.handles, view.scale);
   opts.overlay?.(ctx, view.scale);
 

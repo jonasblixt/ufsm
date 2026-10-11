@@ -15,8 +15,8 @@ export interface TreeCallbacks {
 export interface Tree {
   /** Highlight a vertex and expand its ancestors. */
   reveal(id: string | undefined): void;
-  /** Mark which page is currently shown. */
-  setPage(pageId: string): void;
+  /** Mark which sheet is currently shown. */
+  setSheet(sheetId: string): void;
 }
 
 /** Pseudo states (initial, history, fork, …) are left out to keep the outline readable. */
@@ -80,7 +80,7 @@ export function buildTree(container: HTMLElement, index: DocIndex, cb: TreeCallb
     details.open = depth < 2 && !offPage;
     const summary = document.createElement("summary");
     summary.className = "row";
-    const lbl = label(r.name || "(region)", offPage ? "region off-page" : "region", offPage ? "Off-page region: opens on its own page" : undefined);
+    const lbl = label(r.name || "(region)", offPage ? "region off-page" : "region", offPage ? "Off-page region: opens on its own sheet" : undefined);
     lbl.addEventListener("click", onLabel(details, () => cb.onRegion(r)));
     summary.append(twisty(), lbl);
     details.append(summary);
@@ -100,7 +100,7 @@ export function buildTree(container: HTMLElement, index: DocIndex, cb: TreeCallb
   for (const s of root.states.filter(listed)) container.append(stateNode(s, 0));
 
   let active: HTMLElement | undefined;
-  let activePage: HTMLElement | undefined;
+  let activeSheet: HTMLElement | undefined;
 
   return {
     reveal(id) {
@@ -121,10 +121,10 @@ export function buildTree(container: HTMLElement, index: DocIndex, cb: TreeCallb
       active.classList.add("active");
       active.scrollIntoView({ block: "nearest" });
     },
-    setPage(pageId) {
-      activePage?.classList.remove("page");
-      activePage = regionRows.get(pageId);
-      activePage?.classList.add("page");
+    setSheet(sheetId) {
+      activeSheet?.classList.remove("sheet");
+      activeSheet = regionRows.get(sheetId);
+      activeSheet?.classList.add("sheet");
     },
   };
 }

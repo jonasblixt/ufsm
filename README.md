@@ -69,7 +69,7 @@ The key map follows the old editor; two-key commands start with <kbd>A</kbd> (ad
 | Save as v1 / Save As | File › Save / Save As… | <kbd>S</kbd>, <kbd>Ctrl</kbd>+<kbd>S</kbd> / <kbd>Shift</kbd>+<kbd>S</kbd>, <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> |
 | Switch machine / close it | click its tab or its name in the explorer / × or middle-click on the tab | <kbd>Ctrl</kbd>+<kbd>Tab</kbd>, <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Tab</kbd> |
 | Pan / zoom | right or middle drag / wheel (also while panning) | |
-| Fit page / 100% | double-click empty space | <kbd>Z</kbd> <kbd>F</kbd> / <kbd>Z</kbd> <kbd>N</kbd> |
+| Fit sheet / 100% | double-click empty space | <kbd>Z</kbd> <kbd>F</kbd> / <kbd>Z</kbd> <kbd>N</kbd> |
 | Select | click a state or transition (canvas or tree; a selected state is drawn in orange); drag a rectangle on empty space: to the right it takes what is inside, to the left what it touches; <kbd>Shift</kbd> adds | <kbd>Ctrl</kbd>+<kbd>A</kbd> all, <kbd>Esc</kbd> clears |
 | Move | drag a state (a composite by its header, or anywhere once it is selected); the whole selection moves, inside its region, on a 10-unit grid | |
 | Resize | drag a side of the selected state anywhere along it, or a corner to resize both ways (the cursor shows it); the dashed line between its regions | |
@@ -84,7 +84,7 @@ The key map follows the old editor; two-key commands start with <kbd>A</kbd> (ad
 | Cut / copy / paste (at the pointer, into the region under it) | Edit › Cut / Copy / Paste | <kbd>Ctrl</kbd>+<kbd>X</kbd> / <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>Ctrl</kbd>+<kbd>V</kbd> |
 | Rename, set a trigger | Properties (Name, Trigger); Edit › Rename / Trigger | <kbd>E</kbd> <kbd>N</kbd> (selected state), <kbd>E</kbd> <kbd>T</kbd> (selected transition) |
 | Entry/exit actions, guard terms, transition actions | Properties: + Add …, ↑ ↓ to reorder, × to remove; type to filter, or type a new name to declare it (`^name` for a signal to emit) | <kbd>A</kbd> <kbd>E</kbd> / <kbd>A</kbd> <kbd>X</kbd> (selected state), <kbd>A</kbd> <kbd>G</kbd> / <kbd>A</kbd> <kbd>A</kbd> (selected transition) |
-| Internal transitions, regions, documentation | Properties of the state: + Add internal transition, region name, off-page, × | <kbd>E</kbd> <kbd>Shift</kbd>+<kbd>O</kbd> puts the region under the pointer on its own page (or back) |
+| Internal transitions, regions, documentation | Properties of the state: + Add internal transition, region name, off-page, × | <kbd>E</kbd> <kbd>Shift</kbd>+<kbd>O</kbd> puts the region under the pointer on its own sheet (or back) |
 | Turn a fork/join | Properties › Orientation | <kbd>E</kbd> <kbd>R</kbd> |
 | Declarations, machine name, paper size, code generator options | Project tab: rename (every use follows), × deletes with its uses, + Add; Paper (A4–A1) warns when states lie beyond the sheet | |
 | Problems | Problems tab (live; click one to go to it); badges on the canvas; the count in the status bar opens the tab | |

@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 /**
- * What the canvas draws on top of the page while a tool is armed: a ghost of the vertex a click would place, and the
+ * What the canvas draws on top of the sheet while a tool is armed: a ghost of the vertex a click would place, and the
  * transition being drawn (source, bend points, a line to the pointer, the target under it; over a valid target the
  * route the click would give it, S or straight). World coordinates;
  * line widths and dashes are scaled so they look the same at every zoom.

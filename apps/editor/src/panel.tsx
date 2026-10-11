@@ -758,7 +758,7 @@ function StateProps({ index, s, ops, focus }: { index: DocIndex; s: State; ops: 
             {(s.regions ?? []).map((r) => (
               <li key={r.id} class="erow region-row">
                 <TextInput cls="text rname" label="Region name" placeholder="(region)" value={r.name ?? ""} onCommit={(v) => ops.edit((d) => renameRegion(d, r.id, v.trim()))} />
-                <label class="check" title="Draw this region's contents on a page of their own">
+                <label class="check" title="Draw this region's contents on a sheet of their own">
                   <input
                     type="checkbox"
                     checked={offPage(r)}

@@ -992,7 +992,7 @@ body {
   font-weight: 600;
 }
 
-.tree .page > .label {
+.tree .sheet > .label {
   text-decoration: underline;
   text-underline-offset: 3px;
 }

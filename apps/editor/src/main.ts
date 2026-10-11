@@ -78,8 +78,10 @@ import {
   OPTION_DEFAULTS,
   paperOf,
   sheetFrame,
+  sheetOfRegion,
+  sheetOfVertex,
 } from "@ufsm/core";
-import { pageLabel, pageOfRegion, pageOfVertex, pagePath, parentPage } from "./nav";
+import { sheetLabel, sheetPath, parentSheet } from "./nav";
 import {
   baseName,
   cachedSettings,
@@ -100,7 +102,7 @@ import {
   windowControls,
   writeSettings,
 } from "./platform";
-import { boxSelect, hitTest, hitTransition, pageBounds, pillAt, renderPage, vertexBounds, type BoxMode, type Bounds, type SimHighlight, type View } from "./render";
+import { boxSelect, hitTest, hitTransition, sheetBounds, pillAt, renderSheet, vertexBounds, type BoxMode, type Bounds, type SimHighlight, type View } from "./render";
 import { C, FALLBACK_THEME, THEMES, canvasAlpha, findTheme, modifierHasEffect, resolveTheme, setCanvasTheme, themeInfo, type ResolvedTheme } from "./theme";
 import { parseSettings, serializeSettings, zoomStep, ZOOM_MAX, ZOOM_MIN, ZOOM_STEPS, type AppearanceChoice, type Settings, type ThemeSetting } from "./settings";
 import { Simulation, relativePath, type SimOptions } from "./sim";
@@ -166,12 +168,12 @@ interface Doc {
   untitled: string | undefined;
   notes: LoadedModel["notes"];
   diagnostics: Diagnostic[];
-  page: Region;
+  sheet: Region;
   /** Selected vertex and transition ids. */
   selection: Set<string>;
-  /** Remembered pan/zoom per page so going back up restores the view. */
+  /** Remembered pan/zoom per sheet so going back up restores the view. */
   views: Map<string, View>;
-  /** Pan/zoom of the page on screen. */
+  /** Pan/zoom of the sheet on screen. */
   view: View;
   tree: Tree;
   /** Build the tree again when the machine section changed since it was built (edits, undo, redo). */
@@ -344,7 +346,7 @@ function draw(): void {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   if (doc) {
     const sim = simHighlight(doc);
-    renderPage(ctx, doc.index, doc.page, view, w, h, {
+    renderSheet(ctx, doc.index, doc.sheet, view, w, h, {
       selection: doc.selection,
       handles: currentHandles(),
       overlay: drawOverlay,
@@ -411,9 +413,9 @@ function fitBounds(b: Bounds, maxScale = 2): void {
 
 function fit(): void {
   if (!doc) return;
-  // The drawing, or the whole sheet when the page is empty.
+  // The drawing, or the whole sheet when it is empty.
   const s = sheetFrame(paperOf(doc.index)).sheet;
-  fitBounds(pageBounds(doc.index, doc.page) ?? { x0: s.x, y0: s.y, x1: s.x + s.w, y1: s.y + s.h });
+  fitBounds(sheetBounds(doc.index, doc.sheet) ?? { x0: s.x, y0: s.y, x1: s.x + s.w, y1: s.y + s.h });
 }
 
 /** Is a world point on the title block (double-click there opens its fields)? */
@@ -475,16 +477,16 @@ function updateChrome(): void {
     renderShell();
     return;
   }
-  const { index, page } = doc;
+  const { index, sheet } = doc;
 
   crumbsEl.replaceChildren(
-    ...pagePath(index, page).flatMap((p, i) => {
+    ...sheetPath(index, sheet).flatMap((p, i) => {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "crumb";
-      b.textContent = pageLabel(index, p);
-      b.disabled = p === page;
-      b.addEventListener("click", () => showPage(p));
+      b.textContent = sheetLabel(index, p);
+      b.disabled = p === sheet;
+      b.addEventListener("click", () => showSheet(p));
       if (i === 0) return [b];
       const sep = document.createElement("span");
       sep.className = "sep";
@@ -492,7 +494,7 @@ function updateChrome(): void {
       return [sep, b];
     }),
   );
-  upBtn.disabled = page === index.doc.machine.root;
+  upBtn.disabled = sheet === index.doc.machine.root;
 
   const v = single();
   const nSel = doc.selection.size;
@@ -529,7 +531,7 @@ function updateChrome(): void {
   if (tool !== "select") statusEl.textContent = toolHint();
   if (note) statusEl.textContent = note;
   doc.tree.reveal(v?.id);
-  doc.tree.setPage(page.id);
+  doc.tree.setSheet(sheet.id);
   renderShell();
 }
 
@@ -542,13 +544,13 @@ function select(ids: Iterable<string>): void {
   requestDraw();
 }
 
-/** Switch page. With `focus`, select that vertex and zoom to it. */
-function showPage(page: Region, focus?: Vertex): void {
+/** Switch sheet. With `focus`, select that vertex and zoom to it. */
+function showSheet(sheet: Region, focus?: Vertex): void {
   if (!doc) return;
-  if (page !== doc.page) {
-    doc.views.set(doc.page.id, { ...view });
-    doc.page = page;
-    const saved = doc.views.get(page.id);
+  if (sheet !== doc.sheet) {
+    doc.views.set(doc.sheet.id, { ...view });
+    doc.sheet = sheet;
+    const saved = doc.views.get(sheet.id);
     if (saved && !focus) {
       Object.assign(view, saved);
       requestDraw();
@@ -566,7 +568,7 @@ function showPage(page: Region, focus?: Vertex): void {
 
 function revealVertex(v: Vertex): void {
   if (!doc) return;
-  showPage(pageOfVertex(doc.index, v.id), v);
+  showSheet(sheetOfVertex(doc.index, v.id), v);
 }
 
 /** "Enter" a state: open its off-page region, or zoom in on it if everything is inline. */
@@ -576,7 +578,7 @@ function enterState(s: State, region?: Region): void {
   const target = region && offPage(region) ? region : s.regions?.find(offPage);
   if (target) {
     doc.selection = new Set();
-    showPage(target);
+    showSheet(target);
   } else {
     select([s.id]);
     fitBounds(vertexBounds(doc.index, s.id), 1.5);
@@ -585,25 +587,25 @@ function enterState(s: State, region?: Region): void {
 
 function goUp(): void {
   if (!doc) return;
-  const up = parentPage(doc.index, doc.page);
-  if (up) showPage(up.page, up.owner);
+  const up = parentSheet(doc.index, doc.sheet);
+  if (up) showSheet(up.sheet, up.owner);
 }
 
 function onTreeRegion(r: Region): void {
   if (!doc) return;
-  if (pageOfRegion(doc.index, r) === r) {
+  if (sheetOfRegion(doc.index, r) === r) {
     doc.selection = new Set();
-    showPage(r);
+    showSheet(r);
     fit();
     return;
   }
   const owner = doc.index.regions.get(r.id)?.owner;
-  showPage(pageOfRegion(doc.index, r), owner);
+  showSheet(sheetOfRegion(doc.index, r), owner);
 }
 
 // ---------------------------------------------------------------- machines (tabs)
 
-/** Show another machine (or none). Its view, page, selection and undo history come with it. */
+/** Show another machine (or none). Its view, sheet, selection and undo history come with it. */
 function activate(d: Doc | undefined, force = false): void {
   if (d === doc && !force) return;
   lasso = undefined;
@@ -672,7 +674,7 @@ function showModel(loaded: LoadedModel, fileName: string, path: string | undefin
     untitled,
     notes: loaded.notes,
     diagnostics: checkV1(loaded.doc, index),
-    page: index.doc.machine.root,
+    sheet: index.doc.machine.root,
     selection: new Set<string>(),
     views: new Map<string, View>(),
     view: { scale: 0.5, x: 0, y: 0 },
@@ -681,7 +683,7 @@ function showModel(loaded: LoadedModel, fileName: string, path: string | undefin
       if (d.history.current.machine === treeMachine) return;
       treeMachine = d.history.current.machine;
       d.tree = makeTree(d.index);
-      d.tree.setPage(d.page.id);
+      d.tree.setSheet(d.sheet.id);
     },
     entry,
     sim: undefined,
@@ -744,7 +746,7 @@ async function saveModel(saveAs = false): Promise<void> {
           if (d === doc) refresh(true);
           else {
             d.index = indexV1(d.history.current);
-            d.page = d.index.regions.get(d.page.id)?.region ?? d.index.doc.machine.root;
+            d.sheet = d.index.regions.get(d.sheet.id)?.region ?? d.index.doc.machine.root;
             d.diagnostics = checkV1(d.index.doc, d.index);
           }
         }
@@ -796,7 +798,7 @@ const panelShown = (): boolean => !document.body.classList.contains("panel-hidde
 function selectAll(): void {
   if (!doc) return;
   const all = { x0: -Infinity, y0: -Infinity, x1: Infinity, y1: Infinity };
-  select(boxSelect(doc.index, doc.page, all, "enclosed"));
+  select(boxSelect(doc.index, doc.sheet, all, "enclosed"));
 }
 
 function zoomNormal(): void {
@@ -805,7 +807,7 @@ function zoomNormal(): void {
 }
 
 function goRoot(): void {
-  if (doc) showPage(doc.index.doc.machine.root);
+  if (doc) showSheet(doc.index.doc.machine.root);
 }
 
 function enterSelected(): void {
@@ -813,14 +815,14 @@ function enterSelected(): void {
   if (v?.kind === "state") enterState(v);
 }
 
-/** Select a vertex or transition from a link in the panel, switching page when it lives on another one. */
+/** Select a vertex or transition from a link in the panel, switching sheet when it lives on another one. */
 function selectFromPanel(id: string): void {
   if (!doc) return;
   const index = doc.index;
   const vid = index.vertices.has(id) ? id : index.transitions.get(id)?.from;
   if (!vid) return;
-  const page = pageOfVertex(index, vid);
-  if (page !== doc.page) showPage(page);
+  const sheet = sheetOfVertex(index, vid);
+  if (sheet !== doc.sheet) showSheet(sheet);
   select([id]);
 }
 
@@ -909,7 +911,7 @@ const MENUS: Menu[] = [
       { label: "Code", run: () => showPanelTab("code") },
       { label: "Settings", run: () => showPanelTab("settings") },
       "-",
-      { label: "Fit Page", keys: "Z F", run: fit, enabled: hasDoc },
+      { label: "Fit Sheet", keys: "Z F", run: fit, enabled: hasDoc },
       { label: "Actual Size", keys: "Z N", run: zoomNormal, enabled: hasDoc },
       "-",
       { label: "Zoom In", keys: "Ctrl++", run: zoomIn, enabled: () => settings.zoom < ZOOM_MAX },
@@ -923,8 +925,8 @@ const MENUS: Menu[] = [
     label: "Go",
     items: [
       { label: "Open State", keys: "Enter", run: enterSelected, enabled: () => single()?.kind === "state" },
-      { label: "Up One Level", keys: "J A", run: goUp, enabled: () => !!doc && doc.page !== doc.index.doc.machine.root },
-      { label: "Root", keys: "J R", run: goRoot, enabled: () => !!doc && doc.page !== doc.index.doc.machine.root },
+      { label: "Up One Level", keys: "J A", run: goUp, enabled: () => !!doc && doc.sheet !== doc.index.doc.machine.root },
+      { label: "Root", keys: "J R", run: goRoot, enabled: () => !!doc && doc.sheet !== doc.index.doc.machine.root },
       "-",
       { label: "Search…", keys: "Ctrl+P", run: () => openQuickPick("") },
       { label: "Go to Element in Machine…", run: () => openQuickPick("@"), enabled: hasDoc },
@@ -1042,8 +1044,8 @@ function jumpTo(id: string): void {
   }
   const t = index.transitions.get(id);
   if (t) {
-    const page = pageOfVertex(index, t.from);
-    if (page !== doc.page) showPage(page);
+    const sheet = sheetOfVertex(index, t.from);
+    if (sheet !== doc.sheet) showSheet(sheet);
     select([id]);
     return;
   }
@@ -1462,7 +1464,7 @@ const codeOps: CodeOps = {
 
 /** Handles of the current selection (drawn and grabbed). */
 function currentHandles(): Handle[] {
-  return doc ? handlesFor(doc.index, doc.page, doc.selection) : [];
+  return doc ? handlesFor(doc.index, doc.sheet, doc.selection) : [];
 }
 
 /** Rebuild everything derived from the document after an edit, undo or redo. `recheck` reruns the design rule check. */
@@ -1470,7 +1472,7 @@ function refresh(recheck = false): void {
   if (!doc) return;
   const index = indexV1(doc.history.current);
   doc.index = index;
-  doc.page = index.regions.get(doc.page.id)?.region ?? index.doc.machine.root;
+  doc.sheet = index.regions.get(doc.sheet.id)?.region ?? index.doc.machine.root;
   doc.selection = new Set([...doc.selection].filter((id) => index.vertices.has(id) || index.transitions.has(id)));
   if (recheck) {
     doc.diagnostics = checkV1(index.doc, index);
@@ -1537,9 +1539,9 @@ function worldAt(clientX: number, clientY: number): Point {
   return { x, y };
 }
 
-/** The innermost vertex drawn at world point p on the current page. */
+/** The innermost vertex drawn at world point p on the current sheet. */
 function vertexAt(p: Point): Vertex | undefined {
-  return doc ? hitTest(doc.index, doc.page, p.x, p.y, 6 / view.scale).vertex : undefined;
+  return doc ? hitTest(doc.index, doc.sheet, p.x, p.y, 6 / view.scale).vertex : undefined;
 }
 
 /** The selected transition when exactly one thing is selected and it is a transition. */
@@ -1588,7 +1590,7 @@ function pasteClipboard(): void {
     return;
   }
   const at = targetPoint();
-  const region = regionAt(d0.index, d0.page, at);
+  const region = regionAt(d0.index, d0.sheet, at);
   let ids: string[] = [];
   edit((d) => void (ids = pasteFragment(d, c.frag, region.id, at, { keepOuterStateRefs: c.key === d0.key })));
   select(ids);
@@ -1770,14 +1772,14 @@ let drag: Drag | undefined;
 function gripUnder(clientX: number, clientY: number, shift: boolean): { grip: Grip; cursor: string } | undefined {
   if (!doc) return undefined;
   const [x, y] = screenToWorld(clientX, clientY);
-  return gripAt(doc.index, doc.page, doc.selection, currentHandles(), x, y, view.scale, shift);
+  return gripAt(doc.index, doc.sheet, doc.selection, currentHandles(), x, y, view.scale, shift);
 }
 
 /** What a click at a client point selects: a transition (line or label), else the innermost vertex. */
 function pickAt(clientX: number, clientY: number): string | undefined {
   if (!doc) return undefined;
   const [x, y] = screenToWorld(clientX, clientY);
-  return hitTransition(doc.index, doc.page, x, y, 6 / view.scale)?.id ?? hitTest(doc.index, doc.page, x, y, 6 / view.scale).vertex?.id;
+  return hitTransition(doc.index, doc.sheet, x, y, 6 / view.scale)?.id ?? hitTest(doc.index, doc.sheet, x, y, 6 / view.scale).vertex?.id;
 }
 
 /** A click on a handle keeps the selection (the handle belongs to it). */
@@ -1791,9 +1793,9 @@ function zoomAround(mx: number, my: number, scale: number): void {
 }
 
 const hintText = {
-  zoom: "z: f fit page · n 100% · Esc cancel",
+  zoom: "z: f fit sheet · n 100% · Esc cancel",
   jump: "j: a up one level · r root · Esc cancel",
-  edit: "e: n name · t trigger · r turn fork/join · O region on its own page · Esc cancel",
+  edit: "e: n name · t trigger · r turn fork/join · O region on its own sheet · Esc cancel",
   add: "a: s state · t S transition · l straight transition · r region · i initial · f final · h history · H deep history · F fork · j join · T terminate · v bend point · e entry · x exit · g guard · a action · Esc cancel",
 };
 
@@ -1842,7 +1844,7 @@ api = attachInput(
       const [ax, ay] = screenToWorld(l.x0, l.y0);
       const [bx, by] = screenToWorld(l.x1, l.y1);
       const rect = { x0: Math.min(ax, bx), y0: Math.min(ay, by), x1: Math.max(ax, bx), y1: Math.max(ay, by) };
-      const picked = boxSelect(doc.index, doc.page, rect, lassoMode(l));
+      const picked = boxSelect(doc.index, doc.sheet, rect, lassoMode(l));
       select(lassoAdd ? [...doc.selection, ...picked] : picked);
     },
     lassoCancel: () => {
@@ -1853,7 +1855,7 @@ api = attachInput(
       if (!doc) return;
       // A click on a state's hidden-lines marker shows every line again (and selects the state).
       const [wx, wy] = screenToWorld(input.x, input.y);
-      const marked = pillAt(doc.index, doc.page, wx, wy);
+      const marked = pillAt(doc.index, doc.sheet, wx, wy);
       if (marked) {
         select([marked.id]);
         edit((d) => resetActionsHeight(d, marked.id));
@@ -1901,8 +1903,8 @@ api = attachInput(
         return;
       }
       const [x, y] = screenToWorld(input.x, input.y);
-      if (hitTransition(doc.index, doc.page, x, y, 6 / view.scale)) return;
-      const hit = hitTest(doc.index, doc.page, x, y, 6 / view.scale);
+      if (hitTransition(doc.index, doc.sheet, x, y, 6 / view.scale)) return;
+      const hit = hitTest(doc.index, doc.sheet, x, y, 6 / view.scale);
       if (hit.vertex?.kind === "state") enterState(hit.vertex, hit.region);
       else if (!hit.vertex && onTitleBlock(x, y)) focusProjectField(TITLE_FIELD_LABELS.revision);
       else if (!hit.vertex) fit();
@@ -1999,7 +2001,7 @@ api = attachInput(
         placing = { kind: "region", p0, region: "", error: undefined, created: undefined };
         return;
       }
-      const region = regionAt(doc.index, doc.page, p0);
+      const region = regionAt(doc.index, doc.sheet, p0);
       placing = { kind: tool, p0, region: region.id, error: cannotAdd(doc.index, region.id, tool), created: undefined };
       if (placing.error) return;
       doc.history.begin();
@@ -2129,10 +2131,10 @@ api = attachInput(
       const regions = v.regions ?? [];
       // the region under the pointer, else the state's only region
       const p = worldAt(input.x, input.y);
-      const hit = input.over ? hitTest(doc.index, doc.page, p.x, p.y).region : undefined;
+      const hit = input.over ? hitTest(doc.index, doc.sheet, p.x, p.y).region : undefined;
       const r = regions.find((x) => x.id === hit?.id) ?? (regions.length === 1 ? regions[0] : undefined);
       if (!r) {
-        say(regions.length ? "Point at the region to put on its own page (e O)." : `${v.name} has no regions.`);
+        say(regions.length ? "Point at the region to put on its own sheet (e O)." : `${v.name} has no regions.`);
         return;
       }
       const off = doc.index.doc.diagram?.regions[r.id]?.offPage === true;
