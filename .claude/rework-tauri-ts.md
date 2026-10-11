@@ -263,8 +263,8 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [x] Sheet frame and title block: frame with zone references, title block from the model + free fields in
       `diagram.titleBlock`, fit as design rule warnings, sheet and zone in Problems, the status line and `ufsm check`,
       off-page markers name their sheet (2026-10-10)
-- [ ] Sheet follow-ups: Jonas to look at it in `npm run dev` and decide the open points: one paper size per sheet instead
-      of one per file (as KiCad; decide while format v1 can still change); portrait sheets?; a "move to its own sheet"
+- [x] Paper size: one per file, not per sheet (decided 2026-10-11)
+- [ ] Sheet follow-ups: portrait sheets?; a "move to its own sheet"
       command so hitting the edge is cheap; `:` in the search to go to "sheet 2, B4"; the zone under the pointer in the
       status bar; the light print palette comes with E7's export/print; a uFSM version/logo cell in the title block?
       (not deterministic across versions, so only when printing); a second free line for the description (only the
