@@ -12,6 +12,7 @@
 import { checkV1 } from "../v1/check";
 import { defined, behaviourOptions } from "../v1/options";
 import type { Action, GuardTerm, Id, UfsmDocument } from "../v1/model";
+import { MachineError, busyError, type MachineHost, type RunOptions, type TraceEntry } from "../runtime/contract";
 import {
   buildStructure,
   conflicts,
@@ -22,67 +23,12 @@ import {
   type Structure,
 } from "../semantics/structure";
 
-/** What the machine calls out to. Guards default to false. */
-export interface InterpreterHost {
-  call?(name: string, id: Id): void;
-  guard?(name: string, id: Id): boolean;
-  /** Start a timer (by name and id): one-shot, or periodic (the host re-arms it). On expiry the host sends its event. */
-  timerStart?(name: string, id: Id, ms: number, periodic: boolean): void;
-  /** Stop a timer; stopping one that is not running does nothing. */
-  timerStop?(name: string, id: Id): void;
-}
-
-export type TraceEntry =
-  | { type: "call"; action: string }
-  | { type: "emit"; signal: string }
-  | { type: "exit"; state: Id }
-  | { type: "enter"; state: Id }
-  /** `id` carries the trigger (a join's outgoing transition); `parts` are every model transition taken, fork/join legs included. */
-  | { type: "transition"; id: Id; parts: Id[]; internal: boolean }
-  | { type: "event"; name: string; signal: boolean }
-  | { type: "timer-start"; timer: string; id: Id; ms: number; periodic: boolean }
-  | { type: "timer-stop"; timer: string; id: Id }
-  | { type: "reset" }
-  | { type: "terminate" };
-
-/** Overrides of the model's `options` (unset: the model's value, else its default). */
-export interface InterpreterOptions {
-  /** Maximum number of queued signals; emitting more throws `queue-overflow`. Default: the model's (16). */
-  signalQueue?: number;
-  /** Microsteps per process()/reset() call before giving up with `livelock`. Default: the model's (10000). */
-  maxMicrosteps?: number;
-  /** Receives every observable step, for simulators and debugging. */
-  onTrace?: (entry: TraceEntry) => void;
-}
-
-export type InterpreterErrorCode = "invalid-model" | "not-started" | "unknown-event" | "queue-overflow" | "livelock" | "busy";
-
-export class InterpreterError extends Error {
-  readonly code: InterpreterErrorCode;
-  constructor(code: InterpreterErrorCode, message: string) {
-    super(message);
-    this.name = "InterpreterError";
-    this.code = code;
-  }
-}
-
-/**
- * process() while an earlier reset()/process() call has not finished: it was called from inside an action or guard,
- * or the earlier call failed (an error, or an exception from the host) half-way through a microstep.
- */
-export function busyError(): InterpreterError {
-  return new InterpreterError("busy", BUSY_MESSAGE);
-}
-
-/** The message of a `busy` error, in the interpreter and in generated code. */
-export const BUSY_MESSAGE = "reset() or process() did not finish (it failed, or this call was made from inside it); call reset()";
-
 type TriggerSel = { kind: "event"; id: Id } | { kind: "eventless" };
 
 export class Interpreter {
   readonly structure: Structure;
-  private readonly host: InterpreterHost;
-  private readonly options: Required<Pick<InterpreterOptions, "signalQueue" | "maxMicrosteps">> & InterpreterOptions;
+  private readonly host: MachineHost;
+  private readonly options: Required<Pick<RunOptions, "signalQueue" | "maxMicrosteps">> & RunOptions;
   private readonly active = new Set<SemVertex>();
   /** Recorded history per region id: the vertices to restore. */
   private readonly history = new Map<Id, SemVertex[]>();
@@ -93,10 +39,10 @@ export class Interpreter {
   private busy = false;
   private steps = 0;
 
-  constructor(doc: UfsmDocument, host: InterpreterHost = {}, options: InterpreterOptions = {}) {
+  constructor(doc: UfsmDocument, host: MachineHost = {}, options: RunOptions = {}) {
     const errors = checkV1(doc).filter((d) => d.severity === "error");
     if (errors.length > 0) {
-      throw new InterpreterError("invalid-model", `model has ${errors.length} error(s): ${errors.map((e) => e.message).join("; ")}`);
+      throw new MachineError("invalid-model", `model has ${errors.length} error(s): ${errors.map((e) => e.message).join("; ")}`);
     }
     this.structure = buildStructure(doc);
     this.host = host;
@@ -150,10 +96,10 @@ export class Interpreter {
    * and only reset() starts it again.
    */
   process(event: string): number {
-    if (!this.started) throw new InterpreterError("not-started", "call reset() before process()");
+    if (!this.started) throw new MachineError("not-started", "call reset() before process()");
     const s = this.structure;
     const id = this.eventId(event);
-    if (id === undefined) throw new InterpreterError("unknown-event", `unknown event '${event}'`);
+    if (id === undefined) throw new MachineError("unknown-event", `unknown event '${event}'`);
     if (this.busy) throw busyError();
     if (this.terminatedFlag) return 0;
     this.busy = true;
@@ -269,7 +215,7 @@ export class Interpreter {
   private microstep(ts: CompoundTransition[]): number {
     if (ts.length === 0) return 0;
     if (++this.steps > this.options.maxMicrosteps) {
-      throw new InterpreterError("livelock", `more than ${this.options.maxMicrosteps} microsteps without becoming stable`);
+      throw new MachineError("livelock", `more than ${this.options.maxMicrosteps} microsteps without becoming stable`);
     }
 
     // 1. Exit, innermost and last first (reverse document order). History is recorded before anything is exited.
@@ -409,7 +355,7 @@ export class Interpreter {
         const d = this.structure.index.decls.get(a.emit)!.decl;
         const limit = this.options.signalQueue;
         if (this.queue.length >= limit) {
-          throw new InterpreterError("queue-overflow", `signal queue full (${limit}) when emitting '${d.name}'`);
+          throw new MachineError("queue-overflow", `signal queue full (${limit}) when emitting '${d.name}'`);
         }
         this.trace({ type: "emit", signal: d.name });
         this.queue.push(d.id);

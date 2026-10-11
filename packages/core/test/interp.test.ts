@@ -8,7 +8,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   Interpreter,
-  InterpreterError,
+  MachineError,
   formatFailure,
   formatTrace,
   indexV1,
@@ -134,16 +134,16 @@ function run(doc: UfsmDocument, events: string[], opts: { signalQueue?: number }
 describe("interpreter", () => {
   it("requires reset() before process()", () => {
     const m = new Interpreter(machine({ root: ["A", "B"], transitions: ["A -e1-> B"] }));
-    assert.throws(() => m.process("e1"), (e: unknown) => e instanceof InterpreterError && e.code === "not-started");
+    assert.throws(() => m.process("e1"), (e: unknown) => e instanceof MachineError && e.code === "not-started");
   });
 
   it("rejects unknown events and models with errors", () => {
     const doc = machine({ root: ["A", "B"], transitions: ["A -e1-> B"] });
     const m = new Interpreter(doc);
     m.reset();
-    assert.throws(() => m.process("nope"), (e: unknown) => e instanceof InterpreterError && e.code === "unknown-event");
+    assert.throws(() => m.process("nope"), (e: unknown) => e instanceof MachineError && e.code === "unknown-event");
     doc.machine.transitions.push({ id: "tx", from: "s1", to: "missing", on: "ev1" });
-    assert.throws(() => new Interpreter(doc), (e: unknown) => e instanceof InterpreterError && e.code === "invalid-model");
+    assert.throws(() => new Interpreter(doc), (e: unknown) => e instanceof MachineError && e.code === "invalid-model");
   });
 
   it("accepts event ids as well as names", () => {
@@ -166,13 +166,13 @@ describe("interpreter", () => {
   it("detects auto-transition livelocks", () => {
     const doc = machine({ root: ["A", "B"], transitions: ["A -auto-> B", "B -auto-> A"] });
     const m = new Interpreter(doc, {}, { maxMicrosteps: 50 });
-    assert.throws(() => m.reset(), (e: unknown) => e instanceof InterpreterError && e.code === "livelock");
+    assert.throws(() => m.reset(), (e: unknown) => e instanceof MachineError && e.code === "livelock");
   });
 
   it("bounds the signal queue when asked to", () => {
     const doc = machine({ root: ["A", "B"], signals: ["s"], transitions: ["A -e1/^s,^s,^s-> B"] });
     assert.deepEqual(run(doc, ["e1"], { signalQueue: 3 }), ["xA", "eB"]);
-    assert.throws(() => run(doc, ["e1"], { signalQueue: 2 }), (e: unknown) => e instanceof InterpreterError && e.code === "queue-overflow");
+    assert.throws(() => run(doc, ["e1"], { signalQueue: 2 }), (e: unknown) => e instanceof MachineError && e.code === "queue-overflow");
   });
 
   it("drains the signal queue in every process() call (B2)", () => {
@@ -182,11 +182,11 @@ describe("interpreter", () => {
 
   it("stays busy after a call that did not finish, until reset()", () => {
     const doc = machine({ root: ["A", "B"], signals: ["s"], transitions: ["A -e1/^s,^s-> B", "B -e1-> A"] });
-    const isBusy = (e: unknown): boolean => e instanceof InterpreterError && e.code === "busy";
+    const isBusy = (e: unknown): boolean => e instanceof MachineError && e.code === "busy";
     const id = (name: string): string => doc.machine.root.states.find((v) => v.name === name)!.id;
     const m = new Interpreter(doc, {}, { signalQueue: 1 });
     m.reset();
-    assert.throws(() => m.process("e1"), (e: unknown) => e instanceof InterpreterError && e.code === "queue-overflow");
+    assert.throws(() => m.process("e1"), (e: unknown) => e instanceof MachineError && e.code === "queue-overflow");
     assert.throws(() => m.process("e1"), isBusy);
     assert.throws(() => m.process("e9"), /unknown event/, "unknown-event is checked first");
     m.reset();
@@ -225,7 +225,7 @@ describe("interpreter", () => {
     });
     m.reset();
     m.process("e1");
-    assert.ok(nested instanceof InterpreterError && nested.code === "busy");
+    assert.ok(nested instanceof MachineError && nested.code === "busy");
     assert.deepEqual(calls, ["eA", "xA", "go", "eB"]);
     m.process("e1");
     assert.ok(m.isActive(doc.machine.root.states.find((v) => v.name === "A")!.id), "a refused nested call does not latch");

@@ -4,7 +4,7 @@
 import {
   UFSM_VERSION,
   UfsmFormatError,
-  InterpreterError,
+  MachineError,
   formatTrace,
   addDecl,
   addRegion,
@@ -1312,7 +1312,7 @@ function simStart(): void {
     d.sim = undefined;
     const errors = d.diagnostics.filter((x) => x.severity === "error").length;
     d.simError =
-      e instanceof InterpreterError && e.code === "invalid-model"
+      e instanceof MachineError && e.code === "invalid-model"
         ? `The machine has ${errors || "some"} error${errors === 1 ? "" : "s"} (see Problems); fix ${errors === 1 ? "it" : "them"} to simulate.`
         : `Cannot simulate: ${String(e)}`;
   }

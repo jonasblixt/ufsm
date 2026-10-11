@@ -14,17 +14,10 @@
 import { UfsmFormatError } from "../errors";
 import type { Id, ModelOptions, UfsmDocument } from "../v1/model";
 import { BEHAVIOUR_OPTIONS, defined, isBehaviourOption, behaviourOptions, type BehaviourOption } from "../v1/options";
-import { Interpreter, InterpreterError, type InterpreterHost, type InterpreterOptions } from "./interpreter";
+import { MachineError, type MachineHost, type RunOptions, type RunningMachine } from "../runtime/contract";
+import { Interpreter } from "./interpreter";
 
-/** What a trace drives: the interpreter, the flat runner, or a wrapper around generated code. */
-export interface TraceMachine {
-  reset(): void;
-  process(event: string): unknown;
-  isActive(id: Id): boolean;
-  activeIds(): Id[];
-}
-
-export type MachineFactory = (doc: UfsmDocument, host: InterpreterHost, options: InterpreterOptions) => TraceMachine;
+export type MachineFactory = (doc: UfsmDocument, host: MachineHost, options: RunOptions) => RunningMachine;
 
 const interpreterFactory: MachineFactory = (doc, host, options) => new Interpreter(doc, host, options);
 
@@ -41,7 +34,7 @@ export interface TraceStep {
   active?: string[];
   /** States (name, or id where names repeat) that must not be active afterwards. */
   inactive?: string[];
-  /** Expected InterpreterError / backend error code instead of `expect`, e.g. "queue-overflow". */
+  /** Expected MachineError / backend error code instead of `expect`, e.g. "queue-overflow". */
   error?: string;
   /**
    * An action or guard (by name) that throws when it is called in this step (a panic in Rust, a longjmp out of it in
@@ -190,14 +183,14 @@ export function traceOptions(doc: UfsmDocument, trace: Trace): ReturnType<typeof
 }
 
 /** Replay a trace against the reference interpreter (or another engine). Returns the failures (empty: passed). */
-export function runTrace(doc: UfsmDocument, trace: Trace, options: InterpreterOptions = {}, make: MachineFactory = interpreterFactory): TraceFailure[] {
+export function runTrace(doc: UfsmDocument, trace: Trace, options: RunOptions = {}, make: MachineFactory = interpreterFactory): TraceFailure[] {
   const failures: TraceFailure[] = [];
   const guards = new Map<string, boolean>();
   let calls: string[] = [];
   let step: TraceStep = {};
   /** Outcome of the step's nested process() call (`reenter`): "ok" or an error code; undefined until it is made. */
   let nested: string | undefined;
-  const host: InterpreterHost = {
+  const host: MachineHost = {
     call: (name) => {
       calls.push(name);
       if (name === step.raise) throw new TraceRaise(name);
@@ -206,7 +199,7 @@ export function runTrace(doc: UfsmDocument, trace: Trace, options: InterpreterOp
           m.process(step.send!);
           nested = "ok";
         } catch (e) {
-          if (!(e instanceof InterpreterError)) throw e;
+          if (!(e instanceof MachineError)) throw e;
           nested = e.code;
         }
       }
@@ -243,7 +236,7 @@ export function runTrace(doc: UfsmDocument, trace: Trace, options: InterpreterOp
       else if (step.send !== undefined) m.process(step.send);
     } catch (e) {
       if (e instanceof TraceRaise) raised = true;
-      else if (!(e instanceof InterpreterError)) throw e;
+      else if (!(e instanceof MachineError)) throw e;
       else {
         error = e.code;
         if (step.error === undefined) failures.push({ step: i, message: `unexpected error: ${e.message}` });

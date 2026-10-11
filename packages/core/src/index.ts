@@ -13,6 +13,7 @@
  *
  *   semantics/ static structure (document order, compound transitions),
  *              flattening into tables, and a runner for those tables
+ *   runtime/   the run-time contract every executable form shares: host, options, errors, busy
  *   interp/    reference interpreter and conformance trace runner
  *   ir/        the IR backends print, lowered from the flat tables, and an evaluator for it
  *
@@ -57,6 +58,7 @@ export * from "./backends/python";
 export * from "./backends/ts";
 export * from "./backends/rust";
 export * from "./backends/generate";
+export * from "./runtime/contract";
 export * from "./interp/interpreter";
 export * from "./interp/trace";
 export * as v0 from "./v0/index";

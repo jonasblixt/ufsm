@@ -8,7 +8,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { produce } from "immer";
 import {
-  InterpreterError,
+  MachineError,
   formatFailure,
   formatTrace,
   loadModel,
@@ -163,7 +163,7 @@ describe("simulation", () => {
   it("refuses a model with errors", () => {
     const doc = load("examples/dimmer.ufsm");
     doc.machine.transitions.push({ id: "tx", from: "nowhere", to: "nowhere" });
-    assert.throws(() => new Simulation(doc, new Map()), (e: unknown) => e instanceof InterpreterError && e.code === "invalid-model");
+    assert.throws(() => new Simulation(doc, new Map()), (e: unknown) => e instanceof MachineError && e.code === "invalid-model");
   });
 
   it("goes out of date when the machine or the declarations change, not the layout", () => {
@@ -187,7 +187,7 @@ describe("simulation", () => {
       try {
         sim = new Simulation(doc, guards);
       } catch (e) {
-        assert.ok(e instanceof InterpreterError && e.code === "invalid-model", f);
+        assert.ok(e instanceof MachineError && e.code === "invalid-model", f);
         continue;
       }
       const events = doc.declarations.events.map((e) => e.name);

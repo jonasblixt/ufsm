@@ -44,6 +44,8 @@ packages/core/          @ufsm/core: model, v0 reader, v1 format, checks, semanti
   src/v0/               legacy reader, exported as the `v0` namespace
   src/semantics/        structure.ts (document order, compound transitions, initializers), flatten.ts (static tables),
                         flat-run.ts (runs the tables like generated code; must match the interpreter)
+  src/runtime/          contract.ts: what every executable form shares (MachineHost, RunOptions, MachineError, busy,
+                        RunningMachine); the interpreter, runners and backends import it, never the interpreter
   src/interp/           reference interpreter (simulator + test oracle; wouldTake for the simulator) and traces
                         (parse, run, formatTrace)
   src/ir/               IR every backend prints (ir.ts documents the runtime loop and trace hooks), lowering, evaluator, printer,

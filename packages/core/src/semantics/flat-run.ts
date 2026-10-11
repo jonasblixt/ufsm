@@ -9,13 +9,13 @@
  */
 import type { Action, Id } from "../v1/model";
 import { OPTION_DEFAULTS, defined } from "../v1/options";
-import { InterpreterError, busyError, type InterpreterHost, type InterpreterOptions } from "../interp/interpreter";
+import { MachineError, busyError, type MachineHost, type RunOptions } from "../runtime/contract";
 import type { EntryOp, FlatGuard, FlatModel, FlatTransition, Offer, RegionOp } from "./flatten";
 
 export class FlatRunner {
   readonly model: FlatModel;
-  private readonly host: InterpreterHost;
-  private readonly options: InterpreterOptions & { signalQueue: number; maxMicrosteps: number };
+  private readonly host: MachineHost;
+  private readonly options: RunOptions & { signalQueue: number; maxMicrosteps: number };
   /** Active slot per region; 0 = none. */
   private readonly cfg: Int32Array;
   /** Shallow history: recorded slot per region (0 = none). Deep history: snapshot of cfg for the region's subtree. */
@@ -32,7 +32,7 @@ export class FlatRunner {
   private readonly guardName = new Map<Id, string>();
   private readonly signalIds: Id[];
 
-  constructor(model: FlatModel, host: InterpreterHost = {}, options: InterpreterOptions = {}) {
+  constructor(model: FlatModel, host: MachineHost = {}, options: RunOptions = {}) {
     this.model = model;
     this.host = host;
     this.options = { ...OPTION_DEFAULTS, ...defined(options) };
@@ -82,9 +82,9 @@ export class FlatRunner {
   }
 
   process(event: string): number {
-    if (!this.started) throw new InterpreterError("not-started", "call reset() before process()");
+    if (!this.started) throw new MachineError("not-started", "call reset() before process()");
     const id = this.eventIndex.get(event);
-    if (id === undefined) throw new InterpreterError("unknown-event", `unknown event '${event}'`);
+    if (id === undefined) throw new MachineError("unknown-event", `unknown event '${event}'`);
     if (this.busy) throw busyError();
     if (this.terminatedFlag) return 0;
     this.busy = true;
@@ -151,7 +151,7 @@ export class FlatRunner {
   private microstep(ts: FlatTransition[]): number {
     if (ts.length === 0) return 0;
     if (++this.steps > this.options.maxMicrosteps) {
-      throw new InterpreterError("livelock", `more than ${this.options.maxMicrosteps} microsteps without becoming stable`);
+      throw new MachineError("livelock", `more than ${this.options.maxMicrosteps} microsteps without becoming stable`);
     }
     const m = this.model;
     // Domains of the chosen transitions are disjoint: exit the later one first, each in reverse document order.
@@ -274,7 +274,7 @@ export class FlatRunner {
       } else {
         const limit = this.options.signalQueue;
         if (this.queue.length >= limit) {
-          throw new InterpreterError("queue-overflow", `signal queue full (${limit})`);
+          throw new MachineError("queue-overflow", `signal queue full (${limit})`);
         }
         this.queue.push(this.signalIds.indexOf(a.emit));
       }

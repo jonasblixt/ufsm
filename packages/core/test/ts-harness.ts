@@ -4,7 +4,7 @@
 /**
  * Runs generated TypeScript in the test process: modules are written to a
  * temp directory and imported (tsx or Node's type stripping runs them), and
- * each machine is wrapped as a TraceMachine, so the generated code plugs
+ * each machine is wrapped as a RunningMachine, so the generated code plugs
  * into runTrace and compareWithInterpreter like the interpreter itself.
  */
 import assert from "node:assert/strict";
@@ -12,7 +12,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { InterpreterError, generateTypeScript, type InterpreterErrorCode, type InterpreterHost, type IrModule, type TraceMachine, type TsOptions } from "../src/index";
+import { MachineError, generateTypeScript, type MachineErrorCode, type MachineHost, type IrModule, type RunningMachine, type TsOptions } from "../src/index";
 import { removeTempDir } from "./c-harness";
 import { decodeHooks } from "./harness";
 
@@ -34,7 +34,7 @@ interface DebugStatics {
 export interface TsUnit {
   ir: IrModule;
   /** Make a fresh machine around a host (the interpreter's host interface). */
-  make(host: InterpreterHost): TraceMachine;
+  make(host: MachineHost): RunningMachine;
 }
 
 /**
@@ -65,7 +65,7 @@ export async function loadTs(irs: { ir: IrModule; options?: TsOptions }[]): Prom
       }
       const ErrorClass = mod[`U${k}Error`] as new (code: string, message: string) => Error & { code: string };
       const eventNo = new Map(ir.events.map((e, i) => [e.name, i]));
-      const make = (host: InterpreterHost): TraceMachine => {
+      const make = (host: MachineHost): RunningMachine => {
         const handler: Record<string, () => unknown> = {};
         for (const a of ir.actions) handler[a.name] = () => host.call?.(a.name, a.id);
         for (const g of ir.guards) handler[g.name] = () => host.guard?.(g.name, g.id) ?? false;
@@ -100,7 +100,7 @@ export async function loadTs(irs: { ir: IrModule; options?: TsOptions }[]): Prom
           try {
             f();
           } catch (e) {
-            if (e instanceof ErrorClass) throw new InterpreterError(e.code as InterpreterErrorCode, e.message);
+            if (e instanceof ErrorClass) throw new MachineError(e.code as MachineErrorCode, e.message);
             throw e;
           }
           return 0;

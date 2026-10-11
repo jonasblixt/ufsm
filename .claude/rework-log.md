@@ -581,3 +581,8 @@ Measured over the 21 valid legacy models (864 KB):
   join-trigger throw is gone. `test/gate.test.ts`: one model per rule (check error, `CodegenError` from every backend,
   `invalid-model` from the interpreter) and 600 mutated random models (rejected, or accepted by every stage). Generated
   code of every repo model and 150 random models byte-identical.
+- 2026-10-11: **Review R3, runtime contract.** `core/src/runtime/contract.ts` holds what every executable form shares:
+  `MachineHost`, `RunOptions`, `TraceEntry`, `MachineError`/`MachineErrorCode`, `busyError`, `BUSY_MESSAGE` and
+  `RunningMachine` (was `TraceMachine` in `interp/trace.ts`). Renamed without aliases (`InterpreterHost`,
+  `InterpreterOptions`, `InterpreterError`): nothing outside the repo uses them. No import of `interp/` is left in core
+  outside `index.ts`. Tests and golden output unchanged.

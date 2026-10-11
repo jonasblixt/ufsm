@@ -13,7 +13,7 @@
  */
 import {
   Interpreter,
-  InterpreterError,
+  MachineError,
   defined,
   indexV1,
   behaviourOptions,
@@ -94,7 +94,7 @@ export class Simulation {
 
   /**
    * `guards` is read live (by guard name) whenever the machine asks; the caller owns it. `overrides` replace the
-   * model's options for this run. Throws InterpreterError `invalid-model` when the model has errors.
+   * model's options for this run. Throws MachineError `invalid-model` when the model has errors.
    */
   constructor(doc: UfsmDocument, guards: ReadonlyMap<string, boolean>, overrides: Partial<SimOptions> = {}) {
     this.doc = doc;
@@ -215,7 +215,7 @@ export class Simulation {
       const n = run();
       s.fired = typeof n === "number" ? n : s.lines.some((l) => l.kind === "transition") ? 1 : 0;
     } catch (e) {
-      if (!(e instanceof InterpreterError)) throw e;
+      if (!(e instanceof MachineError)) throw e;
       s.error = { code: e.code, message: e.message };
     } finally {
       this.current = undefined;

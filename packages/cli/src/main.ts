@@ -9,7 +9,7 @@ import {
   UfsmFormatError,
   CodegenError,
   Interpreter,
-  InterpreterError,
+  MachineError,
   checkV1,
   locate,
   locationText,
@@ -363,7 +363,7 @@ function main(argv: string[]): number {
 try {
   process.exitCode = main(process.argv.slice(2));
 } catch (e) {
-  if (e instanceof UfsmFormatError || e instanceof InterpreterError || e instanceof CodegenError || (e as NodeJS.ErrnoException).code === "ENOENT") {
+  if (e instanceof UfsmFormatError || e instanceof MachineError || e instanceof CodegenError || (e as NodeJS.ErrnoException).code === "ENOENT") {
     console.error(`ufsm: ${(e as Error).message}`);
     process.exitCode = e instanceof CodegenError ? 2 : 1;
   } else {

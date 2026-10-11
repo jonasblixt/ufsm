@@ -32,7 +32,7 @@ import { UFSM_VERSION } from "../version";
 import type { Expr, IrModule, Stmt, SwitchOn } from "../ir/ir";
 import { TRACE_KINDS } from "../ir/ir";
 import { hex32 } from "../ir/ids";
-import { BUSY_MESSAGE } from "../interp/interpreter";
+import { BUSY_MESSAGE } from "../runtime/contract";
 import { CodegenError, OUTPUT_NOTICE, cIdentifier } from "./c";
 
 export interface PythonOptions {

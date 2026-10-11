@@ -270,7 +270,8 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [x] R1 One validity gate: the structural rules of `semantics/` are design rules (`fork-no-outgoing`, `fork-cycle`,
       `join-incoming`, `initial-target`); throws in structure/flatten are assertions; mutation test (2026-10-11)
 - [ ] R2 Human documentation: `docs/architecture.md`, `docs/glossary.md`, `docs/contributing.md`
-- [ ] R3 Runtime contract out of the interpreter (`runtime/contract.ts`)
+- [x] R3 Runtime contract out of the interpreter (`runtime/contract.ts`; `MachineHost`, `RunOptions`, `MachineError`,
+      `RunningMachine`) (2026-10-11)
 - [ ] R4 Shared backend layer (`ir/analyze.ts`, `backends/common.ts`, resolved options, printers in named parts)
 - [ ] R5 Public surface of core (subpath exports; oracles out of the main entry)
 - [ ] R6 Core folders by domain

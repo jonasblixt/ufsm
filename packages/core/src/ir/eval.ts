@@ -9,7 +9,7 @@
  */
 import type { Id } from "../v1/model";
 import { OPTION_DEFAULTS } from "../v1/options";
-import { InterpreterError, busyError, type InterpreterHost, type InterpreterOptions } from "../interp/interpreter";
+import { MachineError, busyError, type MachineHost, type RunOptions } from "../runtime/contract";
 import type { Expr, IrFunction, IrModule, Stmt, SwitchOn, TraceKind } from "./ir";
 
 class Return {
@@ -18,7 +18,7 @@ class Return {
 
 export class IrRunner {
   readonly ir: IrModule;
-  private readonly host: InterpreterHost;
+  private readonly host: MachineHost;
   private readonly maxMicrosteps: number;
   private readonly signalQueue: number;
   private readonly cfg: Int32Array;
@@ -38,7 +38,7 @@ export class IrRunner {
   private busy = false;
   private steps = 0;
 
-  constructor(ir: IrModule, host: InterpreterHost = {}, options: InterpreterOptions = {}, onHook?: (kind: TraceKind, index: number) => void) {
+  constructor(ir: IrModule, host: MachineHost = {}, options: RunOptions = {}, onHook?: (kind: TraceKind, index: number) => void) {
     this.ir = ir;
     this.host = host;
     this.onHook = ir.trace ? onHook : undefined;
@@ -84,9 +84,9 @@ export class IrRunner {
   }
 
   process(event: string): number {
-    if (!this.started) throw new InterpreterError("not-started", "call reset() before process()");
+    if (!this.started) throw new MachineError("not-started", "call reset() before process()");
     const id = this.eventByName.get(event);
-    if (id === undefined) throw new InterpreterError("unknown-event", `unknown event '${event}'`);
+    if (id === undefined) throw new MachineError("unknown-event", `unknown event '${event}'`);
     if (this.busy) throw busyError();
     if (this.terminatedFlag) return 0;
     this.busy = true;
@@ -148,7 +148,7 @@ export class IrRunner {
           break;
         case "emit":
           if (this.queue.length >= this.signalQueue) {
-            throw new InterpreterError("queue-overflow", `signal queue full (${this.signalQueue})`);
+            throw new MachineError("queue-overflow", `signal queue full (${this.signalQueue})`);
           }
           this.queue.push(s.signal);
           break;
@@ -172,7 +172,7 @@ export class IrRunner {
         }
         case "microstep":
           if (++this.steps > this.maxMicrosteps) {
-            throw new InterpreterError("livelock", `more than ${this.maxMicrosteps} microsteps without becoming stable`);
+            throw new MachineError("livelock", `more than ${this.maxMicrosteps} microsteps without becoming stable`);
           }
           break;
         case "trace":

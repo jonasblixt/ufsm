@@ -4,11 +4,11 @@
 /**
  * The design rule check is the one validity gate: a model checkV1 reports no errors on gets through every later stage
  * (structure, flat tables, IR, every backend, the interpreter), and a model it rejects fails there with the stage's own
- * error class (CodegenError, InterpreterError), never with an internal one.
+ * error class (CodegenError, MachineError), never with an internal one.
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { CODE_TARGETS, CodegenError, Interpreter, InterpreterError, checkV1, generateFiles, indexV1, type State, type UfsmDocument } from "../src/index";
+import { CODE_TARGETS, CodegenError, Interpreter, MachineError, checkV1, generateFiles, indexV1, type State, type UfsmDocument } from "../src/index";
 import { randomModel, rng } from "./random-model";
 
 function baseDoc(): UfsmDocument {
@@ -45,7 +45,7 @@ function rejected(doc: UfsmDocument, code: string, id: string): void {
   const found = checkV1(doc).filter((d) => d.severity === "error").map((d) => `${d.code} ${d.id}`);
   assert.ok(found.includes(`${code} ${id}`), `expected ${code} on ${id}, got ${JSON.stringify(found)}`);
   for (const target of CODE_TARGETS) assert.throws(() => generateFiles(doc, target), CodegenError);
-  assert.throws(() => new Interpreter(doc), (e) => e instanceof InterpreterError && e.code === "invalid-model");
+  assert.throws(() => new Interpreter(doc), (e) => e instanceof MachineError && e.code === "invalid-model");
 }
 
 describe("the design rule check as the validity gate", () => {

@@ -9,23 +9,23 @@
 import assert from "node:assert/strict";
 import {
   Interpreter,
-  InterpreterError,
-  type InterpreterErrorCode,
-  type InterpreterHost,
-  type InterpreterOptions,
+  MachineError,
+  type MachineErrorCode,
+  type MachineHost,
+  type RunOptions,
   type IrModule,
   type MachineFactory,
   type TraceEntry,
   behaviourOptions,
   TraceRaise,
-  type TraceMachine,
+  type RunningMachine,
   type UfsmDocument,
   timerStartCall,
   timerStopCall,
 } from "../src/index";
 import { randomModel, rng } from "./random-model";
 
-export type Engine = (doc: UfsmDocument, host: InterpreterHost, options: InterpreterOptions) => TraceMachine;
+export type Engine = (doc: UfsmDocument, host: MachineHost, options: RunOptions) => RunningMachine;
 
 export const interpreterEngine: Engine = (doc, host, options) => new Interpreter(doc, host, options);
 
@@ -123,7 +123,7 @@ export function decodeHooks(calls: string[], ir: IrModule): string[] {
 }
 
 /** The interpreter's trace entries as the pseudo-calls of decodeHooks, logged through the host. */
-export function interpreterHooks(host: InterpreterHost): (e: TraceEntry) => void {
+export function interpreterHooks(host: MachineHost): (e: TraceEntry) => void {
   const log = (s: string): void => host.call?.(s, s);
   return (e) => {
     if (e.type === "event") log(`@${e.signal ? "signal" : "event"}:${e.name}`);
@@ -152,7 +152,7 @@ export function logLine(step: ScriptStep, res: StepResult): string {
  * Run a script. After an error the machine is reset (not logged); if that
  * reset fails too, the machine is dead and the remaining steps are skipped.
  */
-export function runScript(make: (host: InterpreterHost) => TraceMachine, script: ScriptStep[]): string[] {
+export function runScript(make: (host: MachineHost) => RunningMachine, script: ScriptStep[]): string[] {
   const guards = new Map<string, boolean>();
   const log: string[] = [];
   let calls: string[] = [];
@@ -170,7 +170,7 @@ export function runScript(make: (host: InterpreterHost) => TraceMachine, script:
       else m.process(step.send!);
       log.push(logLine(step, { calls, active: m.activeIds() }));
     } catch (e) {
-      if (!(e instanceof InterpreterError)) throw e;
+      if (!(e instanceof MachineError)) throw e;
       log.push(logLine(step, { calls, active: [], error: e.code }));
       try {
         m.reset();
@@ -183,7 +183,7 @@ export function runScript(make: (host: InterpreterHost) => TraceMachine, script:
 }
 
 /**
- * A TraceMachine that replays results recorded from generated code (C, Python, ...), so that
+ * A RunningMachine that replays results recorded from generated code (C, Python, ...), so that
  * runTrace can check them against a trace: every reset/send step consumes one result.
  */
 export function replayResults(results: StepResult[], backend: string): MachineFactory {
@@ -196,7 +196,7 @@ export function replayResults(results: StepResult[], backend: string): MachineFa
       if (replaying) {
         // the trace runner's `reenter` action calls process(): give it the nested outcome the driver recorded
         const nested = replaying.nested ?? "ok";
-        if (nested !== "ok") throw new InterpreterError(nested as InterpreterErrorCode, nested);
+        if (nested !== "ok") throw new MachineError(nested as MachineErrorCode, nested);
         return;
       }
       const r = results[i++];
@@ -210,7 +210,7 @@ export function replayResults(results: StepResult[], backend: string): MachineFa
         replaying = undefined;
       }
       if (r.error === "raised") throw new TraceRaise("(recorded)"); // a guard raised
-      if (r.error) throw new InterpreterError(r.error as InterpreterErrorCode, r.error);
+      if (r.error) throw new MachineError(r.error as MachineErrorCode, r.error);
     };
     return { reset: next, process: next, isActive: (id) => active.includes(id), activeIds: () => active };
   };
@@ -260,7 +260,7 @@ export function hookDiffs(models: { label: string; doc: UfsmDocument }[], random
 }
 
 /** Log of one random run (see randomScript and runScript). */
-export function drive(make: (host: InterpreterHost) => TraceMachine, doc: UfsmDocument, seed: number, steps: number): string[] {
+export function drive(make: (host: MachineHost) => RunningMachine, doc: UfsmDocument, seed: number, steps: number): string[] {
   return runScript(make, randomScript(doc, seed, steps));
 }
 
@@ -268,7 +268,7 @@ export function drive(make: (host: InterpreterHost) => TraceMachine, doc: UfsmDo
  * Assert that `engine` behaves exactly like the reference interpreter on one random run. With `hooks`, the engine logs
  * its trace hook calls as decoded pseudo-calls (decodeHooks) and they are compared too.
  */
-export function compareWithInterpreter(engine: Engine, doc: UfsmDocument, seed: number, steps: number, options: InterpreterOptions = {}, hooks = false): void {
+export function compareWithInterpreter(engine: Engine, doc: UfsmDocument, seed: number, steps: number, options: RunOptions = {}, hooks = false): void {
   const opts = { ...behaviourOptions(doc), maxMicrosteps: 300, ...options };
   const a = drive((h) => new Interpreter(doc, h, hooks ? { ...opts, onTrace: interpreterHooks(h) } : opts), doc, seed, steps);
   const b = drive((h) => engine(doc, h, opts), doc, seed, steps);
