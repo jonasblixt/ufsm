@@ -1,6 +1,6 @@
 {
   "name": "@ufsm/cli",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "description": "uFSM command line: inspect, check, simulate and generate code from models",
