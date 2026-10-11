@@ -1,12 +1,22 @@
+<img src="old/doc/logo.png" alt="uFSM logo" width="80">
+
 # uFSM
 
-uFSM is a tool for drawing hierarchical state machines (statecharts) and
-generating code from them. This branch is a rewrite: a TypeScript core with
-multiple code generator backends (C, Python, TypeScript/JavaScript, …) and a
+[![CI](https://github.com/jonasblixt/ufsm/actions/workflows/ci.yml/badge.svg)](https://github.com/jonasblixt/ufsm/actions/workflows/ci.yml)
+
+uFSM is a tool for drawing hierarchical state machines (UML statecharts) and
+generating code from them. Version 0.6 is a rewrite: a TypeScript core with
+code generator backends for C, Python, TypeScript/JavaScript and Rust, and a
 cross-platform desktop editor built with [Tauri](https://tauri.app).
 
 The previous C/GTK editor and Python generator (v0.5.x) are kept in
-[`old/`](old/) for reference while the rewrite catches up.
+[`old/`](old/) for reference while the rewrite catches up. Models drawn with
+v0.5 open in the new editor and CLI and are converted to the new format.
+
+## Disclaimer
+
+uFSM is a work in progress. Until 1.0 the file format, the generated APIs and
+the editor can still change between releases.
 
 ## Documentation
 
@@ -56,9 +66,9 @@ Other scripts, run from the repository root:
 |---------|--------------|
 | `npm run dev:web` | Frontend only in a browser at http://localhost:1420 (no Rust needed) |
 | `npm run build` | Release build and installers in `apps/editor/src-tauri/target/release/bundle/` |
-| `npm test` | Unit tests (v1 models, schema, converter against every legacy model in `old/`) |
+| `npm test` | Unit tests and conformance tests (core, CLI, editor; generated code is compiled and run when gcc/clang, Python, pyright and Rust are found) |
 | `npm run typecheck` | `tsc` across all packages |
-| `npm run ufsm -- check examples/dimmer.ufsm` | CLI: `info`, `check`, `list`, `migrate`, `fmt`, `run`, `trace`, `flatten`, `ir` |
+| `npm run ufsm -- check examples/dimmer.ufsm` | CLI: `info`, `check`, `list`, `migrate`, `fmt`, `run`, `trace`, `flatten`, `ir`, `generate`, `schema` |
 | `npm run ufsm -- generate c examples/dimmer.ufsm -o build` | Generate C ([docs/backend-c.md](docs/backend-c.md)) |
 | `npm run ufsm -- generate python examples/dimmer.ufsm -o build` | Generate Python ([docs/backend-python.md](docs/backend-python.md)) |
 | `npm run ufsm -- generate ts examples/dimmer.ufsm -o build` | Generate TypeScript ([docs/backend-ts.md](docs/backend-ts.md)) |
@@ -96,7 +106,7 @@ The key map follows the old editor; two-key commands start with <kbd>A</kbd> (ad
 | Problems | Problems tab (live; click one to go to it); badges on the canvas; the count in the status bar opens the tab | |
 | Simulate | Run › Start Simulation; Simulator tab: click an event to send it (marked when it would take a transition now; hover to see which), set guard values, follow the log; active states are green on the canvas | <kbd>F5</kbd> start / restart, <kbd>Shift</kbd>+<kbd>F5</kbd> stop |
 | Record a conformance trace | every simulation step is recorded: Simulator › Trace › Save trace… (replay with `ufsm trace`) | |
-| Generated code | Code tab: C header and source, Python, TypeScript, live; Copy, Save…; File › Generate C / Python / TypeScript Code… writes the files into a folder | |
+| Generated code | Code tab: C header and source, Python, TypeScript, Rust, live; Copy, Save…; File › Generate C / Python / TypeScript / Rust Code… writes the files into a folder | |
 | Open state (off-page region, or zoom in) | double-click | <kbd>Enter</kbd> |
 | Up to parent page / root | breadcrumb, ↑, the mouse's back button | <kbd>Backspace</kbd>, <kbd>J</kbd> <kbd>A</kbd> / <kbd>J</kbd> <kbd>R</kbd> |
 | Show / hide the explorer (tools and machine trees) | View › Explorer | <kbd>N</kbd> |
@@ -106,8 +116,9 @@ The key map follows the old editor; two-key commands start with <kbd>A</kbd> (ad
 | Title block fields (revision, date, author, company, document no.); paper size | Project tab › Title block / Paper; double-click the title block on the canvas | |
 | UI zoom: larger or smaller text and controls around the canvas, 50–300% (the diagram keeps its own zoom) | View › Zoom In / Zoom Out / Reset Zoom; Settings tab › Zoom; saved to `settings.json` | <kbd>Ctrl</kbd>+<kbd>+</kbd> (or <kbd>=</kbd>) / <kbd>Ctrl</kbd>+<kbd>-</kbd> / <kbd>Ctrl</kbd>+<kbd>0</kbd> |
 
-Icons are generated from `apps/editor/src-tauri/app-icon.png`; to regenerate run
-`npx tauri icon src-tauri/app-icon.png` inside `apps/editor`.
+The application icons are rendered from `apps/editor/src-tauri/icons/icon.svg`
+(`npx tauri icon apps/editor/src-tauri/icons/icon.svg` regenerates the set from one
+render; the committed small sizes were rendered one by one).
 
 ## Status
 
@@ -132,13 +143,32 @@ Icons are generated from `apps/editor/src-tauri/app-icon.png`; to regenerate run
   check reports what does not fit, and problems name their sheet and zone ("sheet 2, B4")
 - [x] Editor: color themes as [Design Tokens](https://www.designtokens.org/tr/2025.10/) (Catppuccin, Everforest, Gruvbox, Solarized), Settings tab
 
+## History
+
+- **0.1 – 0.3**: a runtime that operated on a tree structure true to the
+  graphical representation of the state machine. It worked, but was resource
+  hungry and error prone. These versions relied on external drawing tools and
+  used the XMI format to translate designs to compilable code.
+- **0.4.x**: shipped the "ufsm-compose" drawing tool.
+- **0.5.x**: a fundamental change in how code is generated. The complicated
+  runtime was dropped in favour of a code generator (Python) that computes
+  most things statically, which reduced the runtime memory requirements
+  substantially.
+- **0.6.x**: a rewrite in TypeScript. A JSON file format (v1) with a design
+  rule check, written-down [execution semantics](docs/semantics.md) with
+  UML/SCXML transition priority, a reference interpreter that every code
+  generator is tested against, backends for C, Python, TypeScript and Rust,
+  and a new desktop editor with a simulator, built with Tauri. This fixes
+  several bugs in the 0.5 generator, among them conflicting transitions that
+  both fired and a signal queue that was never drained.
+
 ## License
 
 uFSM is free software under the GNU General Public License, version 3 or
 (at your option) any later version: see [LICENSE](LICENSE).
 
 **Generated code is yours.** The [output exception](LICENSE-EXCEPTION) lets
-you use, modify and distribute the C, Python and TypeScript code uFSM
+you use, modify and distribute the C, Python, TypeScript and Rust code uFSM
 generates under any terms, in open or closed products alike; your models
 are yours too. The GPL covers uFSM itself: the editor, the CLI and the
 `@ufsm/core` library (a program that embeds the library or its interpreter

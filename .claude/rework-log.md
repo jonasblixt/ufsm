@@ -653,3 +653,6 @@ Measured over the 21 valid legacy models (864 KB):
   meanings of "trace", editor words), `docs/contributing.md` (rules for every change; recipes: design rule, editor
   command, generator option, backend). `.claude/CLAUDE.md` points to them instead of repeating them; the decisions log
   starts with a ten-row summary. The review's twelve steps are done.
+- 2026-10-11: **README for the merge to master.** History section from the old README.rst (0.1 to 0.5, plus 0.6),
+  a disclaimer, logo and CI badge; Rust added where it was missing (output exception, Code tab, Generate menu). No
+  readthedocs. CI green at 8cc5061; stale housekeeping items ticked.

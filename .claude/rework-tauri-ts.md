@@ -74,11 +74,13 @@ the generated code. Status refers to the new implementation.
 - [x] `.github/workflows/ci.yml` in the repo (tracked since commit 518e6bd)
 - [x] `npm install` re-run and `package-lock.json` committed (518e6bd)
 - [x] First commit on `ts-rewrite`: move to `old/` + scaffold + v1 (518e6bd "wip", 2026-10-09, 311 files)
-- [ ] Commit the work since 518e6bd (20 modified, 38 new files: C and Python backends, conformance suite, IR
+- [x] Commit the work since 518e6bd (20 modified, 38 new files: C and Python backends, conformance suite, IR
       simplifier, CLI, docs); suggested split: C backend / conformance suite / Python backend
-- [ ] Add `build/` to `.gitignore` (generated C/Python and test scratch land there)
-- [ ] Confirm CI green on Windows/macOS/Linux (Rust shell has only been built on Jonas's machine; tests run on
+- [x] Add `build/` to `.gitignore` (generated C/Python and test scratch land there)
+- [x] Confirm CI green on Windows/macOS/Linux (green at 8cc5061, 2026-10-11) (Rust shell has only been built on Jonas's machine; tests run on
       Ubuntu only and now require gcc, Python and pyright)
+- [ ] Merge `ts-rewrite` into master with a merge commit (never squash or rebase: `.git-blame-ignore-revs` names
+      c861e89); readthedocs: turn the project off or set its default version to v0.5.3 (`.readthedocs.yml` is in `old/`)
 
 ### Phase S — semantics (done; one review open)
 - [ ] Jonas: review the remaining semantics choices in `docs/semantics.md` ("Changes from v0.5"): B12 and
