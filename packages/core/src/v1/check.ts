@@ -11,7 +11,7 @@ import { ACTION_CHAR_W, ACTION_ICON, ACTION_ICON_GAP, actionBlock } from "./acti
 import { HEADER_H, isOffPage, vertexBox } from "./geometry";
 import { sheetFit, sheetFitMessage } from "./sheet";
 import { isApiOption, isBehaviourOption } from "./options";
-import { IDENTIFIER, TIMER_MAX_MS, timerMs, type Action, type DeclKind, type GuardTerm, type Id, type Transition, type UfsmDocument } from "./model";
+import { IDENTIFIER, TIMER_MAX_MS, timerMs, type Action, type DeclKind, type GuardTerm, type Id, type Transition, type UfsmDocument, type Vertex } from "./model";
 
 export type Severity = "error" | "warning";
 
@@ -204,6 +204,40 @@ export function checkV1(doc: UfsmDocument, prebuilt?: DocIndex): Diagnostic[] {
     }
   }
 
+  // ---- forks pass a transition on to every outgoing transition, so they need at least one and cannot form a cycle;
+  // joins merge transitions out of states (semantics/structure.ts resolves both the same way)
+  const forkCycle = new Set<Id>();
+  const visitFork = (id: Id, path: Id[]): void => {
+    if (path.includes(id)) {
+      for (const f of path.slice(path.indexOf(id))) forkCycle.add(f);
+      return;
+    }
+    for (const t of index.outgoing.get(id) ?? []) {
+      if (index.vertices.get(t.to)?.vertex.kind === "fork") visitFork(t.to, [...path, id]);
+    }
+  };
+  for (const { vertex } of index.vertices.values()) {
+    if (vertex.kind !== "fork") continue;
+    if (!(index.outgoing.get(vertex.id)?.length)) err("fork-no-outgoing", `fork '${vertex.name ?? vertex.id}' has no outgoing transitions`, vertex.id);
+    visitFork(vertex.id, []);
+  }
+  for (const id of forkCycle) err("fork-cycle", `fork '${vertexName(index, id)}' is part of a cycle of forks`, id);
+  for (const t of doc.machine.transitions) {
+    const from = index.vertices.get(t.from)?.vertex;
+    if (from && from.kind !== "state" && index.vertices.get(t.to)?.vertex.kind === "join") {
+      err("join-incoming", `${describe(t)}: transitions into a join must come from states`, t.id);
+    }
+  }
+  /** The vertices a transition enters, following forks (cycles are reported above). */
+  const entered = (t: Transition, seen = new Set<Id>()): Vertex[] => {
+    const to = index.vertices.get(t.to)?.vertex;
+    if (!to) return [];
+    if (to.kind !== "fork") return [to];
+    if (seen.has(to.id)) return [];
+    seen.add(to.id);
+    return (index.outgoing.get(to.id) ?? []).flatMap((o) => entered(o, seen));
+  };
+
   for (const { vertex } of index.vertices.values()) {
     if (vertex.kind !== "fork" && vertex.kind !== "join") continue;
     const ends = vertex.kind === "fork"
@@ -258,8 +292,20 @@ export function checkV1(doc: UfsmDocument, prebuilt?: DocIndex): Diagnostic[] {
     const inits = region.states.filter((s) => INITIALIZERS.has(s.kind));
     if (inits.length > 1) err("multiple-initial", `region '${region.name ?? region.id}' has ${inits.length} initial/history states`, region.id);
     for (const i of inits) {
-      const n = index.outgoing.get(i.id)?.length ?? 0;
-      if (n !== 1) err("initial-transitions", `${i.kind} in region '${region.name ?? region.id}' must have exactly one outgoing transition (has ${n})`, i.id);
+      const outs = index.outgoing.get(i.id) ?? [];
+      if (outs.length !== 1) {
+        err("initial-transitions", `${i.kind} in region '${region.name ?? region.id}' must have exactly one outgoing transition (has ${outs.length})`, i.id);
+        continue;
+      }
+      // the default entry stays inside the region and enters something
+      const t = outs[0]!;
+      for (const v of entered(t)) {
+        if (v.kind === "terminate") err("initial-target", `${describe(t)}: the ${i.kind} transition of a region cannot lead to a terminate`, t.id);
+        else if (v.id === i.id || !regionChain(index, v.id).includes(region)) {
+          err("initial-target", `${describe(t)}: the ${i.kind} transition of region '${region.name ?? region.id}' must lead into that region`, t.id);
+        } else continue;
+        break;
+      }
     }
     if (inits.length === 0 && defaultEntered.has(region.id) && region.states.some((s) => s.kind === "state")) {
       const owner = index.regions.get(region.id)?.owner;

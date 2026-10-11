@@ -412,12 +412,15 @@ The writer (`serializeV1`, used by the editor and `ufsm fmt`) produces:
 ## Design rule check
 
 `ufsm check` and the editor's problems list report what the schema cannot
-express. Errors: duplicate ids, dangling or wrongly typed references, invalid
+express. The check is the one validity gate: a model without errors can be simulated and generated in every
+language. Errors: duplicate ids, dangling or wrongly typed references, invalid
 or duplicate declaration names, initial/history states without exactly one
-outgoing transition, more than one initializer in a region, triggers out of
+outgoing transition, initial/history transitions that do not lead into their
+region or lead to a terminate (`initial-target`), more than one initializer in a region, triggers out of
 pseudo-states or into joins, transitions out of final/terminate, fork
 targets or join sources that are not in different orthogonal regions of one
-state, `options.signalQueue` of 0 in a model that emits signals, timers whose name is not an identifier or is
+state, forks without outgoing transitions or in a cycle of forks (`fork-no-outgoing`, `fork-cycle`), transitions into
+a join from anything but a state (`join-incoming`), `options.signalQueue` of 0 in a model that emits signals, timers whose name is not an identifier or is
 used by another timer (`timer-name`), timers firing something other than a declared event, timer durations of 0 or
 over 2^32 - 1 ms (`timer-duration`). Warnings:
 transitions and internal transitions that can never fire (no trigger, or

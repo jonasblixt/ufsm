@@ -574,3 +574,10 @@ Measured over the 21 valid legacy models (864 KB):
   70/70, browser check 386/386 (18 new), typecheck clean. Not run on Windows yet.
 - 2026-10-11: Properties › Timers rows read `travel(20 s, eTimeout)` without the `t/` prefix (new `timerText` in
   labels.ts; `timerLabel` keeps the prefix for the CLI and the search). Browser check 386/386 in the cloud workspace.
+- 2026-10-11: **Review R1, one validity gate.** `ufsm check` passed models that `ufsm generate` then crashed on (a fork
+  without outgoing transitions threw `SemanticsError` through the CLI). New design rules `fork-no-outgoing`, `fork-cycle`,
+  `join-incoming` and `initial-target` (leaves its region, loops to itself, or reaches a terminate, which the flattener
+  could not lower); the remaining throws in `structure.ts`/`flatten.ts` are assertions (`SemanticsError`), the duplicate
+  join-trigger throw is gone. `test/gate.test.ts`: one model per rule (check error, `CodegenError` from every backend,
+  `invalid-model` from the interpreter) and 600 mutated random models (rejected, or accepted by every stage). Generated
+  code of every repo model and 150 random models byte-identical.

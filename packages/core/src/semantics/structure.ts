@@ -132,6 +132,10 @@ export interface Structure {
   timers: SemTimer[];
 }
 
+/**
+ * A construct the semantics cannot give a meaning to. Every one of them is a design rule error (v1/check.ts), so after
+ * checkV1 reports no errors this is never thrown: the throws below are assertions, not the place to add a rule.
+ */
 export class SemanticsError extends Error {
   readonly id: Id | undefined;
   constructor(message: string, id?: Id) {
@@ -145,9 +149,8 @@ const INITIALIZER_KINDS = new Set<string>(["initial", "shallow-history", "deep-h
 const ENTRY_TARGET_KINDS = new Set<string>(["state", "final", "initial", "shallow-history", "deep-history", "terminate"]);
 
 /**
- * Build the structure of a document. The document should pass checkV1
- * without errors; constructs the semantics cannot give a meaning to throw
- * a SemanticsError.
+ * Build the structure of a document. The document must pass checkV1
+ * without errors; otherwise this may throw a SemanticsError.
  */
 export function buildStructure(doc: UfsmDocument): Structure {
   const index = indexV1(doc);
@@ -283,7 +286,6 @@ export function buildStructure(doc: UfsmDocument): Structure {
         for (const out of outgoing(to.id)) {
           const sources = ins.map((i) => vertex(i.from));
           for (const s of sources) if (s.kind !== "state") throw new SemanticsError(`transitions into join '${to.name}' must come from states`, to.id);
-          for (const i of ins) if (triggerOf(i).kind !== "none") throw new SemanticsError(`transitions into a join cannot have a trigger`, i.id);
           const r = resolveTargets(out);
           const parts = [...ins, ...r.parts];
           const c: CompoundTransition = {

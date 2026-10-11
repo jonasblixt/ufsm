@@ -21,7 +21,7 @@
  * conformance traces and random models.
  */
 import type { Action, Id, UfsmDocument } from "../v1/model";
-import { buildStructure, type CompoundTransition, type SemRegion, type SemVertex, type Structure, type Trigger } from "./structure";
+import { SemanticsError, buildStructure, type CompoundTransition, type SemRegion, type SemVertex, type Structure, type Trigger } from "./structure";
 
 export interface FlatVertex {
   id: Id;
@@ -135,6 +135,7 @@ export interface FlatModel {
   timers: FlatTimer[];
 }
 
+/** The document must pass checkV1 without errors; the SemanticsErrors thrown here are assertions. */
 export function flatten(doc: UfsmDocument, prebuilt?: Structure): FlatModel {
   const s = prebuilt ?? buildStructure(doc);
   const regionList = s.ordered.filter((x): x is SemRegion => !("kind" in x));
@@ -144,7 +145,7 @@ export function flatten(doc: UfsmDocument, prebuilt?: Structure): FlatModel {
   const ri = (r: SemRegion): number => rIndex.get(r.id)!;
   const vi = (v: SemVertex): number => {
     const i = vIndex.get(v.id);
-    if (i === undefined) throw new Error(`not a state: ${v.id}`);
+    if (i === undefined) throw new SemanticsError(`not a state: ${v.id}`);
     return i;
   };
 
@@ -167,7 +168,7 @@ export function flatten(doc: UfsmDocument, prebuilt?: Structure): FlatModel {
   /** Entry program for the vertex of region `r` leading to `targets` (all inside r, already validated orthogonal). */
   const pathIn = (r: SemRegion, targets: SemVertex[]): EntryOp => {
     const v = r.vertices.find((x) => targets.some((t) => t === x || x.regions.some((c) => t.within.has(c.id))));
-    if (!v || (v.kind !== "state" && v.kind !== "final")) throw new Error(`no state on the path in region ${r.id}`);
+    if (!v || (v.kind !== "state" && v.kind !== "final")) throw new SemanticsError(`no state on the path in region ${r.id}`);
     return enterOp(v, targets.filter((t) => t !== v));
   };
   const enterOp = (v: SemVertex, inner: SemVertex[]): EntryOp => ({ vertex: vi(v), regions: v.regions.map((c) => regionOp(c, inner.filter((t) => t.within.has(c.id)))) });
@@ -176,7 +177,7 @@ export function flatten(doc: UfsmDocument, prebuilt?: Structure): FlatModel {
     // A history or initial pseudo-state as target means entering its region by default.
     const pseudo = targets.find((t) => t.region === r && t.kind !== "state" && t.kind !== "final");
     if (pseudo) {
-      if (targets.length > 1) throw new Error(`conflicting targets in region ${r.id}`);
+      if (targets.length > 1) throw new SemanticsError(`conflicting targets in region ${r.id}`);
       return { region: ri(r), default: true };
     }
     return { region: ri(r), path: pathIn(r, targets) };
@@ -205,7 +206,7 @@ export function flatten(doc: UfsmDocument, prebuilt?: Structure): FlatModel {
     if (r.region.name !== undefined) fr.name = r.region.name;
     if (init) {
       const real = init.targets.filter((t) => t.kind !== "terminate");
-      if (real.length !== init.targets.length) throw new Error(`initializer of region ${r.id} leads to terminate`);
+      if (real.length !== init.targets.length) throw new SemanticsError(`initializer of region ${r.id} leads to terminate`);
       fr.init = { actions: init.actions, path: pathIn(r, real) };
     }
     return fr;

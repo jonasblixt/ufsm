@@ -266,6 +266,21 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [ ] Later: `"auto"` route via libavoid-js (trial on canvas.ufsm first; LGPL-2.1+, compatible with uFSM's GPL-3; keep its
       licence notice and source link)
 
+### Phase R — review 2026-10-11 (`docs/review-2026-10-11.md`, section 6)
+- [x] R1 One validity gate: the structural rules of `semantics/` are design rules (`fork-no-outgoing`, `fork-cycle`,
+      `join-incoming`, `initial-target`); throws in structure/flatten are assertions; mutation test (2026-10-11)
+- [ ] R2 Human documentation: `docs/architecture.md`, `docs/glossary.md`, `docs/contributing.md`
+- [ ] R3 Runtime contract out of the interpreter (`runtime/contract.ts`)
+- [ ] R4 Shared backend layer (`ir/analyze.ts`, `backends/common.ts`, resolved options, printers in named parts)
+- [ ] R5 Public surface of core (subpath exports; oracles out of the main entry)
+- [ ] R6 Core folders by domain
+- [ ] R7 Transition label layout in core
+- [ ] R8 Split the editor's `main.ts`
+- [ ] R9 Key map generated from editor.ufsm
+- [ ] R10 Vocabulary: StepEvent/onStep, sheet not page, hidden marker not pill
+- [ ] R11 Formatter and import-boundary check
+- [ ] R12 One backend contract suite
+
 ### Open questions
 - Event parameters, machine variables, expression guards (`&&`/`||`/`!`)? Guards are bool-only
   (decided 2026-10-09); conditions on data beyond named predicates would come with model-owned variables, not with
