@@ -27,27 +27,18 @@
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
-import { OPTION_DEFAULTS, targetSection } from "../v1/options";
 import { UFSM_VERSION } from "../version";
-import type { Expr, IrModule, Stmt, SwitchOn } from "../ir/ir";
+import type { Expr, IrHistory, IrModule, Stmt, SwitchOn } from "../ir/ir";
 import { TRACE_KINDS } from "../ir/ir";
 import { hex32 } from "../ir/ids";
 import { BUSY_MESSAGE } from "../runtime/contract";
-import { CodegenError, OUTPUT_NOTICE, cIdentifier } from "./c";
+import { CodegenError, OUTPUT_NOTICE, identifier, lines, pascalCase, prepare, readTargetOptions, type CommonOptions, type Lines, type Prepared, type Printed } from "./common";
 
-export interface PythonOptions {
+export interface PythonOptions extends CommonOptions {
   /** Name of the machine class; also the prefix of `<Class>Event`, `<Class>Handler` and `<Class>Error`. Default: the model name in PascalCase. */
   className?: string;
   /** Base name of the file: `<module>.py`. Default: the model name as an identifier. */
   module?: string;
-  /** Capacity of the signal queue (only generated when the model emits signals). Default 16, as in C. */
-  signalQueue?: number;
-  /** Microsteps per reset()/process() call before a "livelock" error; 0 disables the check. Default 10000. */
-  maxMicrosteps?: number;
-  /** Name tables for events, signals and states, and `is_active()`. Default false. */
-  debugInfo?: boolean;
-  /** Must equal the IR's `trace` when given (the trace calls are emitted by the lowering). */
-  trace?: boolean;
 }
 
 export interface PythonFiles {
@@ -67,29 +58,12 @@ export function pythonName(name: string): string {
   return PYTHON_KEYWORDS.has(name) ? `${name}_` : name;
 }
 
-/** "test_guard1" -> "TestGuard1", "New model" -> "NewModel". */
-export function pythonClassName(text: string): string {
-  const parts = cIdentifier(text).split("_").filter((p) => p !== "");
-  const s = parts.map((p) => p[0]!.toUpperCase() + p.slice(1)).join("");
-  return /^[A-Za-z]/.test(s) ? s : `M${s}`;
-}
+/** The keys of `targets.python` besides the API options. */
+export const PYTHON_TARGET_KEYS = ["className", "module"] as const;
 
 /** Read `targets.python`. Unknown keys and wrong types are reported, not fatal: the defaults are used instead. */
 export function pythonOptionsFromTargets(doc: UfsmDocument): { options: PythonOptions; problems: string[] } {
-  const { api, own, problems } = targetSection(doc, "python");
-  const options: PythonOptions = { ...api };
-  for (const [k, v] of own) {
-    switch (k) {
-      case "className":
-      case "module":
-        if (typeof v === "string") options[k] = v;
-        else problems.push(`targets.python.${k}: expected a string`);
-        break;
-      default:
-        problems.push(`targets.python.${k}: unknown option (ignored)`);
-    }
-  }
-  return { options, problems };
+  return readTargetOptions(doc, "python", PYTHON_TARGET_KEYS);
 }
 
 /** Text that is safe in a `#` comment. */
@@ -97,20 +71,50 @@ function comment(text: string): string {
   return text.replace(/[\r\n]+/g, " ");
 }
 
-/** Precedence of a printed expression: 0 `or`, 1 `and`, 2 `not`, 3 comparison, 4 primary. */
-interface Printed {
-  s: string;
-  p: number;
+/** Names and facts every part of the Python printer uses. */
+interface PyContext extends Prepared {
+  ir: IrModule;
+  cls: string;
+  module: string;
+  errorCls: string;
+  eventCls: string;
+  handlerCls: string;
+  stateCls: string;
+  signalCls: string;
+  kindCls: string;
+  timerCls: string;
+  /** The module function that maps a timer to its event. */
+  timerEventFn: string;
+  /** Signals get a public enum when the application sees their numbers (trace hook, name lookup). */
+  publicSignals: boolean;
+  /** Member names of `<Class>State` and `<Class>Timer`, by number. */
+  stateMember: string[];
+  timerMember: string[];
+  /** Python name of every declaration, by id. */
+  decl: Map<string, string>;
+  signalNo: Map<string, number>;
+  /** Index into `_hist` of each history region. */
+  histIndex: Map<number, number>;
+  /** Deep history regions with something to snapshot. */
+  deepRegions: IrHistory[];
+  /** A state's name for a comment, by region and slot. */
+  stateName(region: number, slot: number): string;
+  /** The method of an IR function. */
+  method(fn: string): string;
+  /** Member names of `<Class>Event`, by number. */
+  eventNames: string[];
+  /** _settle() has something to do: eventless transitions, queued signals or terminate. */
+  settleBody: boolean;
 }
 
-export function generatePython(ir: IrModule, options: PythonOptions = {}): PythonFiles {
-  const cls = options.className ?? pythonClassName(ir.name);
-  const module = options.module ?? cIdentifier(ir.name);
+function pyContext(ir: IrModule, options: PythonOptions): PyContext {
+  const cls = options.className ?? pascalCase(ir.name);
+  const module = options.module ?? identifier(ir.name);
   for (const [what, v] of [["class name", cls], ["module name", module]] as const) {
     if (!IDENTIFIER.test(v) || PYTHON_KEYWORDS.has(v)) throw new CodegenError(`Python ${what} '${v}' is not a Python identifier`);
   }
-  const queueCap = options.signalQueue ?? OPTION_DEFAULTS.signalQueue;
-  const maxSteps = options.maxMicrosteps ?? OPTION_DEFAULTS.maxMicrosteps;
+  const prepared = prepare(ir, options);
+  const { trace, debugInfo, hasQueue, hasTerminate, hasTimers } = prepared;
   const errorCls = `${cls}Error`;
   const eventCls = `${cls}Event`;
   const handlerCls = `${cls}Handler`;
@@ -118,49 +122,8 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   const signalCls = `${cls}Signal`;
   const kindCls = `${cls}TraceKind`;
   const timerCls = `${cls}Timer`;
-  const hasTimers = ir.timers.length > 0;
   const timerEventFn = `${module}_timer_event`;
-  if (options.trace !== undefined && options.trace !== ir.trace) throw new CodegenError("options.trace differs from the IR's: lower the model with { trace }");
-  const trace = ir.trace;
-  const debugInfo = options.debugInfo ?? false;
   const publicSignals = (trace || debugInfo) && ir.signals.length > 0;
-
-  // ------------------------------------------------------------ analysis
-
-  const fnByName = new Map(ir.functions.map((f) => [f.name, f]));
-  const walk = (stmts: Stmt[], f: (s: Stmt) => void): void => {
-    for (const s of stmts) {
-      f(s);
-      if (s.op === "if") {
-        walk(s.then, f);
-        if (s.else) walk(s.else, f);
-      } else if (s.op === "switch") for (const c of s.cases) walk(c.body, f);
-    }
-  };
-  const anyStmt = (pred: (s: Stmt) => boolean): boolean => {
-    let found = false;
-    const check = (s: Stmt): void => void (found ||= pred(s));
-    walk(ir.start, check);
-    for (const f of ir.functions) walk(f.body, check);
-    return found;
-  };
-  const hasQueue = ir.signals.length > 0 && anyStmt((s) => s.op === "emit");
-  const hasTerminate = anyStmt((s) => s.op === "terminate");
-  const checkSteps = maxSteps > 0;
-  if (hasQueue && queueCap < 1) throw new CodegenError("the model emits signals: signalQueue must be at least 1");
-
-  const roots = [...Object.values(ir.onEvent), ...(ir.eventless ? [ir.eventless] : []), ...(hasQueue ? Object.values(ir.onSignal) : [])];
-  const reachable = new Set<string>();
-  const visit = (name: string): void => {
-    if (reachable.has(name)) return;
-    reachable.add(name);
-    walk(fnByName.get(name)!.body, (s) => s.op === "invoke" && visit(s.fn));
-  };
-  walk(ir.start, (s) => s.op === "invoke" && visit(s.fn));
-  roots.forEach(visit);
-  const functions = ir.functions.filter((f) => reachable.has(f.name));
-
-  // ------------------------------------------------------------ names
 
   // Declaration names are C identifiers. A Python keyword gets a trailing underscore (PEP 8: `not` -> `not_`);
   // a leading "__" cannot be used, Python would mangle it inside the class body.
@@ -192,9 +155,37 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   const stateAt = new Map(ir.states.map((s) => [`${s.region}:${s.slot}`, s.name]));
   const stateName = (region: number, slot: number): string => comment(stateAt.get(`${region}:${slot}`) ?? `slot ${slot}`);
   const method = (fn: string): string => `_${fn}`;
+  const eventNames = ir.events.map((e) => pythonName(e.name));
+  return {
+    ...prepared,
+    ...{ ir, cls, module, errorCls, eventCls, handlerCls, stateCls, signalCls, kindCls, timerCls, timerEventFn, publicSignals, stateMember },
+    ...{ timerMember, decl, signalNo, histIndex, deepRegions, stateName, method, eventNames },
+    settleBody: hasTerminate || ir.eventless !== undefined || hasQueue,
+  };
+}
 
-  // ------------------------------------------------------------ expressions
+export function generatePython(ir: IrModule, options: PythonOptions = {}): PythonFiles {
+  const ctx = pyContext(ir, options);
+  const w = lines("    ");
+  const st = pyStatements(ctx, w);
+  pyPreamble(ctx, w);
+  pyHandler(ctx, w);
+  pyMachineClass(ctx, w);
+  pyResetProcess(ctx, w, st);
+  pyRuntime(ctx, w);
+  pyFunctions(ctx, w, st);
+  return { fileName: `${ctx.module}.py`, source: w.text() };
+}
 
+interface PyExpressions {
+  expr(e: Expr): Printed;
+  /** The negation of `e`, printed without a `not` where a comparison can be turned around. */
+  notExpr(e: Expr): Printed;
+}
+
+/** The Python text of IR conditions. */
+function pyExpressions(ctx: PyContext): PyExpressions {
+  const { decl, histIndex } = ctx;
   const guardCall = (g: string): string => `self._h.${decl.get(g)}()`;
   const wrap = (x: Printed, min: number): string => (x.p < min ? `(${x.s})` : x.s);
   const tuple = (xs: number[]): string => `(${xs.join(", ")}${xs.length === 1 ? "," : ""})`;
@@ -241,20 +232,32 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
         return { s: `not ${wrap(expr(e), 2)}`, p: 2 };
     }
   };
+  return { expr, notExpr };
+}
 
-  // ------------------------------------------------------------ statements
+interface PyStatements {
+  /** Print statements at depth `d`. */
+  stmts(list: Stmt[], d: number): void;
+  /** Print a block; a block that prints nothing gets `pass`. */
+  block(list: Stmt[], d: number): void;
+}
 
-  const out: string[] = [];
-  const line = (depth: number, text: string): void => void out.push(text === "" ? "" : `${"    ".repeat(depth)}${text}`);
+/** The statement printer, writing into `w`. */
+function pyStatements(ctx: PyContext, w: Lines): PyStatements {
+  const {
+    ir, stateCls, kindCls, timerCls, stateMember, timerMember, decl, signalNo, histIndex, stateName, method, checkSteps,
+  } = ctx;
+  const { line } = w;
+  const { expr, notExpr } = pyExpressions(ctx);
   const switchOn = (o: SwitchOn): string =>
     o.kind === "cfg" ? `self._cfg[${o.region}]` : o.kind === "hist" ? `self._hist[${histIndex.get(o.region)}]` : `self._deep_r${o.history}[${o.index}]`;
   const caseRegion = (o: SwitchOn): number => (o.kind === "deep" ? ir.history.find((h) => h.region === o.history)!.snapshotFrom! + o.index : o.region);
 
   /** Print a block; a block that prints nothing gets `pass`. */
   const block = (list: Stmt[], d: number): void => {
-    const before = out.length;
+    const before = w.out.length;
     stmts(list, d);
-    if (out.length === before) line(d, "pass");
+    if (w.out.length === before) line(d, "pass");
   };
 
   const stmts = (list: Stmt[], d: number): void => {
@@ -345,11 +348,16 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
       }
     }
   };
+  return { stmts, block };
+}
 
-  // ------------------------------------------------------------ module
-
-  const eventNames = ir.events.map((e) => pythonName(e.name));
-  const R = ir.regions;
+/** Usage, imports, the error class and the enums (events, signals, states, timers, trace kinds). */
+function pyPreamble(ctx: PyContext, w: Lines): void {
+  const {
+    ir, cls, errorCls, eventCls, handlerCls, stateCls, signalCls, kindCls, timerCls, timerEventFn, publicSignals,
+    stateMember, timerMember, eventNames, trace, hasTimers,
+  } = ctx;
+  const { line } = w;
   line(0, `# Generated by uFSM ${UFSM_VERSION} from model "${comment(ir.name)}". Do not edit.`);
   line(0, `# ${OUTPUT_NOTICE}`);
   line(0, "#");
@@ -422,6 +430,12 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
     line(0, "");
     line(0, "");
   }
+}
+
+/** The handler Protocol: one method per action and guard, the timer functions and the trace hook. */
+function pyHandler(ctx: PyContext, w: Lines): void {
+  const { ir, handlerCls, kindCls, timerCls, timerEventFn, trace, hasTimers } = ctx;
+  const { line } = w;
   line(0, `class ${handlerCls}(Protocol):`);
   line(1, '"""Actions and guards the machine calls. Guards return a bool and may be called more than once per event."""');
   for (const a of ir.actions) {
@@ -451,6 +465,15 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
     line(2, '"""Called inside reset() and process() with ids only; must not block or call the machine."""');
     line(2, "...");
   }
+}
+
+/** The machine class: the region map, the fingerprint, name tables and __init__. */
+function pyMachineClass(ctx: PyContext, w: Lines): void {
+  const {
+    ir, cls, handlerCls, histIndex, deepRegions, method, debugInfo, trace, hasQueue, hasTerminate, hasTimers,
+    checkSteps,
+  } = ctx;
+  const { line } = w;
   line(0, "");
   line(0, "");
   line(0, `class ${cls}:`);
@@ -484,7 +507,7 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   line(2, "self._h = handler");
   line(2, "self._started = False");
   line(2, "self._busy = False  # a reset()/process() call is running, or one did not finish");
-  line(2, `self._cfg: List[int] = [0] * ${R}`);
+  line(2, `self._cfg: List[int] = [0] * ${ir.regions}`);
   if (ir.history.length) line(2, `self._hist: List[int] = [0] * ${ir.history.length}`);
   for (const dh of deepRegions) line(2, `self._deep_r${dh.region}: List[int] = [0] * ${dh.snapshotTo! - dh.snapshotFrom!}`);
   if (hasQueue) line(2, "self._queue: List[int] = []");
@@ -492,14 +515,19 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   if (hasTerminate) line(2, "self._terminated = False");
   // Step method per event and signal number, bound to this machine (None: nothing reacts to it).
   const table = (ids: { id: string }[], steps: Record<string, string>): string => {
-    const items = ids.map((d) => (steps[d.id] && reachable.has(steps[d.id]!) ? `self.${method(steps[d.id]!)}` : "None"));
+    const items = ids.map((d) => (steps[d.id] ? `self.${method(steps[d.id]!)}` : "None"));
     return `(${items.join(", ")}${items.length === 1 ? "," : ""})`;
   };
   const stepT = "Tuple[Optional[Callable[[], bool]], ...]";
   line(2, `self._on_event: ${stepT} = ${table(ir.events, ir.onEvent)}`);
   if (hasQueue) line(2, `self._on_signal: ${stepT} = ${table(ir.signals, ir.onSignal)}`);
   line(0, "");
+}
 
+/** reset() and process(). */
+function pyResetProcess(ctx: PyContext, w: Lines, { stmts }: PyStatements): void {
+  const { ir, errorCls, eventCls, kindCls, deepRegions, settleBody, trace, hasQueue, hasTerminate, checkSteps } = ctx;
+  const { line } = w;
   // reset
   line(1, "def reset(self) -> None:");
   line(2, "self._busy = True");
@@ -511,7 +539,6 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   if (checkSteps) line(2, "self._steps = 0");
   if (hasTerminate) line(2, "self._terminated = False");
   stmts(ir.start, 2);
-  const settleBody = hasTerminate || ir.eventless !== undefined || hasQueue;
   if (settleBody) line(2, "self._settle()");
   line(2, "self._busy = False");
   line(0, "");
@@ -538,7 +565,15 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   }
   if (settleBody) line(2, "self._settle()");
   line(2, "self._busy = False");
+}
 
+/** _settle(), _push(), is_active() and _microstep(). */
+function pyRuntime(ctx: PyContext, w: Lines): void {
+  const {
+    ir, errorCls, stateCls, kindCls, method, settleBody, signalQueue, maxMicrosteps, debugInfo, trace, hasQueue,
+    hasTerminate, checkSteps,
+  } = ctx;
+  const { line } = w;
   // runtime helpers
   if (settleBody) {
     line(0, "");
@@ -574,8 +609,8 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
   if (hasQueue) {
     line(0, "");
     line(1, "def _push(self, signal: int) -> None:");
-    line(2, `if len(self._queue) >= ${queueCap}:`);
-    line(3, `raise ${errorCls}("queue-overflow", "signal queue full (${queueCap})")`);
+    line(2, `if len(self._queue) >= ${signalQueue}:`);
+    line(3, `raise ${errorCls}("queue-overflow", "signal queue full (${signalQueue})")`);
     line(2, "self._queue.append(signal)");
   }
   if (debugInfo && ir.states.length) {
@@ -588,17 +623,20 @@ export function generatePython(ir: IrModule, options: PythonOptions = {}): Pytho
     line(0, "");
     line(1, "def _microstep(self) -> None:");
     line(2, "self._steps += 1");
-    line(2, `if self._steps > ${maxSteps}:`);
-    line(3, `raise ${errorCls}("livelock", "more than ${maxSteps} microsteps in one call")`);
+    line(2, `if self._steps > ${maxMicrosteps}:`);
+    line(3, `raise ${errorCls}("livelock", "more than ${maxMicrosteps} microsteps in one call")`);
   }
+}
 
-  for (const f of functions) {
+/** One method per IR function. */
+function pyFunctions(ctx: PyContext, w: Lines, { block }: PyStatements): void {
+  const { ir, method } = ctx;
+  const { line } = w;
+  for (const f of ir.functions) {
     line(0, "");
     line(1, `def ${method(f.name)}(self) -> ${f.returns === "bool" ? "bool" : "None"}:`);
     if (f.doc) line(2, `# ${comment(f.doc)}`);
     for (const x of f.flags) line(2, `${x} = False`);
     block(f.body, 2);
   }
-
-  return { fileName: `${module}.py`, source: `${out.join("\n")}\n` };
 }

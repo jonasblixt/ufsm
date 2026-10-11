@@ -54,6 +54,7 @@ export * from "./ir/analyze";
 export * from "./ir/ids";
 export * from "./ir/eval";
 export * from "./ir/print";
+export * from "./backends/common";
 export * from "./backends/c";
 export * from "./backends/python";
 export * from "./backends/ts";

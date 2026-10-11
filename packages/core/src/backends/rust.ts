@@ -29,26 +29,17 @@
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
-import { OPTION_DEFAULTS, targetSection } from "../v1/options";
 import { UFSM_VERSION } from "../version";
-import type { Expr, IrFunction, IrModule, Stmt, SwitchOn } from "../ir/ir";
+import type { Expr, IrFunction, IrHistory, IrModule, Stmt, SwitchOn } from "../ir/ir";
+import { walkStmts } from "../ir/analyze";
 import { hex32 } from "../ir/ids";
-import { CodegenError, OUTPUT_NOTICE, cIdentifier } from "./c";
-import { pythonClassName } from "./python";
+import { CodegenError, OUTPUT_NOTICE, identifier, lines, pascalCase, prepare, readTargetOptions, type CommonOptions, type Lines, type Prepared } from "./common";
 
-export interface RustOptions {
+export interface RustOptions extends CommonOptions {
   /** Name of the machine struct. Default: the model name in PascalCase. */
   className?: string;
   /** Base name of the file: `<module>.rs`. Default: the model name in snake_case. */
   module?: string;
-  /** Capacity of the signal queue (only generated when the model emits signals). Default 16, as in C. */
-  signalQueue?: number;
-  /** Microsteps per reset()/process() call before a `Livelock` error; 0 disables the check. Default 10000. */
-  maxMicrosteps?: number;
-  /** Name tables for events, signals and states, and `is_active()`. Default false. */
-  debugInfo?: boolean;
-  /** Must equal the IR's `trace` when given (the trace calls are emitted by the lowering). */
-  trace?: boolean;
 }
 
 export interface RustFiles {
@@ -83,27 +74,17 @@ export function rustName(name: string): string {
 
 /** "test_guard1" -> "test_guard1", "New model" -> "new_model", "myMachine" -> "my_machine". */
 export function rustModuleName(text: string): string {
-  return cIdentifier(text)
+  return identifier(text)
     .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
     .toLowerCase();
 }
 
+/** The keys of `targets.rust` besides the API options. */
+export const RUST_TARGET_KEYS = ["className", "module"] as const;
+
 /** Read `targets.rust`. Unknown keys and wrong types are reported, not fatal: the defaults are used instead. */
 export function rustOptionsFromTargets(doc: UfsmDocument): { options: RustOptions; problems: string[] } {
-  const { api, own, problems } = targetSection(doc, "rust");
-  const options: RustOptions = { ...api };
-  for (const [k, v] of own) {
-    switch (k) {
-      case "className":
-      case "module":
-        if (typeof v === "string") options[k] = v;
-        else problems.push(`targets.rust.${k}: expected a string`);
-        break;
-      default:
-        problems.push(`targets.rust.${k}: unknown option (ignored)`);
-    }
-  }
-  return { options, problems };
+  return readTargetOptions(doc, "rust", RUST_TARGET_KEYS);
 }
 
 /** Text that is safe in a `//` comment. */
@@ -172,77 +153,76 @@ function layout(x: Printed, indent: number, col: number, suffix: number): string
 
 type If = Extract<Stmt, { op: "if" }>;
 
-export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles {
-  const ty = options.className ?? pythonClassName(ir.name);
+/** An array of `n` zeros. */
+function zeros(n: number): string {
+  return `[0; ${n}]`;
+}
+
+/** The active slot of region `r`. */
+function cfg(r: number): string {
+  return `self.cfg[${r}]`;
+}
+
+/** The variant of an event. */
+function variant(name: string): string {
+  return `Event::${rustName(name)}`;
+}
+
+/** A match arm `pattern => value,`; a long pattern list is put one alternative per line, a long value in a block. */
+function arm(w: Lines, d: number, patterns: string[], value: string): void {
+  const { line } = w;
+  const one = `${patterns.join(" | ")} => ${value},`;
+  if (4 * d + one.length <= MAX_WIDTH) return line(d, one);
+  patterns.slice(0, -1).forEach((p, i) => line(d, i === 0 ? p : `| ${p}`));
+  const last = `${patterns.length > 1 ? "| " : ""}${patterns[patterns.length - 1]} =>`;
+  if (4 * d + last.length + value.length + 2 <= MAX_WIDTH) return line(d, `${last} ${value},`);
+  line(d, `${last} {`);
+  line(d + 1, value);
+  line(d, "}");
+}
+
+/** Names and facts every part of the Rust printer uses. */
+interface RsContext extends Prepared {
+  ir: IrModule;
+  /** The machine struct. */
+  ty: string;
+  module: string;
+  /** Signals get a public enum when the application sees their numbers (trace hook, name lookup). */
+  publicSignals: boolean;
+  /** Name of every declaration, by id (rustName() makes it a Rust identifier). */
+  decl: Map<string, string>;
+  signalNo: Map<string, number>;
+  /** Index into `hist` of each history region. */
+  histIndex: Map<number, number>;
+  /** Deep history regions with something to snapshot. */
+  deepRegions: IrHistory[];
+  slotT: string;
+  sigT: string;
+  stepsT: string;
+  /** A state's name for a comment, by region and slot. */
+  stateName(region: number, slot: number): string;
+  /** Events and signals that have a step function. */
+  eventSteps: IrModule["events"];
+  signalSteps: IrModule["signals"];
+  /** settle() has something to do: eventless transitions, queued signals or terminate. */
+  settleBody: boolean;
+  /** With only a terminate to finish, settle() cannot fail (clippy's unnecessary_wraps). */
+  settleFails: boolean;
+  hasEvents: boolean;
+  /** A call of an IR function, with `?` when it can fail. */
+  call(fn: string): string;
+  /** The machine struct's fields: name, type, initial value. */
+  fields: [string, string, string][];
+}
+
+function rsContext(ir: IrModule, options: RustOptions): RsContext {
+  const ty = options.className ?? pascalCase(ir.name);
   const module = options.module ?? rustModuleName(ir.name);
   if (!IDENTIFIER.test(ty) || RUST_KEYWORDS.has(ty) || RUST_TAKEN.has(ty)) throw new CodegenError(`Rust type name '${ty}' is not a usable identifier`);
   if (!/^[A-Za-z0-9_.-]+$/.test(module)) throw new CodegenError(`Rust module name '${module}' is not a plain file name`);
-  const queueCap = options.signalQueue ?? OPTION_DEFAULTS.signalQueue;
-  const maxSteps = options.maxMicrosteps ?? OPTION_DEFAULTS.maxMicrosteps;
-  if (options.trace !== undefined && options.trace !== ir.trace) throw new CodegenError("options.trace differs from the IR's: lower the model with { trace }");
-  const trace = ir.trace;
-  const debugInfo = options.debugInfo ?? false;
+  const prepared = prepare(ir, options);
+  const { signalQueue, maxMicrosteps, trace, debugInfo, hasQueue, hasTerminate, hasTimers, countSteps, fallible } = prepared;
   const publicSignals = (trace || debugInfo) && ir.signals.length > 0;
-  const hasTimers = ir.timers.length > 0;
-
-  // ------------------------------------------------------------ analysis
-
-  const fnByName = new Map(ir.functions.map((f) => [f.name, f]));
-  const walk = (stmts: Stmt[], f: (s: Stmt) => void): void => {
-    for (const s of stmts) {
-      f(s);
-      if (s.op === "if") {
-        walk(s.then, f);
-        if (s.else) walk(s.else, f);
-      } else if (s.op === "switch") for (const c of s.cases) walk(c.body, f);
-    }
-  };
-  const anyStmt = (pred: (s: Stmt) => boolean): boolean => {
-    let found = false;
-    const check = (s: Stmt): void => void (found ||= pred(s));
-    walk(ir.start, check);
-    for (const f of ir.functions) walk(f.body, check);
-    return found;
-  };
-  const hasQueue = ir.signals.length > 0 && anyStmt((s) => s.op === "emit");
-  const hasTerminate = anyStmt((s) => s.op === "terminate");
-  const checkSteps = maxSteps > 0;
-  if (hasQueue && queueCap < 1) throw new CodegenError("the model emits signals: signalQueue must be at least 1");
-
-  // Functions reachable from the runtime loop; signal steps only when signals can be queued.
-  const roots = [...Object.values(ir.onEvent), ...(ir.eventless ? [ir.eventless] : []), ...(hasQueue ? Object.values(ir.onSignal) : [])];
-  const reachable = new Set<string>();
-  const visit = (name: string): void => {
-    if (reachable.has(name)) return;
-    reachable.add(name);
-    walk(fnByName.get(name)!.body, (s) => s.op === "invoke" && visit(s.fn));
-  };
-  walk(ir.start, (s) => s.op === "invoke" && visit(s.fn));
-  roots.forEach(visit);
-  const functions = ir.functions.filter((f) => reachable.has(f.name));
-  let counts = false;
-  walk(ir.start, (x) => void (counts ||= x.op === "microstep"));
-  for (const f of functions) walk(f.body, (x) => void (counts ||= x.op === "microstep"));
-  const countSteps = checkSteps && counts;
-
-  // A function can fail if it emits, counts a microstep, or invokes one that can fail.
-  const fallible = new Set<string>();
-  for (let changed = true; changed; ) {
-    changed = false;
-    for (const f of functions) {
-      if (fallible.has(f.name)) continue;
-      let fails = false;
-      walk(f.body, (s) => {
-        if (s.op === "emit" || (s.op === "microstep" && countSteps) || (s.op === "invoke" && fallible.has(s.fn))) fails = true;
-      });
-      if (fails) {
-        fallible.add(f.name);
-        changed = true;
-      }
-    }
-  }
-
-  // ------------------------------------------------------------ names
 
   // Events are enum variants, actions and guards trait methods: each list must stay unique after renaming.
   const problems: string[] = [];
@@ -273,16 +253,63 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   const maxSlot = Math.max(0, ...ir.states.map((s) => s.slot));
   const slotT = uintType(maxSlot);
   const sigT = uintType(Math.max(0, ir.signals.length - 1));
-  const stepsT = uintType(maxSteps + 1);
+  const stepsT = uintType(maxMicrosteps + 1);
   const stateAt = new Map(ir.states.map((s) => [`${s.region}:${s.slot}`, s.name]));
   const stateName = (region: number, slot: number): string => comment(stateAt.get(`${region}:${slot}`) ?? `slot ${slot}`);
+  const settleBody = hasTerminate || ir.eventless !== undefined || hasQueue;
+  const settleFails = ir.eventless !== undefined || hasQueue;
+  const hasEvents = ir.events.length > 0;
+  const call = (fn: string): string => `self.${fn}()${fallible.has(fn) ? "?" : ""}`;
+  const fields: [string, string, string][] = [["handler", "H", "handler"]];
+  if (hasEvents) fields.push(["started", "bool", "false"]);
+  // a call is running or did not finish (an error, or a caught panic); only process() reads it
+  if (hasEvents) fields.push(["busy", "bool", "false"]);
+  fields.push(["cfg", `[${slotT}; ${ir.regions}]`, zeros(ir.regions)]);
+  if (ir.history.length) fields.push(["hist", `[${slotT}; ${ir.history.length}]`, zeros(ir.history.length)]);
+  for (const dh of deepRegions) fields.push([`deep_r${dh.region}`, `[${slotT}; ${dh.snapshotTo! - dh.snapshotFrom!}]`, zeros(dh.snapshotTo! - dh.snapshotFrom!)]);
+  if (hasQueue) {
+    fields.push(["queue", `[${sigT}; ${signalQueue}]`, zeros(signalQueue)]);
+    // A queue of one has its only slot at 0: no head to move (and clippy denies `% 1`).
+    if (signalQueue > 1) fields.push(["queue_head", "usize", "0"]);
+    fields.push(["queue_len", "usize", "0"]);
+  }
+  if (countSteps) fields.push(["steps", stepsT, "0"]);
+  if (hasTerminate) fields.push(["terminated", "bool", "false"]);
+  return {
+    ...prepared,
+    ...{ ir, ty, module, publicSignals, decl, signalNo, histIndex, deepRegions, slotT, sigT, stepsT, stateName },
+    eventSteps: ir.events.filter((ev) => ir.onEvent[ev.id]),
+    signalSteps: ir.signals.filter((sg) => ir.onSignal[sg.id]),
+    ...{ settleBody, settleFails, hasEvents, call, fields },
+  };
+}
 
-  // ------------------------------------------------------------ expressions
+export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles {
+  const ctx = rsContext(ir, options);
+  const w = lines("    ");
+  const st = rsStatements(ctx, w);
+  rsPreamble(ctx, w);
+  rsEnums(ctx, w);
+  rsHandler(ctx, w);
+  rsStruct(ctx, w);
+  rsApi(ctx, w);
+  rsResetProcess(ctx, w, st);
+  rsInternals(ctx, w, st);
+  return { fileName: `${ctx.module}.rs`, source: w.text() };
+}
 
+interface RsExpressions {
+  expr(e: Expr): Printed;
+  /** The negation of `e`, printed without a `!` where a comparison can be turned around. */
+  notExpr(e: Expr): Printed;
+}
+
+/** The Rust text of IR conditions. */
+function rsExpressions(ctx: RsContext): RsExpressions {
+  const { decl, histIndex } = ctx;
   // Fully qualified calls: a method named like one every type has through a blanket impl (`into`, `try_from`, ...)
   // would otherwise resolve to that instead.
   const guardCall = (g: string): string => `Handler::${rustName(decl.get(g)!)}(&mut self.handler)`;
-  const cfg = (r: number): string => `self.cfg[${r}]`;
   const inSlots = (r: number, slots: number[], neg: boolean): Printed => {
     if (slots.length === 0) return atom(neg ? "true" : "false", 3);
     if (slots.length === 1) return atom(`${cfg(r)} ${neg ? "!=" : "=="} ${slots[0]}`, 2);
@@ -331,18 +358,31 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
       }
     }
   };
+  return { expr, notExpr };
+}
 
-  // ------------------------------------------------------------ statements
+interface RsStatements {
+  /** A function body: a final `return` becomes the tail expression (clippy's needless_return). */
+  body(list: Stmt[], d: number, fx: { result: boolean }, tail: string | undefined): void;
+  /** Flags a function sets and reads: set ones are `mut`; one that is never read is not declared at all. */
+  flagUse(f: IrFunction): { set: Set<string>; read: Set<string> };
+  /** Flags of the function about to be printed that are read somewhere; setting any other flag prints nothing. */
+  setLiveFlags(flags: Set<string>): void;
+  stmts(list: Stmt[], d: number, fx: { result: boolean }): void;
+}
 
-  const out: string[] = [];
-  const line = (depth: number, text: string): void => void out.push(text === "" ? "" : `${"    ".repeat(depth)}${text}`);
+/** The statement printer, writing into `w`. */
+function rsStatements(ctx: RsContext, w: Lines): RsStatements {
+  const { ir, decl, signalNo, histIndex, stateName, countSteps, fallible } = ctx;
+  const { line } = w;
+  const { expr, notExpr } = rsExpressions(ctx);
   /** `if cond {` (or `} else if cond {`), broken over lines as rustfmt would when it is too long. */
   const ifHead = (d: number, keyword: string, cond: Printed): void => {
     const col = 4 * d + keyword.length;
     if (col + cond.s.length + 2 <= MAX_WIDTH) return line(d, `${keyword}${cond.s} {`);
     const lines = col + cond.s.length <= MAX_WIDTH ? [cond.s] : layout(cond, 4 * d, col, 0);
     line(d, `${keyword}${lines[0]}`);
-    out.push(...lines.slice(1));
+    w.out.push(...lines.slice(1));
     line(d, "{");
   };
   /** A statement calling `fn` with `args`; when the line is too long, one argument per line, as rustfmt breaks it. */
@@ -352,17 +392,6 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     line(d, `${fn}(`);
     for (const a of args) line(d + 1, `${a},`);
     line(d, ");");
-  };
-  /** A match arm `pattern => value,`; a long pattern list is put one alternative per line, a long value in a block. */
-  const arm = (d: number, patterns: string[], value: string): void => {
-    const one = `${patterns.join(" | ")} => ${value},`;
-    if (4 * d + one.length <= MAX_WIDTH) return line(d, one);
-    patterns.slice(0, -1).forEach((p, i) => line(d, i === 0 ? p : `| ${p}`));
-    const last = `${patterns.length > 1 ? "| " : ""}${patterns[patterns.length - 1]} =>`;
-    if (4 * d + last.length + value.length + 2 <= MAX_WIDTH) return line(d, `${last} ${value},`);
-    line(d, `${last} {`);
-    line(d + 1, value);
-    line(d, "}");
   };
   const switchOn = (o: SwitchOn): string =>
     o.kind === "cfg" ? cfg(o.region) : o.kind === "hist" ? `self.hist[${histIndex.get(o.region)}]` : `self.deep_r${o.history}[${o.index}]`;
@@ -419,28 +448,28 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     return { cond, then, else: els };
   };
 
-  /** Context of the function being printed: how `return` and fallible calls look. */
-  interface Ctx {
+  /** The function being printed: how `return` and fallible calls look. */
+  interface FnContext {
     result: boolean;
   }
 
-  const stmts = (list: Stmt[], d: number, ctx: Ctx): void => {
+  const stmts = (list: Stmt[], d: number, fx: FnContext): void => {
     for (const s of list) {
       switch (s.op) {
         case "if": {
           if (!prints(s.then) && !prints(s.else)) break;
           let x = shape(s);
           ifHead(d, "if ", x.cond);
-          stmts(x.then, d + 1, ctx);
+          stmts(x.then, d + 1, fx);
           // else-if chains (clippy's collapsible_else_if)
           while (x.else && x.else.length === 1 && x.else[0]!.op === "if" && prints(x.else)) {
             x = shape(x.else[0] as If);
             ifHead(d, "} else if ", x.cond);
-            stmts(x.then, d + 1, ctx);
+            stmts(x.then, d + 1, fx);
           }
           if (x.else) {
             line(d, "} else {");
-            stmts(x.else, d + 1, ctx);
+            stmts(x.else, d + 1, fx);
           }
           line(d, "}");
           break;
@@ -454,7 +483,7 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
             const c = cases[0]!;
             line(d, `if ${switchOn(s.on)} == ${c.slot} {`);
             line(d + 1, `// ${stateName(region, c.slot)}`);
-            stmts(c.body, d + 1, ctx);
+            stmts(c.body, d + 1, fx);
             line(d, "}");
             break;
           }
@@ -462,7 +491,7 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
           for (const c of cases) {
             line(d + 1, `${c.slot} => {`);
             line(d + 2, `// ${stateName(region, c.slot)}`);
-            stmts(c.body, d + 2, ctx);
+            stmts(c.body, d + 2, fx);
             line(d + 1, "}");
           }
           line(d + 1, "_ => {}");
@@ -516,21 +545,21 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
           line(d, "self.terminated = true;");
           break;
         case "return":
-          line(d, `return ${ctx.result ? `Ok(${s.value})` : String(s.value)};`);
+          line(d, `return ${fx.result ? `Ok(${s.value})` : String(s.value)};`);
           break;
       }
     }
   };
 
   /** A function body: a final `return` becomes the tail expression (clippy's needless_return). */
-  const body = (list: Stmt[], d: number, ctx: Ctx, tail: string | undefined): void => {
+  const body = (list: Stmt[], d: number, fx: FnContext, tail: string | undefined): void => {
     const last = list[list.length - 1];
     if (last?.op === "return") {
-      stmts(list.slice(0, -1), d, ctx);
-      line(d, ctx.result ? `Ok(${last.value})` : String(last.value));
+      stmts(list.slice(0, -1), d, fx);
+      line(d, fx.result ? `Ok(${last.value})` : String(last.value));
       return;
     }
-    stmts(list, d, ctx);
+    stmts(list, d, fx);
     if (tail !== undefined) line(d, tail);
   };
 
@@ -543,25 +572,19 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
       else if (e.op === "not") readIn(e.expr);
       else if (e.op === "and" || e.op === "or") e.exprs.forEach(readIn);
     };
-    walk(f.body, (s) => {
+    walkStmts(f.body, (s) => {
       if (s.op === "setFlag") set.add(s.name);
       else if (s.op === "if") readIn(s.cond);
     });
     return { set, read };
   };
+  return { body, flagUse, setLiveFlags: (flags) => void (liveFlags = flags), stmts };
+}
 
-  // ------------------------------------------------------------ module
-
-  const zeros = (n: number): string => `[0; ${n}]`;
-  const eventSteps = ir.events.filter((ev) => ir.onEvent[ev.id] && reachable.has(ir.onEvent[ev.id]!));
-  const signalSteps = hasQueue ? ir.signals.filter((sg) => ir.onSignal[sg.id] && reachable.has(ir.onSignal[sg.id]!)) : [];
-  const settleBody = hasTerminate || ir.eventless !== undefined || hasQueue;
-  // with only a terminate to finish, settle() cannot fail (clippy's unnecessary_wraps)
-  const settleFails = ir.eventless !== undefined || hasQueue;
-  const hasEvents = ir.events.length > 0;
-  const variant = (name: string): string => `Event::${rustName(name)}`;
-  const call = (fn: string): string => `self.${fn}()${fallible.has(fn) ? "?" : ""}`;
-
+/** Usage, the error type and the events. */
+function rsPreamble(ctx: RsContext, w: Lines): void {
+  const { ir, ty, hasEvents, signalQueue, maxMicrosteps, checkSteps } = ctx;
+  const { line } = w;
   line(0, `// Generated by uFSM ${UFSM_VERSION} from model "${comment(ir.name)}". Do not edit.`);
   line(0, `// ${OUTPUT_NOTICE}`);
   line(0, "//");
@@ -582,9 +605,9 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   line(0, "pub enum Error {");
   line(1, "/// `process()` was called before `reset()`.");
   line(1, "NotStarted,");
-  line(1, `/// More than ${queueCap} signals were waiting at once.`);
+  line(1, `/// More than ${signalQueue} signals were waiting at once.`);
   line(1, "QueueOverflow,");
-  line(1, checkSteps ? `/// More than ${maxSteps} microsteps in one call.` : "/// Too many microsteps in one call (not checked in this build).");
+  line(1, checkSteps ? `/// More than ${maxMicrosteps} microsteps in one call.` : "/// Too many microsteps in one call (not checked in this build).");
   line(1, "Livelock,");
   line(1, "/// `process()` after a call that did not finish (an error, or a caught panic) and before `reset()`.");
   line(1, "Busy,");
@@ -608,8 +631,8 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   line(1, "fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {");
   line(2, "f.write_str(match self {");
   line(3, 'Error::NotStarted => "call reset() before process()",');
-  line(3, `Error::QueueOverflow => "signal queue full (${queueCap})",`);
-  line(3, `Error::Livelock => "${checkSteps ? `more than ${maxSteps} microsteps in one call` : "livelock"}",`);
+  line(3, `Error::QueueOverflow => "signal queue full (${signalQueue})",`);
+  line(3, `Error::Livelock => "${checkSteps ? `more than ${maxMicrosteps} microsteps in one call` : "livelock"}",`);
   line(3, 'Error::Busy => "an earlier reset() or process() did not finish; call reset()",');
   line(2, "})");
   line(1, "}");
@@ -629,6 +652,12 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     line(0, "}");
   } else line(0, "pub enum Event {}");
   line(0, "");
+}
+
+/** Signals, states and timers, their name lookups (debugInfo), the fingerprint and the trace kinds. */
+function rsEnums(ctx: RsContext, w: Lines): void {
+  const { ir, publicSignals, debugInfo, trace, hasTimers } = ctx;
+  const { line } = w;
   /** `name()` and `from_index()` for an enum (debugInfo): the name as in the model, and the variant numbered `index`. */
   const lookup = (en: string, what: string, items: { variant: string; name: string }[]): void => {
     // one match arm per item: long for big models
@@ -640,7 +669,7 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     if (!items.length) line(2, "match self {}");
     else {
       line(2, "match self {");
-      for (const it of items) arm(3, [`${en}::${it.variant}`], JSON.stringify(it.name));
+      for (const it of items) arm(w, 3, [`${en}::${it.variant}`], JSON.stringify(it.name));
       line(2, "}");
     }
     line(1, "}");
@@ -652,7 +681,7 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     if (!items.length) line(2, "None");
     else {
       line(2, "match index {");
-      items.forEach((it, i) => arm(3, [String(i)], `Some(${en}::${it.variant})`));
+      items.forEach((it, i) => arm(w, 3, [String(i)], `Some(${en}::${it.variant})`));
       line(3, "_ => None,");
       line(2, "}");
     }
@@ -707,7 +736,7 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     line(1, "#[must_use]");
     line(1, "pub fn event(self) -> Event {");
     line(2, "match self {");
-    for (const t of ir.timers) arm(3, [`Timer::${rustName(t.name)}`], variant(ir.events[t.event]!.name));
+    for (const t of ir.timers) arm(w, 3, [`Timer::${rustName(t.name)}`], variant(ir.events[t.event]!.name));
     line(2, "}");
     line(1, "}");
     line(0, "");
@@ -742,6 +771,12 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     line(0, "}");
     line(0, "");
   }
+}
+
+/** The handler trait: one method per action and guard, the timer functions and the trace hook. */
+function rsHandler(ctx: RsContext, w: Lines): void {
+  const { ir, trace, hasTimers } = ctx;
+  const { line } = w;
   line(0, "/// Actions and guards the machine calls. Guards return a `bool` and may be called more than once per event");
   line(0, "/// and in any order.");
   line(0, "#[allow(non_snake_case)]");
@@ -769,7 +804,12 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     line(0, "}");
   } else line(0, "pub trait Handler {}");
   line(0, "");
+}
 
+/** The machine struct: the region map and its fields. */
+function rsStruct(ctx: RsContext, w: Lines): void {
+  const { ir, ty, histIndex, fields, trace, hasQueue } = ctx;
+  const { line } = w;
   // struct
   line(0, `/// The state machine \`${comment(ir.name).replace(/`/g, "'")}\`. \`new()\` stores the handler; \`reset()\` starts the machine.`);
   line(0, "#[derive(Debug, Clone)]");
@@ -786,25 +826,15 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     line(1, "// Transition numbers (trace):");
     ir.transitions.forEach((t, i) => line(1, `//   ${i} ${comment(t.label)}`));
   }
-  const fields: [string, string, string][] = [["handler", "H", "handler"]];
-  if (hasEvents) fields.push(["started", "bool", "false"]);
-  // a call is running or did not finish (an error, or a caught panic); only process() reads it
-  if (hasEvents) fields.push(["busy", "bool", "false"]);
-  fields.push(["cfg", `[${slotT}; ${ir.regions}]`, zeros(ir.regions)]);
-  if (ir.history.length) fields.push(["hist", `[${slotT}; ${ir.history.length}]`, zeros(ir.history.length)]);
-  for (const dh of deepRegions) fields.push([`deep_r${dh.region}`, `[${slotT}; ${dh.snapshotTo! - dh.snapshotFrom!}]`, zeros(dh.snapshotTo! - dh.snapshotFrom!)]);
-  if (hasQueue) {
-    fields.push(["queue", `[${sigT}; ${queueCap}]`, zeros(queueCap)]);
-    // A queue of one has its only slot at 0: no head to move (and clippy denies `% 1`).
-    if (queueCap > 1) fields.push(["queue_head", "usize", "0"]);
-    fields.push(["queue_len", "usize", "0"]);
-  }
-  if (countSteps) fields.push(["steps", stepsT, "0"]);
-  if (hasTerminate) fields.push(["terminated", "bool", "false"]);
   for (const [n, t] of fields) line(1, `${n}: ${t},`);
   line(0, "}");
   line(0, "");
+}
 
+/** new(), the handler accessors and is_active(): the API without the Handler bound. */
+function rsApi(ctx: RsContext, w: Lines): void {
+  const { ir, ty, fields, debugInfo } = ctx;
+  const { line } = w;
   // public API without the bound
   line(0, "#[allow(dead_code)]");
   line(0, `impl<H> ${ty}<H> {`);
@@ -840,13 +870,20 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     line(1, "#[allow(clippy::too_many_lines)]"); // one arm per state
     line(1, "pub fn is_active(&self, state: State) -> bool {");
     line(2, "match state {");
-    for (const st of ir.states) arm(3, [`State::${rustName(st.ident)}`], `${cfg(st.region)} == ${st.slot}`);
+    for (const st of ir.states) arm(w, 3, [`State::${rustName(st.ident)}`], `${cfg(st.region)} == ${st.slot}`);
     line(2, "}");
     line(1, "}");
   }
   line(0, "}");
   line(0, "");
+}
 
+/** reset() and process(). */
+function rsResetProcess(ctx: RsContext, w: Lines, { stmts }: RsStatements): void {
+  const {
+    ir, ty, eventSteps, settleBody, settleFails, hasEvents, call, fields, trace, hasQueue, hasTerminate, countSteps,
+  } = ctx;
+  const { line } = w;
   // reset and process
   line(0, `impl<H: Handler> ${ty}<H> {`);
   const errorsDoc = (notStarted: boolean): void => {
@@ -906,9 +943,9 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     } else {
       // one arm per event: the step function's result (whether a microstep ran) is not needed here
       line(2, "match event {");
-      for (const ev of eventSteps) arm(3, [variant(ev.name)], call(ir.onEvent[ev.id]!));
+      for (const ev of eventSteps) arm(w, 3, [variant(ev.name)], call(ir.onEvent[ev.id]!));
       const idle = ir.events.filter((ev) => !eventSteps.includes(ev));
-      if (idle.length) arm(3, idle.map((ev) => variant(ev.name)), "false");
+      if (idle.length) arm(w, 3, idle.map((ev) => variant(ev.name)), "false");
       line(2, "};");
     }
     finish();
@@ -916,7 +953,15 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   line(1, "}");
   line(0, "}");
   line(0, "");
+}
 
+/** settle(), the signal queue, microstep() and one method per IR function. */
+function rsInternals(ctx: RsContext, w: Lines, { body, flagUse, setLiveFlags }: RsStatements): void {
+  const {
+    ir, ty, signalNo, sigT, signalSteps, settleBody, settleFails, call, signalQueue, maxMicrosteps, trace, hasQueue,
+    hasTerminate, countSteps, fallible,
+  } = ctx;
+  const { line } = w;
   // internals: step functions are named after events (step_eButton), flags after transitions (take_t1, take_t2)
   line(0, "#[allow(non_snake_case, clippy::similar_names, clippy::too_many_lines)]");
   line(0, `impl<H: Handler> ${ty}<H> {`);
@@ -954,14 +999,14 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
         line(3, `Handler::trace(&mut self.handler, TraceKind::Signal, ${sigT === "u8" ? "u16::from(signal)" : "signal"});`);
         if (signalSteps.length) {
           line(3, "match signal {");
-          for (const sg of signalSteps) arm(4, [String(signalNo.get(sg.id))], call(ir.onSignal[sg.id]!));
+          for (const sg of signalSteps) arm(w, 4, [String(signalNo.get(sg.id))], call(ir.onSignal[sg.id]!));
           line(4, "_ => false,");
           line(3, "};");
         }
       } else if (hasQueue) {
         if (signalSteps.length) {
           line(3, "match self.pop() {");
-          for (const sg of signalSteps) arm(4, [`Some(${signalNo.get(sg.id)})`], call(ir.onSignal[sg.id]!));
+          for (const sg of signalSteps) arm(w, 4, [`Some(${signalNo.get(sg.id)})`], call(ir.onSignal[sg.id]!));
           line(4, "Some(_) => false,");
           line(4, "None => return Ok(()),");
           line(3, "};");
@@ -978,10 +1023,10 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
   if (hasQueue) {
     blocks.push(() => {
       line(1, `fn push(&mut self, signal: ${sigT}) -> Result<(), Error> {`);
-      line(2, `if self.queue_len == ${queueCap} {`);
+      line(2, `if self.queue_len == ${signalQueue} {`);
       line(3, "return Err(Error::QueueOverflow);");
       line(2, "}");
-      line(2, queueCap === 1 ? "self.queue[0] = signal;" : `self.queue[(self.queue_head + self.queue_len) % ${queueCap}] = signal;`);
+      line(2, signalQueue === 1 ? "self.queue[0] = signal;" : `self.queue[(self.queue_head + self.queue_len) % ${signalQueue}] = signal;`);
       line(2, "self.queue_len += 1;");
       line(2, "Ok(())");
       line(1, "}");
@@ -991,8 +1036,8 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
       line(2, "if self.queue_len == 0 {");
       line(3, "return None;");
       line(2, "}");
-      line(2, `let signal = self.queue[${queueCap > 1 ? "self.queue_head" : "0"}];`);
-      if (queueCap > 1) line(2, `self.queue_head = (self.queue_head + 1) % ${queueCap};`);
+      line(2, `let signal = self.queue[${signalQueue > 1 ? "self.queue_head" : "0"}];`);
+      if (signalQueue > 1) line(2, `self.queue_head = (self.queue_head + 1) % ${signalQueue};`);
       line(2, "self.queue_len -= 1;");
       line(2, "Some(signal)");
       line(1, "}");
@@ -1002,21 +1047,21 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     blocks.push(() => {
       line(1, "fn microstep(&mut self) -> Result<(), Error> {");
       line(2, "self.steps += 1;");
-      line(2, `if self.steps > ${maxSteps} {`);
+      line(2, `if self.steps > ${maxMicrosteps} {`);
       line(3, "return Err(Error::Livelock);");
       line(2, "}");
       line(2, "Ok(())");
       line(1, "}");
     });
   }
-  for (const f of functions) {
+  for (const f of ir.functions) {
     blocks.push(() => {
       const result = fallible.has(f.name);
       const ret = f.returns === "bool" ? (result ? " -> Result<bool, Error>" : " -> bool") : result ? " -> Result<(), Error>" : "";
       if (f.doc) line(1, `// ${comment(f.doc)}`);
       line(1, `fn ${f.name}(&mut self)${ret} {`);
       const use = flagUse(f);
-      liveFlags = use.read;
+      setLiveFlags(use.read);
       for (const x of f.flags) if (use.read.has(x)) line(2, `let ${use.set.has(x) ? "mut " : ""}${x} = false;`);
       body(f.body, 2, { result }, result && f.returns === "void" ? "Ok(())" : undefined);
       line(1, "}");
@@ -1027,6 +1072,4 @@ export function generateRust(ir: IrModule, options: RustOptions = {}): RustFiles
     b();
   });
   line(0, "}");
-
-  return { fileName: `${module}.rs`, source: `${out.join("\n")}\n` };
 }

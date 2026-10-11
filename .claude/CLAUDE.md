@@ -48,9 +48,12 @@ packages/core/          @ufsm/core: model, v0 reader, v1 format, checks, semanti
                         RunningMachine); the interpreter, runners and backends import it, never the interpreter
   src/interp/           reference interpreter (simulator + test oracle; wouldTake for the simulator) and traces
                         (parse, run, formatTrace)
-  src/ir/               IR every backend prints (ir.ts documents the runtime loop and trace hooks), lowering, evaluator, printer,
-                        ids.ts (state enum names, the numbering's fingerprint)
-  src/backends/         code generators = IR printers: c.ts (C99 header + source), python.ts (one typed module),
+  src/ir/               IR every backend prints (ir.ts documents the runtime loop and trace hooks), lowering (drops what the
+                        runtime loop cannot reach), analyze.ts (what a printer needs to know: queue, terminate, step counter,
+                        fallible functions), evaluator, printer, ids.ts (state enum names, the numbering's fingerprint)
+  src/backends/         code generators = IR printers: common.ts (CodegenError, OUTPUT_NOTICE, identifier/pascalCase,
+                        CommonOptions, resolveOptions, readTargetOptions, prepare, the line writer; backends never import
+                        each other), c.ts (C99 header + source), python.ts (one typed module),
                         ts.ts (one typed, erasable-syntax TypeScript module), rust.ts (one no_std Rust module, no heap,
                         rustfmt/clippy-clean); generate.ts (generateFiles: model + targets options -> files, the one entry
                         point for the CLI and the editor's code preview)
@@ -108,7 +111,7 @@ Build Tools "Desktop development with C++"), TypeScript 6, Vite 7, Tauri 2.
   Cargo.toml) starts with `SPDX-License-Identifier: GPL-3.0-or-later` and
   `Copyright (C) <year> Jonas Blixt <jonas@blxt.se>` in that file type's comment
   syntax; generated code instead says it may be used under any terms
-  (`OUTPUT_NOTICE` in backends/c.ts) and must never carry a GPL header.
+  (`OUTPUT_NOTICE` in backends/common.ts) and must never carry a GPL header.
   `test/license.test.ts` enforces both. old/ stays BSD-3 (`old/LICENSE`).
 - **`@ufsm/core` is platform neutral**: no Node or DOM APIs in `src/`. It runs
   unchanged in the editor, the CLI and tests. Node APIs only in `test/` and

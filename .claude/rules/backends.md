@@ -45,3 +45,9 @@ paths:
   pseudo-calls (`decodeHooks`/`interpreterHooks` in `test/harness.ts`) and
   compared with the interpreter's `onStep`; the type/lint checks also cover a
   debug variant of every repo model. A new backend implements the same.
+- Printer layout (all four): a context function (`cContext`, `pyContext`, ...) resolves names, checks clashes and
+  calls `prepare()` from `backends/common.ts` (options with defaults, `ir/analyze.ts` facts, the queue and trace
+  checks); then named parts take the context and a line writer (`lines()`): expressions, statements, and one function
+  per section of the output. A new backend copies that shape and imports only `common.ts` and the IR, never another
+  backend. Refactorings of a printer must keep the output byte-identical (generate every repo model and some random
+  models before and after, with and without `debugInfo`/`trace`, and compare).

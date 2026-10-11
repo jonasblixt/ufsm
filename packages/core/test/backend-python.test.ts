@@ -16,7 +16,7 @@ import {
   loadModel,
   lowerToIr,
   parseTrace,
-  pythonClassName,
+  pascalCase,
   pythonOptionsFromTargets,
   runTrace,
   type Expr,
@@ -250,9 +250,9 @@ print(bad)`,
     assert.match(out.source, /^ {4}def process\(self, event: DimmerEvent\) -> None:$/m);
     assert.match(out.source, /^class DimmerError\(Exception\):$/m);
     assert.match(out.source, /self\._h\.lamp_off\(\)/);
-    assert.equal(pythonClassName("test_guard1"), "TestGuard1");
-    assert.equal(pythonClassName("New model"), "NewModel");
-    assert.equal(pythonClassName("3d"), "M3d");
+    assert.equal(pascalCase("test_guard1"), "TestGuard1");
+    assert.equal(pascalCase("New model"), "NewModel");
+    assert.equal(pascalCase("3d"), "M3d");
     const custom = generatePython(ir(load(join(repoRoot, "examples/dimmer.ufsm"))), { className: "Lamp", module: "lamp_fsm" });
     assert.equal(custom.fileName, "lamp_fsm.py");
     assert.match(custom.source, /^class LampEvent\(IntEnum\):$/m);

@@ -592,3 +592,14 @@ Measured over the 21 valid legacy models (864 KB):
   "off-page region" stays, it is the format's term); the action block's `pill` is the hidden marker (`hiddenMarker`,
   `HiddenMarker`, `HIDDEN_MARKER_*`, `hiddenMarkerAt`, `window.ufsm.actionBlock(id).hiddenMarkerScreen`). Also fixed the
   browser check's timer row selector, broken since the `t/` prefix left Properties. Browser check 386/386 on Windows.
+- 2026-10-11: **Review R4, shared backend layer.** The lowering drops functions the runtime loop cannot reach and the
+  signal steps of a model that never emits (`ufsm ir` lists fewer functions; generated code unchanged): the reachability
+  each printer computed is now a decision of the lowering. `ir/analyze.ts` (`walkStmts`, `someStmt`, `emitsSignals`,
+  `analyzeIr`: queue, terminate, timers, `checkSteps`/`countSteps`, fallible functions) replaces four copies.
+  `backends/common.ts`: `CodegenError`, `OUTPUT_NOTICE`, `identifier` (was `cIdentifier`), `pascalCase` (was
+  `pythonClassName`), `CommonOptions` (the four `*Options` extend it), `resolveOptions` (generate.ts resolves the common
+  options once), `readTargetOptions` (the four `*OptionsFromTargets` are one line each; `*_TARGET_KEYS`), `prepare` (trace
+  and queue checks + analysis), `lines()`. Each printer is a context function plus named parts (`cContext`,
+  `cExpressions`, `cStatements`, `cHeader`, `cSourceTop`, `cFunctions`, `cSettle`, `cEntryPoints`, `cDebugInfo`; `py*`,
+  `ts*`, `rs*` likewise); backends no longer import each other. Generated code byte-identical: every repo model and 150
+  random models x 4 targets x (default, debugInfo+trace, queue 0, queue 3 + 5 microsteps), before and after each step.

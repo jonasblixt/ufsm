@@ -25,25 +25,18 @@
  */
 import type { UfsmDocument } from "../v1/model";
 import { IDENTIFIER } from "../v1/model";
-import { OPTION_DEFAULTS, targetSection } from "../v1/options";
 import { UFSM_VERSION } from "../version";
-import type { Expr, IrFunction, IrModule, Stmt, SwitchOn, TraceKind } from "../ir/ir";
+import type { Expr, IrFunction, IrHistory, IrModule, Stmt, SwitchOn, TraceKind } from "../ir/ir";
 import { TRACE_KINDS } from "../ir/ir";
+import { walkStmts } from "../ir/analyze";
 import { hex32, utf8 } from "../ir/ids";
+import { CodegenError, OUTPUT_NOTICE, identifier, lines, prepare, readTargetOptions, type CommonOptions, type Lines, type Prepared, type Printed } from "./common";
 
-export interface COptions {
+export interface COptions extends CommonOptions {
   /** Prefix of every public identifier. Default: the model name as an identifier, plus "_". */
   prefix?: string;
-  /** Capacity of the signal queue (only generated when the model emits signals). Default 16. */
-  signalQueue?: number;
-  /** Microsteps per init/reset/process call before giving up with ERR_LIVELOCK; 0 disables the check. Default 10000. */
-  maxMicrosteps?: number;
   /** Base name of the files: `<file>.h` and `<file>.c`. Default: the prefix without its trailing "_". */
   file?: string;
-  /** Name lookup for events, signals and states, and `is_active()`. Default false. */
-  debugInfo?: boolean;
-  /** Must equal the IR's `trace` when given (the trace calls are emitted by the lowering). */
-  trace?: boolean;
 }
 
 export interface CFiles {
@@ -52,19 +45,6 @@ export interface CFiles {
   header: string;
   source: string;
 }
-
-export class CodegenError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "CodegenError";
-  }
-}
-
-/**
- * Stated in every generated file: generator output is not covered by uFSM's
- * GPL (see LICENSE-EXCEPTION in the repository root).
- */
-export const OUTPUT_NOTICE = "May be used, modified and distributed under any terms (uFSM output exception).";
 
 const C_KEYWORDS = new Set(
   (
@@ -75,32 +55,15 @@ const C_KEYWORDS = new Set(
   ).split(" "),
 );
 
-/** Turn free text into a C identifier ("New model" -> "New_model"). */
-export function cIdentifier(text: string): string {
-  let s = text.replace(/[^A-Za-z0-9_]/g, "_");
-  if (!/^[A-Za-z_]/.test(s)) s = `m${s}`;
-  return s;
-}
+/** The keys of `targets.c` besides the API options. */
+export const C_TARGET_KEYS = ["prefix", "file"] as const;
 
 /**
  * Read `targets.c` of a document. Unknown keys and wrong types are reported,
  * not fatal: the defaults are used instead.
  */
 export function cOptionsFromTargets(doc: UfsmDocument): { options: COptions; problems: string[] } {
-  const { api, own, problems } = targetSection(doc, "c");
-  const options: COptions = { ...api };
-  for (const [k, v] of own) {
-    switch (k) {
-      case "prefix":
-      case "file":
-        if (typeof v === "string") options[k] = v;
-        else problems.push(`targets.c.${k}: expected a string`);
-        break;
-      default:
-        problems.push(`targets.c.${k}: unknown option (ignored)`);
-    }
-  }
-  return { options, problems };
+  return readTargetOptions(doc, "c", C_TARGET_KEYS);
 }
 
 /** Smallest unsigned fixed-width type that holds 0..max. */
@@ -126,91 +89,53 @@ function comment(text: string): string {
   return text.replace(/\*\//g, "* /").replace(/[\r\n]+/g, " ");
 }
 
-/** Precedence of a printed expression: 0 `||`, 1 `&&`, 2 comparison, 3 primary/unary. */
-interface Printed {
-  s: string;
-  p: number;
+/** Names, sizes and facts every part of the C printer uses. */
+interface CContext extends Prepared {
+  ir: IrModule;
+  prefix: string;
+  /** The prefix in upper case: enum constants and macros. */
+  P: string;
+  file: string;
+  /** `struct <prefix>machine` */
+  machine: string;
+  /** Index into `hist[]` of each history region. */
+  histIndex: Map<number, number>;
+  /** Deep history regions with something to snapshot. */
+  deepRegions: IrHistory[];
+  slotT: string;
+  sigT: string;
+  queueT: string;
+  stepsT: string;
+  /** C name of every declaration, by id. */
+  name: Map<string, string>;
+  /** A state's name for a comment, by region and slot. */
+  stateName(region: number, slot: number): string;
+  stateConst: Map<number, string>;
+  timerConst(i: number): string;
+  traceConst(k: TraceKind): string;
+  /** Signals get a public enum when the application sees their numbers (trace hook, name lookup). */
+  publicSignals: boolean;
+  status: { ok: string; queue: string; livelock: string; event: string; busy: string };
+  /** The busy latch guards process(); without events there is no process(). */
+  hasBusy: boolean;
+  /** settle() has something to do: eventless transitions, queued signals or terminate. */
+  settleBody: boolean;
 }
 
-export function generateC(ir: IrModule, options: COptions = {}): CFiles {
-  const prefix = options.prefix ?? `${cIdentifier(ir.name)}_`;
+function cContext(ir: IrModule, options: COptions): CContext {
+  const prefix = options.prefix ?? `${identifier(ir.name)}_`;
   if (prefix !== "" && !IDENTIFIER.test(prefix)) throw new CodegenError(`C prefix '${prefix}' is not a C identifier`);
-  const file = options.file ?? (prefix.replace(/_+$/, "") || cIdentifier(ir.name));
+  const file = options.file ?? (prefix.replace(/_+$/, "") || identifier(ir.name));
   const P = prefix.toUpperCase();
-  const queueCap = options.signalQueue ?? OPTION_DEFAULTS.signalQueue;
-  const maxSteps = options.maxMicrosteps ?? OPTION_DEFAULTS.maxMicrosteps;
-  const machine = `struct ${prefix}machine`;
-  if (options.trace !== undefined && options.trace !== ir.trace) throw new CodegenError("options.trace differs from the IR's: lower the model with { trace }");
-  const trace = ir.trace;
-  const debugInfo = options.debugInfo ?? false;
-
-  // ------------------------------------------------------------ analysis
-
-  const fnByName = new Map(ir.functions.map((f) => [f.name, f]));
-  const walk = (stmts: Stmt[], f: (s: Stmt) => void): void => {
-    for (const s of stmts) {
-      f(s);
-      if (s.op === "if") {
-        walk(s.then, f);
-        if (s.else) walk(s.else, f);
-      } else if (s.op === "switch") for (const c of s.cases) walk(c.body, f);
-    }
-  };
-  const anyStmt = (pred: (s: Stmt) => boolean): boolean => {
-    let found = false;
-    const check = (s: Stmt): void => void (found ||= pred(s));
-    walk(ir.start, check);
-    for (const f of ir.functions) walk(f.body, check);
-    return found;
-  };
-  const hasQueue = ir.signals.length > 0 && anyStmt((s) => s.op === "emit");
-  const hasTerminate = anyStmt((s) => s.op === "terminate");
-  const checkSteps = maxSteps > 0;
-  if (hasQueue && queueCap < 1) throw new CodegenError("the model emits signals: signalQueue must be at least 1");
-
-  // Functions reachable from the runtime loop; signal steps only when signals can be queued.
-  const roots = [...Object.values(ir.onEvent), ...(ir.eventless ? [ir.eventless] : []), ...(hasQueue ? Object.values(ir.onSignal) : [])];
-  const reachable = new Set<string>();
-  const visit = (name: string): void => {
-    if (reachable.has(name)) return;
-    reachable.add(name);
-    walk(fnByName.get(name)!.body, (s) => s.op === "invoke" && visit(s.fn));
-  };
-  walk(ir.start, (s) => s.op === "invoke" && visit(s.fn));
-  roots.forEach(visit);
-  const functions = ir.functions.filter((f) => reachable.has(f.name));
-
-  // A function can fail if it emits, counts a microstep, or invokes one that can fail.
-  const fallible = new Set<string>();
-  for (let changed = true; changed; ) {
-    changed = false;
-    for (const f of functions) {
-      if (fallible.has(f.name)) continue;
-      let fails = false;
-      walk(f.body, (s) => {
-        if (s.op === "emit" || (s.op === "microstep" && checkSteps) || (s.op === "invoke" && fallible.has(s.fn))) fails = true;
-      });
-      if (fails) {
-        fallible.add(f.name);
-        changed = true;
-      }
-    }
-  }
-  const needsRc = (body: Stmt[]): boolean => {
-    let need = false;
-    walk(body, (s) => void (need ||= s.op === "emit" || (s.op === "invoke" && fallible.has(s.fn))));
-    return need;
-  };
-
-  // ------------------------------------------------------------ names
-
+  const prepared = prepare(ir, options);
+  const { signalQueue, maxMicrosteps, trace, debugInfo, hasQueue, hasTerminate } = prepared;
   const histIndex = new Map(ir.history.map((h, k) => [h.region, k]));
   const deepRegions = ir.history.filter((h) => h.kind === "deep" && h.snapshotTo! > h.snapshotFrom!);
   const maxSlot = Math.max(0, ...ir.states.map((s) => s.slot));
   const slotT = uintType(maxSlot);
   const sigT = uintType(Math.max(0, ir.signals.length - 1));
-  const queueT = uintType(queueCap);
-  const stepsT = uintType(maxSteps + 1);
+  const queueT = uintType(signalQueue);
+  const stepsT = uintType(maxMicrosteps + 1);
   const name = new Map<string, string>();
   for (const d of [...ir.events, ...ir.signals]) name.set(d.id, `${P}${d.name}`);
   for (const d of [...ir.actions, ...ir.guards]) name.set(d.id, `${prefix}${d.name}`);
@@ -219,13 +144,26 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
 
   const stateConst = new Map(ir.states.map((st, i) => [i, `${P}STATE_${st.ident}`]));
   const timerConst = (i: number): string => `${P}TIMER_${ir.timers[i]!.name}`;
-  const hasTimers = ir.timers.length > 0;
   const traceConst = (k: TraceKind): string => `${P}TRACE_${k.toUpperCase()}`;
-  // signals get a public enum when the application sees their numbers (trace hook, name lookup)
   const publicSignals = (trace || debugInfo) && ir.signals.length > 0;
   const status = { ok: `${P}OK`, queue: `${P}ERR_QUEUE_FULL`, livelock: `${P}ERR_LIVELOCK`, event: `${P}ERR_EVENT`, busy: `${P}ERR_BUSY` };
-  // the busy latch guards process(); without events there is no process()
   const hasBusy = ir.events.length > 0;
+  // Every identifier the files define, to catch clashes with declaration names.
+  const ctx: CContext = {
+    ...prepared,
+    ...{ ir, prefix, P, file, machine: `struct ${prefix}machine`, histIndex, deepRegions, slotT, sigT, queueT, stepsT, name, stateName },
+    ...{ stateConst, timerConst, traceConst, publicSignals, status, hasBusy, settleBody: hasTerminate || ir.eventless !== undefined || hasQueue },
+  };
+  checkNames(ctx);
+  return ctx;
+}
+
+/** Refuse declaration, state and timer names that become a C keyword, a fixed identifier or another name. */
+function checkNames(ctx: CContext): void {
+  const {
+    ir, prefix, P, file, name, stateConst, timerConst, traceConst, publicSignals, status, debugInfo, trace,
+    hasTimers,
+  } = ctx;
   // Every identifier the files define, to catch clashes with declaration names.
   const fixed = new Map<string, string>([
     [`${prefix}machine`, "the machine struct"],
@@ -239,7 +177,7 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     [status.livelock, "a status code"],
     [status.event, "a status code"],
     [status.busy, "a status code"],
-    [`UFSM_${cIdentifier(file).toUpperCase()}_H`, "the include guard"],
+    [`UFSM_${identifier(file).toUpperCase()}_H`, "the include guard"],
     [`${prefix}state`, "the state enum"],
     [`${P}FINGERPRINT`, "the fingerprint"],
     ...(publicSignals ? [[`${prefix}signal`, "the signal enum"] as [string, string]] : []),
@@ -268,8 +206,8 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     ].map(
       (n): [string, string] => [n, "an internal name"],
     ),
-    ...functions.map((f): [string, string] => [f.name, "an internal function"]),
-    ...functions.flatMap((f) => f.flags.map((x): [string, string] => [x, "an internal variable"])),
+    ...ir.functions.map((f): [string, string] => [f.name, "an internal function"]),
+    ...ir.functions.flatMap((f) => f.flags.map((x): [string, string] => [x, "an internal variable"])),
   ]);
   const problems: string[] = [];
   const seen = new Map<string, string>();
@@ -297,9 +235,16 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     seen.set(c, what);
   });
   if (problems.length) throw new CodegenError(`name clash in the generated C (rename, or set targets.c.prefix):\n  ${problems.join("\n  ")}`);
+}
 
-  // ------------------------------------------------------------ expressions
+export function generateC(ir: IrModule, options: COptions = {}): CFiles {
+  const ctx = cContext(ir, options);
+  return { headerName: `${ctx.file}.h`, sourceName: `${ctx.file}.c`, header: cHeader(ctx), source: cSource(ctx) };
+}
 
+/** The C text of an IR condition. */
+function cExpressions(ctx: CContext): (e: Expr) => string {
+  const { histIndex, name } = ctx;
   const guardCall = (g: string): string => `${name.get(g)}(m->user)`;
   const wrap = (x: Printed, min: number): string => (x.p < min ? `(${x.s})` : x.s);
 
@@ -347,12 +292,26 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
         return { s: `!${wrap(expr(e), 3)}`, p: 3 };
     }
   };
-  const cond = (e: Expr): string => expr(e).s;
+  return (e: Expr): string => expr(e).s;
+}
 
-  // ------------------------------------------------------------ statements
+interface CStatements {
+  /** Print statements at depth `d`. */
+  stmts(list: Stmt[], d: number): void;
+  /** The C signature of an IR function. */
+  signature(f: IrFunction): string;
+  /** Does a body need the `rc` variable (it calls something that can fail)? */
+  needsRc(body: Stmt[]): boolean;
+}
 
-  const out: string[] = [];
-  const line = (depth: number, text: string): void => void out.push(text === "" ? "" : `${"    ".repeat(depth)}${text}`);
+/** The statement printer, writing into `w`. */
+function cStatements(ctx: CContext, w: Lines): CStatements {
+  const {
+    ir, prefix, machine, histIndex, name, stateName, stateConst, timerConst, traceConst, status, maxMicrosteps,
+    checkSteps, fallible,
+  } = ctx;
+  const { line } = w;
+  const cond = cExpressions(ctx);
   const check = (d: number, call: string): void => {
     line(d, `rc = ${call};`);
     line(d, "if (rc != 0) {");
@@ -430,7 +389,7 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
         }
         case "microstep":
           if (!checkSteps) break;
-          line(d, `if (++m->steps > ${maxSteps}u) {`);
+          line(d, `if (++m->steps > ${maxMicrosteps}u) {`);
           line(d + 1, `return ${status.livelock};`);
           line(d, "}");
           break;
@@ -457,10 +416,21 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   };
 
   const signature = (f: IrFunction): string => `static ${f.returns === "bool" || fallible.has(f.name) ? "int" : "void"} ${f.name}(${machine} *m)`;
+  const needsRc = (body: Stmt[]): boolean => {
+    let need = false;
+    walkStmts(body, (s) => void (need ||= s.op === "emit" || (s.op === "invoke" && fallible.has(s.fn))));
+    return need;
+  };
+  return { stmts, signature, needsRc };
+}
 
-  // ------------------------------------------------------------ header
-
-  const guard = `UFSM_${cIdentifier(file).toUpperCase()}_H`;
+/** The header file: usage, enums, the machine struct, the API and what the application implements. */
+function cHeader(ctx: CContext): string {
+  const {
+    ir, prefix, P, file, machine, deepRegions, slotT, sigT, queueT, stepsT, name, stateConst, timerConst, traceConst,
+    publicSignals, status, hasBusy, signalQueue, debugInfo, trace, hasQueue, hasTerminate, hasTimers, checkSteps,
+  } = ctx;
+  const guard = `UFSM_${identifier(file).toUpperCase()}_H`;
   const h: string[] = [];
   const hl = (text = ""): void => void h.push(text);
   hl(`/* Generated by uFSM ${UFSM_VERSION} from model "${comment(ir.name)}". Do not edit. */`);
@@ -564,7 +534,7 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   if (ir.history.length) hl(`    ${slotT} hist[${ir.history.length}]; /* recorded history per history region, 0 = none */`);
   for (const dh of deepRegions) hl(`    ${slotT} deep_r${dh.region}[${dh.snapshotTo! - dh.snapshotFrom!}]; /* deep history of region ${dh.region} */`);
   if (hasQueue) {
-    hl(`    ${sigT} queue[${queueCap}]; /* pending signals (FIFO) */`);
+    hl(`    ${sigT} queue[${signalQueue}]; /* pending signals (FIFO) */`);
     hl(`    ${queueT} queue_head;`);
     hl(`    ${queueT} queue_len;`);
   }
@@ -610,13 +580,28 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
   hl("#endif");
   hl();
   hl(`#endif /* ${guard} */`);
+  return `${h.join("\n")}\n`;
+}
 
-  // ------------------------------------------------------------ source
+/** The source file: the runtime (queue, settle, init/reset/process), one C function per IR function, lookups. */
+function cSource(ctx: CContext): string {
+  const w = lines("    ");
+  const st = cStatements(ctx, w);
+  cSourceTop(ctx, w, st);
+  cFunctions(ctx, w, st);
+  cSettle(ctx, w);
+  cEntryPoints(ctx, w, st);
+  cDebugInfo(ctx, w);
+  return w.text();
+}
 
-  const headerName = `${file}.h`;
+/** Includes, the region map, private signal numbers, prototypes and the signal queue. */
+function cSourceTop(ctx: CContext, w: Lines, { signature }: CStatements): void {
+  const { ir, file, machine, histIndex, sigT, queueT, name, publicSignals, status, signalQueue, hasQueue } = ctx;
+  const { line } = w;
   line(0, `/* Generated by uFSM ${UFSM_VERSION} from model "${comment(ir.name)}". Do not edit. */`);
   line(0, `/* ${OUTPUT_NOTICE} */`);
-  line(0, `#include "${headerName}"`);
+  line(0, `#include "${file}.h"`);
   line(0, "");
   line(0, "#include <stdbool.h>");
   line(0, "");
@@ -635,17 +620,16 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     ir.signals.forEach((s, i) => line(1, `${name.get(s.id)} = ${i},`));
     line(0, "};");
   }
-  const settleBody = hasTerminate || ir.eventless !== undefined || hasQueue;
   line(0, "");
-  for (const f of functions) line(0, `${signature(f)};`);
+  for (const f of ir.functions) line(0, `${signature(f)};`);
   if (hasQueue) {
     line(0, "");
     line(0, `static int push_signal(${machine} *m, ${sigT} signal)`);
     line(0, "{");
-    line(1, `if (m->queue_len == ${queueCap}u) {`);
+    line(1, `if (m->queue_len == ${signalQueue}u) {`);
     line(2, `return ${status.queue};`);
     line(1, "}");
-    line(1, `m->queue[(m->queue_head + m->queue_len) % ${queueCap}u] = signal;`);
+    line(1, `m->queue[(m->queue_head + m->queue_len) % ${signalQueue}u] = signal;`);
     line(1, "m->queue_len++;");
     line(1, `return ${status.ok};`);
     line(0, "}");
@@ -653,12 +637,18 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     line(0, `static ${sigT} pop_signal(${machine} *m)`);
     line(0, "{");
     line(1, `${sigT} signal = m->queue[m->queue_head];`);
-    line(1, `m->queue_head = (${queueT})((m->queue_head + 1u) % ${queueCap}u);`);
+    line(1, `m->queue_head = (${queueT})((m->queue_head + 1u) % ${signalQueue}u);`);
     line(1, "m->queue_len--;");
     line(1, "return signal;");
     line(0, "}");
   }
-  for (const f of functions) {
+}
+
+/** One static function per IR function. */
+function cFunctions(ctx: CContext, w: Lines, { stmts, signature, needsRc }: CStatements): void {
+  const { ir, status, fallible } = ctx;
+  const { line } = w;
+  for (const f of ir.functions) {
     line(0, "");
     if (f.doc) line(0, `/* ${comment(f.doc)} */`);
     line(0, signature(f));
@@ -669,6 +659,12 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     if (f.returns === "void" && fallible.has(f.name)) line(1, `return ${status.ok};`);
     line(0, "}");
   }
+}
+
+/** settle(): eventless transitions and queued signals until the machine is stable. */
+function cSettle(ctx: CContext, w: Lines): void {
+  const { ir, prefix, machine, sigT, name, traceConst, status, settleBody, trace, hasQueue, hasTerminate } = ctx;
+  const { line } = w;
   if (settleBody) {
     line(0, "");
     line(0, "/* Run eventless transitions and queued signals until the machine is stable. */");
@@ -727,6 +723,15 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     line(1, "}");
     line(0, "}");
   }
+}
+
+/** init(), reset() and process(), and the timer event lookup. */
+function cEntryPoints(ctx: CContext, w: Lines, { stmts, needsRc }: CStatements): void {
+  const {
+    ir, prefix, machine, name, traceConst, status, hasBusy, settleBody, trace, hasQueue, hasTerminate, hasTimers,
+    checkSteps,
+  } = ctx;
+  const { line } = w;
   // End of reset/process: settle, then clear the busy latch (an error returns early and leaves it set).
   const finish = (d: number): void => {
     if (!hasBusy) {
@@ -823,7 +828,12 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     line(1, "return timer_events[timer];");
     line(0, "}");
   }
+}
 
+/** Name lookups and is_active() (debugInfo). */
+function cDebugInfo(ctx: CContext, w: Lines): void {
+  const { ir, prefix, machine, slotT, debugInfo, hasTimers } = ctx;
+  const { line } = w;
   if (debugInfo) {
     const lookup = (fn: string, param: string, table: string, names: string[]): void => {
       line(0, "");
@@ -851,6 +861,4 @@ export function generateC(ir: IrModule, options: COptions = {}): CFiles {
     }
     if (hasTimers) lookup("timer_name", "timer", "timer_names", ir.timers.map((t) => t.name));
   }
-
-  return { headerName, sourceName: `${file}.c`, header: `${h.join("\n")}\n`, source: `${out.join("\n")}\n` };
 }

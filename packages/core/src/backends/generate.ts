@@ -8,11 +8,11 @@
  */
 import { checkV1 } from "../v1/check";
 import type { UfsmDocument } from "../v1/model";
-import { defined } from "../v1/options";
 import { flatten } from "../semantics/flatten";
 import { lowerToIr } from "../ir/lower";
 import type { IrModule } from "../ir/ir";
-import { CodegenError, cOptionsFromTargets, generateC, type COptions } from "./c";
+import { CodegenError, resolveOptions } from "./common";
+import { cOptionsFromTargets, generateC, type COptions } from "./c";
 import { generatePython, pythonOptionsFromTargets, type PythonOptions } from "./python";
 import { generateTypeScript, tsOptionsFromTargets, type TsOptions } from "./ts";
 import { generateRust, rustOptionsFromTargets, type RustOptions } from "./rust";
@@ -65,20 +65,21 @@ export function modelIr(doc: UfsmDocument, trace = false): IrModule {
  * Throws CodegenError (model errors, name clashes in the generated code).
  */
 export function generateFiles(doc: UfsmDocument, target: CodeTarget, overrides: GenerateOverrides = {}, ir?: IrModule): GeneratedCode {
-  const { prefix, className, ...common } = defined(overrides);
-  const model = defined(doc.options ?? {});
-  const lowered = (trace: boolean | undefined): IrModule => (ir && ir.trace === (trace ?? false) ? ir : modelIr(doc, trace ?? false));
+  const { prefix, className, ...common } = overrides;
+  const lowered = (trace: boolean): IrModule => (ir && ir.trace === trace ? ir : modelIr(doc, trace));
   if (target === "c") {
     const { options, problems } = cOptionsFromTargets(doc);
-    const o: COptions = { ...model, ...options, ...common };
+    const resolved = resolveOptions(doc, options, common);
+    const o: COptions = { ...options, ...resolved };
     if (prefix !== undefined) o.prefix = prefix;
-    const out = generateC(lowered(o.trace), o);
+    const out = generateC(lowered(resolved.trace), o);
     return { files: [{ name: out.headerName, text: out.header }, { name: out.sourceName, text: out.source }], problems };
   }
   const { options, problems } = target === "ts" ? tsOptionsFromTargets(doc) : target === "rust" ? rustOptionsFromTargets(doc) : pythonOptionsFromTargets(doc);
-  const o: TsOptions & PythonOptions & RustOptions = { ...model, ...options, ...common };
+  const resolved = resolveOptions(doc, options, common);
+  const o: TsOptions | PythonOptions | RustOptions = { ...options, ...resolved };
   if (className !== undefined) o.className = className;
-  const tir = lowered(o.trace);
+  const tir = lowered(resolved.trace);
   const out = target === "ts" ? generateTypeScript(tir, o) : target === "rust" ? generateRust(tir, o) : generatePython(tir, o);
   return { files: [{ name: out.fileName, text: out.source }], problems };
 }
