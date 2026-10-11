@@ -8,7 +8,7 @@
  * any number of times, into the same machine or another one.
  */
 import { commonRegion, indexV1, type DocIndex } from "../model/doc-index";
-import { diagramOf, snap, topLevelVertices } from "./edit";
+import { diagramOf, snap, topLevelVertices } from "./layout";
 import { edgeOrigin, regionOrigin, vertexBox, type Point } from "../diagram/geometry";
 import { regionArea } from "./create";
 import { DECL_PREFIX, ID_PREFIX, IdAllocator } from "../format/ids";

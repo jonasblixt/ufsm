@@ -16,9 +16,12 @@
  * and moves as a whole when both ends move equally (followPolyline; its label likewise, followOffset); S routes
  * are derived anyway, so only their stored jog changes, and only when the whole route moves (both ends by the same
  * amount); otherwise the jog keeps its absolute position.
+ *
+ * Also here: putting a region on a sheet of its own (setOffPage, with cannotOffPage for the reason it cannot) and
+ * turning a fork or join bar (setBarOrientation).
  */
 import { ACTION_LINE_H, ACTION_MIN_H, ACTION_PAD, actionBlock } from "../diagram/action-block";
-import { ancestors, indexV1, type DocIndex } from "../model/doc-index";
+import { ancestors, commonRegion, indexV1, type DocIndex } from "../model/doc-index";
 import {
   HEADER_H,
   actionBlockHeight,
@@ -34,7 +37,7 @@ import {
   type Box,
   type Point,
 } from "../diagram/geometry";
-import { GRID, type Diagram, type EdgeEnd, type FreeEdgeLayout, type Id, type RegionLayout, type Side, type State, type StateLayout, type UfsmDocument } from "../format/model";
+import { GRID, type Diagram, type EdgeEnd, type FreeEdgeLayout, type Id, type Region, type RegionLayout, type Side, type State, type StateLayout, type UfsmDocument } from "../format/model";
 import { followOffset, followPolyline, sideLength } from "../diagram/route";
 
 /** Smallest region band. */
@@ -508,4 +511,80 @@ export function removeBendPoint(doc: UfsmDocument, transitionId: Id, i: number):
   if (!e || e.route === "s" || !e.via?.[i]) return;
   if (e.via.length === 1) delete e.via;
   else e.via.splice(i, 1);
+}
+
+/**
+ * Why a region cannot be put on a sheet of its own: transitions between its contents and the rest of the machine
+ * would cross sheets. Undefined when it can (or is off-page already).
+ */
+export function cannotOffPage(index: DocIndex, regionId: Id): string | undefined {
+  const info = index.regions.get(regionId);
+  if (!info?.owner) return "The root region is a sheet already.";
+  const inside = new Set<Id>();
+  const visit = (r: Region): void => {
+    for (const v of r.states) {
+      inside.add(v.id);
+      if (v.kind === "state") v.regions?.forEach(visit);
+    }
+  };
+  visit(info.region);
+  const crossing = index.doc.machine.transitions.filter((t) => inside.has(t.from) !== inside.has(t.to));
+  if (crossing.length) {
+    return `${crossing.length} transition${crossing.length > 1 ? "s" : ""} cross${crossing.length > 1 ? "" : "es"} the region's border; an off-page region must be self-contained.`;
+  }
+  return undefined;
+}
+
+/**
+ * Put a region on a sheet of its own (off-page), or back inline. Its contents keep their place relative to the region's band:
+ * off-page, a vertex at (x, y) in the band goes to (x, y) on the new sheet; inline again, the reverse. Bend points,
+ * free labels and jogs of the transitions inside it move with them. Check cannotOffPage before going off-page.
+ */
+export function setOffPage(doc: UfsmDocument, regionId: Id, offPage: boolean): void {
+  const index = indexV1(doc);
+  const info = index.regions.get(regionId);
+  if (!info?.owner || (index.doc.diagram?.regions[regionId]?.offPage === true) === offPage) return;
+  const band = regionBoxes(index, info.owner).find((b) => b.region.id === regionId)!.box;
+  // inline coordinates are relative to the owner's corner, a sheet's to its origin; a band spans the owner's width,
+  // so only y changes
+  const dy = band.y - vertexBox(index, info.owner.id).y;
+  const sx = 0, sy = offPage ? -dy : dy;
+  const l = regionLayoutOf(doc, regionId);
+  if (offPage) l.offPage = true;
+  else {
+    delete l.offPage;
+    if (Object.keys(l).length === 0) delete diagramOf(doc).regions[regionId];
+  }
+  const dia = diagramOf(doc);
+  for (const v of info.region.states) {
+    const s = (dia.states[v.id] ??= { ...stateLayout(index, v.id) });
+    s.x += sx;
+    s.y += sy;
+  }
+  for (const t of doc.machine.transitions) {
+    const e = dia.transitions[t.id];
+    if (!e || commonRegion(index, t.from, t.to).id !== regionId) continue;
+    if (e.route === "s") {
+      if (e.jog) e.jog = "x" in e.jog ? { x: e.jog.x + sx } : { y: e.jog.y + sy };
+    } else {
+      if (e.via) e.via = e.via.map(([x, y]) => [x + sx, y + sy]);
+      if (e.label) e.label = { ...e.label, x: e.label.x + sx, y: e.label.y + sy };
+    }
+  }
+}
+
+/** Turn a fork or join bar: horizontal or vertical, keeping its centre and length. */
+export function setBarOrientation(doc: UfsmDocument, id: Id, horizontal: boolean): void {
+  const index = indexV1(doc);
+  const v = index.vertices.get(id)?.vertex;
+  if (v?.kind !== "fork" && v?.kind !== "join") return;
+  const l = (diagramOf(doc).states[id] ??= { ...stateLayout(index, id) });
+  if ((l.orientation === "horizontal") === horizontal) return;
+  const cx = l.x + l.w / 2, cy = l.y + l.h / 2;
+  const long = Math.max(l.w, l.h), thick = Math.min(l.w, l.h);
+  [l.w, l.h] = horizontal ? [long, thick] : [thick, long];
+  l.x = Math.round(cx - l.w / 2);
+  l.y = Math.round(cy - l.h / 2);
+  if (horizontal) l.orientation = "horizontal";
+  else delete l.orientation;
 }

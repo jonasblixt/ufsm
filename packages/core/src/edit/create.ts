@@ -11,7 +11,7 @@
  * still reports everything else (a transition without a trigger, a region without an initial state, ...).
  */
 import { ancestors, commonRegion, indexV1, type DocIndex } from "../model/doc-index";
-import { endAt, followTransitions, nearestEnd,regionLayoutOf, diagramOf, snap, MIN_BAR, MIN_STATE } from "./edit";
+import { endAt, followTransitions, nearestEnd,regionLayoutOf, diagramOf, snap, MIN_BAR, MIN_STATE } from "./layout";
 import { HEADER_H, actionBlockHeight, isOffPage, isSheet, regionBoxes, regionOrigin, stateLayout, vertexBox, edgeGeometry, edgeOrigin, type Box, type Point } from "../diagram/geometry";
 import { IdAllocator, ID_PREFIX } from "../format/ids";
 import { GRID, type EdgeEnd, type EdgeLayout, type GuardTerm, type Id, type Region, type State, type StateLayout, type Transition, type UfsmDocument, type Vertex } from "../format/model";

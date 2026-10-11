@@ -6,7 +6,7 @@
  * ends, S jogs, free bend points, the bottom line of a state's action block); a single selected vertex can also be resized by any of its sides (the whole side
  * grabs, with no handle drawn) and by its corners (both ways at once). Besides those, a transition label can be
  * dragged, and a vertex moves the selection (a composite state only by its header and action block unless it is
- * selected, so a rubber band can still start inside it). The edits themselves are in @ufsm/core (v1/edit.ts).
+ * selected, so a rubber band can still start inside it). The edits themselves are in @ufsm/core (edit/layout.ts).
  */
 import {
   HEADER_H,

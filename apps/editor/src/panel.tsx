@@ -8,7 +8,7 @@
  * it edits the active machine's name, declarations and code generator options. "Problems" lists the design rule
  * check's findings, live, and jumps to them.
  *
- * Every change is one edit through `ops.edit` (one undo step) running core functions (v1/props.ts, v1/create.ts) on
+ * Every change is one edit through `ops.edit` (one undo step) running core functions (edit/props.ts, edit/create.ts) on
  * the document. Pickers offer the declarations that fit and can create a new one in the same step (`ops.use`).
  */
 import { Fragment, render, type ComponentChildren } from "preact";

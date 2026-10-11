@@ -45,7 +45,7 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend. Window laid ou
 
 - Editor: canvas in vanilla TS + Canvas 2D, panels and dialogs in Preact.
   Drawing rules mirror `old/compose/src/render.c`. Every edit is a core
-  function (`v1/edit.ts`, `v1/create.ts`, `v1/clipboard.ts`, `v1/props.ts`) run on an Immer draft by
+  function (`edit/layout.ts`, `edit/create.ts`, `edit/clipboard.ts`, `edit/props.ts`) run on an Immer draft by
   `history.ts`; the document is the only state, everything else (index,
   handles, geometry) is rebuilt from it.
   Avoid APIs newer than Safari 15 (macOS 12 WKWebView), e.g. use the manual
