@@ -627,3 +627,13 @@ Measured over the 21 valid legacy models (864 KB):
   in the layout edits and the `+ 30` in `locate` are the named constants. The sheet fit check now includes labels:
   one finding in the repo models (test_external_transitions t6, past the right edge; listed as known in sheet.test).
   Browser check 386/386, tests 581.
+- 2026-10-11: **Review R8, main.ts split.** main.ts 2,306 -> 80 lines. `workspace.ts` (the one store, no DOM; typed
+  changes `document`/`selection`/`view`/`sim`/`chrome`/`shell`/`active` replace the 69 manual refresh calls: the shell's
+  `update` decides what to redraw, the canvas draws on the next frame), `session.ts` (DocSession: today's Doc fields plus
+  edit/undo/redo/begin/preview/commit/cancel/refresh and the simulator queries; the global `view` alias is gone),
+  `shell.ts`, `commands.ts` (one table: menus, command palette and key actions; ids are the editor model's action
+  names), `canvas/{view,state,keys,pointer,tools}.ts`, `files.ts`, `navigation.ts`, `edit-commands.ts`,
+  `settings-controller.ts`, `sim-controller.ts`, `search-items.ts`, `automation.ts`, `app.ts`. Hit testing moved from
+  render.ts to `hit.ts` (no DOM; label widths from a measure). panel.tsx 1,312 lines -> `panel/` (index, types, fields,
+  properties, project, problems). New `test/workspace.test.ts` (workspace, sessions, hit testing in node:test).
+  `turnBar`/`toggleOffPage` became commands (in no menu). Browser check 386/386, editor tests 79.

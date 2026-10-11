@@ -277,7 +277,8 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [x] R5 Public surface of core (subpath exports; oracles out of the main entry) (2026-10-11)
 - [x] R6 Core folders by domain (2026-10-11)
 - [x] R7 Transition label layout in core (`diagram/label-layout.ts`) (2026-10-11)
-- [ ] R8 Split the editor's `main.ts`
+- [x] R8 Split the editor's `main.ts` (workspace, sessions, shell, commands, canvas parts, controllers; panel by tab)
+      (2026-10-11)
 - [ ] R9 Key map generated from editor.ufsm
 - [x] R10 Vocabulary: StepEvent/onStep, sheet not page, hidden marker not pill (2026-10-11)
 - [ ] R11 Formatter and import-boundary check

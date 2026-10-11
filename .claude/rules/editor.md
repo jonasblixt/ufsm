@@ -8,26 +8,41 @@ paths:
 ## Files
 
 ```
-apps/editor/            @ufsm/editor: Vite + TypeScript frontend. Window laid out after VS Code: title bar (titlebar.tsx: menus,
-                        search field (quickpick.tsx; search.ts ranks, no DOM, tested), window buttons; frameless window except macOS), explorer (palette.ts above explorer.ts,
-                        one section per open machine holding its tree.ts), tab strip (tabs.tsx; every open machine is a Doc in
-                        main.ts with its own history, view, page and selection), canvas, right panel (panel.tsx: Properties
-                        edits the selection, Project edits declarations and file-level settings, Problems lists the design
-                        rule check live, Simulator (simpanel.tsx), Code (codepanel.tsx); widgets.tsx has the shared
-                        Section/Field), Settings (settingspanel.tsx: color theme, UI zoom), status bar; sash.ts resizes the side panels;
-                        scrollbars.ts shows scrollbars only while scrolling
-  src/fsm/              editor.ufsm (the editor's interaction model: regions Keys {Tools, Zoom, Jump, Add, Edit}, Pointer, Tool), editor-fsm.ts (generated and committed:
-                        `npm run gen:editor-fsm`), input.ts (DOM events -> machine events); panels: Preact, edits: Immer
+apps/editor/            @ufsm/editor: Vite + TypeScript frontend, laid out after VS Code
+  src/main.ts           entry point: creates the parts (app.ts lists them), routes the workspace's changes to the shell
+                        and the canvas, attaches the editor model's input (~80 lines)
+  src/app.ts            the App object every part gets: ws, shell, canvas, tools, commands, files, nav, edits, settings,
+                        sim, search, input, pickTool
+  src/workspace.ts      the one store (no DOM): open machines (sessions), the active one, clipboard, status message;
+                        `changed(kind)` announces document | selection | view | sim | chrome | shell | active
+  src/session.ts        DocSession, one open machine (no DOM): history, index, diagnostics, sheet, selection, views,
+                        simulator state; edit/undo/redo, begin/preview/commit/cancel, refresh
+  src/shell.ts          the window around the canvas: title bar (titlebar.tsx, quickpick.tsx), tabs (tabs.tsx), explorer
+                        rows (explorer.ts, tree.ts), breadcrumbs, the right panel, status bar; `update(changes)` redraws
+  src/commands.ts       every command once (id = the editor model's action name where a key runs it): menus, the command
+                        palette and the key actions use it
+  src/canvas/           view.ts (drawing a frame, pan/zoom, coordinates), state.ts (tool, placing, link, drag, lasso),
+                        keys.ts / pointer.ts / tools.ts (the editor model's actions and guards, by its regions Keys,
+                        Pointer and Tool)
+  src/files.ts          open, File › New, save, save as, close; navigation.ts (sheets, entering states, jumping);
+                        edit-commands.ts (delete, clipboard, regions, bend points, S routes, bars, off-page);
+                        settings-controller.ts (settings.json, theme, UI zoom); sim-controller.ts (Simulator and Code
+                        tabs, File › Generate); search-items.ts (what the search finds, search.ts ranks); automation.ts
+                        (`window.ufsm`)
+  src/hit.ts            hit testing, rubber band, bounds (no DOM: label widths come from a measure, render.ts has the
+                        canvas's); render.ts draws a sheet; handles.ts (grips: what a drag at a point would do);
+                        preview.ts (tool previews); icons.ts (Tabler outlines, MIT)
+  src/panel/            index.tsx (tab strip), types.ts, fields.tsx (inputs, pickers, lists), properties.tsx, project.tsx,
+                        problems.tsx; simpanel.tsx, codepanel.tsx, settingspanel.tsx, widgets.tsx are the other tabs and
+                        shared Section/Field
+  src/fsm/              editor.ufsm (the editor's interaction model: regions Keys {Tools, Zoom, Jump, Add, Edit}, Pointer,
+                        Tool), editor-fsm.ts (generated and committed: `npm run gen:editor-fsm`), input.ts (DOM events ->
+                        machine events)
   src/history.ts        undo/redo: Immer patches; interactive edits preview from their start, commit one step
-  src/handles.ts        grips: selection handles, labels, movable vertices; what a drag at a point would do
-  src/preview.ts        tool previews drawn over the page (ghost of a vertex to place, transition being drawn)
-  src/icons.ts          canvas icons as Path2D strokes (Tabler outlines, MIT): the kinds of action block lines, chevrons
-  src/sim.ts            the simulator: interpreter on a snapshot of the document, step log, canvas highlight, every step
-                        recorded as a conformance trace; out of date once machine or declarations change (no DOM, tested)
-  src/code.ts           code preview: generated files cached per machine/declarations/name/targets, syntax highlighter
-  src/untitled.ts       File › New names: untitled, untitled2, ...; the first save names the machine after its file (no DOM, tested)
-  src/tokens.ts         Design Tokens 2025.10 (DTCG): resolver sets/modifiers/inputs, deep merge, aliases, sRGB/HSL colors (no DOM, tested)
-  src/theme.ts          bundled themes, resolveTheme(setting, systemDark) -> CSS custom properties + canvas colors `C` (no DOM)
+  src/sim.ts            the simulator: interpreter on a snapshot of the document, step log, every step recorded as a
+                        conformance trace (no DOM, tested); code.ts (code preview cache, highlighter)
+  src/untitled.ts       File › New names (no DOM, tested); tokens.ts (DTCG design tokens, no DOM, tested); theme.ts
+                        (bundled themes -> CSS properties + canvas colors `C`); settings.ts (settings.json, no DOM, tested)
   src/themes/           ui.tokens.json (the editor's token names: ui.* -> --css vars, syntax.*, canvas.*, as aliases to
                         palette roles) and one folder per theme, `<name>/<name>.resolver.json` + `<name>.tokens.json` (the
                         upstream palette, absolute colors only) + role files: gruvbox/ (appearance dark|light × contrast
@@ -35,16 +50,15 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend. Window laid ou
                         solarized/ (appearance only, the README's table), catppuccin/ (appearance: light = Latte; flavor
                         frappe|macchiato|mocha = the dark flavor, palette.json). Register a new theme in theme.ts
                         (THEME_FILES imports, THEMES)
-  src/settings.ts       settings.json: parse (never fails; unknown keys kept), canonical text, UI zoom steps (no DOM, tested);
-                        settingspanel.tsx is the Settings tab. UI zoom = CSS `zoom: var(--ui-zoom)` on the parts around
-                        the canvas (title bar, explorer, tabs, breadcrumbs, panel, status bar), never on the canvas
-  test/                 node:test suites (history, sim + code, theme + settings, search); browser/check.mjs: optional Playwright check of the real editor
+  test/                 node:test suites (workspace + hit testing, history, sim + code, theme + settings, search);
+                        browser/check.mjs: optional Playwright check of the real editor
 ```
 
 ## Conventions
 
 - Editor: canvas in vanilla TS + Canvas 2D, panels and dialogs in Preact.
-  Drawing rules mirror `old/compose/src/render.c`. Every edit is a core
+  Drawing rules mirror `old/compose/src/render.c`. State lives in the workspace and its sessions only; a part that
+  changes something calls `ws.changed(kind)` (or a ws method that does) instead of redrawing itself. Every edit is a core
   function (`edit/layout.ts`, `edit/create.ts`, `edit/clipboard.ts`, `edit/props.ts`) run on an Immer draft by
   `history.ts`; the document is the only state, everything else (index,
   handles, geometry) is rebuilt from it.

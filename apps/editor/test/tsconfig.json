@@ -4,5 +4,5 @@
     "types": ["node"],
     "lib": ["ES2023", "DOM"]
   },
-  "include": ["../src/history.ts", "../src/sim.ts", "../src/code.ts", "../src/untitled.ts", "../src/tokens.ts", "../src/theme.ts", "../src/settings.ts", "."]
+  "include": ["../src/history.ts", "../src/session.ts", "../src/workspace.ts", "../src/hit.ts", "../src/sim.ts", "../src/code.ts", "../src/untitled.ts", "../src/tokens.ts", "../src/theme.ts", "../src/settings.ts", "."]
 }
