@@ -6,11 +6,13 @@
  * ir.ts. It plays the role of a backend in tests: if the IR evaluated here
  * matches the reference interpreter, a backend that prints the IR
  * faithfully matches it too.
+ *
+ * A test oracle (verify/): it never ships in the editor or the CLI, and is not part of the public entry points.
  */
 import type { Id } from "../format/model";
 import { OPTION_DEFAULTS } from "../format/options";
 import { MachineError, busyError, type MachineHost, type RunOptions } from "../runtime/contract";
-import type { Expr, IrFunction, IrModule, Stmt, SwitchOn, TraceKind } from "./ir";
+import type { Expr, IrFunction, IrModule, Stmt, SwitchOn, TraceKind } from "../ir/ir";
 
 class Return {
   constructor(readonly value: boolean) {}

@@ -17,7 +17,7 @@ from the configuration before the call, the event, and the values the
 guard functions return. Signals, priority and conflicts, history,
 completion, livelock and queue-full errors follow from the model. The
 editor has the model and the IR the C code was printed from
-(`packages/core/src/ir/eval.ts`), so the target only has to send:
+(`packages/core/src/verify/ir-run.ts`), so the target only has to send:
 
 - `init` / `reset`;
 - the event id (one byte or a varint);

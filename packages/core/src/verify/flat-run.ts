@@ -6,11 +6,13 @@
  * will: cfg[] per region, history slots and snapshots, a signal queue.
  * It exists to prove the flat tables right (it must match the reference
  * interpreter step for step) and to document what backends emit.
+ *
+ * A test oracle (verify/): it never ships in the editor or the CLI, and is not part of the public entry points.
  */
 import type { Action, Id } from "../format/model";
 import { OPTION_DEFAULTS, defined } from "../format/options";
 import { MachineError, busyError, type MachineHost, type RunOptions } from "../runtime/contract";
-import type { EntryOp, FlatGuard, FlatModel, FlatTransition, Offer, RegionOp } from "./flatten";
+import type { EntryOp, FlatGuard, FlatModel, FlatTransition, Offer, RegionOp } from "../semantics/flatten";
 
 export class FlatRunner {
   readonly model: FlatModel;
