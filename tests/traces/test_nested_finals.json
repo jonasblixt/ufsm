@@ -1,6 +1,6 @@
 {
   "model": "../models/test_nested_finals.ufsm",
-  "doc": "From old/tests/C/test_nested_finals.c. A completes only when both of its regions rest in a final state. Region Ar2 has no final state of its own (Final2 is inside A12, which has no completion transition), so A never completes. v0.5 ignored regions without a final state (bug B12) and left A on e1.",
+  "doc": "From v0.5.3 tests/C/test_nested_finals.c. A completes only when both of its regions rest in a final state. Region Ar2 has no final state of its own (Final2 is inside A12, which has no completion transition), so A never completes. v0.5 ignored regions without a final state (bug B12) and left A on e1.",
   "steps": [
     { "reset": true, "expect": ["eA", "eA11", "eA12", "eA121"] },
     { "send": "e1", "expect": ["xA11"], "active": ["Final1", "A121"], "doc": "v0.5: xA11 xA121 xA12 xA eEnd." },

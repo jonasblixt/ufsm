@@ -40,7 +40,7 @@ export interface V0Index {
 /**
  * A state's regions in on-screen order, top to bottom.
  *
- * The GTK editor loads regions through a stack (old/compose/src/model/model.c),
+ * The GTK editor loads regions through a stack (v0.5.3: compose/src/model/model.c),
  * so the visual order is the REVERSE of the order in the file. The old Python
  * generator compensates the same way (`regions.insert(0, region)`).
  */

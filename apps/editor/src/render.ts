@@ -3,7 +3,7 @@
 
 /**
  * Canvas renderer for v1 documents. Drawing rules follow the old GTK editor
- * (old/compose/src/render.c) so existing diagrams look the same; geometry
+ * (v0.5.3: compose/src/render.c) so existing diagrams look the same; geometry
  * comes from @ufsm/core (relative layout -> absolute sheet coordinates).
  */
 import { type DocIndex, type Region, type State, type Transition, type Vertex } from "@ufsm/core";

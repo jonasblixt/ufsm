@@ -80,7 +80,7 @@ the generated code. Status refers to the new implementation.
 - [x] Confirm CI green on Windows/macOS/Linux (green at 8cc5061, 2026-10-11) (Rust shell has only been built on Jonas's machine; tests run on
       Ubuntu only and now require gcc, Python and pyright)
 - [ ] Merge `ts-rewrite` into master with a merge commit (never squash or rebase: `.git-blame-ignore-revs` names
-      c861e89); readthedocs: turn the project off or set its default version to v0.5.3 (`.readthedocs.yml` is in `old/`)
+      c861e89); readthedocs: turn the project off or set its default version to v0.5.3 (`.readthedocs.yml` was in `old/`, tag v0.5.3)
 
 ### Phase S — semantics (done; one review open)
 - [ ] Jonas: review the remaining semantics choices in `docs/semantics.md` ("Changes from v0.5"): B12 and
@@ -427,7 +427,7 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - Old generator CLI: `ufsm-generate c --sq_length 16 <model> <outdir>` (subcommand before positionals). Run without installing by stubbing `importlib.metadata.version`.
 - The old CMake test build always used signal queue length 16.
 - v0 transitions are stored under their source state; no transitions cross sheets in the legacy models.
-- Old editor colours: gruvbox dark (`old/compose/src/render.c`, `ufsmm_color_set`).
+- Old editor colours: gruvbox dark (v0.5.3 `compose/src/render.c`, `ufsmm_color_set`).
 - Downloading from GitHub in the cloud workspace: `git clone --depth 1 https://github.com/<owner>/<repo>` works; raw.githubusercontent.com
   and `gh api` are refused (2026-10-09).
 - Claude's shell on Jonas's machine is a Linux VM where npm is blocked and the Windows `node_modules` can't run

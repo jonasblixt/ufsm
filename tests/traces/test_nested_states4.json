@@ -1,6 +1,6 @@
 {
   "model": "../models/test_nested_states4.ufsm",
-  "doc": "From old/tests/C/test_nested_states4.c. Chained auto transitions.",
+  "doc": "From v0.5.3 tests/C/test_nested_states4.c. Chained auto transitions.",
   "steps": [
     { "reset": true, "expect": ["eA"] },
     { "send": "eEvent", "expect": ["xA", "eB", "eB1", "xB1", "xB", "eC", "xC", "eD"], "active": ["D"] }

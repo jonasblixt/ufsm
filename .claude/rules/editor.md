@@ -58,7 +58,7 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend, laid out after
 ## Conventions
 
 - Editor: canvas in vanilla TS + Canvas 2D, panels and dialogs in Preact.
-  Drawing rules mirror `old/compose/src/render.c`. State lives in the workspace and its sessions only; a part that
+  Drawing rules mirror v0.5.3's `compose/src/render.c`. State lives in the workspace and its sessions only; a part that
   changes something calls `ws.changed(kind)` (or a ws method that does) instead of redrawing itself. Every edit is a core
   function (`edit/layout.ts`, `edit/create.ts`, `edit/clipboard.ts`, `edit/props.ts`) run on an Immer draft by
   `history.ts`; the document is the only state, everything else (index,

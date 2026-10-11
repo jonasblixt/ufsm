@@ -55,7 +55,7 @@ apps/editor/src-tauri/  Rust shell: window, dialog and fs plugins (fs reaches on
 docs/                   architecture, glossary, contributing; format-v1, semantics (normative); backend-{c,cpp,csharp,python,ts,rust,go}
 examples/, tests/models/  models in v1 format (tests/models has canvas.ufsm, the old editor's own logic)
 tests/traces/           conformance traces (JSON): steps + expected action calls, by name
-old/                    v0.5.x C/GTK editor, Python generator, C tests (reference only)
+tests/v0/               the v0.5.3 models, unchanged: input of the v0 reader and migrator tests (v0.5.x code: tag v0.5.3)
 ```
 
 ## Commands (run from the repo root)
@@ -88,18 +88,18 @@ The full list is in docs/architecture.md and docs/contributing.md; these are the
 - Licence: GPL-3.0-or-later (`LICENSE`) with an output exception for generated code (`LICENSE-EXCEPTION`). Every source
   file starts with `SPDX-License-Identifier: GPL-3.0-or-later` and `Copyright (C) <year> Jonas Blixt <jonas@blxt.se>`;
   generated code says it may be used under any terms (`OUTPUT_NOTICE` in backends/common.ts) and never carries a GPL
-  header (`test/license.test.ts`). old/ stays BSD-3.
+  header (`test/license.test.ts`). v0.5.x (tag v0.5.3) stays BSD-3.
 - TypeScript: strict, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`, `moduleResolution: bundler`, extensionless
   relative imports, double quotes; Prettier formats. Tests: `node:test` + `node:assert/strict` through `tsx --test`, no
-  Vitest/Jest; tests that need `old/` skip themselves when it is absent.
+  Vitest/Jest.
 - Semantics: trace expectations are derived from `docs/semantics.md` by hand, never copied from the interpreter's
   output; a new rule gets a small model with one concept and a trace that would fail if the rule were broken.
 - Generated code: the per-language requirements (flags, type checkers, tool env vars, `UFSM_*_RANDOM`) are in
   `.claude/rules/backends.md`. On Jonas's machine C needs `CC="C:/Program Files/LLVM/bin/clang.exe"`.
 - Model files: always written by `serializeV1` (`npm run ufsm -- fmt <file>`), never by hand. The committed files in
-  `examples/` and `tests/models/` must equal the converter output for the matching `old/` file (a test enforces this;
+  `examples/` and `tests/models/` must equal the converter output for the matching `tests/v0/` file (a test enforces this;
   files fixed by hand are listed in its `fixedByHand`), so extend their traces rather than the models. New test models
-  have no `old/` counterpart. Never write the v0 format; do not modify `old/`.
+  have no `tests/v0/` counterpart. Never write the v0 format; do not modify `tests/v0/`.
 
 ## v1 file format at a glance (spec: docs/format-v1.md)
 
