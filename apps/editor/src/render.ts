@@ -13,7 +13,7 @@ import {
   ACTION_LINE_H,
   ACTION_MARGIN,
   ACTION_PAD,
-  ACTION_PILL_ICON,
+  HIDDEN_MARKER_ICON,
   HEADER_H,
   TITLE_CAPTION_SIZE,
   actionBlock,
@@ -31,7 +31,7 @@ import {
   vertexBox,
   zoneRowLabel,
   type ActionBlock,
-  type ActionPill,
+  type HiddenMarker,
   type ActionSegment,
   type Box,
   type DocIndex,
@@ -295,13 +295,13 @@ function drawActionBlock(ctx: CanvasRenderingContext2D, block: ActionBlock, x: n
 }
 
 /** The marker for hidden lines on the block's bottom line; (x, y) is the state's top-left corner. */
-function drawPill(ctx: CanvasRenderingContext2D, pill: ActionPill, x: number, y: number): void {
-  const px = x + pill.x, py = y + pill.y, yc = py + pill.h / 2;
+function drawHiddenMarker(ctx: CanvasRenderingContext2D, marker: HiddenMarker, x: number, y: number): void {
+  const px = x + marker.x, py = y + marker.y, yc = py + marker.h / 2;
   ctx.save();
   ctx.lineWidth = 1;
   ctx.strokeStyle = C.ink;
   ctx.fillStyle = C.stateFill;
-  roundedRect(ctx, px, py, pill.w, pill.h, pill.h / 2);
+  roundedRect(ctx, px, py, marker.w, marker.h, marker.h / 2);
   ctx.fill();
   ctx.stroke();
   ctx.strokeStyle = canvasAlpha("ink", BLOCK_ICON_ALPHA);
@@ -309,23 +309,23 @@ function drawPill(ctx: CanvasRenderingContext2D, pill: ActionPill, x: number, y:
   ctx.font = blockFont(ctx);
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  drawIcon(ctx, "chevron-down", px + 5, yc - ACTION_PILL_ICON / 2, ACTION_PILL_ICON);
-  for (const p of pill.parts) {
-    if (p.icon) drawIcon(ctx, p.icon, px + p.x, yc - ACTION_PILL_ICON / 2, ACTION_PILL_ICON);
-    ctx.fillText(p.text, px + p.x + (p.icon ? ACTION_PILL_ICON + 1 : 0), yc + 1);
+  drawIcon(ctx, "chevron-down", px + 5, yc - HIDDEN_MARKER_ICON / 2, HIDDEN_MARKER_ICON);
+  for (const p of marker.parts) {
+    if (p.icon) drawIcon(ctx, p.icon, px + p.x, yc - HIDDEN_MARKER_ICON / 2, HIDDEN_MARKER_ICON);
+    ctx.fillText(p.text, px + p.x + (p.icon ? HIDDEN_MARKER_ICON + 1 : 0), yc + 1);
   }
   ctx.restore();
 }
 
 /** The state whose hidden-lines marker is at world point (x, y) on `sheet` (a click on it shows every line again). */
-export function pillAt(index: DocIndex, sheet: Region, x: number, y: number): State | undefined {
+export function hiddenMarkerAt(index: DocIndex, sheet: Region, x: number, y: number): State | undefined {
   let found: State | undefined;
   forEachVisible(index, sheet, (v) => {
     if (v.kind !== "state") return;
-    const pill = actionBlock(index, v).pill;
-    if (!pill) return;
+    const marker = actionBlock(index, v).hiddenMarker;
+    if (!marker) return;
     const b = vertexBox(index, v.id);
-    if (x >= b.x + pill.x && x <= b.x + pill.x + pill.w && y >= b.y + pill.y && y <= b.y + pill.y + pill.h) found = v;
+    if (x >= b.x + marker.x && x <= b.x + marker.x + marker.w && y >= b.y + marker.y && y <= b.y + marker.y + marker.h) found = v;
   });
   return found;
 }
@@ -386,7 +386,7 @@ function drawState(ctx: CanvasRenderingContext2D, index: DocIndex, s: State, loo
     ctx.lineTo(x + w, y + HEADER_H + block.height);
   }
   ctx.stroke();
-  if (block.pill && HEADER_H + block.height < h) drawPill(ctx, block.pill, x, y);
+  if (block.hiddenMarker && HEADER_H + block.height < h) drawHiddenMarker(ctx, block.hiddenMarker, x, y);
 
   // Region bands: name, dashed separator between bands, off-page marker.
   const bands = regionBoxes(index, s);

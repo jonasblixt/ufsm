@@ -44,10 +44,10 @@ export const ACTION_TEXT_X = ACTION_MARGIN + ACTION_ICON + ACTION_ICON_GAP;
 export const ACTION_MIN_H = ACTION_PAD + ACTION_LINE_H;
 
 /** Height of the marker that counts hidden items, and the cell width of its digits. */
-export const ACTION_PILL_H = 16;
-export const ACTION_PILL_CHAR_W = 7;
+export const HIDDEN_MARKER_H = 16;
+export const HIDDEN_MARKER_CHAR_W = 7;
 /** Size of the icons inside the marker. */
-export const ACTION_PILL_ICON = 12;
+export const HIDDEN_MARKER_ICON = 12;
 
 /** What a line (or a timer on a line) is; each kind has its own icon. `after` and `every` are the two timer kinds. */
 export type ActionKind = "entry" | "exit" | "after" | "every" | "internal";
@@ -71,7 +71,7 @@ export interface ActionRow {
 }
 
 /** The marker on the block's bottom line that counts hidden items. Coordinates from the state's top-left corner. */
-export interface ActionPill {
+export interface HiddenMarker {
   x: number;
   y: number;
   w: number;
@@ -102,7 +102,7 @@ export interface ActionBlock {
   /** Items that are not shown completely, per kind (all zero unless `limited`). */
   hidden: ActionCounts;
   /** The marker for hidden items, when lines are hidden and the block is not a summary. */
-  pill: ActionPill | undefined;
+  hiddenMarker: HiddenMarker | undefined;
 }
 
 const noCounts = (): ActionCounts => ({ entry: 0, exit: 0, after: 0, every: 0, internal: 0 });
@@ -218,21 +218,21 @@ function layout(index: DocIndex, s: State, width: number, stored: number | undef
     summaryRow,
     cut: !summary && visible < rows.length && rows[visible]!.continued,
     hidden,
-    pill: !summary && visible < rows.length ? pillOf(hidden, width, height) : undefined,
+    hiddenMarker: !summary && visible < rows.length ? hiddenMarkerOf(hidden, width, height) : undefined,
   };
 }
 
 /** The hidden-items marker: right-aligned, centred on the block's bottom line. */
-function pillOf(hidden: ActionCounts, width: number, blockHeight: number): ActionPill {
+function hiddenMarkerOf(hidden: ActionCounts, width: number, blockHeight: number): HiddenMarker {
   const pad = 5, gap = 4;
-  const build = (entries: { icon?: ActionKind; text: string }[]): { w: number; parts: ActionPill["parts"] } => {
-    // the chevron comes first (drawn by the editor in the first ACTION_PILL_ICON units)
-    let x = pad + ACTION_PILL_ICON;
-    const parts: ActionPill["parts"] = [];
+  const build = (entries: { icon?: ActionKind; text: string }[]): { w: number; parts: HiddenMarker["parts"] } => {
+    // the chevron comes first (drawn by the editor in the first HIDDEN_MARKER_ICON units)
+    let x = pad + HIDDEN_MARKER_ICON;
+    const parts: HiddenMarker["parts"] = [];
     for (const e of entries) {
       x += gap;
       parts.push(e.icon ? { icon: e.icon, x, text: e.text } : { x, text: e.text });
-      x += (e.icon ? ACTION_PILL_ICON + 1 : 0) + e.text.length * ACTION_PILL_CHAR_W;
+      x += (e.icon ? HIDDEN_MARKER_ICON + 1 : 0) + e.text.length * HIDDEN_MARKER_CHAR_W;
     }
     return { w: x + pad, parts };
   };
@@ -241,9 +241,9 @@ function pillOf(hidden: ActionCounts, width: number, blockHeight: number): Actio
   if (p.w > width - 2 * ACTION_MARGIN) p = build([{ text: `+${kinds.reduce((n, k) => n + hidden[k], 0)}` }]);
   return {
     x: Math.max(width - ACTION_MARGIN - p.w, 0),
-    y: HEADER + blockHeight - ACTION_PILL_H / 2,
+    y: HEADER + blockHeight - HIDDEN_MARKER_H / 2,
     w: p.w,
-    h: ACTION_PILL_H,
+    h: HIDDEN_MARKER_H,
     parts: p.parts,
   };
 }

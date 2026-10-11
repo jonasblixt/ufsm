@@ -586,3 +586,9 @@ Measured over the 21 valid legacy models (864 KB):
   `RunningMachine` (was `TraceMachine` in `interp/trace.ts`). Renamed without aliases (`InterpreterHost`,
   `InterpreterOptions`, `InterpreterError`): nothing outside the repo uses them. No import of `interp/` is left in core
   outside `index.ts`. Tests and golden output unchanged.
+- 2026-10-11: **Review R10, vocabulary.** Interpreter `TraceEntry`/`onTrace` -> `StepEvent`/`onStep` ("trace" now means a
+  conformance trace or the generated hook); the editor says sheet, not page (`showSheet`, `renderSheet`, `sheetBounds`,
+  `doc.sheet`, `parentSheet`, `sheetPath`, `sheetLabel`; the `pageOf*` aliases in nav.ts are gone; menu "Fit Sheet";
+  "off-page region" stays, it is the format's term); the action block's `pill` is the hidden marker (`hiddenMarker`,
+  `HiddenMarker`, `HIDDEN_MARKER_*`, `hiddenMarkerAt`, `window.ufsm.actionBlock(id).hiddenMarkerScreen`). Also fixed the
+  browser check's timer row selector, broken since the `t/` prefix left Properties. Browser check 386/386 on Windows.

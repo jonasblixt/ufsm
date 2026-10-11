@@ -102,7 +102,7 @@ import {
   windowControls,
   writeSettings,
 } from "./platform";
-import { boxSelect, hitTest, hitTransition, sheetBounds, pillAt, renderSheet, vertexBounds, type BoxMode, type Bounds, type SimHighlight, type View } from "./render";
+import { boxSelect, hitTest, hitTransition, sheetBounds, hiddenMarkerAt, renderSheet, vertexBounds, type BoxMode, type Bounds, type SimHighlight, type View } from "./render";
 import { C, FALLBACK_THEME, THEMES, canvasAlpha, findTheme, modifierHasEffect, resolveTheme, setCanvasTheme, themeInfo, type ResolvedTheme } from "./theme";
 import { parseSettings, serializeSettings, zoomStep, ZOOM_MAX, ZOOM_MIN, ZOOM_STEPS, type AppearanceChoice, type Settings, type ThemeSetting } from "./settings";
 import { Simulation, relativePath, type SimOptions } from "./sim";
@@ -1855,7 +1855,7 @@ api = attachInput(
       if (!doc) return;
       // A click on a state's hidden-lines marker shows every line again (and selects the state).
       const [wx, wy] = screenToWorld(input.x, input.y);
-      const marked = pillAt(doc.index, doc.sheet, wx, wy);
+      const marked = hiddenMarkerAt(doc.index, doc.sheet, wx, wy);
       if (marked) {
         select([marked.id]);
         edit((d) => resetActionsHeight(d, marked.id));
@@ -2247,8 +2247,8 @@ Object.assign(window, {
       const block = actionBlock(doc.index, v);
       const b = vertexBox(doc.index, id);
       const r = canvas.getBoundingClientRect();
-      const pill = block.pill && ([r.left + view.x + (b.x + block.pill.x + block.pill.w / 2) * view.scale, r.top + view.y + (b.y + block.pill.y + block.pill.h / 2) * view.scale] as [number, number]);
-      return { ...block, pillScreen: pill };
+      const marker = block.hiddenMarker && ([r.left + view.x + (b.x + block.hiddenMarker.x + block.hiddenMarker.w / 2) * view.scale, r.top + view.y + (b.y + block.hiddenMarker.y + block.hiddenMarker.h / 2) * view.scale] as [number, number]);
+      return { ...block, hiddenMarkerScreen: marker };
     },
     /** Absolute polyline and label of a transition. */
     route: (id: string) => (doc ? edgeGeometry(doc.index, id) : undefined),

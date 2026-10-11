@@ -278,7 +278,7 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [ ] R7 Transition label layout in core
 - [ ] R8 Split the editor's `main.ts`
 - [ ] R9 Key map generated from editor.ufsm
-- [ ] R10 Vocabulary: StepEvent/onStep, sheet not page, hidden marker not pill
+- [x] R10 Vocabulary: StepEvent/onStep, sheet not page, hidden marker not pill (2026-10-11)
 - [ ] R11 Formatter and import-boundary check
 - [ ] R12 One backend contract suite
 

@@ -110,7 +110,7 @@ describe("action block layout", () => {
     assert.equal(b.auto, 10 + 20 * 9);
     assert.equal(b.height, b.auto);
     assert.equal(b.visible, 9);
-    assert.ok(!b.limited && !b.summary && !b.cut && b.pill === undefined);
+    assert.ok(!b.limited && !b.summary && !b.cut && b.hiddenMarker === undefined);
     assert.deepEqual(b.hidden, { entry: 0, exit: 0, after: 0, every: 0, internal: 0 });
     // icons at the margin, continuation lines under the first action, the second timer after the first and a gap
     assert.deepEqual(b.rows[0]!.segments.map((g) => g.x), [10]);
@@ -132,7 +132,7 @@ describe("action block layout", () => {
     const b = actionBlock(indexV1(doc), doc.machine.root.states[1] as State);
     assert.equal(b.auto, 0);
     assert.equal(b.height, 0);
-    assert.equal(b.pill, undefined);
+    assert.equal(b.hiddenMarker, undefined);
   });
 });
 
@@ -144,10 +144,10 @@ describe("action block with a stored height", () => {
     assert.ok(b.limited && !b.summary);
     assert.ok(b.cut, "the exit list goes on in the first hidden line");
     assert.deepEqual(b.hidden, { entry: 0, exit: 1, after: 2, every: 1, internal: 2 });
-    assert.ok(b.pill);
-    assert.deepEqual(b.pill.parts.map((p) => `${p.icon}:${p.text}`), ["exit:1", "after:2", "every:1", "internal:2"]);
-    assert.equal(b.pill.x + b.pill.w, 300 - 10, "right-aligned inside the margin");
-    assert.equal(b.pill.y + b.pill.h / 2, HEADER_H + 90, "centred on the block's bottom line");
+    assert.ok(b.hiddenMarker);
+    assert.deepEqual(b.hiddenMarker.parts.map((p) => `${p.icon}:${p.text}`), ["exit:1", "after:2", "every:1", "internal:2"]);
+    assert.equal(b.hiddenMarker.x + b.hiddenMarker.w, 300 - 10, "right-aligned inside the margin");
+    assert.equal(b.hiddenMarker.y + b.hiddenMarker.h / 2, HEADER_H + 90, "centred on the block's bottom line");
     const five = block(testDoc(300, 110));
     assert.ok(!five.cut, "the timers start a new line");
     assert.deepEqual(five.hidden, { entry: 0, exit: 0, after: 2, every: 1, internal: 2 });
@@ -162,23 +162,23 @@ describe("action block with a stored height", () => {
     const b = block(testDoc(300, ACTION_MIN_H));
     assert.ok(b.summary && b.limited);
     assert.equal(b.visible, 0);
-    assert.equal(b.pill, undefined);
+    assert.equal(b.hiddenMarker, undefined);
     assert.deepEqual(b.summaryRow.map((g) => `${g.icon}:${g.text}`), ["entry:6", "exit:4", "after:2", "every:1", "internal:2"]);
     assert.deepEqual(b.hidden, b.counts);
   });
   it("has no effect when it is at least as tall as the lines", () => {
     const b = block(testDoc(300, 400));
     assert.equal(b.height, b.auto);
-    assert.ok(!b.limited && b.pill === undefined);
+    assert.ok(!b.limited && b.hiddenMarker === undefined);
   });
   it("falls back to one total in a state too narrow for a count per kind", () => {
     const b = block(testDoc(100, 50));
-    assert.ok(b.pill);
-    assert.equal(b.pill.parts.length, 1);
-    assert.match(b.pill.parts[0]!.text, /^\+\d+$/);
-    assert.equal(b.pill.parts[0]!.icon, undefined);
+    assert.ok(b.hiddenMarker);
+    assert.equal(b.hiddenMarker.parts.length, 1);
+    assert.match(b.hiddenMarker.parts[0]!.text, /^\+\d+$/);
+    assert.equal(b.hiddenMarker.parts[0]!.icon, undefined);
     const hidden = Object.values(b.hidden).reduce((a, n) => a + n, 0);
-    assert.equal(b.pill.parts[0]!.text, `+${hidden}`);
+    assert.equal(b.hiddenMarker.parts[0]!.text, `+${hidden}`);
   });
   it("moves the region bands with it", () => {
     const top = (doc: UfsmDocument): number => regionBoxes(indexV1(doc), P(doc))[0]!.box.y;
