@@ -637,3 +637,7 @@ Measured over the 21 valid legacy models (864 KB):
   render.ts to `hit.ts` (no DOM; label widths from a measure). panel.tsx 1,312 lines -> `panel/` (index, types, fields,
   properties, project, problems). New `test/workspace.test.ts` (workspace, sessions, hit testing in node:test).
   `turnBar`/`toggleOffPage` became commands (in no menu). Browser check 386/386, editor tests 79.
+- 2026-10-11: **Review R9, key map.** `apps/editor/src/fsm/keymap.ts` turns editor.ufsm into KEYMAP.md (one row per
+  transition and internal transition, by region Keys/Pointer/Tool: state, key or pointer event, guards, actions, target);
+  `npm run gen:editor-fsm` writes it next to editor-fsm.ts, `test/keymap.test.ts` keeps it fresh. Action names are command
+  ids (commands.ts) or handler-part actions, so a key is one grep from its code.

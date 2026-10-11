@@ -19,7 +19,7 @@
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "ufsm": "npm run start -w @ufsm/cli --",
-    "gen:editor-fsm": "npm run ufsm -- generate ts apps/editor/src/fsm/editor.ufsm -o apps/editor/src/fsm",
+    "gen:editor-fsm": "npm run ufsm -- generate ts apps/editor/src/fsm/editor.ufsm -o apps/editor/src/fsm && tsx apps/editor/scripts/keymap.ts",
     "gen:schema": "npm run ufsm -- schema -o packages/core/schema/ufsm-v1.schema.json"
   },
   "devDependencies": {

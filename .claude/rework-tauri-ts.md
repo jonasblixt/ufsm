@@ -279,7 +279,7 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [x] R7 Transition label layout in core (`diagram/label-layout.ts`) (2026-10-11)
 - [x] R8 Split the editor's `main.ts` (workspace, sessions, shell, commands, canvas parts, controllers; panel by tab)
       (2026-10-11)
-- [ ] R9 Key map generated from editor.ufsm
+- [x] R9 Key map generated from editor.ufsm (`apps/editor/src/fsm/KEYMAP.md`) (2026-10-11)
 - [x] R10 Vocabulary: StepEvent/onStep, sheet not page, hidden marker not pill (2026-10-11)
 - [ ] R11 Formatter and import-boundary check
 - [x] R12 One backend contract suite (`test/backend-contract.ts`) (2026-10-11)

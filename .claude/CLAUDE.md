@@ -100,6 +100,7 @@ old/                    v0.5.x C/GTK editor, Python generator, C tests (referenc
 | `npm run ufsm -- generate c <model> -o <dir>` | Generate `<name>.h`/`<name>.c` (`--prefix`, `--signal-queue`, `--max-microsteps`, `--debug-info`, `--trace`) |
 | `npm run ufsm -- generate python <model> -o <dir>` | Generate `<name>.py` (`--class-name`, `--signal-queue`, `--max-microsteps`, `--debug-info`, `--trace`) |
 | `npm run ufsm -- generate ts <model> -o <dir>` | Generate `<name>.ts` (`--class-name`, `--signal-queue`, `--max-microsteps`, `--debug-info`, `--trace`) |
+| `npm run gen:editor-fsm` | Regenerate the editor model's `editor-fsm.ts` and `KEYMAP.md` after editing `editor.ufsm` |
 | `npm run gen:schema` | Regenerate `packages/core/schema/ufsm-v1.schema.json` from `src/format/schema.ts` |
 | `npm run ufsm -- generate rust <model> -o <dir>` | Generate `<name>.rs` (`--class-name` names the struct, `--signal-queue`, `--max-microsteps`, `--debug-info`, `--trace`) |
 

@@ -36,8 +36,8 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend, laid out after
                         problems.tsx; simpanel.tsx, codepanel.tsx, settingspanel.tsx, widgets.tsx are the other tabs and
                         shared Section/Field
   src/fsm/              editor.ufsm (the editor's interaction model: regions Keys {Tools, Zoom, Jump, Add, Edit}, Pointer,
-                        Tool), editor-fsm.ts (generated and committed: `npm run gen:editor-fsm`), input.ts (DOM events ->
-                        machine events)
+                        Tool), editor-fsm.ts and KEYMAP.md (both generated and committed: `npm run gen:editor-fsm`; keymap.ts
+                        writes the table of every key, a test keeps it fresh), input.ts (DOM events -> machine events)
   src/history.ts        undo/redo: Immer patches; interactive edits preview from their start, commit one step
   src/sim.ts            the simulator: interpreter on a snapshot of the document, step log, every step recorded as a
                         conformance trace (no DOM, tested); code.ts (code preview cache, highlighter)
