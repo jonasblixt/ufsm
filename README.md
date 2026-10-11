@@ -8,6 +8,12 @@ cross-platform desktop editor built with [Tauri](https://tauri.app).
 The previous C/GTK editor and Python generator (v0.5.x) are kept in
 [`old/`](old/) for reference while the rewrite catches up.
 
+## Documentation
+
+[Architecture](docs/architecture.md) (how the parts fit together), [glossary](docs/glossary.md),
+[contributing](docs/contributing.md) (rules and recipes), the [file format](docs/format-v1.md) and the
+[execution semantics](docs/semantics.md), and one page per code generator (`docs/backend-*.md`).
+
 ## Layout
 
 ```
@@ -15,7 +21,7 @@ packages/core     @ufsm/core: model, v0 importer, checks, semantics, IR, backend
 packages/cli      @ufsm/cli:  `ufsm` command line
 apps/editor       @ufsm/editor: Vite + TypeScript frontend
 apps/editor/src-tauri   Rust shell (window, native dialogs, file IO)
-docs/             file format specification
+docs/             architecture, glossary, contributing, file format, semantics, generators
 examples/         example models (v1)
 tests/models/     test models (v1), including the old editor's own canvas.ufsm
 old/              v0.5.x C/GTK editor, Python generator, examples and tests
