@@ -43,5 +43,5 @@ paths:
 - Every backend's differential runs include a pass with `debugInfo` and
   `trace` on: generated trace hook calls are logged among the action calls as
   pseudo-calls (`decodeHooks`/`interpreterHooks` in `test/harness.ts`) and
-  compared with the interpreter's `onTrace`; the type/lint checks also cover a
+  compared with the interpreter's `onStep`; the type/lint checks also cover a
   debug variant of every repo model. A new backend implements the same.

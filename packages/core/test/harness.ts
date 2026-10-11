@@ -15,7 +15,7 @@ import {
   type RunOptions,
   type IrModule,
   type MachineFactory,
-  type TraceEntry,
+  type StepEvent,
   behaviourOptions,
   TraceRaise,
   type RunningMachine,
@@ -123,7 +123,7 @@ export function decodeHooks(calls: string[], ir: IrModule): string[] {
 }
 
 /** The interpreter's trace entries as the pseudo-calls of decodeHooks, logged through the host. */
-export function interpreterHooks(host: MachineHost): (e: TraceEntry) => void {
+export function interpreterHooks(host: MachineHost): (e: StepEvent) => void {
   const log = (s: string): void => host.call?.(s, s);
   return (e) => {
     if (e.type === "event") log(`@${e.signal ? "signal" : "event"}:${e.name}`);
@@ -235,7 +235,7 @@ export function assertMatchesInterpreter(diffs: BackendDiff[], results: StepResu
   diffs.forEach((d, k) => {
     const ir = hooks?.[k];
     const expected = runScript(
-      (h) => new Interpreter(d.doc, h, { maxMicrosteps, signalQueue: d.signalQueue ?? DIFF_QUEUE, ...(ir ? { onTrace: interpreterHooks(h) } : {}) }),
+      (h) => new Interpreter(d.doc, h, { maxMicrosteps, signalQueue: d.signalQueue ?? DIFF_QUEUE, ...(ir ? { onStep: interpreterHooks(h) } : {}) }),
       d.script,
     );
     const steps = d.script.filter((s) => s.reset || s.send !== undefined);
@@ -270,7 +270,7 @@ export function drive(make: (host: MachineHost) => RunningMachine, doc: UfsmDocu
  */
 export function compareWithInterpreter(engine: Engine, doc: UfsmDocument, seed: number, steps: number, options: RunOptions = {}, hooks = false): void {
   const opts = { ...behaviourOptions(doc), maxMicrosteps: 300, ...options };
-  const a = drive((h) => new Interpreter(doc, h, hooks ? { ...opts, onTrace: interpreterHooks(h) } : opts), doc, seed, steps);
+  const a = drive((h) => new Interpreter(doc, h, hooks ? { ...opts, onStep: interpreterHooks(h) } : opts), doc, seed, steps);
   const b = drive((h) => engine(doc, h, opts), doc, seed, steps);
   const i = a.findIndex((x, k) => x !== b[k]);
   assert.ok(i < 0 && a.length === b.length, `${doc.name}, seed ${seed}, step ${i}:\n  interpreter: ${a[i]}\n  engine:      ${b[i]}`);

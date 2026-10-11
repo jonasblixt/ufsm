@@ -229,7 +229,7 @@ function main(argv: string[]): number {
       const name = (id: string): string => vertexName(index, id);
       const m = new Interpreter(doc, { guard: (g) => guards.get(g) ?? false }, {
         ...optionFlags(),
-        onTrace: (e) => {
+        onStep: (e) => {
           switch (e.type) {
             case "reset": console.log("-> reset"); break;
             case "event": console.log(e.signal ? `-> signal ${e.name}` : `-> ${e.name}`); break;

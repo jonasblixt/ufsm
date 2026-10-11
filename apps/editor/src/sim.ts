@@ -23,7 +23,7 @@ import {
   type DocIndex,
   type Id,
   type Trace,
-  type TraceEntry,
+  type StepEvent,
   type TraceOptions,
   type TraceStep,
   type UfsmDocument,
@@ -116,7 +116,7 @@ export class Simulation {
           this.current?.calls.push(timerStopCall(name));
         },
       },
-      { ...this.options, onTrace: (e) => this.log(e) },
+      { ...this.options, onStep: (e) => this.log(e) },
     );
   }
 
@@ -255,7 +255,7 @@ export class Simulation {
     return v?.name !== undefined && resolveStateRef(this.doc, v.name) === id ? v.name : id;
   }
 
-  private log(e: TraceEntry): void {
+  private log(e: StepEvent): void {
     const s = this.current;
     if (!s) return;
     switch (e.type) {

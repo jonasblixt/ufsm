@@ -18,7 +18,11 @@ export interface MachineHost {
   timerStop?(name: string, id: Id): void;
 }
 
-export type TraceEntry =
+/**
+ * An observable step of a run, reported to `RunOptions.onStep` (simulators, debugging, and the tests comparing it with
+ * the generated trace hook). Not a conformance trace (`Trace` in interp/trace.ts).
+ */
+export type StepEvent =
   | { type: "call"; action: string }
   | { type: "emit"; signal: string }
   | { type: "exit"; state: Id }
@@ -38,7 +42,7 @@ export interface RunOptions {
   /** Microsteps per process()/reset() call before giving up with `livelock`. Default: the model's (10000). */
   maxMicrosteps?: number;
   /** Receives every observable step, for simulators and debugging. */
-  onTrace?: (entry: TraceEntry) => void;
+  onStep?: (entry: StepEvent) => void;
 }
 
 export type MachineErrorCode = "invalid-model" | "not-started" | "unknown-event" | "queue-overflow" | "livelock" | "busy";

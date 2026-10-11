@@ -115,7 +115,7 @@ describe("trace hooks", () => {
   it("fire in the interpreter where docs/semantics.md says", () => {
     const actual = run((log) => {
       const host = { call: (n: string) => log(n) };
-      return new Interpreter(hookModel(), host, { onTrace: interpreterHooks(host) });
+      return new Interpreter(hookModel(), host, { onStep: interpreterHooks(host) });
     });
     assert.deepEqual(actual, EXPECTED);
   });

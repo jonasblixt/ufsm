@@ -12,7 +12,7 @@
 import { checkV1 } from "../v1/check";
 import { defined, behaviourOptions } from "../v1/options";
 import type { Action, GuardTerm, Id, UfsmDocument } from "../v1/model";
-import { MachineError, busyError, type MachineHost, type RunOptions, type TraceEntry } from "../runtime/contract";
+import { MachineError, busyError, type MachineHost, type RunOptions, type StepEvent } from "../runtime/contract";
 import {
   buildStructure,
   conflicts,
@@ -78,7 +78,7 @@ export class Interpreter {
     this.started = true;
     this.terminatedFlag = false;
     this.steps = 0;
-    this.trace({ type: "reset" });
+    this.report({ type: "reset" });
     this.stopTimers(this.structure.timers);
     this.enter([], [this.structure.root]);
     this.settle();
@@ -104,7 +104,7 @@ export class Interpreter {
     if (this.terminatedFlag) return 0;
     this.busy = true;
     this.steps = 0;
-    this.trace({ type: "event", name: s.index.decls.get(id)!.decl.name, signal: false });
+    this.report({ type: "event", name: s.index.decls.get(id)!.decl.name, signal: false });
     const fired = this.microstep(this.select({ kind: "event", id }));
     const total = fired + this.settle();
     this.busy = false;
@@ -147,7 +147,7 @@ export class Interpreter {
       }
       const sig = this.queue.shift();
       if (sig === undefined) return fired;
-      this.trace({ type: "event", name: this.structure.index.decls.get(sig)!.decl.name, signal: true });
+      this.report({ type: "event", name: this.structure.index.decls.get(sig)!.decl.name, signal: true });
       fired += this.microstep(this.select({ kind: "event", id: sig }));
     }
   }
@@ -224,7 +224,7 @@ export class Interpreter {
     const exitOrder = [...exiting].sort((a, b) => b.order - a.order);
     for (const s of exitOrder) for (const r of s.regions) if (r.history) this.recordHistory(r);
     for (const s of exitOrder) {
-      this.trace({ type: "exit", state: s.id });
+      this.report({ type: "exit", state: s.id });
       this.stopTimers(s.timers);
       if (s.vertex.kind === "state") this.run(s.vertex.exit);
       this.active.delete(s);
@@ -232,7 +232,7 @@ export class Interpreter {
 
     // 2. Transition actions, in selection order.
     for (const t of ts) {
-      this.trace({ type: "transition", id: t.id, parts: t.parts.map((p) => p.id), internal: t.internal });
+      this.report({ type: "transition", id: t.id, parts: t.parts.map((p) => p.id), internal: t.internal });
       this.run(t.actions);
     }
 
@@ -310,7 +310,7 @@ export class Interpreter {
     for (const item of items) {
       if ("kind" in item) {
         this.active.add(item);
-        this.trace({ type: "enter", state: item.id });
+        this.report({ type: "enter", state: item.id });
         if (item.vertex.kind === "state") this.run(item.vertex.entry);
         this.startTimers(item.timers);
       } else {
@@ -319,7 +319,7 @@ export class Interpreter {
     }
 
     if (terminate) {
-      this.trace({ type: "terminate" });
+      this.report({ type: "terminate" });
       this.terminatedFlag = true;
       this.active.clear();
       this.queue = [];
@@ -331,14 +331,14 @@ export class Interpreter {
 
   private startTimers(timers: SemTimer[]): void {
     for (const t of timers) {
-      this.trace({ type: "timer-start", timer: t.name, id: t.id, ms: t.ms, periodic: t.periodic });
+      this.report({ type: "timer-start", timer: t.name, id: t.id, ms: t.ms, periodic: t.periodic });
       this.host.timerStart?.(t.name, t.id, t.ms, t.periodic);
     }
   }
 
   private stopTimers(timers: SemTimer[]): void {
     for (const t of timers) {
-      this.trace({ type: "timer-stop", timer: t.name, id: t.id });
+      this.report({ type: "timer-stop", timer: t.name, id: t.id });
       this.host.timerStop?.(t.name, t.id);
     }
   }
@@ -349,7 +349,7 @@ export class Interpreter {
     for (const a of actions ?? []) {
       if ("call" in a) {
         const d = this.structure.index.decls.get(a.call)!.decl;
-        this.trace({ type: "call", action: d.name });
+        this.report({ type: "call", action: d.name });
         this.host.call?.(d.name, d.id);
       } else {
         const d = this.structure.index.decls.get(a.emit)!.decl;
@@ -357,13 +357,13 @@ export class Interpreter {
         if (this.queue.length >= limit) {
           throw new MachineError("queue-overflow", `signal queue full (${limit}) when emitting '${d.name}'`);
         }
-        this.trace({ type: "emit", signal: d.name });
+        this.report({ type: "emit", signal: d.name });
         this.queue.push(d.id);
       }
     }
   }
 
-  private trace(e: TraceEntry): void {
-    this.options.onTrace?.(e);
+  private report(e: StepEvent): void {
+    this.options.onStep?.(e);
   }
 }

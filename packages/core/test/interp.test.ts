@@ -15,7 +15,7 @@ import {
   loadModel,
   parseTrace,
   runTrace,
-  type TraceEntry,
+  type StepEvent,
   type UfsmDocument,
 } from "../src/index";
 
@@ -282,9 +282,9 @@ describe("interpreter", () => {
     const doc = machine({ root: ["A", "B"], transitions: ["A -e1-> B"] });
     doc.machine.root.states.push({ id: "term", kind: "terminate" });
     doc.machine.transitions.push({ id: "tq", from: "s2", to: "term", on: "ev1" });
-    const log: TraceEntry[] = [];
+    const log: StepEvent[] = [];
     const calls: string[] = [];
-    const m = new Interpreter(doc, { call: (n) => void calls.push(n) }, { onTrace: (e) => void log.push(e) });
+    const m = new Interpreter(doc, { call: (n) => void calls.push(n) }, { onStep: (e) => void log.push(e) });
     m.reset();
     m.process("e1");
     m.process("e1");
@@ -359,15 +359,15 @@ describe("interpreter for simulators", () => {
   });
 
   it("reports every model transition of a fork or join and marks internal transitions", () => {
-    const log: TraceEntry[] = [];
-    const m = new Interpreter(load("test_fork_join.ufsm"), {}, { onTrace: (e) => void log.push(e) });
+    const log: StepEvent[] = [];
+    const m = new Interpreter(load("test_fork_join.ufsm"), {}, { onStep: (e) => void log.push(e) });
     m.reset();
     m.process("eBegin");
     const taken = log.filter((e) => e.type === "transition");
     assert.equal(taken.length, 1);
     assert.equal(taken[0]!.type === "transition" && taken[0]!.parts.length, 3);
-    const ilog: TraceEntry[] = [];
-    const im = new Interpreter(load("test_internal.ufsm"), {}, { onTrace: (e) => void ilog.push(e) });
+    const ilog: StepEvent[] = [];
+    const im = new Interpreter(load("test_internal.ufsm"), {}, { onStep: (e) => void ilog.push(e) });
     im.reset();
     im.process("eUp");
     const it = ilog.find((e) => e.type === "transition");
