@@ -1,0 +1,21 @@
+{
+  "model": "../models/test_root_final.ufsm",
+  "doc": "When the root region reaches a final state the machine is finished: nothing is enabled any more until reset().",
+  "steps": [
+    { "reset": true, "expect": ["eA"] },
+    { "send": "next", "expect": ["xA", "eB"] },
+    { "send": "finish", "expect": ["xB", "aFinish"], "active": ["Done"], "inactive": ["B"] },
+    { "send": "next", "expect": [], "active": ["Done"] },
+    { "send": "toC", "expect": [] },
+    { "reset": true, "expect": ["eA"], "inactive": ["Done"] },
+    { "send": "toC", "expect": ["xA", "eC", "eC1"] },
+    {
+      "send": "end",
+      "expect": ["xC1", "xC", "aComplete"],
+      "active": ["Done"],
+      "inactive": ["C", "FinC"],
+      "doc": "C completes and its completion transition leads to the root's final state."
+    },
+    { "send": "toC", "expect": [] }
+  ]
+}

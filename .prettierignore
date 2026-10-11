@@ -1,0 +1,8 @@
+# Only hand-written TypeScript and JavaScript is formatted (see the format scripts in package.json).
+old/
+build/
+**/dist/
+**/target/
+node_modules/
+# generated: npm run gen:editor-fsm
+apps/editor/src/fsm/editor-fsm.ts

@@ -1,0 +1,19 @@
+{
+  "model": "../models/test_in_guards.ufsm",
+  "doc": "In-state guards look at the configuration before the microstep, also when the state they name is left in that same microstep.",
+  "steps": [
+    { "reset": true, "expect": ["eP", "eA1", "eB1"] },
+    {
+      "send": "e1",
+      "expect": ["xB1", "xA1", "eA2", "eB2"],
+      "active": ["A2", "B2"],
+      "doc": "B1's guard 'in A1' holds although A1 is left in the same microstep."
+    },
+    { "send": "e2", "expect": ["xB2", "xA2", "eA1", "eB1"], "active": ["A1", "B1"] },
+    { "send": "e3", "expect": ["xB1", "eB2"], "doc": "not in A2." },
+    { "send": "e3", "expect": [], "doc": "B2 needs A2." },
+    { "send": "e1", "expect": ["xA1", "eA2"] },
+    { "send": "e3", "expect": ["xB2", "eB1"], "doc": "in A2 and not in B1." },
+    { "send": "e3", "expect": [], "doc": "B1's guard fails now that A2 is active." }
+  ]
+}

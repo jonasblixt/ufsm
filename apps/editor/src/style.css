@@ -1,0 +1,2071 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 Jonas Blixt <jonas@blxt.se> */
+
+/*
+ * Colors come from the theme (src/themes, applied by main.ts as custom properties on <html>). The values here are
+ * gruvbox dark medium, only for the moment before the script runs; test/theme.test.ts keeps them equal.
+ */
+:root {
+  --bg: #282828;
+  --bg0: #282828;
+  --bg1: #3c3836;
+  --bg2: #504945;
+  --bg-dark: #1d2021;
+  --fg: #ebdbb2;
+  --fg4: #a89984;
+  --fg4-rgb: 168 153 132;
+  --gray: #928374;
+  --red: #fb4934;
+  --green: #b8bb26;
+  --yellow: #fabd2f;
+  --blue: #83a598;
+  --purple: #d3869b;
+  --aqua: #8ec07c;
+  --orange: #fe8019;
+  --orange-rgb: 254 128 25;
+  --chrome: #141617;
+  --card: #282828;
+  --card-edge: #3c3836;
+  --shadow: rgb(0 0 0 / 0.45);
+  --close-hover: #c42b1c;
+  --close-hover-fg: #ffffff;
+  --syntax-comment: #928374;
+  --syntax-string: #b8bb26;
+  --syntax-number: #d3869b;
+  --syntax-keyword: #fb4934;
+  --syntax-preprocessor: #8ec07c;
+  --titlebar-h: 34px;
+  --tabs-h: 34px;
+  --statusbar-h: 24px;
+  --sidebar-w: 260px;
+  /* The floating cards (explorer, editor, panel) sit on --chrome, as in VS Code. */
+  --gap: 6px;
+  --radius: 8px;
+  --panel-w: 300px;
+  /* UI zoom (Settings › Zoom, Ctrl++/-/0): everything around the canvas, never the canvas itself. */
+  --ui-zoom: 1;
+  --font-ui: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/*
+ * Scrollbars as in VS Code: thin, no arrow buttons, and invisible until the area scrolls (scrollbars.ts sets
+ * .scrolling for a moment after each scroll) or the pointer is on the thumb, so it can still be grabbed.
+ * Only the ::-webkit-scrollbar styles are used (WebView2 and WKWebView); standard scrollbar-width/-color would
+ * switch them off in Chromium.
+ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-button,
+::-webkit-scrollbar-corner,
+::-webkit-scrollbar-track {
+  display: none;
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  background-clip: padding-box;
+}
+
+.scrolling::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--fg4-rgb) / 45%);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--fg4-rgb) / 60%);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: rgb(var(--fg4-rgb) / 75%);
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--chrome);
+  color: var(--fg);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  overflow: hidden;
+  user-select: none;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* UI zoom: the parts around the canvas grow as a whole (their px sizes, widths and heights included); the canvas
+   (.stage) is not inside any of them and takes the room that is left at its own scale. */
+.titlebar,
+.sidebar,
+.tabs,
+.breadcrumbs,
+.empty,
+.panel,
+.statusbar {
+  zoom: var(--ui-zoom);
+}
+
+/* ================================================================ title bar */
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  flex: none;
+  height: var(--titlebar-h);
+  background: var(--chrome);
+}
+
+.titlebar .app-icon {
+  flex: none;
+  margin: 0 6px 0 10px;
+}
+
+/* macOS: room for the system's traffic lights (title bar style Overlay). */
+.titlebar .traffic-lights {
+  flex: none;
+  width: 76px;
+  height: 100%;
+}
+
+.titlebar .drag {
+  flex: 1;
+  height: 100%;
+  min-width: 8px;
+}
+
+.menubar {
+  display: flex;
+  height: 100%;
+  align-items: center;
+}
+
+.menu {
+  position: relative;
+  height: 100%;
+}
+
+.menu-label {
+  height: 100%;
+  padding: 0 8px;
+  font: inherit;
+  color: var(--fg);
+  background: none;
+  border: none;
+  border-radius: 0;
+  cursor: default;
+}
+
+.menu-label:hover,
+.menu.open .menu-label {
+  background: var(--card);
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 20;
+  min-width: 240px;
+  padding: 4px 0;
+  background: var(--card);
+  border: 1px solid var(--bg2);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px var(--shadow);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 4px 12px 4px 4px;
+  font: inherit;
+  color: var(--fg);
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: default;
+}
+
+.menu-item:hover:not(:disabled) {
+  color: var(--bg-dark);
+  background: var(--orange);
+}
+
+.menu-item:disabled {
+  opacity: 0.4;
+}
+
+.menu-item .check {
+  flex: none;
+  width: 20px;
+  text-align: center;
+}
+
+.menu-item .text {
+  flex: 1;
+}
+
+.menu-item .keys {
+  margin-left: 24px;
+  color: var(--fg4);
+  font-size: 12px;
+}
+
+.menu-item:hover:not(:disabled) .keys {
+  color: inherit;
+}
+
+.menu-sep {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--bg2);
+}
+
+.search {
+  position: relative;
+  flex: 0 1 480px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  min-width: 140px;
+  padding: 0 8px;
+  color: var(--fg4);
+  background: var(--card);
+  border: 1px solid var(--card-edge);
+  border-radius: 6px;
+}
+
+.search:focus-within {
+  border-color: var(--orange);
+}
+
+/* wider while the list is open, as VS Code's quick input */
+.search.open {
+  flex-basis: 600px;
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  color: var(--fg);
+  text-align: center;
+  background: none;
+  border: none;
+  outline: none;
+  user-select: text;
+}
+
+.search input:focus {
+  text-align: left;
+}
+
+/* The search's result list (quickpick.tsx), after VS Code's quick pick: under the field, centred, wider than it. */
+.quick-pick {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 50%;
+  z-index: 30;
+  width: min(640px, 92vw);
+  padding: 4px 0;
+  transform: translateX(-50%);
+  background: var(--card);
+  border: 1px solid var(--bg2);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px var(--shadow);
+}
+
+#search-results {
+  max-height: min(520px, 62vh);
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.qp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  padding: 0 10px 0 8px;
+  color: var(--fg);
+  white-space: nowrap;
+  cursor: default;
+  border-left: 2px solid transparent;
+}
+
+.qp-row.group-start {
+  margin-top: 4px;
+  box-shadow: 0 -1px 0 var(--bg2);
+}
+
+.qp-row.active {
+  background: var(--bg2);
+  border-left-color: var(--orange);
+}
+
+.qp-icon {
+  flex: none;
+  color: var(--fg4);
+}
+
+.qp-icon.k-state,
+.qp-icon.k-pseudo,
+.qp-icon.k-region {
+  color: var(--orange);
+}
+
+.qp-icon.k-transition,
+.qp-icon.k-internal,
+.qp-icon.k-timer {
+  color: var(--aqua);
+}
+
+.qp-icon.k-event,
+.qp-icon.k-signal {
+  color: var(--yellow);
+}
+
+.qp-icon.k-action {
+  color: var(--purple);
+}
+
+.qp-icon.k-guard {
+  color: var(--blue);
+}
+
+.qp-icon.k-machine {
+  color: var(--green);
+}
+
+.qp-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qp-detail {
+  margin-left: 8px;
+  color: var(--fg4);
+  font-size: 12px;
+}
+
+.qp-row mark {
+  color: var(--orange);
+  font-weight: 600;
+  background: none;
+}
+
+.qp-group,
+.qp-doc {
+  flex: none;
+  color: var(--fg4);
+  font-size: 12px;
+}
+
+.qp-check {
+  flex: none;
+  color: var(--green);
+}
+
+.qp-keys {
+  display: flex;
+  flex: none;
+  gap: 6px;
+}
+
+.qp-keys .chord {
+  display: flex;
+  gap: 2px;
+}
+
+.qp-keys kbd {
+  min-width: 16px;
+  padding: 0 4px;
+  font: 11px/16px var(--font-ui);
+  color: var(--fg);
+  text-align: center;
+  background: var(--bg1);
+  border: 1px solid var(--bg2);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+}
+
+.qp-empty {
+  padding: 4px 12px;
+  color: var(--fg4);
+}
+
+.window-controls {
+  display: flex;
+  align-self: stretch;
+}
+
+.window-controls .wc {
+  width: 46px;
+  color: var(--fg);
+  background: none;
+  border: none;
+  border-radius: 0;
+  cursor: default;
+}
+
+.window-controls .wc:hover {
+  background: var(--card);
+}
+
+.window-controls .wc.close:hover {
+  color: var(--close-hover-fg);
+  background: var(--close-hover);
+}
+
+/* ================================================================ workspace: sidebar | editor | panel */
+
+.workspace {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding: 0 var(--gap) 2px;
+}
+
+/* The explorer, the editor and the panel float on the window background as rounded cards; the sashes are the gaps. */
+.sidebar,
+.editor,
+.panel {
+  background: var(--card);
+  border: 1px solid var(--card-edge);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.sidebar {
+  width: var(--sidebar-w);
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sidebar-hidden .sidebar,
+.sidebar-hidden .sash.left,
+.panel-hidden .panel,
+.panel-hidden .sash.right {
+  display: none;
+}
+
+.sidebar-heading {
+  padding: 8px 10px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg4);
+}
+
+/* Draggable gap between two cards; a line shows in it while hovered or dragged. */
+.sash {
+  flex: none;
+  position: relative;
+  width: var(--gap);
+  cursor: ew-resize;
+  z-index: 5;
+}
+
+.sash::after {
+  content: "";
+  position: absolute;
+  top: var(--radius);
+  bottom: var(--radius);
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: transparent;
+  transition: background 0.1s 0.15s;
+}
+
+.sash:hover::after,
+.sash.active::after {
+  background: var(--orange);
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-dark);
+}
+
+/* ---- tab strip ---- */
+
+.tabs {
+  display: flex;
+  flex: none;
+  height: var(--tabs-h);
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--card);
+}
+
+.tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tabs::-webkit-scrollbar-thumb {
+  border-width: 0;
+  border-radius: 2px;
+}
+
+.tabs-fill {
+  flex: 1;
+  border-bottom: 1px solid var(--card-edge);
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  max-width: 240px;
+  padding: 0 4px 0 10px;
+  color: var(--fg4);
+  background: var(--card);
+  border-right: 1px solid var(--card-edge);
+  border-bottom: 1px solid var(--card-edge);
+  cursor: default;
+}
+
+.tab.active {
+  color: var(--fg);
+  background: var(--bg-dark);
+  border-bottom-color: var(--bg-dark);
+  box-shadow: inset 0 1px 0 var(--orange);
+}
+
+.tab-icon {
+  flex: none;
+  color: var(--orange);
+}
+
+.tab-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tab-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 15px;
+  line-height: 1;
+  color: inherit;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: default;
+  visibility: hidden;
+}
+
+.tab-close > * {
+  grid-area: 1 / 1;
+}
+
+.tab-close .dot {
+  display: none;
+  font-size: 10px;
+}
+
+.tab.active .tab-close,
+.tab:hover .tab-close,
+.tab.dirty .tab-close {
+  visibility: visible;
+}
+
+/* Unsaved: a dot that turns into × on hover (as in VS Code). */
+.tab.dirty .tab-close .dot {
+  display: block;
+}
+
+.tab.dirty .tab-close .x,
+.tab.dirty .tab-close:hover .dot {
+  visibility: hidden;
+}
+
+.tab.dirty .tab-close:hover .x {
+  visibility: visible;
+}
+
+.tab-close:hover {
+  background: var(--bg2);
+}
+
+/* ---- breadcrumbs under the tabs ---- */
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  height: 26px;
+  padding: 0 6px 0 8px;
+  background: var(--bg-dark);
+}
+
+.breadcrumbs[hidden] {
+  display: none;
+}
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.crumb {
+  font: inherit;
+  padding: 2px 4px;
+  color: var(--fg4);
+  background: none;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.crumb:hover:not(:disabled) {
+  color: var(--fg);
+  background: var(--bg1);
+}
+
+.crumb:disabled {
+  color: var(--fg);
+  cursor: default;
+}
+
+.crumbs .sep {
+  color: var(--fg4);
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 22px;
+  padding: 0;
+  color: var(--fg);
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.icon-button:hover:not(:disabled) {
+  background: var(--bg1);
+}
+
+.icon-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ---- status bar ---- */
+
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  height: var(--statusbar-h);
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--fg4);
+  background: var(--chrome);
+}
+
+.status {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusbar-fill {
+  flex: 1;
+}
+
+.zoom[hidden] {
+  display: none;
+}
+
+.statusbar .problems {
+  font: inherit;
+  padding: 1px 8px;
+  color: var(--fg4);
+  white-space: nowrap;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.statusbar .problems:hover {
+  background: var(--bg1);
+}
+
+.statusbar .problems.has-errors {
+  color: var(--red);
+}
+
+.problems[hidden] {
+  display: none;
+}
+
+/* ================================================================ left sidebar: tools above the explorer */
+
+.palette {
+  flex: none;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--card-edge);
+}
+
+.palette-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0 8px;
+}
+
+.palette-break {
+  flex-basis: 100%;
+  height: 0;
+}
+
+.palette-divider {
+  width: 1px;
+  margin: 4px 3px;
+  background: var(--bg2);
+}
+
+.tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  color: var(--fg);
+  background: var(--bg1);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.tool:hover:not(:disabled) {
+  border-color: var(--fg4);
+}
+
+.tool:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.tool.active {
+  color: var(--bg);
+  background: var(--orange);
+}
+
+.explorer {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 8px;
+}
+
+.explorer-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 12px;
+  color: var(--fg4);
+}
+
+.explorer-empty[hidden] {
+  display: none;
+}
+
+.explorer-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.explorer-empty button {
+  font: inherit;
+  padding: 4px 12px;
+  color: var(--bg-dark);
+  background: var(--orange);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* One section per open machine. */
+.machine > summary {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 4px 0 6px;
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+
+.machine > summary::-webkit-details-marker {
+  display: none;
+}
+
+.machine > summary:hover {
+  background: var(--bg1);
+}
+
+.machine.active > summary {
+  box-shadow: inset 2px 0 0 var(--orange);
+}
+
+.machine > summary .twisty::before,
+.psection > summary .twisty::before {
+  content: "\25B6";
+}
+
+.machine[open] > summary .twisty,
+.psection[open] > summary .twisty {
+  transform: rotate(90deg);
+}
+
+.machine-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.machine-dirty {
+  display: none;
+  font-size: 10px;
+  color: var(--fg4);
+}
+
+.machine.dirty .machine-dirty {
+  display: inline;
+}
+
+.machine-close {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--fg4);
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  visibility: hidden;
+}
+
+.machine > summary:hover .machine-close {
+  visibility: visible;
+}
+
+.machine-close:hover {
+  color: var(--fg);
+  background: var(--bg);
+}
+
+/* ---- model tree ---- */
+
+.tree {
+  padding: 2px 4px 6px 14px;
+  font-size: 13px;
+}
+
+.tree:empty {
+  display: none;
+}
+
+/* Children are indented under their parent row. */
+.tree details > :not(summary) {
+  margin-left: 14px;
+}
+
+.tree .row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 0;
+  white-space: nowrap;
+  list-style: none;
+  cursor: default;
+}
+
+.tree summary.row {
+  cursor: pointer;
+}
+
+.tree summary::-webkit-details-marker {
+  display: none;
+}
+
+.tree .twisty {
+  flex: none;
+  width: 12px;
+  text-align: center;
+  font-size: 8px;
+  color: var(--fg4);
+  transition: transform 0.1s;
+}
+
+.tree .twisty:not(.leaf)::before {
+  content: "\25B6";
+}
+
+.tree details[open] > summary > .twisty {
+  transform: rotate(90deg);
+}
+
+.tree .label {
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.tree .label:hover {
+  background: var(--bg1);
+}
+
+.tree .label.region {
+  color: var(--fg4);
+  font-style: italic;
+}
+
+.tree .off-page::after {
+  content: " ⧉";
+  font-style: normal;
+}
+
+.tree .model {
+  font-weight: 600;
+}
+
+.tree .sheet > .label {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tree .active > .label {
+  background: var(--orange);
+  color: var(--bg);
+}
+
+/* ================================================================ right panel: Properties | Project */
+
+.panel {
+  width: var(--panel-w);
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.panel-tabs {
+  display: flex;
+  flex: none;
+  height: var(--tabs-h);
+  padding: 0 6px;
+  border-bottom: 1px solid var(--card-edge);
+}
+
+.panel-tab {
+  padding: 0 10px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg4);
+  background: none;
+  border: none;
+  border-bottom: 1px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+}
+
+.panel-tab:hover {
+  color: var(--fg);
+}
+
+.panel-tab.active {
+  color: var(--fg);
+  border-bottom-color: var(--orange);
+}
+
+.panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 12px;
+}
+
+.pempty,
+.pnote {
+  padding: 12px;
+  color: var(--fg4);
+  line-height: 1.5;
+}
+
+.pnote {
+  font-size: 12px;
+  border-bottom: 1px solid var(--card-edge);
+}
+
+.pempty .dim {
+  margin-top: 8px;
+}
+
+.pheader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--card-edge);
+}
+
+.pheader .kind {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--orange);
+}
+
+.pheader .name {
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.psection {
+  border-bottom: 1px solid var(--card-edge);
+}
+
+.psection > summary {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  list-style: none;
+  cursor: pointer;
+}
+
+.psection > summary::-webkit-details-marker {
+  display: none;
+}
+
+.psection > summary:hover {
+  background: var(--bg1);
+}
+
+.psection .count {
+  margin-left: auto;
+  min-width: 18px;
+  padding: 0 5px;
+  font-size: 11px;
+  letter-spacing: 0;
+  text-align: center;
+  color: var(--fg);
+  background: var(--bg2);
+  border-radius: 9px;
+}
+
+.pbody {
+  padding: 2px 12px 10px 24px;
+}
+
+.field {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 24px;
+  padding: 2px 0;
+}
+
+.flabel {
+  flex: none;
+  width: 112px;
+  color: var(--fg4);
+}
+
+.fvalue {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.fvalue .text {
+  width: 100%;
+  font: inherit;
+  padding: 2px 6px;
+  color: var(--fg);
+  background: var(--bg-dark);
+  border: 1px solid var(--card-edge);
+  border-radius: 3px;
+  outline: none;
+}
+
+.plist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plist li {
+  padding: 2px 0;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.plist code,
+.fvalue code {
+  background: none;
+  padding: 0;
+  color: var(--fg);
+}
+
+.none,
+.dim {
+  color: var(--fg4);
+}
+
+.none {
+  font-style: italic;
+}
+
+.add {
+  margin-top: 6px;
+  padding: 2px 8px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--fg4);
+  background: none;
+  border: 1px dashed var(--bg2);
+  border-radius: 3px;
+}
+
+.add:disabled {
+  cursor: default;
+}
+
+.add:not(:disabled) {
+  cursor: pointer;
+}
+
+.add:not(:disabled):hover {
+  color: var(--fg);
+  border-color: var(--fg4);
+}
+
+.region-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.remove {
+  flex: none;
+  padding: 0 4px;
+  font: inherit;
+  line-height: 1;
+  color: var(--fg4);
+  background: none;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.remove:hover {
+  color: var(--fg);
+  background: var(--bg2);
+}
+
+.link {
+  padding: 0;
+  font: inherit;
+  color: var(--blue);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+}
+
+canvas.panning {
+  cursor: grabbing;
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg4);
+  pointer-events: none;
+}
+
+.empty[hidden] {
+  display: none;
+}
+
+.empty .hint {
+  font-size: 12px;
+}
+
+kbd,
+code {
+  font-family: ui-monospace, "Cascadia Mono", Menlo, monospace;
+  background: var(--bg1);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+.machine > summary .twisty,
+.psection > summary .twisty {
+  flex: none;
+  width: 12px;
+  font-size: 8px;
+  text-align: center;
+  color: var(--fg4);
+  transition: transform 0.1s;
+}
+
+/* The other machines' trees keep their highlight, but quieter. */
+.machine:not(.active) .tree .active > .label {
+  color: var(--fg);
+  background: var(--bg2);
+}
+
+/* ================================================================ panel editing (E5) */
+
+.panel-body .text,
+.panel-body textarea,
+.panel-body select {
+  width: 100%;
+  font: inherit;
+  padding: 2px 6px;
+  color: var(--fg);
+  background: var(--bg-dark);
+  border: 1px solid var(--card-edge);
+  border-radius: 3px;
+  outline: none;
+}
+
+.panel-body textarea {
+  resize: vertical;
+  min-height: 3.5em;
+}
+
+.panel-body select {
+  width: auto;
+  padding: 1px 4px;
+}
+
+.panel-body .text:focus,
+.panel-body textarea:focus,
+.panel-body select:focus {
+  border-color: var(--orange);
+}
+
+.panel-body .text.invalid,
+.panel-body .num.invalid {
+  border-color: var(--red);
+}
+
+.tinput {
+  display: block;
+  flex: 1;
+  min-width: 0;
+}
+
+.perror {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--red);
+}
+
+.panel-body .num {
+  width: 5em;
+  font: inherit;
+  padding: 1px 4px;
+  color: var(--fg);
+  background: var(--bg-dark);
+  border: 1px solid var(--card-edge);
+  border-radius: 3px;
+  outline: none;
+}
+
+.erow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.erow .elabel {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.erow .tinput {
+  flex: 1;
+}
+
+.ebuttons {
+  flex: none;
+  display: flex;
+  gap: 2px;
+}
+
+.mini {
+  padding: 0 4px;
+  font: inherit;
+  line-height: 1;
+  color: var(--fg4);
+  background: none;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.mini:hover {
+  color: var(--fg);
+  background: var(--bg2);
+}
+
+.picker {
+  margin-top: 6px;
+}
+
+.picker-list {
+  margin: 2px 0 0;
+  padding: 2px 0;
+  max-height: 220px;
+  overflow: auto;
+  list-style: none;
+  background: var(--bg1);
+  border: 1px solid var(--bg2);
+  border-radius: 3px;
+}
+
+.picker-list li {
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.picker-list li.active {
+  background: var(--bg2);
+  color: var(--fg);
+}
+
+.picker-list .olabel {
+  font-family: var(--mono, monospace);
+}
+
+.trigger {
+  padding: 1px 6px;
+  font: inherit;
+  color: var(--fg);
+  background: none;
+  border: 1px dashed var(--bg2);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.trigger:hover {
+  border-color: var(--fg4);
+}
+
+.sublabel {
+  margin: 8px 0 2px;
+  font-size: 12px;
+  color: var(--fg4);
+}
+
+details.internal {
+  margin: 2px 0 6px;
+  border-left: 2px solid var(--bg2);
+  padding-left: 6px;
+}
+
+details.internal > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  cursor: pointer;
+  list-style: none;
+}
+
+details.internal > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.internal[open] {
+  border-left-color: var(--orange);
+}
+
+.ibody {
+  padding: 4px 0 6px;
+}
+
+/* a timer's duration: after/every, count, unit on one line */
+.timer-duration {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timer-duration .tinput {
+  flex: 1;
+  min-width: 0;
+}
+
+.check {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--fg4);
+  white-space: nowrap;
+}
+
+.decl .uses {
+  flex: none;
+  font-size: 12px;
+}
+
+.decl.flash {
+  animation: flash 1.6s ease-out;
+}
+
+@keyframes flash {
+  from {
+    background: rgb(var(--orange-rgb) / 35%);
+  }
+  to {
+    background: transparent;
+  }
+}
+
+.panel-tab .badge {
+  margin-left: 6px;
+  padding: 0 5px;
+  font-size: 11px;
+  border-radius: 8px;
+  color: var(--bg-dark);
+  background: var(--yellow);
+}
+
+.panel-tab .badge.errors {
+  background: var(--red);
+}
+
+.problems-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.problem {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 6px;
+  font: inherit;
+  text-align: left;
+  color: var(--fg);
+  background: none;
+  border: none;
+  border-radius: 3px;
+}
+
+button.problem:not(:disabled) {
+  cursor: pointer;
+}
+
+button.problem:not(:disabled):hover {
+  background: var(--bg1);
+}
+
+.problem .sev {
+  flex: none;
+  width: 64px;
+  color: var(--fg4);
+}
+
+.problem .sev.error {
+  color: var(--red);
+}
+
+.problem .sev.warning {
+  color: var(--yellow);
+}
+
+.problem .msg {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.problem .code {
+  flex: none;
+  font-size: 11px;
+}
+
+/* ================================================================ simulator and code preview (E6) */
+
+/* Five tabs do not fit a narrow panel: the strip scrolls sideways (wheel too), without a visible scrollbar. */
+.panel-tabs {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.panel-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.panel-tab {
+  flex: none;
+  white-space: nowrap;
+}
+
+.panel-tab .badge.running {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  vertical-align: 1px;
+  background: var(--green);
+}
+
+.scontrols {
+  gap: 8px;
+}
+
+.sbuttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sbtn {
+  padding: 3px 10px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--fg);
+  background: var(--bg1);
+  border: 1px solid var(--bg2);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.sbtn:hover:not(:disabled) {
+  border-color: var(--fg4);
+}
+
+.sbtn:disabled {
+  color: var(--fg4);
+  cursor: default;
+  opacity: 0.6;
+}
+
+.sbtn.primary {
+  color: var(--bg-dark);
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.sbtn.primary:hover {
+  border-color: var(--fg);
+}
+
+.sstate {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.srunning {
+  color: var(--green);
+}
+
+.swarn {
+  color: var(--yellow);
+}
+
+.paper-warn {
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 2px 0 6px;
+}
+
+/* A title block field with an optional button (Date: Today) after it. */
+.title-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.title-field .tinput {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Where a problem is drawn: " · sheet 2, B4". */
+.problem .loc {
+  white-space: nowrap;
+}
+
+.serror {
+  color: var(--red);
+  overflow-wrap: anywhere;
+}
+
+.sfilter {
+  margin-bottom: 6px;
+}
+
+.sevents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sevent {
+  padding: 2px 8px;
+  font-family: ui-monospace, "Cascadia Mono", Menlo, monospace;
+  font-size: 12px;
+  color: var(--fg4);
+  background: var(--bg-dark);
+  border: 1px solid var(--card-edge);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.sevent.would {
+  color: var(--fg);
+  border-color: var(--aqua);
+}
+
+.sevent:hover:not(:disabled) {
+  color: var(--fg);
+  background: var(--bg1);
+}
+
+.sevent:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.sguard {
+  min-height: 24px;
+}
+
+.sguard .elabel {
+  font-size: 13px;
+  color: var(--fg);
+}
+
+.snote {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.slog {
+  max-height: 45vh;
+  overflow: auto;
+  margin: 0 -6px 0 -14px;
+  padding: 0 6px 0 4px;
+  font-size: 12px;
+  user-select: text;
+}
+
+.sstep {
+  padding: 3px 0 4px;
+  border-bottom: 1px solid var(--card-edge);
+}
+
+.sstep:last-child {
+  border-bottom: none;
+}
+
+.shead {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.shead .sn {
+  min-width: 22px;
+  color: var(--fg4);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.shead .sev {
+  font-family: ui-monospace, "Cascadia Mono", Menlo, monospace;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.sstep.failed .shead .sev {
+  color: var(--red);
+}
+
+.sguards {
+  overflow-wrap: anywhere;
+}
+
+.sline {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-left: 28px;
+  line-height: 1.5;
+}
+
+.sline .sk {
+  flex: none;
+  width: 44px;
+  color: var(--fg4);
+}
+
+.sline code {
+  padding: 0;
+  background: none;
+}
+
+.sline.call code {
+  color: var(--yellow);
+}
+
+.sline.emit code,
+.sline.signal code {
+  color: var(--aqua);
+}
+
+.sline.terminate .sk,
+.sline.error,
+.sline.error .sk {
+  color: var(--red);
+}
+
+.sline.error .sk {
+  width: auto;
+}
+
+.sim-status {
+  margin-right: 10px;
+  padding: 0 8px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--bg-dark);
+  background: var(--green);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.sim-status.stale {
+  background: var(--yellow);
+}
+
+.sim-status[hidden] {
+  display: none;
+}
+
+/* ---- code preview ---- */
+
+.panel-body.tab-code {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+.codetab {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.ctools {
+  gap: 6px;
+}
+
+.cviews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.cview {
+  padding: 2px 8px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--fg4);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.cview:hover {
+  color: var(--fg);
+}
+
+.cview.active {
+  color: var(--fg);
+  background: var(--bg1);
+  border-color: var(--bg2);
+}
+
+.cfile {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.cname {
+  font-family: ui-monospace, "Cascadia Mono", Menlo, monospace;
+  color: var(--fg);
+}
+
+.code {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: flex-start;
+  overflow: auto;
+  background: var(--bg-dark);
+}
+
+.code pre {
+  margin: 0;
+  padding: 8px 10px 12px;
+  font-family: ui-monospace, "Cascadia Mono", Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  tab-size: 4;
+}
+
+.code .gutter {
+  position: sticky;
+  left: 0;
+  flex: none;
+  padding-right: 8px;
+  color: var(--bg2);
+  text-align: right;
+  background: var(--bg-dark);
+  user-select: none;
+}
+
+.code .src {
+  flex: 1;
+  color: var(--fg);
+  user-select: text;
+}
+
+.c-com {
+  color: var(--syntax-comment);
+  font-style: italic;
+}
+
+.c-str {
+  color: var(--syntax-string);
+}
+
+.c-num {
+  color: var(--syntax-number);
+}
+
+.c-kw {
+  color: var(--syntax-keyword);
+}
+
+.c-pre {
+  color: var(--syntax-preprocessor);
+}
+
+/* ================================================================ Settings tab */
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--bg2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.segmented button {
+  padding: 2px 9px;
+  white-space: nowrap;
+  font: inherit;
+  font-size: 12px;
+  color: var(--fg4);
+  background: var(--bg-dark);
+  border: none;
+  border-left: 1px solid var(--bg2);
+  cursor: pointer;
+}
+
+.segmented button:first-child {
+  border-left: none;
+}
+
+.segmented button:hover:not(.on) {
+  color: var(--fg);
+  background: var(--bg1);
+}
+
+.segmented button.on {
+  color: var(--bg-dark);
+  background: var(--orange);
+}
+
+.segmented button:focus-visible {
+  outline: 1px solid var(--orange);
+  outline-offset: -2px;
+}
+
+.segmented button:disabled {
+  color: var(--gray);
+  background: var(--bg-dark);
+  cursor: default;
+}
+
+/* A whole control with no effect (Catppuccin's flavor while light): the choice stays visible, muted. */
+.segmented button.on:disabled {
+  color: var(--bg-dark);
+  background: var(--gray);
+}
+
+/* Window zoom: − 125% + Reset, one row like a segmented control. */
+.zoom-control .zoom-value {
+  min-width: 4.5em;
+  padding: 2px 6px;
+  font-size: 12px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+  background: var(--bg-dark);
+  border-left: 1px solid var(--bg2);
+}
+
+.zoom-control .zoom-in,
+.zoom-control .zoom-out {
+  min-width: 2.2em;
+}
+
+/* A control too wide for the row goes under its label. */
+.settings-fields .field {
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 4px;
+}
+
+.settings-fields .fvalue {
+  flex: 1 0 auto;
+}
+
+.swatches {
+  display: flex;
+  gap: 3px;
+  margin: 8px 0 4px;
+}
+
+.swatch {
+  flex: 1;
+  height: 18px;
+  max-width: 28px;
+  border: 1px solid var(--card-edge);
+  border-radius: 3px;
+}
+
+.theme-about,
+.zoom-about,
+.settings-location {
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.settings-problems {
+  margin-top: 6px;
+  font-size: 12px;
+}

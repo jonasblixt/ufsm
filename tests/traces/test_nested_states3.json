@@ -1,0 +1,13 @@
+{
+  "model": "../models/test_nested_states3.ufsm",
+  "doc": "From old/tests/C/test_nested_states3.c.",
+  "steps": [
+    { "reset": true, "expect": [] },
+    {
+      "send": "eStart",
+      "expect": ["eB", "eB1", "eB11", "eB20", "eB2"],
+      "doc": "Document order: B's first region (B1, B11) before the second (B2.0, B2). v0.5 entered the explicit target path first: eB eB1 eB20 eB2 eB11."
+    },
+    { "send": "eStop", "expect": ["xB2", "xB11", "xB1", "xB"] }
+  ]
+}

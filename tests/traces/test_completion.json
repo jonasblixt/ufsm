@@ -1,0 +1,13 @@
+{
+  "model": "../models/test_completion.ufsm",
+  "doc": "P completes when every region rests in a final state (any of several finals). B's completion leads to its region's final state, which completes P in the next microstep. A guarded completion transition comes first.",
+  "steps": [
+    { "reset": true, "expect": ["eW"] },
+    { "send": "go", "expect": ["xW", "eP", "eA", "eB", "eB1"] },
+    { "send": "a", "expect": ["xA"], "active": ["F1", "B1"], "doc": "One region done, P is not complete." },
+    { "send": "b", "expect": ["xB1", "xB", "aB", "xP", "aP", "eDone"], "active": ["Done"] },
+    { "send": "again", "expect": ["xDone", "eP", "eA", "eB", "eB1"] },
+    { "guards": { "g": true }, "send": "a2", "expect": ["xA"], "active": ["F1b"] },
+    { "send": "b", "expect": ["xB1", "xB", "aB", "xP", "aGuarded", "eOther"], "active": ["Other"] }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "$description": "Catppuccin Mocha: the dark flavor used when the appearance is dark.",
+  "ctp": {
+    "$type": "color",
+    "rosewater": { "$value": "{catppuccin.mocha.rosewater}" },
+    "flamingo": { "$value": "{catppuccin.mocha.flamingo}" },
+    "pink": { "$value": "{catppuccin.mocha.pink}" },
+    "mauve": { "$value": "{catppuccin.mocha.mauve}" },
+    "red": { "$value": "{catppuccin.mocha.red}" },
+    "maroon": { "$value": "{catppuccin.mocha.maroon}" },
+    "peach": { "$value": "{catppuccin.mocha.peach}" },
+    "yellow": { "$value": "{catppuccin.mocha.yellow}" },
+    "green": { "$value": "{catppuccin.mocha.green}" },
+    "teal": { "$value": "{catppuccin.mocha.teal}" },
+    "sky": { "$value": "{catppuccin.mocha.sky}" },
+    "sapphire": { "$value": "{catppuccin.mocha.sapphire}" },
+    "blue": { "$value": "{catppuccin.mocha.blue}" },
+    "lavender": { "$value": "{catppuccin.mocha.lavender}" },
+    "text": { "$value": "{catppuccin.mocha.text}" },
+    "subtext1": { "$value": "{catppuccin.mocha.subtext1}" },
+    "subtext0": { "$value": "{catppuccin.mocha.subtext0}" },
+    "overlay2": { "$value": "{catppuccin.mocha.overlay2}" },
+    "overlay1": { "$value": "{catppuccin.mocha.overlay1}" },
+    "overlay0": { "$value": "{catppuccin.mocha.overlay0}" },
+    "surface2": { "$value": "{catppuccin.mocha.surface2}" },
+    "surface1": { "$value": "{catppuccin.mocha.surface1}" },
+    "surface0": { "$value": "{catppuccin.mocha.surface0}" },
+    "base": { "$value": "{catppuccin.mocha.base}" },
+    "mantle": { "$value": "{catppuccin.mocha.mantle}" },
+    "crust": { "$value": "{catppuccin.mocha.crust}" }
+  }
+}

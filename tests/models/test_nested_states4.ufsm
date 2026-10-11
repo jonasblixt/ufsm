@@ -1,0 +1,107 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "test_nested_states4",
+  "declarations": {
+    "events": [{ "id": "ev1", "name": "eEvent" }],
+    "signals": [],
+    "actions": [
+      { "id": "act1", "name": "eA" },
+      { "id": "act2", "name": "xA" },
+      { "id": "act3", "name": "eB" },
+      { "id": "act4", "name": "xB" },
+      { "id": "act5", "name": "eB1" },
+      { "id": "act6", "name": "xB1" },
+      { "id": "act7", "name": "eC" },
+      { "id": "act8", "name": "xC" },
+      { "id": "act9", "name": "eD" }
+    ],
+    "guards": []
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        {
+          "id": "s1",
+          "kind": "state",
+          "name": "A",
+          "entry": [{ "call": "act1" }],
+          "exit": [{ "call": "act2" }]
+        },
+        {
+          "id": "s2",
+          "kind": "state",
+          "name": "B",
+          "entry": [{ "call": "act3" }],
+          "exit": [{ "call": "act4" }],
+          "regions": [
+            {
+              "id": "r1",
+              "name": "New region",
+              "states": [
+                {
+                  "id": "s3",
+                  "kind": "state",
+                  "name": "B1",
+                  "entry": [{ "call": "act5" }],
+                  "exit": [{ "call": "act6" }]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "kind": "state",
+          "name": "C",
+          "entry": [{ "call": "act7" }],
+          "exit": [{ "call": "act8" }]
+        },
+        { "id": "s5", "kind": "state", "name": "D", "entry": [{ "call": "act9" }] },
+        { "id": "s6", "kind": "initial" }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s1", "to": "s3", "on": "ev1" },
+      { "id": "t2", "from": "s3", "to": "s4", "auto": true },
+      { "id": "t3", "from": "s4", "to": "s5", "auto": true },
+      { "id": "t4", "from": "s6", "to": "s1" }
+    ]
+  },
+  "diagram": {
+    "paper": "A2",
+    "states": {
+      "s1": { "x": 140, "y": 870, "w": 370, "h": 230 },
+      "s2": { "x": 830, "y": 600, "w": 430, "h": 770 },
+      "s3": { "x": 90, "y": 170, "w": 250, "h": 500 },
+      "s4": { "x": 1540, "y": 870, "w": 370, "h": 230 },
+      "s5": { "x": 1540, "y": 1200, "w": 370, "h": 230 },
+      "s6": { "x": 310, "y": 770, "w": 20, "h": 20 }
+    },
+    "regions": { "r1": { "h": 660 } },
+    "transitions": {
+      "t1": {
+        "from": { "side": "right", "offset": 130 },
+        "to": { "side": "left", "offset": 230 },
+        "label": { "x": 580, "y": 940, "w": 100 }
+      },
+      "t2": {
+        "from": { "side": "right", "offset": 220 },
+        "to": { "side": "left", "offset": 120 },
+        "label": { "x": 1320, "y": 930, "w": 100 }
+      },
+      "t3": {
+        "from": { "side": "bottom", "offset": 180 },
+        "to": { "side": "top", "offset": 180 },
+        "label": { "x": 1750, "y": 1110, "w": 100 }
+      },
+      "t4": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 180 },
+        "label": { "x": 340, "y": 790, "w": 100 }
+      }
+    }
+  }
+}

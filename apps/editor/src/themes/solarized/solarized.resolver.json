@@ -1,0 +1,19 @@
+{
+  "name": "Solarized",
+  "description": "Precision colors by Ethan Schoonover (https://github.com/altercation/solarized, MIT licence): sixteen colors, dark or light.",
+  "version": "2025.10",
+  "sets": {
+    "base": {
+      "description": "The editor's token names, the absolute solarized palette and the accents",
+      "sources": [{ "$ref": "../ui.tokens.json" }, { "$ref": "solarized.tokens.json" }, { "$ref": "roles.tokens.json" }]
+    }
+  },
+  "modifiers": {
+    "appearance": {
+      "description": "background=dark or background=light",
+      "contexts": { "dark": [{ "$ref": "dark.tokens.json" }], "light": [{ "$ref": "light.tokens.json" }] },
+      "default": "dark"
+    }
+  },
+  "resolutionOrder": [{ "$ref": "#/sets/base" }, { "$ref": "#/modifiers/appearance" }]
+}

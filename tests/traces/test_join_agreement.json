@@ -1,0 +1,24 @@
+{
+  "model": "../models/test_join_agreement.ufsm",
+  "doc": "Two joins share the source A. A join is listed under each source at the position of that source's transition into it, so A lists J2 before J1. J1 is offered by B and J2 by C (the last source of each in post-order); a join is taken only if it is the first enabled transition of every source.",
+  "steps": [
+    { "reset": true, "expect": ["eP", "eA", "eB", "eC"] },
+    {
+      "guards": { "g": true },
+      "send": "e",
+      "expect": ["xC", "xB", "xA", "xP", "c1", "j2", "eY"],
+      "active": ["Y"],
+      "inactive": ["X", "P"],
+      "doc": "A's first enabled transition is J2, so J1 is blocked although B offers it before C offers J2. Ignoring A's disagreement would take J1 (eX) instead."
+    },
+    { "send": "back", "expect": ["xY", "eP", "eA", "eB", "eC"] },
+    {
+      "guards": { "g": false },
+      "send": "e",
+      "expect": ["xC", "xB", "xA", "xP", "b1", "a1", "j1", "eX"],
+      "active": ["X"],
+      "doc": "J2's guard fails, so A's first enabled transition is J1. The actions of the transitions into J1 run in file order (B's before A's), then J1's own."
+    },
+    { "send": "back", "expect": ["xX", "eP", "eA", "eB", "eC"] }
+  ]
+}

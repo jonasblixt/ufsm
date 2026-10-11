@@ -1,0 +1,68 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "test_options",
+  "doc": "The model's options section: a signal queue of 1 and at most 2 microsteps per call.",
+  "declarations": {
+    "events": [{ "id": "ev1", "name": "e1" }, { "id": "ev2", "name": "e2" }],
+    "signals": [{ "id": "sig1", "name": "s1" }, { "id": "sig2", "name": "s2" }],
+    "actions": [
+      { "id": "act1", "name": "eA" },
+      { "id": "act2", "name": "xA" },
+      { "id": "act3", "name": "eB" },
+      { "id": "act4", "name": "eC" },
+      { "id": "act5", "name": "eD" }
+    ],
+    "guards": [{ "id": "grd1", "name": "g" }]
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "states": [
+        { "id": "i0", "kind": "initial" },
+        {
+          "id": "A",
+          "kind": "state",
+          "name": "A",
+          "entry": [{ "call": "act1" }],
+          "exit": [{ "call": "act2" }]
+        },
+        { "id": "B", "kind": "state", "name": "B", "entry": [{ "call": "act3" }] },
+        { "id": "C", "kind": "state", "name": "C", "entry": [{ "call": "act4" }] },
+        { "id": "D", "kind": "state", "name": "D", "entry": [{ "call": "act5" }] }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "i0", "to": "A" },
+      {
+        "id": "t2",
+        "from": "A",
+        "to": "B",
+        "on": "ev1",
+        "do": [{ "emit": "sig1" }, { "emit": "sig2" }]
+      },
+      { "id": "t3", "from": "A", "to": "C", "on": "ev2", "do": [{ "emit": "sig1" }] },
+      { "id": "t4", "from": "C", "to": "D", "on": "sig1" },
+      { "id": "t5", "from": "D", "to": "A", "auto": true, "guard": [{ "call": "grd1" }] }
+    ]
+  },
+  "diagram": {
+    "paper": "A4",
+    "states": {
+      "i0": { "x": 100, "y": 130, "w": 20, "h": 20 },
+      "A": { "x": 200, "y": 100, "w": 200, "h": 120 },
+      "B": { "x": 600, "y": 100, "w": 200, "h": 120 },
+      "C": { "x": 200, "y": 400, "w": 200, "h": 120 },
+      "D": { "x": 600, "y": 400, "w": 200, "h": 120 }
+    },
+    "regions": {},
+    "transitions": {
+      "t1": { "route": "s" },
+      "t2": { "route": "s" },
+      "t3": { "route": "s" },
+      "t4": { "route": "s" },
+      "t5": { "route": "s" }
+    }
+  },
+  "options": { "signalQueue": 1, "maxMicrosteps": 2 }
+}

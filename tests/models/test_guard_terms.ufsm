@@ -1,0 +1,110 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "test_guard_terms",
+  "declarations": {
+    "events": [
+      { "id": "ev1", "name": "truthy" },
+      { "id": "ev2", "name": "not" },
+      { "id": "ev3", "name": "all" }
+    ],
+    "signals": [],
+    "actions": [
+      { "id": "act1", "name": "eIdle" },
+      { "id": "act2", "name": "xIdle" },
+      { "id": "act3", "name": "eHit" },
+      { "id": "act4", "name": "xHit" },
+      { "id": "act5", "name": "aTruthy" },
+      { "id": "act6", "name": "aNot" },
+      { "id": "act7", "name": "aAll" }
+    ],
+    "guards": [{ "id": "grd1", "name": "g" }, { "id": "grd2", "name": "h" }]
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        { "id": "s2", "kind": "initial" },
+        {
+          "id": "s1",
+          "kind": "state",
+          "name": "Idle",
+          "entry": [{ "call": "act1" }],
+          "exit": [{ "call": "act2" }]
+        },
+        {
+          "id": "s3",
+          "kind": "state",
+          "name": "Hit",
+          "entry": [{ "call": "act3" }],
+          "exit": [{ "call": "act4" }]
+        }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s2", "to": "s1" },
+      {
+        "id": "t2",
+        "from": "s1",
+        "to": "s3",
+        "on": "ev1",
+        "guard": [{ "call": "grd1" }],
+        "do": [{ "call": "act5" }]
+      },
+      {
+        "id": "t3",
+        "from": "s1",
+        "to": "s3",
+        "on": "ev2",
+        "guard": [{ "call": "grd1", "not": true }],
+        "do": [{ "call": "act6" }]
+      },
+      {
+        "id": "t4",
+        "from": "s1",
+        "to": "s3",
+        "on": "ev3",
+        "guard": [{ "call": "grd1" }, { "call": "grd2", "not": true }],
+        "do": [{ "call": "act7" }]
+      },
+      { "id": "t5", "from": "s3", "to": "s1", "auto": true }
+    ]
+  },
+  "diagram": {
+    "paper": "A4",
+    "states": {
+      "s2": { "x": 40, "y": 40, "w": 20, "h": 20 },
+      "s1": { "x": 150, "y": 70, "w": 180, "h": 140 },
+      "s3": { "x": 420, "y": 70, "w": 180, "h": 140 }
+    },
+    "regions": {},
+    "transitions": {
+      "t1": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 95, "y": 48, "w": 120 }
+      },
+      "t2": {
+        "from": { "side": "right", "offset": 20 },
+        "to": { "side": "left", "offset": 20 },
+        "label": { "x": 365, "y": 68, "w": 120 }
+      },
+      "t3": {
+        "from": { "side": "right", "offset": 50 },
+        "to": { "side": "left", "offset": 50 },
+        "label": { "x": 365, "y": 98, "w": 120 }
+      },
+      "t4": {
+        "from": { "side": "right", "offset": 80 },
+        "to": { "side": "left", "offset": 80 },
+        "label": { "x": 365, "y": 128, "w": 120 }
+      },
+      "t5": {
+        "from": { "side": "left", "offset": 120 },
+        "to": { "side": "right", "offset": 120 },
+        "label": { "x": 365, "y": 168, "w": 120 }
+      }
+    }
+  }
+}

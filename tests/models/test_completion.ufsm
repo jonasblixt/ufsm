@@ -1,0 +1,223 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "test_completion",
+  "declarations": {
+    "events": [
+      { "id": "ev1", "name": "go" },
+      { "id": "ev2", "name": "a" },
+      { "id": "ev3", "name": "a2" },
+      { "id": "ev4", "name": "b" },
+      { "id": "ev5", "name": "again" }
+    ],
+    "signals": [],
+    "actions": [
+      { "id": "act1", "name": "eW" },
+      { "id": "act2", "name": "xW" },
+      { "id": "act3", "name": "eP" },
+      { "id": "act4", "name": "xP" },
+      { "id": "act5", "name": "eA" },
+      { "id": "act6", "name": "xA" },
+      { "id": "act7", "name": "eB" },
+      { "id": "act8", "name": "xB" },
+      { "id": "act9", "name": "eB1" },
+      { "id": "act10", "name": "xB1" },
+      { "id": "act11", "name": "eDone" },
+      { "id": "act12", "name": "xDone" },
+      { "id": "act13", "name": "eOther" },
+      { "id": "act14", "name": "xOther" },
+      { "id": "act15", "name": "aB" },
+      { "id": "act16", "name": "aGuarded" },
+      { "id": "act17", "name": "aP" }
+    ],
+    "guards": [{ "id": "grd1", "name": "g" }]
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        { "id": "s2", "kind": "initial" },
+        {
+          "id": "s1",
+          "kind": "state",
+          "name": "W",
+          "entry": [{ "call": "act1" }],
+          "exit": [{ "call": "act2" }]
+        },
+        {
+          "id": "s3",
+          "kind": "state",
+          "name": "P",
+          "entry": [{ "call": "act3" }],
+          "exit": [{ "call": "act4" }],
+          "regions": [
+            {
+              "id": "r1",
+              "states": [
+                { "id": "s5", "kind": "initial" },
+                {
+                  "id": "s4",
+                  "kind": "state",
+                  "name": "A",
+                  "entry": [{ "call": "act5" }],
+                  "exit": [{ "call": "act6" }]
+                },
+                { "id": "s6", "kind": "final", "name": "F1" },
+                { "id": "s7", "kind": "final", "name": "F1b" }
+              ]
+            },
+            {
+              "id": "r2",
+              "states": [
+                { "id": "s9", "kind": "initial" },
+                {
+                  "id": "s8",
+                  "kind": "state",
+                  "name": "B",
+                  "entry": [{ "call": "act7" }],
+                  "exit": [{ "call": "act8" }],
+                  "regions": [
+                    {
+                      "id": "r3",
+                      "states": [
+                        { "id": "s11", "kind": "initial" },
+                        {
+                          "id": "s10",
+                          "kind": "state",
+                          "name": "B1",
+                          "entry": [{ "call": "act9" }],
+                          "exit": [{ "call": "act10" }]
+                        },
+                        { "id": "s12", "kind": "final", "name": "FB" }
+                      ]
+                    }
+                  ]
+                },
+                { "id": "s13", "kind": "final", "name": "F2" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s14",
+          "kind": "state",
+          "name": "Done",
+          "entry": [{ "call": "act11" }],
+          "exit": [{ "call": "act12" }]
+        },
+        {
+          "id": "s15",
+          "kind": "state",
+          "name": "Other",
+          "entry": [{ "call": "act13" }],
+          "exit": [{ "call": "act14" }]
+        }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s2", "to": "s1" },
+      { "id": "t2", "from": "s5", "to": "s4" },
+      { "id": "t3", "from": "s9", "to": "s8" },
+      { "id": "t4", "from": "s11", "to": "s10" },
+      { "id": "t5", "from": "s1", "to": "s3", "on": "ev1" },
+      { "id": "t6", "from": "s4", "to": "s6", "on": "ev2" },
+      { "id": "t7", "from": "s4", "to": "s7", "on": "ev3" },
+      { "id": "t8", "from": "s10", "to": "s12", "on": "ev4" },
+      { "id": "t9", "from": "s8", "to": "s13", "completion": true, "do": [{ "call": "act15" }] },
+      {
+        "id": "t10",
+        "from": "s3",
+        "to": "s15",
+        "completion": true,
+        "guard": [{ "call": "grd1" }],
+        "do": [{ "call": "act16" }]
+      },
+      { "id": "t11", "from": "s3", "to": "s14", "completion": true, "do": [{ "call": "act17" }] },
+      { "id": "t12", "from": "s14", "to": "s3", "on": "ev5" }
+    ]
+  },
+  "diagram": {
+    "paper": "A3",
+    "states": {
+      "s2": { "x": 230, "y": 20, "w": 20, "h": 20 },
+      "s1": { "x": 150, "y": 70, "w": 180, "h": 140 },
+      "s3": { "x": 420, "y": 70, "w": 780, "h": 790 },
+      "s5": { "x": 40, "y": 130, "w": 20, "h": 20 },
+      "s4": { "x": 150, "y": 160, "w": 180, "h": 140 },
+      "s6": { "x": 530, "y": 170, "w": 20, "h": 20 },
+      "s7": { "x": 530, "y": 240, "w": 20, "h": 20 },
+      "s9": { "x": 40, "y": 380, "w": 20, "h": 20 },
+      "s8": { "x": 150, "y": 410, "w": 480, "h": 340 },
+      "s11": { "x": 40, "y": 130, "w": 20, "h": 20 },
+      "s10": { "x": 150, "y": 160, "w": 180, "h": 140 },
+      "s12": { "x": 420, "y": 130, "w": 20, "h": 20 },
+      "s13": { "x": 720, "y": 380, "w": 20, "h": 20 },
+      "s14": { "x": 1590, "y": 350, "w": 180, "h": 140 },
+      "s15": { "x": 1560, "y": 70, "w": 180, "h": 140 }
+    },
+    "regions": { "r1": { "h": 250 }, "r2": { "h": 450 }, "r3": { "h": 250 } },
+    "transitions": {
+      "t1": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 90 },
+        "label": { "x": 260, "y": 10, "w": 120 }
+      },
+      "t2": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 95, "y": 138, "w": 120 }
+      },
+      "t3": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 95, "y": 388, "w": 120 }
+      },
+      "t4": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 95, "y": 138, "w": 120 }
+      },
+      "t5": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 365, "y": 63, "w": 120 }
+      },
+      "t6": {
+        "from": { "side": "right", "offset": 20 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 410, "y": 130, "w": 120 }
+      },
+      "t7": {
+        "from": { "side": "right", "offset": 90 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 420, "y": 196, "w": 120 }
+      },
+      "t8": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 365, "y": 138, "w": 120 }
+      },
+      "t9": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 665, "y": 388, "w": 120 }
+      },
+      "t10": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 1370, "y": 63, "w": 120 }
+      },
+      "t11": {
+        "from": { "side": "right", "offset": 340 },
+        "to": { "side": "left", "offset": 60 },
+        "label": { "x": 1340, "y": 330, "w": 120 }
+      },
+      "t12": {
+        "from": { "side": "left", "offset": 110 },
+        "to": { "side": "right", "offset": 390 },
+        "label": { "x": 1350, "y": 410, "w": 120 }
+      }
+    }
+  }
+}

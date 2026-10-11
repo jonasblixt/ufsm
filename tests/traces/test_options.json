@@ -1,0 +1,22 @@
+{
+  "model": "../models/test_options.ufsm",
+  "doc": "The model's options apply without any in the trace: a signal queue of 1, at most 2 microsteps per call.",
+  "steps": [
+    { "reset": true, "expect": ["eA"], "active": ["A"] },
+    {
+      "send": "e2",
+      "expect": ["xA", "eC", "eD"],
+      "active": ["D"],
+      "doc": "Two microsteps: e2 takes A to C and queues s1, s1 takes C to D. g is false, so D stays."
+    },
+    { "reset": true, "expect": ["eA"], "active": ["A"] },
+    {
+      "guards": { "g": true },
+      "send": "e2",
+      "error": "livelock",
+      "doc": "With g true, D -> A would be a third microstep: more than options.maxMicrosteps."
+    },
+    { "reset": true, "expect": ["eA"], "active": ["A"] },
+    { "send": "e1", "error": "queue-overflow", "doc": "A -> B emits s1 and s2; the second does not fit into options.signalQueue = 1." }
+  ]
+}

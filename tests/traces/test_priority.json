@@ -1,0 +1,16 @@
+{
+  "model": "../models/test_priority.ufsm",
+  "doc": "Bug B1 regression. v0.5 fired every transition whose source was active, so e1 and e2 below ran two transitions each.",
+  "steps": [
+    { "reset": true, "expect": ["eP", "eC"] },
+    { "send": "e1", "expect": ["xC", "xP", "eY"], "active": ["Y"], "doc": "C -e1-> Y beats P -e1-> X. v0.5: xC xP eX xC xP eY." },
+    { "reset": true, "expect": ["eP", "eC"] },
+    { "send": "e2", "expect": ["xC", "xP", "eX"], "active": ["X"], "doc": "Two transitions out of C on e2: the first in the file wins." },
+    { "reset": true, "expect": ["eP", "eC"] },
+    { "send": "e3", "expect": ["xC", "xP", "eZ"], "doc": "The first e3 transition is guarded by g, which is false." },
+    { "reset": true, "expect": ["eP", "eC"] },
+    { "guards": { "g": true }, "send": "e3", "expect": ["xC", "xP", "eX"] },
+    { "reset": true, "expect": ["eP", "eC"] },
+    { "send": "e4", "expect": ["xC", "xP", "eX"], "doc": "C does not handle e4, so its parent P does." }
+  ]
+}

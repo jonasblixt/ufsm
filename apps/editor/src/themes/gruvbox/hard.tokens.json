@@ -1,0 +1,9 @@
+{
+  "$description": "Gruvbox hard contrast (g:gruvbox_contrast_dark/light = 'hard'): picks bg0 and the matching surround and grid from what the appearance defines.",
+  "palette": {
+    "$type": "color",
+    "bg0": { "$value": "{palette.bg0Hard}" },
+    "bgDeep": { "$value": "{palette.deepHard}" },
+    "bgGrid": { "$value": "{palette.gridHard}" }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "model": "../models/test_init_to_nested.ufsm",
+  "doc": "From old/tests/C/test_init_to_nested.c. The root initial transition targets B1 inside A; A's second region is entered by default.",
+  "steps": [{ "reset": true, "expect": ["B1Init", "eA", "eB1", "B2Init", "eB2"], "active": ["A", "B1", "B2"] }]
+}

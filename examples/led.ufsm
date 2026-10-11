@@ -1,0 +1,53 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "led",
+  "declarations": {
+    "events": [{ "id": "ev1", "name": "eToggle" }],
+    "signals": [],
+    "actions": [{ "id": "act1", "name": "led_on" }, { "id": "act2", "name": "led_off" }],
+    "guards": []
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        { "id": "s1", "kind": "state", "name": "ON", "entry": [{ "call": "act1" }] },
+        { "id": "s2", "kind": "state", "name": "OFF", "entry": [{ "call": "act2" }] },
+        { "id": "s3", "kind": "initial" }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s1", "to": "s2", "on": "ev1" },
+      { "id": "t2", "from": "s2", "to": "s1", "on": "ev1" },
+      { "id": "t3", "from": "s3", "to": "s2" }
+    ]
+  },
+  "diagram": {
+    "paper": "A4",
+    "states": {
+      "s1": { "x": 320, "y": 440, "w": 230, "h": 200 },
+      "s2": { "x": 840, "y": 440, "w": 230, "h": 200 },
+      "s3": { "x": 950, "y": 360, "w": 20, "h": 20 }
+    },
+    "regions": {},
+    "transitions": {
+      "t1": {
+        "from": { "side": "right", "offset": 160 },
+        "to": { "side": "left", "offset": 160 },
+        "label": { "x": 640, "y": 550, "w": 100 }
+      },
+      "t2": {
+        "from": { "side": "left", "offset": 50 },
+        "to": { "side": "right", "offset": 50 },
+        "label": { "x": 650, "y": 430, "w": 100 }
+      },
+      "t3": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 120 },
+        "label": { "x": 980, "y": 370, "w": 100 }
+      }
+    }
+  }
+}

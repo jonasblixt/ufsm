@@ -1,0 +1,9 @@
+{
+  "$description": "Gruvbox medium contrast (g:gruvbox_contrast_dark/light = 'medium'): picks bg0 and the matching surround and grid from what the appearance defines.",
+  "palette": {
+    "$type": "color",
+    "bg0": { "$value": "{palette.bg0Medium}" },
+    "bgDeep": { "$value": "{palette.deepMedium}" },
+    "bgGrid": { "$value": "{palette.gridMedium}" }
+  }
+}

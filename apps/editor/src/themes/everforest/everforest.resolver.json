@@ -1,0 +1,24 @@
+{
+  "name": "Everforest",
+  "description": "Green based color scheme by sainnhe (https://github.com/sainnhe/everforest, MIT licence), as in autoload/everforest.vim: dark or light, each with hard, medium or soft contrast.",
+  "version": "2025.10",
+  "sets": {
+    "base": {
+      "description": "The editor's token names, the absolute everforest palette and the roles",
+      "sources": [{ "$ref": "../ui.tokens.json" }, { "$ref": "everforest.tokens.json" }, { "$ref": "roles.tokens.json" }]
+    }
+  },
+  "modifiers": {
+    "appearance": {
+      "description": "background=dark or background=light",
+      "contexts": { "dark": [{ "$ref": "dark.tokens.json" }], "light": [{ "$ref": "light.tokens.json" }] },
+      "default": "dark"
+    },
+    "contrast": {
+      "description": "g:everforest_background",
+      "contexts": { "hard": [{ "$ref": "hard.tokens.json" }], "medium": [{ "$ref": "medium.tokens.json" }], "soft": [{ "$ref": "soft.tokens.json" }] },
+      "default": "medium"
+    }
+  },
+  "resolutionOrder": [{ "$ref": "#/sets/base" }, { "$ref": "#/modifiers/appearance" }, { "$ref": "#/modifiers/contrast" }]
+}

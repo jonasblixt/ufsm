@@ -1,0 +1,19 @@
+{
+  "model": "../models/test_guard1.ufsm",
+  "doc": "A call that does not finish (an action or guard raises) leaves the machine busy: process() fails with busy until reset(). A process() call from inside an action fails with busy and changes nothing; the outer call goes on.",
+  "steps": [
+    { "reset": true, "expect": ["eA"] },
+    { "guards": { "g1": true }, "send": "e1", "raise": "xA", "expect": ["xA"], "doc": "The exception from xA ends the call, unchanged; eB never runs." },
+    { "send": "e1", "error": "busy" },
+    { "send": "e2", "error": "busy" },
+    { "reset": true, "expect": ["eA"], "active": ["A"], "inactive": ["B"], "doc": "reset() recovers." },
+    { "send": "e1", "reenter": "eB", "expect": ["xA", "eB"], "active": ["B"], "doc": "eB sends e1 again: refused with busy; the outer call finishes." },
+    { "guards": { "g2": true }, "send": "e2", "expect": ["xB", "eA"], "active": ["A"], "doc": "A refused nested call does not latch." },
+    { "send": "e1", "raise": "g1", "expect": [], "doc": "A guard that raises ends the call before anything ran." },
+    { "send": "e1", "error": "busy" },
+    { "reset": true, "raise": "eA", "expect": ["eA"], "doc": "An exception during reset() latches too." },
+    { "send": "e1", "error": "busy" },
+    { "reset": true, "expect": ["eA"] },
+    { "send": "e1", "expect": ["xA", "eB"], "active": ["B"] }
+  ]
+}

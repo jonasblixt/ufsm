@@ -1,0 +1,7 @@
+{
+  "$description": "Catppuccin dark: the flavor modifier's colors as they are, and the menu shadow.",
+  "palette": {
+    "$type": "color",
+    "shadow": { "$value": { "colorSpace": "srgb", "components": [0, 0, 0], "alpha": 0.45, "hex": "#000000" } }
+  }
+}

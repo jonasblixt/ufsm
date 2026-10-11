@@ -1,14 +1,18 @@
-Makefile.in
-aclocal.m4
-aminclude_static.am
-autom4te.cache/
-build-aux/
-build/
-configure
-m4/
-doc/_build
-doc/latex
-*.egg-info
-__pycache__
-.ccls-cache
-*.AppImage
+node_modules/
+/apps/*/dist/
+/packages/*/dist/
+*.tsbuildinfo
+.vite/
+
+# Rust / Tauri (see also apps/editor/src-tauri/.gitignore)
+target/
+
+# Editors and OS
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+build
+
+# Claude Code: personal permission approvals
+.claude/settings.local.json

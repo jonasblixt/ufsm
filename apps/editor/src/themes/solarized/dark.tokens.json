@@ -1,0 +1,17 @@
+{
+  "$description": "Solarized dark: background base03, highlights base02, body text base0, secondary content base01. ufsm adds two steps of the monotone ladder (same a*b*, 5 L* apart like base03/base02): L*10 around the sheet and the window, L*25 for raised backgrounds.",
+  "palette": {
+    "$type": "color",
+    "bg0": { "$value": "{solarized.base03}" },
+    "bgDeep": { "$value": "{palette.chrome}" },
+    "bgGrid": { "$value": "{solarized.base02}", "$description": "Grid dots: the background highlight" },
+    "bg1": { "$value": "{solarized.base02}" },
+    "bg2": { "$value": { "colorSpace": "srgb", "components": [0.0863, 0.2549, 0.302], "hex": "#16414d" }, "$description": "L*25 a*-12 b*-12: one step above base02" },
+    "fg1": { "$value": "{solarized.base0}" },
+    "fg4": { "$value": "{solarized.base01}" },
+    "gray": { "$value": "{solarized.base01}" },
+    "chrome": { "$value": { "colorSpace": "srgb", "components": [0, 0.1255, 0.1686], "hex": "#00202b" }, "$description": "L*10 a*-12 b*-12: one step below base03" },
+    "edge": { "$value": "{palette.bg1}", "$description": "Card edges: lighter than both the card and the chrome" },
+    "shadow": { "$value": { "colorSpace": "srgb", "components": [0, 0, 0], "alpha": 0.45, "hex": "#000000" } }
+  }
+}

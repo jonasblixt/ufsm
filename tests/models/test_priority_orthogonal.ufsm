@@ -1,0 +1,170 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "test_priority_orthogonal",
+  "doc": "Transitions in orthogonal regions fire together unless their exit sets overlap.",
+  "declarations": {
+    "events": [
+      { "id": "ev1", "name": "e1" },
+      { "id": "ev2", "name": "e2" },
+      { "id": "ev3", "name": "e3" },
+      { "id": "ev4", "name": "e4" }
+    ],
+    "signals": [],
+    "actions": [
+      { "id": "act1", "name": "eQ" },
+      { "id": "act2", "name": "xQ" },
+      { "id": "act3", "name": "eA" },
+      { "id": "act4", "name": "xA" },
+      { "id": "act5", "name": "eA2" },
+      { "id": "act6", "name": "xA2" },
+      { "id": "act7", "name": "eB" },
+      { "id": "act8", "name": "xB" },
+      { "id": "act9", "name": "eB2" },
+      { "id": "act10", "name": "xB2" },
+      { "id": "act11", "name": "eOut" },
+      { "id": "act12", "name": "xOut" }
+    ],
+    "guards": []
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        { "id": "s1", "kind": "initial" },
+        {
+          "id": "s2",
+          "kind": "state",
+          "name": "Q",
+          "entry": [{ "call": "act1" }],
+          "exit": [{ "call": "act2" }],
+          "regions": [
+            {
+              "id": "r1",
+              "name": "Qr1",
+              "states": [
+                { "id": "s3", "kind": "initial" },
+                {
+                  "id": "s4",
+                  "kind": "state",
+                  "name": "A",
+                  "entry": [{ "call": "act3" }],
+                  "exit": [{ "call": "act4" }]
+                },
+                {
+                  "id": "s5",
+                  "kind": "state",
+                  "name": "A2",
+                  "entry": [{ "call": "act5" }],
+                  "exit": [{ "call": "act6" }]
+                }
+              ]
+            },
+            {
+              "id": "r2",
+              "name": "Qr2",
+              "states": [
+                { "id": "s6", "kind": "initial" },
+                {
+                  "id": "s7",
+                  "kind": "state",
+                  "name": "B",
+                  "entry": [{ "call": "act7" }],
+                  "exit": [{ "call": "act8" }]
+                },
+                {
+                  "id": "s8",
+                  "kind": "state",
+                  "name": "B2",
+                  "entry": [{ "call": "act9" }],
+                  "exit": [{ "call": "act10" }]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s9",
+          "kind": "state",
+          "name": "Out",
+          "entry": [{ "call": "act11" }],
+          "exit": [{ "call": "act12" }]
+        }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s1", "to": "s2" },
+      { "id": "t2", "from": "s3", "to": "s4" },
+      { "id": "t3", "from": "s6", "to": "s7" },
+      { "id": "t4", "from": "s4", "to": "s5", "on": "ev1" },
+      { "id": "t5", "from": "s7", "to": "s8", "on": "ev1" },
+      { "id": "t6", "from": "s4", "to": "s9", "on": "ev2" },
+      { "id": "t7", "from": "s7", "to": "s8", "on": "ev2" },
+      { "id": "t8", "from": "s7", "to": "s9", "on": "ev3" },
+      { "id": "t9", "from": "s4", "to": "s5", "on": "ev3" },
+      { "id": "t10", "from": "s2", "to": "s9", "on": "ev4" },
+      { "id": "t11", "from": "s7", "to": "s8", "on": "ev4" }
+    ]
+  },
+  "diagram": {
+    "paper": "A4",
+    "states": {
+      "s1": { "x": 40, "y": 90, "w": 20, "h": 20 },
+      "s2": { "x": 180, "y": 50, "w": 700, "h": 510 },
+      "s3": { "x": 40, "y": 180, "w": 20, "h": 20 },
+      "s4": { "x": 180, "y": 140, "w": 180, "h": 110 },
+      "s5": { "x": 480, "y": 140, "w": 180, "h": 110 },
+      "s6": { "x": 40, "y": 390, "w": 20, "h": 20 },
+      "s7": { "x": 180, "y": 350, "w": 180, "h": 110 },
+      "s8": { "x": 480, "y": 350, "w": 180, "h": 110 },
+      "s9": { "x": 1000, "y": 50, "w": 180, "h": 110 }
+    },
+    "regions": { "r1": { "h": 210 } },
+    "transitions": {
+      "t1": { "from": { "side": "right", "offset": 10 }, "to": { "side": "left", "offset": 20 } },
+      "t2": { "from": { "side": "right", "offset": 10 }, "to": { "side": "left", "offset": 38 } },
+      "t3": { "from": { "side": "right", "offset": 10 }, "to": { "side": "left", "offset": 56 } },
+      "t4": {
+        "from": { "side": "right", "offset": 74 },
+        "to": { "side": "left", "offset": 74 },
+        "label": { "x": 380, "y": 194, "w": 100 }
+      },
+      "t5": {
+        "from": { "side": "right", "offset": 92 },
+        "to": { "side": "left", "offset": 92 },
+        "label": { "x": 380, "y": 422, "w": 100 }
+      },
+      "t6": {
+        "from": { "side": "right", "offset": 100 },
+        "to": { "side": "left", "offset": 100 },
+        "label": { "x": 730, "y": 200, "w": 100 }
+      },
+      "t7": {
+        "from": { "side": "right", "offset": 20 },
+        "to": { "side": "left", "offset": 20 },
+        "label": { "x": 380, "y": 350, "w": 100 }
+      },
+      "t8": {
+        "from": { "side": "right", "offset": 38 },
+        "to": { "side": "left", "offset": 38 },
+        "label": { "x": 730, "y": 243, "w": 100 }
+      },
+      "t9": {
+        "from": { "side": "right", "offset": 56 },
+        "to": { "side": "left", "offset": 56 },
+        "label": { "x": 380, "y": 176, "w": 100 }
+      },
+      "t10": {
+        "from": { "side": "right", "offset": 74 },
+        "to": { "side": "left", "offset": 74 },
+        "label": { "x": 900, "y": 104, "w": 100 }
+      },
+      "t11": {
+        "from": { "side": "right", "offset": 92 },
+        "to": { "side": "left", "offset": 92 },
+        "label": { "x": 380, "y": 422, "w": 100 }
+      }
+    }
+  }
+}

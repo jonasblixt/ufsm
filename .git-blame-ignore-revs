@@ -1,0 +1,5 @@
+# Formatting-only commits: git blame skips them (git config blame.ignoreRevsFile .git-blame-ignore-revs;
+# GitHub does this by itself).
+
+# Format the hand-written TypeScript with Prettier
+c861e89fae5f05f2447ea52457ac25e671a450c4

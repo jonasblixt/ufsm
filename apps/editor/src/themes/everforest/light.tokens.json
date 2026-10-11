@@ -1,0 +1,56 @@
+{
+  "$description": "Everforest light: the foreground palette everforest.vim uses when background=light, and its three background ladders for the contrast modifier to pick from; plus the card edges, menu shadow and diagram color ufsm needs.",
+  "fg": {
+    "$type": "color",
+    "fg": { "$value": "{everforest.light.fg}" },
+    "red": { "$value": "{everforest.light.red}" },
+    "orange": { "$value": "{everforest.light.orange}" },
+    "yellow": { "$value": "{everforest.light.yellow}" },
+    "green": { "$value": "{everforest.light.green}" },
+    "aqua": { "$value": "{everforest.light.aqua}" },
+    "blue": { "$value": "{everforest.light.blue}" },
+    "purple": { "$value": "{everforest.light.purple}" },
+    "grey0": { "$value": "{everforest.light.grey0}" },
+    "grey1": { "$value": "{everforest.light.grey1}" },
+    "grey2": { "$value": "{everforest.light.grey2}" }
+  },
+  "ladder": {
+    "$type": "color",
+    "hard": {
+      "bg_dim": { "$value": "{everforest.light.hard.bg_dim}" },
+      "bg0": { "$value": "{everforest.light.hard.bg0}" },
+      "bg1": { "$value": "{everforest.light.hard.bg1}" },
+      "bg2": { "$value": "{everforest.light.hard.bg2}" },
+      "bg3": { "$value": "{everforest.light.hard.bg3}" },
+      "bg4": { "$value": "{everforest.light.hard.bg4}" },
+      "bg5": { "$value": "{everforest.light.hard.bg5}" }
+    },
+    "medium": {
+      "bg_dim": { "$value": "{everforest.light.medium.bg_dim}" },
+      "bg0": { "$value": "{everforest.light.medium.bg0}" },
+      "bg1": { "$value": "{everforest.light.medium.bg1}" },
+      "bg2": { "$value": "{everforest.light.medium.bg2}" },
+      "bg3": { "$value": "{everforest.light.medium.bg3}" },
+      "bg4": { "$value": "{everforest.light.medium.bg4}" },
+      "bg5": { "$value": "{everforest.light.medium.bg5}" }
+    },
+    "soft": {
+      "bg_dim": { "$value": "{everforest.light.soft.bg_dim}" },
+      "bg0": { "$value": "{everforest.light.soft.bg0}" },
+      "bg1": { "$value": "{everforest.light.soft.bg1}" },
+      "bg2": { "$value": "{everforest.light.soft.bg2}" },
+      "bg3": { "$value": "{everforest.light.soft.bg3}" },
+      "bg4": { "$value": "{everforest.light.soft.bg4}" },
+      "bg5": { "$value": "{everforest.light.soft.bg5}" }
+    }
+  },
+  "palette": {
+    "$type": "color",
+    "edge": { "$value": "{bg.bg4}", "$description": "Card edges: darker than both the card and the chrome (bg_dim)" },
+    "shadow": { "$value": { "colorSpace": "srgb", "components": [0.3608, 0.4157, 0.4471], "alpha": 0.2, "hex": "#5c6a72" }, "$description": "fg at 20%" }
+  },
+  "canvas": {
+    "$type": "color",
+    "ink": { "$value": "{palette.fg1}", "$description": "The diagram in fg: grey2 on the light backgrounds is under 3.5:1" }
+  }
+}

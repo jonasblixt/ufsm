@@ -1,0 +1,126 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "test_nested_finals2",
+  "declarations": {
+    "events": [{ "id": "ev1", "name": "e1" }],
+    "signals": [],
+    "actions": [
+      { "id": "act1", "name": "eA" },
+      { "id": "act2", "name": "xA" },
+      { "id": "act3", "name": "eA11" },
+      { "id": "act4", "name": "xA11" },
+      { "id": "act5", "name": "eA1" },
+      { "id": "act6", "name": "xA1" },
+      { "id": "act7", "name": "eEnd" },
+      { "id": "act8", "name": "Action1" }
+    ],
+    "guards": []
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        {
+          "id": "s1",
+          "kind": "state",
+          "name": "A",
+          "entry": [{ "call": "act1" }],
+          "exit": [{ "call": "act2" }],
+          "regions": [
+            {
+              "id": "r1",
+              "name": "Ar1",
+              "states": [
+                {
+                  "id": "s2",
+                  "kind": "state",
+                  "name": "A1",
+                  "entry": [{ "call": "act5" }],
+                  "exit": [{ "call": "act6" }],
+                  "regions": [
+                    {
+                      "id": "r2",
+                      "name": "A1r1",
+                      "states": [
+                        {
+                          "id": "s3",
+                          "kind": "state",
+                          "name": "A11",
+                          "entry": [{ "call": "act3" }],
+                          "exit": [{ "call": "act4" }]
+                        },
+                        { "id": "s4", "kind": "final", "name": "Final1" },
+                        { "id": "s5", "kind": "initial" }
+                      ]
+                    }
+                  ]
+                },
+                { "id": "s6", "kind": "initial" },
+                { "id": "s7", "kind": "final", "name": "Final2" }
+              ]
+            }
+          ]
+        },
+        { "id": "s8", "kind": "initial" },
+        { "id": "s9", "kind": "state", "name": "End", "entry": [{ "call": "act7" }] }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s1", "to": "s9", "completion": true },
+      { "id": "t2", "from": "s2", "to": "s7", "completion": true },
+      { "id": "t3", "from": "s3", "to": "s4", "on": "ev1" },
+      { "id": "t4", "from": "s5", "to": "s3" },
+      { "id": "t5", "from": "s6", "to": "s2" },
+      { "id": "t6", "from": "s8", "to": "s1" }
+    ]
+  },
+  "diagram": {
+    "paper": "A3",
+    "states": {
+      "s1": { "x": 220, "y": 190, "w": 860, "h": 880 },
+      "s2": { "x": 70, "y": 250, "w": 430, "h": 480 },
+      "s3": { "x": 60, "y": 210, "w": 190, "h": 130 },
+      "s4": { "x": 350, "y": 270, "w": 20, "h": 20 },
+      "s5": { "x": 140, "y": 150, "w": 20, "h": 20 },
+      "s6": { "x": 270, "y": 170, "w": 20, "h": 20 },
+      "s7": { "x": 710, "y": 520, "w": 20, "h": 20 },
+      "s8": { "x": 640, "y": 100, "w": 20, "h": 20 },
+      "s9": { "x": 1270, "y": 670, "w": 190, "h": 90 }
+    },
+    "regions": { "r1": { "h": 740 }, "r2": { "h": 390 } },
+    "transitions": {
+      "t1": {
+        "from": { "side": "right", "offset": 530 },
+        "to": { "side": "left", "offset": 50 },
+        "label": { "x": 1110, "y": 670, "w": 100 }
+      },
+      "t2": {
+        "from": { "side": "right", "offset": 280 },
+        "to": { "side": "left", "offset": 10 },
+        "label": { "x": 540, "y": 480, "w": 100 }
+      },
+      "t3": {
+        "from": { "side": "right", "offset": 70 },
+        "to": { "side": "left", "offset": 10 },
+        "label": { "x": 260, "y": 220, "w": 100 }
+      },
+      "t4": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 90 },
+        "label": { "x": 150, "y": 170, "w": 100 }
+      },
+      "t5": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 210 },
+        "label": { "x": 280, "y": 190, "w": 100 }
+      },
+      "t6": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 430 },
+        "label": { "x": 650, "y": 120, "w": 100 }
+      }
+    }
+  }
+}

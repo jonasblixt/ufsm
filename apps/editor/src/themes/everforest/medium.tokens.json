@@ -1,0 +1,13 @@
+{
+  "$description": "Everforest medium contrast (g:everforest_background = 'medium'): the background ladder of the appearance in use.",
+  "bg": {
+    "$type": "color",
+    "bg_dim": { "$value": "{ladder.medium.bg_dim}" },
+    "bg0": { "$value": "{ladder.medium.bg0}" },
+    "bg1": { "$value": "{ladder.medium.bg1}" },
+    "bg2": { "$value": "{ladder.medium.bg2}" },
+    "bg3": { "$value": "{ladder.medium.bg3}" },
+    "bg4": { "$value": "{ladder.medium.bg4}" },
+    "bg5": { "$value": "{ladder.medium.bg5}" }
+  }
+}

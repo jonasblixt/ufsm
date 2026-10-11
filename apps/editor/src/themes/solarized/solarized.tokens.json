@@ -1,0 +1,22 @@
+{
+  "$description": "The Solarized palette by Ethan Schoonover (https://github.com/altercation/solarized, MIT licence), from the README's table (sRGB values matched to the canonical L*a*b). Absolute colors only; dark.tokens.json and light.tokens.json give them roles.",
+  "solarized": {
+    "$type": "color",
+    "base03": { "$value": { "colorSpace": "srgb", "components": [0, 0.1686, 0.2118], "hex": "#002b36" } },
+    "base02": { "$value": { "colorSpace": "srgb", "components": [0.0275, 0.2118, 0.2588], "hex": "#073642" } },
+    "base01": { "$value": { "colorSpace": "srgb", "components": [0.3451, 0.4314, 0.4588], "hex": "#586e75" } },
+    "base00": { "$value": { "colorSpace": "srgb", "components": [0.3961, 0.4824, 0.5137], "hex": "#657b83" } },
+    "base0": { "$value": { "colorSpace": "srgb", "components": [0.5137, 0.5804, 0.5882], "hex": "#839496" } },
+    "base1": { "$value": { "colorSpace": "srgb", "components": [0.5765, 0.6314, 0.6314], "hex": "#93a1a1" } },
+    "base2": { "$value": { "colorSpace": "srgb", "components": [0.9333, 0.9098, 0.8353], "hex": "#eee8d5" } },
+    "base3": { "$value": { "colorSpace": "srgb", "components": [0.9922, 0.9647, 0.8902], "hex": "#fdf6e3" } },
+    "yellow": { "$value": { "colorSpace": "srgb", "components": [0.7098, 0.5373, 0], "hex": "#b58900" } },
+    "orange": { "$value": { "colorSpace": "srgb", "components": [0.7961, 0.2941, 0.0863], "hex": "#cb4b16" } },
+    "red": { "$value": { "colorSpace": "srgb", "components": [0.8627, 0.1961, 0.1843], "hex": "#dc322f" } },
+    "magenta": { "$value": { "colorSpace": "srgb", "components": [0.8275, 0.2118, 0.5098], "hex": "#d33682" } },
+    "violet": { "$value": { "colorSpace": "srgb", "components": [0.4235, 0.4431, 0.7686], "hex": "#6c71c4" } },
+    "blue": { "$value": { "colorSpace": "srgb", "components": [0.149, 0.5451, 0.8235], "hex": "#268bd2" } },
+    "cyan": { "$value": { "colorSpace": "srgb", "components": [0.1647, 0.6314, 0.5961], "hex": "#2aa198" } },
+    "green": { "$value": { "colorSpace": "srgb", "components": [0.5216, 0.6, 0], "hex": "#859900" } }
+  }
+}

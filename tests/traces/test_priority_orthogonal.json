@@ -1,0 +1,14 @@
+{
+  "model": "../models/test_priority_orthogonal.ufsm",
+  "doc": "Orthogonal regions. Transitions selected for the same event fire in one microstep: all exits, then all transition actions, then all entries.",
+  "steps": [
+    { "reset": true, "expect": ["eQ", "eA", "eB"] },
+    { "send": "e1", "expect": ["xB", "xA", "eA2", "eB2"], "active": ["A2", "B2"], "doc": "Both regions move; their exit sets do not overlap." },
+    { "reset": true, "expect": ["eQ", "eA", "eB"] },
+    { "send": "e2", "expect": ["xB", "xA", "xQ", "eOut"], "doc": "A -e2-> Out leaves Q, which overlaps B -e2-> B2. Neither source contains the other, so the one selected first (A, earlier in document order) wins." },
+    { "reset": true, "expect": ["eQ", "eA", "eB"] },
+    { "send": "e3", "expect": ["xA", "eA2"], "active": ["A2", "B"], "doc": "A -e3-> A2 is selected first; B -e3-> Out would exit A too, so it is dropped." },
+    { "reset": true, "expect": ["eQ", "eA", "eB"] },
+    { "send": "e4", "expect": ["xB", "eB2"], "active": ["Q", "A", "B2"], "doc": "B -e4-> B2 is out of a substate of Q, so it beats Q -e4-> Out even though Q's was found first (from A)." }
+  ]
+}

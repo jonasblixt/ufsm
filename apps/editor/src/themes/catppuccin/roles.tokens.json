@@ -1,0 +1,31 @@
+{
+  "$description": "Catppuccin's roles for ui.tokens.json from the flavor in use (ctp.*), the same in every flavor, after the style guide (catppuccin/catppuccin docs/style-guide.md): panes base, secondary panes mantle and crust, surfaces surface0-2, body text, sub-labels subtext0, subtle overlay1, on accent base. Code: keywords mauve, strings green, numbers peach, comments overlay2, macros rosewater.",
+  "palette": {
+    "$type": "color",
+    "bg0": { "$value": "{ctp.base}" },
+    "bgDeep": { "$value": "{ctp.mantle}", "$description": "Around the sheet, fields" },
+    "bgGrid": { "$value": "{ctp.surface0}" },
+    "bg1": { "$value": "{ctp.surface0}" },
+    "bg2": { "$value": "{ctp.surface1}" },
+    "fg1": { "$value": "{ctp.text}" },
+    "fg4": { "$value": "{ctp.subtext0}" },
+    "gray": { "$value": "{ctp.overlay1}" },
+    "red": { "$value": "{ctp.red}" },
+    "green": { "$value": "{ctp.green}" },
+    "yellow": { "$value": "{ctp.yellow}" },
+    "blue": { "$value": "{ctp.blue}" },
+    "purple": { "$value": "{ctp.mauve}" },
+    "aqua": { "$value": "{ctp.teal}" },
+    "orange": { "$value": "{ctp.peach}" },
+    "chrome": { "$value": "{ctp.crust}", "$description": "Window background around the cards" },
+    "edge": { "$value": "{ctp.surface0}", "$description": "Card edges: unlike both the card (base) and the chrome (crust)" }
+  },
+  "syntax": {
+    "$type": "color",
+    "comment": { "$value": "{ctp.overlay2}" },
+    "string": { "$value": "{ctp.green}" },
+    "number": { "$value": "{ctp.peach}" },
+    "keyword": { "$value": "{ctp.mauve}" },
+    "preprocessor": { "$value": "{ctp.rosewater}" }
+  }
+}

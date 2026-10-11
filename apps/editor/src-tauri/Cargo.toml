@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
+
+[package]
+name = "ufsm-editor"
+version = "0.6.0"
+description = "uFSM statechart editor"
+authors = ["Jonas Blixt"]
+license = "GPL-3.0-or-later"
+repository = "https://github.com/jonasblixt/ufsm"
+edition = "2021"
+rust-version = "1.77.2"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

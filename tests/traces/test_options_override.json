@@ -1,0 +1,21 @@
+{
+  "model": "../models/test_options.ufsm",
+  "doc": "A trace's options override the model's: a queue of 2 and 3 microsteps run what test_options.json shows failing.",
+  "options": { "signalQueue": 2, "maxMicrosteps": 3 },
+  "steps": [
+    { "reset": true, "expect": ["eA"], "active": ["A"] },
+    {
+      "guards": { "g": true },
+      "send": "e2",
+      "expect": ["xA", "eC", "eD", "eA"],
+      "active": ["A"],
+      "doc": "Three microsteps: A -> C on e2, C -> D on s1, D -> A (auto, g true)."
+    },
+    {
+      "send": "e1",
+      "expect": ["xA", "eB"],
+      "active": ["B"],
+      "doc": "Both signals fit into the queue of 2; B ignores them."
+    }
+  ]
+}

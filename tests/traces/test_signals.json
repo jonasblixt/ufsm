@@ -1,0 +1,31 @@
+{
+  "model": "../models/test_signals.ufsm",
+  "doc": "Signals emitted from entry and exit actions, initial and normal transitions; FIFO order; signals for other regions; unhandled signals are dropped.",
+  "steps": [
+    {
+      "reset": true,
+      "expect": ["eA", "xA", "eB", "xB", "eC"],
+      "active": ["C"],
+      "inactive": ["Wrong"],
+      "doc": "The root's initial transition emits s1 before A is entered; A's exit emits s2, B's entry s3. FIFO: s2 moves B to C, then s3 is dropped (B -s3-> Wrong would show LIFO order)."
+    },
+    {
+      "send": "go",
+      "expect": ["xC", "eP", "eP1", "eQ1", "xQ1", "eQ2", "xP1", "eP2"],
+      "active": ["P2", "Q2"],
+      "doc": "A signal emitted on the way into P is handled by P's second region, whose transition emits a signal for the first region."
+    },
+    {
+      "send": "two",
+      "expect": ["xQ2", "xP2", "eP1", "eQ1", "xP1", "eP3", "xQ1", "eQ2"],
+      "active": ["P3", "Q2"],
+      "doc": "Two transitions in one microstep emit s3 (upper region) then s1 (lower region), in the order they were taken."
+    },
+    {
+      "send": "burst",
+      "expect": ["xQ2", "xP3", "xP", "eP", "eP1", "eQ1", "xQ1", "eQ2", "xP1", "eP2"],
+      "doc": "Queue: s1 s2 s3, then s2 again from Q1 -s1-> Q2; s3 and the second s2 find no transition and are dropped."
+    },
+    { "reset": true, "expect": ["eA", "xA", "eB", "xB", "eC"] }
+  ]
+}

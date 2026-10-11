@@ -1,0 +1,16 @@
+{
+  "model": "../models/test_nested_states.ufsm",
+  "doc": "From old/tests/C/test_nested_states.c. Initial transition actions run after the owner's entry actions.",
+  "steps": [
+    { "reset": true, "expect": ["StartInit"] },
+    { "send": "eStart2", "expect": ["eA", "eB", "eC", "eD"] },
+    { "reset": true, "expect": ["StartInit"] },
+    { "send": "eStart", "expect": ["eA", "BInit", "eB", "CInit", "eC", "DInit", "eD"] },
+    { "reset": true, "expect": ["StartInit"] },
+    { "send": "eStart2", "expect": ["eA", "eB", "eC", "eD"] },
+    { "send": "eStop", "expect": ["xD", "xC", "xB", "xA", "eE", "FInit", "eF", "GInit", "eG", "HInit", "eH"] },
+    { "reset": true, "expect": ["StartInit"] },
+    { "send": "eStart2", "expect": ["eA", "eB", "eC", "eD"] },
+    { "send": "eStop2", "expect": ["xD", "xC", "xB", "xA", "eE", "eF", "eG", "eH"] }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "test_guard1",
+  "declarations": {
+    "events": [{ "id": "ev1", "name": "e1" }, { "id": "ev2", "name": "e2" }],
+    "signals": [],
+    "actions": [
+      { "id": "act1", "name": "eA" },
+      { "id": "act2", "name": "xA" },
+      { "id": "act3", "name": "eB" },
+      { "id": "act4", "name": "xB" }
+    ],
+    "guards": [{ "id": "grd1", "name": "g1" }, { "id": "grd2", "name": "g2" }]
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        {
+          "id": "s1",
+          "kind": "state",
+          "name": "A",
+          "entry": [{ "call": "act1" }],
+          "exit": [{ "call": "act2" }]
+        },
+        { "id": "s2", "kind": "initial" },
+        {
+          "id": "s3",
+          "kind": "state",
+          "name": "B",
+          "entry": [{ "call": "act3" }],
+          "exit": [{ "call": "act4" }]
+        }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s1", "to": "s3", "on": "ev1", "guard": [{ "call": "grd1" }] },
+      { "id": "t2", "from": "s2", "to": "s1" },
+      { "id": "t3", "from": "s3", "to": "s1", "on": "ev2", "guard": [{ "call": "grd2" }] }
+    ]
+  },
+  "diagram": {
+    "paper": "A4",
+    "states": {
+      "s1": { "x": 220, "y": 410, "w": 240, "h": 180 },
+      "s2": { "x": 330, "y": 350, "w": 20, "h": 20 },
+      "s3": { "x": 710, "y": 410, "w": 240, "h": 180 }
+    },
+    "regions": {},
+    "transitions": {
+      "t1": {
+        "from": { "side": "right", "offset": 60 },
+        "to": { "side": "left", "offset": 60 },
+        "label": { "x": 510, "y": 410, "w": 100 }
+      },
+      "t2": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 120 },
+        "label": { "x": 340, "y": 370, "w": 100 }
+      },
+      "t3": {
+        "from": { "side": "left", "offset": 140 },
+        "to": { "side": "right", "offset": 140 },
+        "label": { "x": 510, "y": 500, "w": 100 }
+      }
+    }
+  }
+}

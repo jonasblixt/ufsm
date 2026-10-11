@@ -1,0 +1,65 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2026 Jonas Blixt <jonas@blxt.se> -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uFSM</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- Layout after VS Code: title bar (menu, search, window buttons) / sidebar | tabs + canvas | panel / status bar -->
+    <header id="titlebar" class="titlebar" data-tauri-drag-region></header>
+    <div class="workspace">
+      <aside id="sidebar" class="sidebar" aria-label="Sidebar">
+        <section id="palette" class="palette" aria-label="Tools"></section>
+        <div class="sidebar-heading">Explorer</div>
+        <section id="explorer" class="explorer" aria-label="Explorer">
+          <div id="explorer-empty" class="explorer-empty">
+            No machine open.
+            <span class="explorer-actions">
+              <button id="explorer-new" type="button">New</button>
+              <button id="explorer-open" type="button">Open…</button>
+            </span>
+          </div>
+        </section>
+      </aside>
+      <div id="sash-left" class="sash left" role="separator" aria-orientation="vertical" title="Drag to resize · double-click to reset"></div>
+      <main class="editor">
+        <div id="tabs" class="tabs" role="tablist" aria-label="Open machines"></div>
+        <div id="breadcrumbs" class="breadcrumbs" hidden>
+          <nav id="crumbs" class="crumbs" aria-label="Page"></nav>
+          <button id="up" class="icon-button" type="button" title="Up to the parent page (Backspace, or J then A)" aria-label="Up" disabled>
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 13V3M4 7L8 3L12 7" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+          <button id="fit" class="icon-button" type="button" title="Fit page to window (Z then F)" aria-label="Fit" disabled>
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2 6V2H6M10 2H14V6M14 10V14H10M6 14H2V10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+        </div>
+        <div class="stage">
+          <canvas id="canvas"></canvas>
+          <div id="empty" class="empty">
+            <p>Open a <code>.ufsm</code> model (<kbd>O</kbd> or File › Open…) or start a new one (<kbd>Ctrl</kbd>+<kbd>N</kbd> or File › New).</p>
+            <p class="hint">
+              Right-drag to pan · scroll to zoom · click or drag to select (<kbd>Shift</kbd> adds) · drag states, handles and labels to edit · double-click to open a state<br />
+              <kbd>S</kbd> save · <kbd>O</kbd> open · <kbd>Z</kbd> <kbd>F</kbd> fit · <kbd>Z</kbd> <kbd>N</kbd> 100% · <kbd>N</kbd> explorer · <kbd>P</kbd> properties · <kbd>Enter</kbd> open state · <kbd>J</kbd> <kbd>A</kbd> or <kbd>Backspace</kbd> up · <kbd>J</kbd> <kbd>R</kbd> root<br />
+              <kbd>Esc</kbd> deselect · <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo · <kbd>Ctrl</kbd>+<kbd>R</kbd> redo · <kbd>Ctrl</kbd>+<kbd>N</kbd> new machine · <kbd>Ctrl</kbd>+<kbd>Tab</kbd> next machine · <kbd>F5</kbd> simulate
+            </p>
+          </div>
+        </div>
+      </main>
+      <div id="sash-right" class="sash right" role="separator" aria-orientation="vertical" title="Drag to resize · double-click to reset"></div>
+      <aside id="panel" class="panel" aria-label="Properties, project, problems, simulator and code"></aside>
+    </div>
+    <footer class="statusbar">
+      <span id="status" class="status"></span>
+      <span class="statusbar-fill"></span>
+      <button id="sim-status" class="sim-status" type="button" hidden title="Show the simulator"></button>
+      <button id="problems" class="problems" type="button" hidden title=""></button>
+      <span id="zoom" class="zoom" hidden></span>
+    </footer>
+    <input id="file-input" type="file" accept=".ufsm,application/json" hidden />
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

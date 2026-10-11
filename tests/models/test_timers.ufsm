@@ -1,0 +1,113 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "test_timers",
+  "doc": "Timers: started after the state's entry actions (before its regions are entered), stopped before its exit actions (after its children are exited), in list order; reset() and terminate stop every timer; an expiry is an ordinary event.",
+  "declarations": {
+    "events": [
+      { "id": "ev1", "name": "eGo" },
+      { "id": "ev2", "name": "eTick" },
+      { "id": "ev3", "name": "eTimeout" },
+      { "id": "ev4", "name": "eSelf" },
+      { "id": "ev5", "name": "eInt" },
+      { "id": "ev6", "name": "eLong" },
+      { "id": "ev7", "name": "eBlink" },
+      { "id": "ev8", "name": "eEnd" }
+    ],
+    "signals": [],
+    "actions": [
+      { "id": "act1", "name": "eIdle" },
+      { "id": "act2", "name": "eP" },
+      { "id": "act3", "name": "xP" },
+      { "id": "act4", "name": "iP" },
+      { "id": "act5", "name": "eC1" },
+      { "id": "act6", "name": "xC1" },
+      { "id": "act7", "name": "eC2" },
+      { "id": "act8", "name": "xC2" },
+      { "id": "act9", "name": "aInt" },
+      { "id": "act10", "name": "aSelf" }
+    ],
+    "guards": []
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "states": [
+        { "id": "i0", "kind": "initial" },
+        { "id": "Idle", "kind": "state", "name": "Idle", "entry": [{ "call": "act1" }] },
+        {
+          "id": "P",
+          "kind": "state",
+          "name": "P",
+          "entry": [{ "call": "act2" }],
+          "exit": [{ "call": "act3" }],
+          "timers": [
+            { "id": "tm1", "name": "travel", "after": 2, "unit": "s", "event": "ev3" },
+            { "id": "tm2", "name": "poll", "every": 100, "unit": "ms", "event": "ev2" }
+          ],
+          "internal": [{ "id": "t9", "on": "ev5", "do": [{ "call": "act9" }] }],
+          "regions": [
+            {
+              "id": "r1",
+              "states": [
+                { "id": "H", "kind": "shallow-history" },
+                {
+                  "id": "C1",
+                  "kind": "state",
+                  "name": "C1",
+                  "entry": [{ "call": "act5" }],
+                  "exit": [{ "call": "act6" }],
+                  "timers": [
+                    { "id": "tm3", "name": "blink", "every": 1, "unit": "min", "event": "ev7" }
+                  ]
+                },
+                {
+                  "id": "C2",
+                  "kind": "state",
+                  "name": "C2",
+                  "entry": [{ "call": "act7" }],
+                  "exit": [{ "call": "act8" }],
+                  "timers": [
+                    { "id": "tm4", "name": "long", "after": 1, "unit": "h", "event": "ev6" }
+                  ]
+                },
+                { "id": "T", "kind": "terminate" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "i0", "to": "Idle" },
+      { "id": "t2", "from": "Idle", "to": "P", "on": "ev1" },
+      { "id": "t3", "from": "H", "to": "C1", "do": [{ "call": "act4" }] },
+      { "id": "t4", "from": "C1", "to": "C2", "on": "ev2" },
+      { "id": "t5", "from": "P", "to": "Idle", "on": "ev3" },
+      { "id": "t6", "from": "P", "to": "P", "on": "ev4", "do": [{ "call": "act10" }] },
+      { "id": "t7", "from": "C2", "to": "T", "on": "ev8" }
+    ]
+  },
+  "diagram": {
+    "paper": "A4",
+    "states": {
+      "i0": { "x": 290, "y": 40, "w": 20, "h": 20 },
+      "Idle": { "x": 190, "y": 100, "w": 210, "h": 560 },
+      "P": { "x": 600, "y": 100, "w": 690, "h": 560 },
+      "H": { "x": 190, "y": 170, "w": 20, "h": 20 },
+      "C1": { "x": 100, "y": 250, "w": 200, "h": 140 },
+      "C2": { "x": 420, "y": 250, "w": 200, "h": 140 },
+      "T": { "x": 510, "y": 480, "w": 20, "h": 20 }
+    },
+    "regions": {},
+    "transitions": {
+      "t1": { "route": "s" },
+      "t2": { "route": "s", "label": { "x": 80, "y": -60, "w": 184 } },
+      "t3": { "route": "s", "label": { "x": 10, "y": -50, "w": 160 } },
+      "t4": { "route": "s" },
+      "t5": { "route": "s", "label": { "x": 70, "y": -60, "w": 184 } },
+      "t6": { "route": "s" },
+      "t7": { "route": "s" }
+    }
+  }
+}

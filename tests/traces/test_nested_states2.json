@@ -1,0 +1,9 @@
+{
+  "model": "../models/test_nested_states2.ufsm",
+  "doc": "From old/tests/C/test_nested_states2.c.",
+  "steps": [
+    { "reset": true, "expect": [] },
+    { "send": "eStart", "expect": ["eA", "eB", "eC1", "eC2"] },
+    { "send": "eStop", "expect": ["xC2", "xC1", "xB", "xA", "eD", "eE", "eF"] }
+  ]
+}

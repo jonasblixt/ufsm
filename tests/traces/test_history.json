@@ -1,0 +1,62 @@
+{
+  "model": "../models/test_history.ufsm",
+  "doc": "Shallow history (region Shallow) and deep history (region Deep) side by side in one state. Both are the regions' initializers; Deep's is also the explicit target of two transitions.",
+  "steps": [
+    { "reset": true, "expect": ["eOff"] },
+    {
+      "send": "on",
+      "expect": ["xOff", "eOn", "hsDefault", "eS1", "eS11", "hdDefault", "eD1", "eD11"],
+      "doc": "No history yet: both default transitions run, each when its region is reached."
+    },
+    { "send": "s12", "expect": ["xS11", "eS12"] },
+    { "send": "d12", "expect": ["xD11", "eD12", "eD121"] },
+    { "send": "d122", "expect": ["xD121", "eD122"] },
+    {
+      "send": "off",
+      "expect": ["xD122", "xD12", "xD1", "xS12", "xS1", "xOn", "eOff"],
+      "doc": "Exit in reverse document order: the lower region first."
+    },
+    {
+      "send": "on",
+      "expect": ["xOff", "eOn", "eS1", "eS11", "eD1", "eD12", "eD122"],
+      "active": ["S11", "D122"],
+      "inactive": ["S12", "D121"],
+      "doc": "Shallow restores S1 only (S1 starts at S11 again); deep restores the leaf D122 and everything above it. Default transitions do not run."
+    },
+    {
+      "send": "d2",
+      "expect": ["xD122", "xD12", "xD1", "eD2"],
+      "doc": "Leaving D1 inside On records nothing: history is recorded only when On itself is exited."
+    },
+    {
+      "send": "back",
+      "expect": ["xD2", "eD1", "eD12", "eD122"],
+      "active": ["D122"],
+      "doc": "Explicit transition to the deep-history pseudo-state restores what was recorded when On was last exited."
+    },
+    { "reset": true, "expect": ["eOff"], "doc": "reset() clears history." },
+    { "send": "on", "expect": ["xOff", "eOn", "hsDefault", "eS1", "eS11", "hdDefault", "eD1", "eD11"] },
+    { "send": "s2", "expect": ["xS11", "xS1", "eS2"] },
+    { "send": "off", "expect": ["xD11", "xD1", "xS2", "xOn", "eOff"] },
+    { "send": "on", "expect": ["xOff", "eOn", "eS2", "eD1", "eD11"], "active": ["S2", "D11"] },
+    { "send": "fin", "expect": ["xS2"], "active": ["FinS", "D11"] },
+    {
+      "send": "off",
+      "expect": ["xD11", "xD1", "xOn", "eOff"],
+      "doc": "Shallow rests in its final state: its record (S2) is forgotten."
+    },
+    {
+      "send": "on",
+      "expect": ["xOff", "eOn", "hsDefault", "eS1", "eS11", "eD1", "eD11"],
+      "doc": "Shallow follows its default transition again; Deep still restores D11."
+    },
+    { "send": "d12", "expect": ["xD11", "eD12", "eD121"] },
+    { "send": "off", "expect": ["xD121", "xD12", "xD1", "xS11", "xS1", "xOn", "eOff"] },
+    {
+      "send": "resume",
+      "expect": ["xOff", "eOn", "eS1", "eS11", "eD1", "eD12", "eD121"],
+      "active": ["S11", "D121"],
+      "doc": "Off to the deep-history pseudo-state: On is entered, Shallow by default (its own history), Deep from its record."
+    }
+  ]
+}

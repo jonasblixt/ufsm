@@ -1,0 +1,241 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "test_signals",
+  "declarations": {
+    "events": [
+      { "id": "ev1", "name": "go" },
+      { "id": "ev2", "name": "two" },
+      { "id": "ev3", "name": "burst" }
+    ],
+    "signals": [
+      { "id": "sig1", "name": "s1" },
+      { "id": "sig2", "name": "s2" },
+      { "id": "sig3", "name": "s3" }
+    ],
+    "actions": [
+      { "id": "act1", "name": "eA" },
+      { "id": "act2", "name": "xA" },
+      { "id": "act3", "name": "eB" },
+      { "id": "act4", "name": "xB" },
+      { "id": "act5", "name": "eC" },
+      { "id": "act6", "name": "xC" },
+      { "id": "act7", "name": "eWrong" },
+      { "id": "act8", "name": "xWrong" },
+      { "id": "act9", "name": "eP" },
+      { "id": "act10", "name": "xP" },
+      { "id": "act11", "name": "eP1" },
+      { "id": "act12", "name": "xP1" },
+      { "id": "act13", "name": "eP2" },
+      { "id": "act14", "name": "xP2" },
+      { "id": "act15", "name": "eP3" },
+      { "id": "act16", "name": "xP3" },
+      { "id": "act17", "name": "eQ1" },
+      { "id": "act18", "name": "xQ1" },
+      { "id": "act19", "name": "eQ2" },
+      { "id": "act20", "name": "xQ2" }
+    ],
+    "guards": []
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        { "id": "s2", "kind": "initial" },
+        {
+          "id": "s1",
+          "kind": "state",
+          "name": "A",
+          "entry": [{ "call": "act1" }],
+          "exit": [{ "call": "act2" }, { "emit": "sig2" }]
+        },
+        {
+          "id": "s3",
+          "kind": "state",
+          "name": "B",
+          "entry": [{ "call": "act3" }, { "emit": "sig3" }],
+          "exit": [{ "call": "act4" }]
+        },
+        {
+          "id": "s4",
+          "kind": "state",
+          "name": "C",
+          "entry": [{ "call": "act5" }],
+          "exit": [{ "call": "act6" }]
+        },
+        {
+          "id": "s5",
+          "kind": "state",
+          "name": "Wrong",
+          "entry": [{ "call": "act7" }],
+          "exit": [{ "call": "act8" }]
+        },
+        {
+          "id": "s6",
+          "kind": "state",
+          "name": "P",
+          "entry": [{ "call": "act9" }],
+          "exit": [{ "call": "act10" }],
+          "regions": [
+            {
+              "id": "r1",
+              "states": [
+                { "id": "s8", "kind": "initial" },
+                {
+                  "id": "s7",
+                  "kind": "state",
+                  "name": "P1",
+                  "entry": [{ "call": "act11" }],
+                  "exit": [{ "call": "act12" }]
+                },
+                {
+                  "id": "s9",
+                  "kind": "state",
+                  "name": "P2",
+                  "entry": [{ "call": "act13" }],
+                  "exit": [{ "call": "act14" }]
+                },
+                {
+                  "id": "s10",
+                  "kind": "state",
+                  "name": "P3",
+                  "entry": [{ "call": "act15" }],
+                  "exit": [{ "call": "act16" }]
+                }
+              ]
+            },
+            {
+              "id": "r2",
+              "states": [
+                { "id": "s12", "kind": "initial" },
+                {
+                  "id": "s11",
+                  "kind": "state",
+                  "name": "Q1",
+                  "entry": [{ "call": "act17" }],
+                  "exit": [{ "call": "act18" }]
+                },
+                {
+                  "id": "s13",
+                  "kind": "state",
+                  "name": "Q2",
+                  "entry": [{ "call": "act19" }],
+                  "exit": [{ "call": "act20" }]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s2", "to": "s1", "do": [{ "emit": "sig1" }] },
+      { "id": "t2", "from": "s8", "to": "s7" },
+      { "id": "t3", "from": "s12", "to": "s11" },
+      { "id": "t4", "from": "s1", "to": "s3", "on": "sig1" },
+      { "id": "t5", "from": "s3", "to": "s4", "on": "sig2" },
+      { "id": "t6", "from": "s3", "to": "s5", "on": "sig3" },
+      { "id": "t7", "from": "s4", "to": "s6", "on": "ev1", "do": [{ "emit": "sig1" }] },
+      { "id": "t8", "from": "s11", "to": "s13", "on": "sig1", "do": [{ "emit": "sig2" }] },
+      { "id": "t9", "from": "s7", "to": "s9", "on": "sig2" },
+      { "id": "t10", "from": "s9", "to": "s7", "on": "ev2", "do": [{ "emit": "sig3" }] },
+      { "id": "t11", "from": "s13", "to": "s11", "on": "ev2", "do": [{ "emit": "sig1" }] },
+      { "id": "t12", "from": "s7", "to": "s10", "on": "sig3" },
+      {
+        "id": "t13",
+        "from": "s6",
+        "to": "s6",
+        "on": "ev3",
+        "do": [{ "emit": "sig1" }, { "emit": "sig2" }, { "emit": "sig3" }]
+      }
+    ]
+  },
+  "diagram": {
+    "paper": "A3",
+    "states": {
+      "s2": { "x": 230, "y": 20, "w": 20, "h": 20 },
+      "s1": { "x": 150, "y": 70, "w": 180, "h": 160 },
+      "s3": { "x": 420, "y": 70, "w": 180, "h": 370 },
+      "s4": { "x": 690, "y": 70, "w": 180, "h": 140 },
+      "s5": { "x": 700, "y": 260, "w": 170, "h": 180 },
+      "s6": { "x": 1230, "y": 70, "w": 910, "h": 770 },
+      "s8": { "x": 230, "y": 110, "w": 20, "h": 20 },
+      "s7": { "x": 150, "y": 160, "w": 180, "h": 270 },
+      "s9": { "x": 460, "y": 160, "w": 180, "h": 140 },
+      "s10": { "x": 680, "y": 290, "w": 180, "h": 140 },
+      "s12": { "x": 310, "y": 540, "w": 20, "h": 20 },
+      "s11": { "x": 230, "y": 590, "w": 180, "h": 140 },
+      "s13": { "x": 550, "y": 590, "w": 180, "h": 140 }
+    },
+    "regions": { "r1": { "h": 410 }, "r2": { "h": 270 } },
+    "transitions": {
+      "t1": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 90 },
+        "label": { "x": 250, "y": 10, "w": 120 }
+      },
+      "t2": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 90 },
+        "label": { "x": 236, "y": 122, "w": 120 }
+      },
+      "t3": {
+        "from": { "side": "bottom", "offset": 10 },
+        "to": { "side": "top", "offset": 90 },
+        "label": { "x": 340, "y": 530, "w": 120 }
+      },
+      "t4": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 365, "y": 63, "w": 120 }
+      },
+      "t5": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 635, "y": 63, "w": 120 }
+      },
+      "t6": {
+        "from": { "side": "right", "offset": 270 },
+        "to": { "side": "left", "offset": 80 },
+        "label": { "x": 640, "y": 280, "w": 120 }
+      },
+      "t7": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 1040, "y": 63, "w": 120 }
+      },
+      "t8": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 450, "y": 550, "w": 120 }
+      },
+      "t9": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "left", "offset": 15 },
+        "label": { "x": 380, "y": 120, "w": 120 }
+      },
+      "t10": {
+        "from": { "side": "left", "offset": 100 },
+        "to": { "side": "right", "offset": 100 },
+        "label": { "x": 360, "y": 210, "w": 120 }
+      },
+      "t11": {
+        "from": { "side": "left", "offset": 100 },
+        "to": { "side": "right", "offset": 100 },
+        "label": { "x": 441, "y": 640, "w": 120 }
+      },
+      "t12": {
+        "from": { "side": "right", "offset": 210 },
+        "to": { "side": "left", "offset": 80 },
+        "label": { "x": 495, "y": 245, "w": 120 }
+      },
+      "t13": {
+        "from": { "side": "right", "offset": 15 },
+        "to": { "side": "top", "offset": 895 },
+        "via": [[2180, 40]],
+        "label": { "x": 2170, "y": 18, "w": 120 }
+      }
+    }
+  }
+}

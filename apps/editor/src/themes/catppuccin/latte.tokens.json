@@ -1,0 +1,36 @@
+{
+  "$description": "Catppuccin light: Latte, whatever the (dark) flavor, and the menu shadow.",
+  "ctp": {
+    "$type": "color",
+    "rosewater": { "$value": "{catppuccin.latte.rosewater}" },
+    "flamingo": { "$value": "{catppuccin.latte.flamingo}" },
+    "pink": { "$value": "{catppuccin.latte.pink}" },
+    "mauve": { "$value": "{catppuccin.latte.mauve}" },
+    "red": { "$value": "{catppuccin.latte.red}" },
+    "maroon": { "$value": "{catppuccin.latte.maroon}" },
+    "peach": { "$value": "{catppuccin.latte.peach}" },
+    "yellow": { "$value": "{catppuccin.latte.yellow}" },
+    "green": { "$value": "{catppuccin.latte.green}" },
+    "teal": { "$value": "{catppuccin.latte.teal}" },
+    "sky": { "$value": "{catppuccin.latte.sky}" },
+    "sapphire": { "$value": "{catppuccin.latte.sapphire}" },
+    "blue": { "$value": "{catppuccin.latte.blue}" },
+    "lavender": { "$value": "{catppuccin.latte.lavender}" },
+    "text": { "$value": "{catppuccin.latte.text}" },
+    "subtext1": { "$value": "{catppuccin.latte.subtext1}" },
+    "subtext0": { "$value": "{catppuccin.latte.subtext0}" },
+    "overlay2": { "$value": "{catppuccin.latte.overlay2}" },
+    "overlay1": { "$value": "{catppuccin.latte.overlay1}" },
+    "overlay0": { "$value": "{catppuccin.latte.overlay0}" },
+    "surface2": { "$value": "{catppuccin.latte.surface2}" },
+    "surface1": { "$value": "{catppuccin.latte.surface1}" },
+    "surface0": { "$value": "{catppuccin.latte.surface0}" },
+    "base": { "$value": "{catppuccin.latte.base}" },
+    "mantle": { "$value": "{catppuccin.latte.mantle}" },
+    "crust": { "$value": "{catppuccin.latte.crust}" }
+  },
+  "palette": {
+    "$type": "color",
+    "shadow": { "$value": { "colorSpace": "srgb", "components": [0.298, 0.3098, 0.4118], "alpha": 0.2, "hex": "#4c4f69" }, "$description": "text at 20%" }
+  }
+}

@@ -1,0 +1,1079 @@
+{
+  "format": "ufsm",
+  "version": 1,
+  "name": "editor",
+  "declarations": {
+    "events": [
+      { "id": "ev1", "name": "eKey_o" },
+      { "id": "ev2", "name": "eKey_s" },
+      { "id": "ev3", "name": "eKey_S" },
+      { "id": "ev4", "name": "eKey_n" },
+      { "id": "ev5", "name": "eKey_a" },
+      { "id": "ev6", "name": "eKey_enter" },
+      { "id": "ev7", "name": "eKey_backspace" },
+      { "id": "ev8", "name": "eKey_esc" },
+      { "id": "ev9", "name": "eKey_z" },
+      { "id": "ev10", "name": "eKey_f" },
+      { "id": "ev11", "name": "eKey_j" },
+      { "id": "ev12", "name": "eKey_r" },
+      { "id": "ev13", "name": "eLMBDown" },
+      { "id": "ev14", "name": "eMotion" },
+      { "id": "ev15", "name": "eLMBUp" },
+      { "id": "ev16", "name": "eCancel" },
+      { "id": "ev17", "name": "eRMBDown" },
+      { "id": "ev18", "name": "eRMBUp" },
+      { "id": "ev19", "name": "eWheel" },
+      { "id": "ev20", "name": "eDoubleClick" },
+      { "id": "ev21", "name": "eKey_p" },
+      { "id": "ev22", "name": "eKey_tab" },
+      { "id": "ev23", "name": "eKey_t" },
+      { "id": "ev24", "name": "eKey_i" },
+      { "id": "ev25", "name": "eKey_h" },
+      { "id": "ev26", "name": "eKey_H" },
+      { "id": "ev27", "name": "eKey_F" },
+      { "id": "ev28", "name": "eKey_T" },
+      { "id": "ev29", "name": "eKey_v" },
+      { "id": "ev30", "name": "eKey_c" },
+      { "id": "ev31", "name": "eKey_x" },
+      { "id": "ev32", "name": "eKey_delete" },
+      { "id": "ev33", "name": "ePalette" },
+      { "id": "ev34", "name": "eKey_e" },
+      { "id": "ev35", "name": "eKey_g" },
+      { "id": "ev36", "name": "eKey_O" },
+      { "id": "ev37", "name": "eKey_f5" },
+      { "id": "ev38", "name": "eKey_l" },
+      { "id": "ev39", "name": "eKey_plus" },
+      { "id": "ev40", "name": "eKey_minus" },
+      { "id": "ev41", "name": "eKey_0" },
+      { "id": "ev42", "name": "eKey_P" },
+      { "id": "ev43", "name": "eKey_f1" },
+      { "id": "ev44", "name": "eMouseBack" }
+    ],
+    "signals": [
+      { "id": "sig1", "name": "sPlace" },
+      { "id": "sig2", "name": "sConnect" },
+      { "id": "sig3", "name": "sSelect" },
+      { "id": "sig4", "name": "sDone" }
+    ],
+    "actions": [
+      { "id": "act1", "name": "openFile" },
+      { "id": "act2", "name": "save" },
+      { "id": "act3", "name": "saveAs" },
+      { "id": "act4", "name": "toggleSidebar" },
+      { "id": "act5", "name": "selectAll" },
+      { "id": "act6", "name": "enterSelected" },
+      { "id": "act7", "name": "goUp" },
+      { "id": "act8", "name": "clearSelection" },
+      { "id": "act9", "name": "closePanels" },
+      { "id": "act10", "name": "hintZoom" },
+      { "id": "act11", "name": "hintClear" },
+      { "id": "act12", "name": "fit" },
+      { "id": "act13", "name": "zoomNormal" },
+      { "id": "act14", "name": "hintJump" },
+      { "id": "act15", "name": "goRoot" },
+      { "id": "act16", "name": "pressStart" },
+      { "id": "act17", "name": "lassoUpdate" },
+      { "id": "act18", "name": "toggleAtPointer" },
+      { "id": "act19", "name": "selectAtPointer" },
+      { "id": "act20", "name": "lassoFinish" },
+      { "id": "act21", "name": "lassoCancel" },
+      { "id": "act22", "name": "panStart" },
+      { "id": "act23", "name": "panBegin" },
+      { "id": "act24", "name": "panMove" },
+      { "id": "act25", "name": "panEnd" },
+      { "id": "act26", "name": "zoomAtPointer" },
+      { "id": "act27", "name": "openAtPointer" },
+      { "id": "act28", "name": "undo" },
+      { "id": "act29", "name": "redo" },
+      { "id": "act30", "name": "dragBegin" },
+      { "id": "act31", "name": "dragUpdate" },
+      { "id": "act32", "name": "dragFinish" },
+      { "id": "act33", "name": "dragCancel" },
+      { "id": "act34", "name": "hover" },
+      { "id": "act35", "name": "togglePanel" },
+      { "id": "act36", "name": "nextTab" },
+      { "id": "act37", "name": "prevTab" },
+      { "id": "act38", "name": "toolSelect" },
+      { "id": "act39", "name": "showTool" },
+      { "id": "act40", "name": "rotateTool" },
+      { "id": "act41", "name": "hintAdd" },
+      { "id": "act42", "name": "toolState" },
+      { "id": "act43", "name": "toolTransition" },
+      { "id": "act44", "name": "addRegion" },
+      { "id": "act45", "name": "toolRegion" },
+      { "id": "act46", "name": "toolInitial" },
+      { "id": "act47", "name": "toolFinal" },
+      { "id": "act48", "name": "toolHistory" },
+      { "id": "act49", "name": "toolDeepHistory" },
+      { "id": "act50", "name": "toolFork" },
+      { "id": "act51", "name": "toolJoin" },
+      { "id": "act52", "name": "toolTerminate" },
+      { "id": "act53", "name": "addBendPoint" },
+      { "id": "act54", "name": "deleteSelection" },
+      { "id": "act55", "name": "copy" },
+      { "id": "act56", "name": "cut" },
+      { "id": "act57", "name": "paste" },
+      { "id": "act58", "name": "placeUpdate" },
+      { "id": "act59", "name": "linkUpdate" },
+      { "id": "act60", "name": "linkBend" },
+      { "id": "act61", "name": "linkRefuse" },
+      { "id": "act62", "name": "linkUnbend" },
+      { "id": "act63", "name": "placeMove" },
+      { "id": "act64", "name": "paletteTool" },
+      { "id": "act65", "name": "placeStart" },
+      { "id": "act66", "name": "linkStart" },
+      { "id": "act67", "name": "placeFinish" },
+      { "id": "act68", "name": "placeCancel" },
+      { "id": "act69", "name": "linkFinish" },
+      { "id": "act70", "name": "linkCancel" },
+      { "id": "act71", "name": "addEntry" },
+      { "id": "act72", "name": "addExit" },
+      { "id": "act73", "name": "addGuard" },
+      { "id": "act74", "name": "addAction" },
+      { "id": "act75", "name": "hintEdit" },
+      { "id": "act76", "name": "editName" },
+      { "id": "act77", "name": "editTrigger" },
+      { "id": "act78", "name": "turnBar" },
+      { "id": "act79", "name": "toggleOffPage" },
+      { "id": "act80", "name": "simStop" },
+      { "id": "act81", "name": "simStart" },
+      { "id": "act82", "name": "newModel" },
+      { "id": "act83", "name": "toolStraight" },
+      { "id": "act84", "name": "uiZoomIn" },
+      { "id": "act85", "name": "uiZoomOut" },
+      { "id": "act86", "name": "uiZoomReset" },
+      { "id": "act87", "name": "quickOpen" },
+      { "id": "act88", "name": "commandPalette" }
+    ],
+    "guards": [
+      { "id": "grd1", "name": "ctrl" },
+      { "id": "grd2", "name": "singleState" },
+      { "id": "grd3", "name": "beyondThreshold" },
+      { "id": "grd4", "name": "shift" },
+      { "id": "grd5", "name": "pressedOnGrip" },
+      { "id": "grd6", "name": "singleTransition" },
+      { "id": "grd7", "name": "overVertex" },
+      { "id": "grd8", "name": "paletteSelect" },
+      { "id": "grd9", "name": "paletteConnect" },
+      { "id": "grd10", "name": "validSource" },
+      { "id": "grd11", "name": "validTarget" },
+      { "id": "grd12", "name": "singleBar" }
+    ]
+  },
+  "machine": {
+    "root": {
+      "id": "r0",
+      "name": "Root",
+      "states": [
+        { "id": "s1", "kind": "initial" },
+        {
+          "id": "s2",
+          "kind": "state",
+          "name": "Editor",
+          "regions": [
+            {
+              "id": "r1",
+              "name": "Keys",
+              "states": [
+                { "id": "s3", "kind": "initial" },
+                {
+                  "id": "s4",
+                  "kind": "state",
+                  "name": "Tools",
+                  "internal": [
+                    { "id": "t4", "on": "ev1", "do": [{ "call": "act1" }] },
+                    { "id": "t5", "on": "ev2", "do": [{ "call": "act2" }] },
+                    { "id": "t6", "on": "ev3", "do": [{ "call": "act3" }] },
+                    {
+                      "id": "t110",
+                      "on": "ev4",
+                      "guard": [{ "call": "grd1" }, { "in": "s8" }],
+                      "do": [{ "call": "act82" }]
+                    },
+                    {
+                      "id": "t7",
+                      "on": "ev4",
+                      "guard": [{ "call": "grd1", "not": true }],
+                      "do": [{ "call": "act4" }]
+                    },
+                    {
+                      "id": "t46",
+                      "on": "ev21",
+                      "guard": [{ "call": "grd1", "not": true }],
+                      "do": [{ "call": "act35" }]
+                    },
+                    {
+                      "id": "t8",
+                      "on": "ev5",
+                      "guard": [{ "call": "grd1" }],
+                      "do": [{ "call": "act5" }]
+                    },
+                    {
+                      "id": "t43",
+                      "on": "ev9",
+                      "guard": [{ "call": "grd1" }, { "in": "s13", "not": true }],
+                      "do": [{ "call": "act28" }]
+                    },
+                    {
+                      "id": "t44",
+                      "on": "ev12",
+                      "guard": [{ "call": "grd1" }, { "in": "s13", "not": true }],
+                      "do": [{ "call": "act29" }]
+                    },
+                    {
+                      "id": "t47",
+                      "on": "ev22",
+                      "guard": [{ "call": "grd1" }, { "call": "grd4" }, { "in": "s8" }],
+                      "do": [{ "call": "act37" }]
+                    },
+                    {
+                      "id": "t48",
+                      "on": "ev22",
+                      "guard": [{ "call": "grd1" }, { "in": "s8" }],
+                      "do": [{ "call": "act36" }]
+                    },
+                    {
+                      "id": "t9",
+                      "on": "ev6",
+                      "guard": [{ "call": "grd2" }],
+                      "do": [{ "call": "act6" }]
+                    },
+                    {
+                      "id": "t10",
+                      "on": "ev7",
+                      "guard": [{ "in": "s8" }],
+                      "do": [{ "call": "act7" }]
+                    },
+                    {
+                      "id": "t120",
+                      "on": "ev44",
+                      "guard": [{ "in": "s8" }],
+                      "do": [{ "call": "act7" }]
+                    },
+                    {
+                      "id": "t11",
+                      "on": "ev8",
+                      "guard": [
+                        { "in": "s10", "not": true },
+                        { "in": "s13", "not": true },
+                        { "in": "s14" }
+                      ],
+                      "do": [{ "call": "act8" }, { "call": "act9" }]
+                    },
+                    {
+                      "id": "t62",
+                      "on": "ev32",
+                      "guard": [{ "in": "s8" }],
+                      "do": [{ "call": "act54" }]
+                    },
+                    {
+                      "id": "t63",
+                      "on": "ev30",
+                      "guard": [{ "call": "grd1" }, { "in": "s8" }],
+                      "do": [{ "call": "act55" }]
+                    },
+                    {
+                      "id": "t64",
+                      "on": "ev31",
+                      "guard": [{ "call": "grd1" }, { "in": "s8" }],
+                      "do": [{ "call": "act56" }]
+                    },
+                    {
+                      "id": "t65",
+                      "on": "ev29",
+                      "guard": [{ "call": "grd1" }, { "in": "s8" }],
+                      "do": [{ "call": "act57" }]
+                    },
+                    {
+                      "id": "t108",
+                      "on": "ev37",
+                      "guard": [{ "call": "grd4" }],
+                      "do": [{ "call": "act80" }]
+                    },
+                    { "id": "t109", "on": "ev37", "do": [{ "call": "act81" }] },
+                    {
+                      "id": "t114",
+                      "on": "ev39",
+                      "guard": [{ "call": "grd1" }, { "in": "s8" }],
+                      "do": [{ "call": "act84" }]
+                    },
+                    {
+                      "id": "t115",
+                      "on": "ev40",
+                      "guard": [{ "call": "grd1" }, { "in": "s8" }],
+                      "do": [{ "call": "act85" }]
+                    },
+                    {
+                      "id": "t116",
+                      "on": "ev41",
+                      "guard": [{ "call": "grd1" }, { "in": "s8" }],
+                      "do": [{ "call": "act86" }]
+                    },
+                    {
+                      "id": "t117",
+                      "on": "ev21",
+                      "guard": [{ "call": "grd1" }, { "in": "s8" }],
+                      "do": [{ "call": "act87" }]
+                    },
+                    {
+                      "id": "t118",
+                      "on": "ev42",
+                      "guard": [{ "call": "grd1" }, { "in": "s8" }],
+                      "do": [{ "call": "act88" }]
+                    },
+                    {
+                      "id": "t119",
+                      "on": "ev43",
+                      "guard": [{ "in": "s8" }],
+                      "do": [{ "call": "act88" }]
+                    }
+                  ]
+                },
+                {
+                  "id": "s5",
+                  "kind": "state",
+                  "name": "Zoom",
+                  "entry": [{ "call": "act10" }],
+                  "exit": [{ "call": "act11" }]
+                },
+                {
+                  "id": "s6",
+                  "kind": "state",
+                  "name": "Jump",
+                  "entry": [{ "call": "act14" }],
+                  "exit": [{ "call": "act11" }]
+                },
+                {
+                  "id": "s19",
+                  "kind": "state",
+                  "name": "Add",
+                  "entry": [{ "call": "act41" }],
+                  "exit": [{ "call": "act11" }],
+                  "internal": [
+                    {
+                      "id": "t50",
+                      "on": "ev2",
+                      "do": [{ "call": "act42" }, { "emit": "sig1" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t51",
+                      "on": "ev23",
+                      "do": [{ "call": "act43" }, { "emit": "sig2" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t111",
+                      "on": "ev38",
+                      "do": [{ "call": "act83" }, { "emit": "sig2" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t52",
+                      "on": "ev12",
+                      "guard": [{ "call": "grd2" }],
+                      "do": [{ "call": "act44" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t53",
+                      "on": "ev12",
+                      "do": [{ "call": "act45" }, { "emit": "sig1" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t54",
+                      "on": "ev24",
+                      "do": [{ "call": "act46" }, { "emit": "sig1" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t55",
+                      "on": "ev10",
+                      "do": [{ "call": "act47" }, { "emit": "sig1" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t56",
+                      "on": "ev25",
+                      "do": [{ "call": "act48" }, { "emit": "sig1" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t57",
+                      "on": "ev26",
+                      "do": [{ "call": "act49" }, { "emit": "sig1" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t58",
+                      "on": "ev27",
+                      "do": [{ "call": "act50" }, { "emit": "sig1" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t59",
+                      "on": "ev11",
+                      "do": [{ "call": "act51" }, { "emit": "sig1" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t60",
+                      "on": "ev28",
+                      "do": [{ "call": "act52" }, { "emit": "sig1" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t61",
+                      "on": "ev29",
+                      "guard": [{ "call": "grd6" }],
+                      "do": [{ "call": "act53" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t97",
+                      "on": "ev34",
+                      "guard": [{ "call": "grd2" }],
+                      "do": [{ "call": "act71" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t98",
+                      "on": "ev31",
+                      "guard": [{ "call": "grd2" }],
+                      "do": [{ "call": "act72" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t99",
+                      "on": "ev35",
+                      "guard": [{ "call": "grd6" }],
+                      "do": [{ "call": "act73" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t100",
+                      "on": "ev5",
+                      "guard": [{ "call": "grd6" }],
+                      "do": [{ "call": "act74" }, { "emit": "sig4" }]
+                    }
+                  ]
+                },
+                {
+                  "id": "s22",
+                  "kind": "state",
+                  "name": "Edit",
+                  "entry": [{ "call": "act75" }],
+                  "exit": [{ "call": "act11" }],
+                  "internal": [
+                    {
+                      "id": "t101",
+                      "on": "ev4",
+                      "guard": [{ "call": "grd2" }],
+                      "do": [{ "call": "act76" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t102",
+                      "on": "ev23",
+                      "guard": [{ "call": "grd6" }],
+                      "do": [{ "call": "act77" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t103",
+                      "on": "ev12",
+                      "guard": [{ "call": "grd12" }],
+                      "do": [{ "call": "act78" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t104",
+                      "on": "ev36",
+                      "guard": [{ "call": "grd2" }],
+                      "do": [{ "call": "act79" }, { "emit": "sig4" }]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "r2",
+              "name": "Pointer",
+              "states": [
+                { "id": "s7", "kind": "initial" },
+                {
+                  "id": "s8",
+                  "kind": "state",
+                  "name": "Idle",
+                  "internal": [
+                    { "id": "t36", "on": "ev19", "do": [{ "call": "act26" }] },
+                    { "id": "t37", "on": "ev20", "do": [{ "call": "act27" }] },
+                    {
+                      "id": "t73",
+                      "on": "ev14",
+                      "guard": [{ "in": "s16" }],
+                      "do": [{ "call": "act63" }]
+                    },
+                    { "id": "t45", "on": "ev14", "do": [{ "call": "act34" }] },
+                    {
+                      "id": "t74",
+                      "on": "ev13",
+                      "guard": [{ "in": "s17" }],
+                      "do": [{ "call": "act61" }]
+                    },
+                    {
+                      "id": "t75",
+                      "on": "ev33",
+                      "guard": [{ "call": "grd8" }],
+                      "do": [{ "emit": "sig3" }]
+                    },
+                    {
+                      "id": "t76",
+                      "on": "ev33",
+                      "guard": [{ "call": "grd9" }],
+                      "do": [{ "call": "act64" }, { "emit": "sig2" }]
+                    },
+                    { "id": "t77", "on": "ev33", "do": [{ "call": "act64" }, { "emit": "sig1" }] }
+                  ]
+                },
+                { "id": "s9", "kind": "state", "name": "Pressed" },
+                {
+                  "id": "s10",
+                  "kind": "state",
+                  "name": "Lasso",
+                  "internal": [{ "id": "t25", "on": "ev14", "do": [{ "call": "act17" }] }]
+                },
+                {
+                  "id": "s11",
+                  "kind": "state",
+                  "name": "PanPressed",
+                  "internal": [{ "id": "t112", "on": "ev19", "do": [{ "call": "act26" }] }]
+                },
+                {
+                  "id": "s12",
+                  "kind": "state",
+                  "name": "Panning",
+                  "internal": [
+                    { "id": "t33", "on": "ev14", "do": [{ "call": "act24" }] },
+                    { "id": "t113", "on": "ev19", "do": [{ "call": "act26" }] }
+                  ]
+                },
+                {
+                  "id": "s13",
+                  "kind": "state",
+                  "name": "Dragging",
+                  "internal": [{ "id": "t38", "on": "ev14", "do": [{ "call": "act31" }] }]
+                },
+                {
+                  "id": "s20",
+                  "kind": "state",
+                  "name": "Sizing",
+                  "internal": [{ "id": "t66", "on": "ev14", "do": [{ "call": "act58" }] }]
+                },
+                {
+                  "id": "s21",
+                  "kind": "state",
+                  "name": "Linking",
+                  "internal": [
+                    { "id": "t67", "on": "ev14", "do": [{ "call": "act59" }] },
+                    { "id": "t68", "on": "ev19", "do": [{ "call": "act26" }] },
+                    {
+                      "id": "t69",
+                      "on": "ev13",
+                      "guard": [{ "call": "grd4" }],
+                      "do": [{ "call": "act60" }]
+                    },
+                    {
+                      "id": "t70",
+                      "on": "ev13",
+                      "guard": [{ "call": "grd7" }],
+                      "do": [{ "call": "act61" }]
+                    },
+                    { "id": "t71", "on": "ev13", "do": [{ "call": "act60" }] },
+                    { "id": "t72", "on": "ev7", "do": [{ "call": "act62" }] }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "r3",
+              "name": "Tool",
+              "states": [
+                { "id": "s14", "kind": "state", "name": "Select", "entry": [{ "call": "act38" }] },
+                {
+                  "id": "s15",
+                  "kind": "state",
+                  "name": "Armed",
+                  "regions": [
+                    {
+                      "id": "r4",
+                      "states": [
+                        {
+                          "id": "s16",
+                          "kind": "state",
+                          "name": "Place",
+                          "entry": [{ "call": "act39" }],
+                          "internal": [
+                            {
+                              "id": "t49",
+                              "on": "ev12",
+                              "guard": [{ "call": "grd1", "not": true }, { "in": "s4" }],
+                              "do": [{ "call": "act40" }]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "s17",
+                          "kind": "state",
+                          "name": "Connect",
+                          "entry": [{ "call": "act39" }]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                { "id": "s18", "kind": "initial" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "transitions": [
+      { "id": "t1", "from": "s1", "to": "s2" },
+      { "id": "t2", "from": "s3", "to": "s4" },
+      { "id": "t3", "from": "s7", "to": "s8" },
+      {
+        "id": "t12",
+        "from": "s4",
+        "to": "s5",
+        "on": "ev9",
+        "guard": [{ "call": "grd1", "not": true }]
+      },
+      { "id": "t13", "from": "s5", "to": "s4", "on": "ev10", "do": [{ "call": "act12" }] },
+      { "id": "t14", "from": "s5", "to": "s4", "on": "ev4", "do": [{ "call": "act13" }] },
+      { "id": "t15", "from": "s5", "to": "s4", "on": "ev8" },
+      { "id": "t16", "from": "s4", "to": "s6", "on": "ev11" },
+      { "id": "t17", "from": "s6", "to": "s4", "on": "ev5", "do": [{ "call": "act7" }] },
+      { "id": "t18", "from": "s6", "to": "s4", "on": "ev12", "do": [{ "call": "act15" }] },
+      { "id": "t19", "from": "s6", "to": "s4", "on": "ev8" },
+      {
+        "id": "t20",
+        "from": "s8",
+        "to": "s9",
+        "on": "ev13",
+        "guard": [{ "in": "s14" }],
+        "do": [{ "call": "act16" }]
+      },
+      {
+        "id": "t39",
+        "from": "s9",
+        "to": "s13",
+        "on": "ev14",
+        "guard": [{ "call": "grd3" }, { "call": "grd5" }],
+        "do": [{ "call": "act30" }, { "call": "act31" }]
+      },
+      {
+        "id": "t21",
+        "from": "s9",
+        "to": "s10",
+        "on": "ev14",
+        "guard": [{ "call": "grd3" }],
+        "do": [{ "call": "act17" }]
+      },
+      {
+        "id": "t22",
+        "from": "s9",
+        "to": "s8",
+        "on": "ev15",
+        "guard": [{ "call": "grd4" }],
+        "do": [{ "call": "act18" }]
+      },
+      { "id": "t23", "from": "s9", "to": "s8", "on": "ev15", "do": [{ "call": "act19" }] },
+      { "id": "t24", "from": "s9", "to": "s8", "on": "ev16" },
+      { "id": "t26", "from": "s10", "to": "s8", "on": "ev15", "do": [{ "call": "act20" }] },
+      { "id": "t27", "from": "s10", "to": "s8", "on": "ev8", "do": [{ "call": "act21" }] },
+      { "id": "t28", "from": "s10", "to": "s8", "on": "ev16", "do": [{ "call": "act21" }] },
+      { "id": "t29", "from": "s8", "to": "s11", "on": "ev17", "do": [{ "call": "act22" }] },
+      {
+        "id": "t30",
+        "from": "s11",
+        "to": "s12",
+        "on": "ev14",
+        "guard": [{ "call": "grd3" }],
+        "do": [{ "call": "act23" }, { "call": "act24" }]
+      },
+      { "id": "t31", "from": "s11", "to": "s8", "on": "ev18" },
+      { "id": "t32", "from": "s11", "to": "s8", "on": "ev16" },
+      { "id": "t34", "from": "s12", "to": "s8", "on": "ev18", "do": [{ "call": "act25" }] },
+      { "id": "t35", "from": "s12", "to": "s8", "on": "ev16", "do": [{ "call": "act25" }] },
+      { "id": "t40", "from": "s13", "to": "s8", "on": "ev15", "do": [{ "call": "act32" }] },
+      { "id": "t41", "from": "s13", "to": "s8", "on": "ev8", "do": [{ "call": "act33" }] },
+      { "id": "t42", "from": "s13", "to": "s8", "on": "ev16", "do": [{ "call": "act33" }] },
+      {
+        "id": "t78",
+        "from": "s4",
+        "to": "s19",
+        "on": "ev5",
+        "guard": [{ "call": "grd1", "not": true }, { "in": "s8" }]
+      },
+      { "id": "t79", "from": "s19", "to": "s4", "on": "sig4" },
+      { "id": "t80", "from": "s19", "to": "s4", "on": "ev8" },
+      {
+        "id": "t81",
+        "from": "s8",
+        "to": "s20",
+        "on": "ev13",
+        "guard": [{ "in": "s16" }],
+        "do": [{ "call": "act65" }]
+      },
+      {
+        "id": "t82",
+        "from": "s8",
+        "to": "s21",
+        "on": "ev13",
+        "guard": [{ "in": "s17" }, { "call": "grd10" }],
+        "do": [{ "call": "act66" }]
+      },
+      {
+        "id": "t83",
+        "from": "s20",
+        "to": "s8",
+        "on": "ev15",
+        "do": [{ "call": "act67" }, { "emit": "sig3" }]
+      },
+      { "id": "t84", "from": "s20", "to": "s8", "on": "ev8", "do": [{ "call": "act68" }] },
+      { "id": "t85", "from": "s20", "to": "s8", "on": "ev16", "do": [{ "call": "act68" }] },
+      {
+        "id": "t86",
+        "from": "s21",
+        "to": "s8",
+        "on": "ev13",
+        "guard": [{ "call": "grd4", "not": true }, { "call": "grd11" }],
+        "do": [{ "call": "act69" }, { "emit": "sig3" }]
+      },
+      {
+        "id": "t87",
+        "from": "s21",
+        "to": "s8",
+        "on": "ev15",
+        "guard": [{ "call": "grd3" }, { "call": "grd11" }],
+        "do": [{ "call": "act69" }, { "emit": "sig3" }]
+      },
+      { "id": "t88", "from": "s21", "to": "s8", "on": "ev8", "do": [{ "call": "act70" }] },
+      { "id": "t89", "from": "s21", "to": "s8", "on": "ev16", "do": [{ "call": "act70" }] },
+      { "id": "t90", "from": "s18", "to": "s14" },
+      { "id": "t91", "from": "s14", "to": "s16", "on": "sig1" },
+      { "id": "t92", "from": "s14", "to": "s17", "on": "sig2" },
+      { "id": "t93", "from": "s15", "to": "s16", "on": "sig1" },
+      { "id": "t94", "from": "s15", "to": "s17", "on": "sig2" },
+      { "id": "t95", "from": "s15", "to": "s14", "on": "sig3" },
+      { "id": "t96", "from": "s15", "to": "s14", "on": "ev8" },
+      {
+        "id": "t105",
+        "from": "s4",
+        "to": "s22",
+        "on": "ev34",
+        "guard": [{ "call": "grd1", "not": true }, { "in": "s8" }]
+      },
+      { "id": "t106", "from": "s22", "to": "s4", "on": "sig4" },
+      { "id": "t107", "from": "s22", "to": "s4", "on": "ev8" }
+    ]
+  },
+  "diagram": {
+    "paper": "A1",
+    "states": {
+      "s1": { "x": 1180, "y": 990, "w": 20, "h": 20 },
+      "s2": { "x": 890, "y": 1070, "w": 580, "h": 360 },
+      "s3": { "x": 512, "y": 975, "w": 20, "h": 20 },
+      "s4": { "x": 582, "y": 930, "w": 448, "h": 600 },
+      "s5": { "x": 1330, "y": 1030, "w": 170, "h": 130 },
+      "s6": { "x": 1800, "y": 1030, "w": 170, "h": 130 },
+      "s19": { "x": 2270, "y": 1030, "w": 420, "h": 440 },
+      "s22": { "x": 2772, "y": 1030, "w": 400, "h": 170 },
+      "s7": { "x": 40, "y": 115, "w": 20, "h": 20 },
+      "s8": { "x": 110, "y": 110, "w": 420, "h": 230 },
+      "s9": { "x": 674, "y": 110, "w": 170, "h": 70 },
+      "s10": { "x": 1144, "y": 110, "w": 208, "h": 110 },
+      "s11": { "x": 1652, "y": 110, "w": 170, "h": 80 },
+      "s12": { "x": 2122, "y": 110, "w": 176, "h": 110 },
+      "s13": { "x": 674, "y": 814, "w": 170, "h": 90 },
+      "s20": { "x": 1144, "y": 954, "w": 170, "h": 80 },
+      "s21": { "x": 1652, "y": 954, "w": 300, "h": 180 },
+      "s14": { "x": 110, "y": 100, "w": 170, "h": 130 },
+      "s15": { "x": 560, "y": 60, "w": 640, "h": 240 },
+      "s16": { "x": 50, "y": 50, "w": 250, "h": 100 },
+      "s17": { "x": 400, "y": 50, "w": 170, "h": 70 },
+      "s18": { "x": 40, "y": 120, "w": 20, "h": 20 }
+    },
+    "regions": {
+      "r1": { "h": 100, "offPage": true },
+      "r2": { "h": 110, "offPage": true },
+      "r3": { "offPage": true }
+    },
+    "transitions": {
+      "t1": { "from": { "side": "bottom", "offset": 10 }, "to": { "side": "top", "offset": 300 } },
+      "t2": { "from": { "side": "right", "offset": 10 }, "to": { "side": "left", "offset": 55 } },
+      "t3": { "from": { "side": "right", "offset": 10 }, "to": { "side": "left", "offset": 15 } },
+      "t12": {
+        "from": { "side": "right", "offset": 118 },
+        "to": { "side": "left", "offset": 18 },
+        "label": { "x": 1044, "y": 1029, "w": 272 }
+      },
+      "t13": {
+        "from": { "side": "bottom", "offset": 150 },
+        "to": { "side": "bottom", "offset": 20 },
+        "via": [[1480, 1546], [602, 1546]],
+        "label": { "x": 800, "y": 1500, "w": 758 }
+      },
+      "t14": {
+        "from": { "side": "bottom", "offset": 134 },
+        "to": { "side": "bottom", "offset": 36 },
+        "via": [[1464, 1586], [618, 1586]],
+        "label": { "x": 800, "y": 1540, "w": 742 }
+      },
+      "t15": {
+        "from": { "side": "bottom", "offset": 118 },
+        "to": { "side": "bottom", "offset": 52 },
+        "via": [[1448, 1626], [634, 1626]],
+        "label": { "x": 800, "y": 1580, "w": 726 }
+      },
+      "t16": {
+        "from": { "side": "top", "offset": 428 },
+        "to": { "side": "top", "offset": 20 },
+        "via": [[1010, 909], [1820, 910]],
+        "label": { "x": 1020, "y": 888, "w": 360 }
+      },
+      "t17": {
+        "from": { "side": "bottom", "offset": 150 },
+        "to": { "side": "bottom", "offset": 68 },
+        "via": [[1950, 1666], [650, 1666]],
+        "label": { "x": 800, "y": 1620, "w": 1228 }
+      },
+      "t18": {
+        "from": { "side": "bottom", "offset": 134 },
+        "to": { "side": "bottom", "offset": 84 },
+        "via": [[1934, 1706], [666, 1706]],
+        "label": { "x": 800, "y": 1660, "w": 1212 }
+      },
+      "t19": {
+        "from": { "side": "bottom", "offset": 118 },
+        "to": { "side": "bottom", "offset": 100 },
+        "via": [[1918, 1746], [682, 1746]],
+        "label": { "x": 800, "y": 1700, "w": 1196 }
+      },
+      "t20": {
+        "from": { "side": "right", "offset": 18 },
+        "to": { "side": "left", "offset": 18 },
+        "label": { "x": 540, "y": 109, "w": 130 }
+      },
+      "t39": {
+        "route": "s",
+        "from": { "side": "bottom", "offset": 40 },
+        "to": { "side": "top", "offset": 40 },
+        "label": { "x": 10, "y": 183, "w": 330 }
+      },
+      "t21": {
+        "from": { "side": "right", "offset": 18 },
+        "to": { "side": "left", "offset": 18 },
+        "label": { "x": 858, "y": 109, "w": 272 }
+      },
+      "t22": {
+        "from": { "side": "bottom", "offset": 150 },
+        "to": { "side": "bottom", "offset": 20 },
+        "via": [[824, 366], [130, 366]],
+        "label": { "x": 490, "y": 347, "w": 314 }
+      },
+      "t23": {
+        "from": { "side": "bottom", "offset": 134 },
+        "to": { "side": "bottom", "offset": 36 },
+        "via": [[808, 406], [146, 406]],
+        "label": { "x": 490, "y": 387, "w": 298 }
+      },
+      "t24": {
+        "from": { "side": "bottom", "offset": 118 },
+        "to": { "side": "bottom", "offset": 52 },
+        "via": [[792, 446], [162, 446]],
+        "label": { "x": 490, "y": 427, "w": 282 }
+      },
+      "t26": {
+        "from": { "side": "bottom", "offset": 188 },
+        "to": { "side": "bottom", "offset": 68 },
+        "via": [[1332, 486], [178, 486]],
+        "label": { "x": 490, "y": 467, "w": 822 }
+      },
+      "t27": {
+        "from": { "side": "bottom", "offset": 172 },
+        "to": { "side": "bottom", "offset": 84 },
+        "via": [[1316, 526], [194, 526]],
+        "label": { "x": 490, "y": 507, "w": 806 }
+      },
+      "t28": {
+        "from": { "side": "bottom", "offset": 156 },
+        "to": { "side": "bottom", "offset": 100 },
+        "via": [[1300, 566], [210, 566]],
+        "label": { "x": 490, "y": 547, "w": 790 }
+      },
+      "t29": {
+        "from": { "side": "top", "offset": 244 },
+        "to": { "side": "top", "offset": 20 },
+        "via": [[354, 88], [1672, 88]],
+        "label": { "x": 364, "y": 68, "w": 360 }
+      },
+      "t30": {
+        "from": { "side": "right", "offset": 18 },
+        "to": { "side": "left", "offset": 18 },
+        "label": { "x": 1836, "y": 109, "w": 272 }
+      },
+      "t31": {
+        "from": { "side": "bottom", "offset": 150 },
+        "to": { "side": "bottom", "offset": 116 },
+        "via": [[1802, 606], [226, 606]],
+        "label": { "x": 490, "y": 587, "w": 1292 }
+      },
+      "t32": {
+        "from": { "side": "bottom", "offset": 134 },
+        "to": { "side": "bottom", "offset": 132 },
+        "via": [[1786, 646], [242, 646]],
+        "label": { "x": 490, "y": 627, "w": 1276 }
+      },
+      "t34": {
+        "from": { "side": "bottom", "offset": 156 },
+        "to": { "side": "bottom", "offset": 148 },
+        "via": [[2278, 686], [258, 686]],
+        "label": { "x": 490, "y": 667, "w": 1768 }
+      },
+      "t35": {
+        "from": { "side": "bottom", "offset": 140 },
+        "to": { "side": "bottom", "offset": 164 },
+        "via": [[2262, 726], [274, 726]],
+        "label": { "x": 490, "y": 707, "w": 1752 }
+      },
+      "t40": {
+        "route": "s",
+        "from": { "side": "left", "offset": 20 },
+        "to": { "side": "left", "offset": 100 },
+        "jog": { "x": 86 }
+      },
+      "t41": {
+        "route": "s",
+        "from": { "side": "left", "offset": 45 },
+        "to": { "side": "left", "offset": 80 },
+        "jog": { "x": 76 }
+      },
+      "t42": {
+        "route": "s",
+        "from": { "side": "left", "offset": 70 },
+        "to": { "side": "left", "offset": 60 },
+        "jog": { "x": 66 }
+      },
+      "t78": {
+        "from": { "side": "right", "offset": 70 },
+        "to": { "side": "left", "offset": 30 },
+        "via": [[2220, 1000], [2220, 1060]],
+        "label": { "x": 1044, "y": 981, "w": 400 }
+      },
+      "t79": {
+        "from": { "side": "bottom", "offset": 80 },
+        "to": { "side": "bottom", "offset": 116 },
+        "via": [[2350, 1786], [698, 1786]],
+        "label": { "x": 800, "y": 1740, "w": 1560 }
+      },
+      "t80": {
+        "from": { "side": "bottom", "offset": 60 },
+        "to": { "side": "bottom", "offset": 132 },
+        "via": [[2330, 1826], [714, 1826]],
+        "label": { "x": 800, "y": 1780, "w": 1540 }
+      },
+      "t81": {
+        "from": { "side": "bottom", "offset": 330 },
+        "to": { "side": "left", "offset": 35 },
+        "via": [[440, 989]],
+        "label": { "x": 460, "y": 970, "w": 600 }
+      },
+      "t82": {
+        "from": { "side": "bottom", "offset": 360 },
+        "to": { "side": "left", "offset": 120 },
+        "via": [[470, 1074]],
+        "label": { "x": 490, "y": 1055, "w": 1100 }
+      },
+      "t83": {
+        "from": { "side": "bottom", "offset": 40 },
+        "to": { "side": "bottom", "offset": 296 },
+        "via": [[1184, 1174], [406, 1174]],
+        "label": { "x": 520, "y": 1155, "w": 644 }
+      },
+      "t84": {
+        "from": { "side": "bottom", "offset": 85 },
+        "to": { "side": "bottom", "offset": 280 },
+        "via": [[1229, 1214], [390, 1214]],
+        "label": { "x": 520, "y": 1195, "w": 689 }
+      },
+      "t85": {
+        "from": { "side": "bottom", "offset": 130 },
+        "to": { "side": "bottom", "offset": 264 },
+        "via": [[1274, 1254], [374, 1254]],
+        "label": { "x": 520, "y": 1235, "w": 734 }
+      },
+      "t86": {
+        "from": { "side": "bottom", "offset": 50 },
+        "to": { "side": "bottom", "offset": 248 },
+        "via": [[1702, 1294], [358, 1294]],
+        "label": { "x": 520, "y": 1275, "w": 1162 }
+      },
+      "t87": {
+        "from": { "side": "bottom", "offset": 100 },
+        "to": { "side": "bottom", "offset": 232 },
+        "via": [[1752, 1334], [342, 1334]],
+        "label": { "x": 520, "y": 1315, "w": 1212 }
+      },
+      "t88": {
+        "from": { "side": "bottom", "offset": 150 },
+        "to": { "side": "bottom", "offset": 216 },
+        "via": [[1802, 1374], [326, 1374]],
+        "label": { "x": 520, "y": 1355, "w": 1262 }
+      },
+      "t89": {
+        "from": { "side": "bottom", "offset": 200 },
+        "to": { "side": "bottom", "offset": 200 },
+        "via": [[1852, 1414], [310, 1414]],
+        "label": { "x": 520, "y": 1395, "w": 1312 }
+      },
+      "t90": { "from": { "side": "right", "offset": 10 }, "to": { "side": "left", "offset": 30 } },
+      "t91": {
+        "from": { "side": "right", "offset": 20 },
+        "to": { "side": "left", "offset": 10 },
+        "label": { "x": 300, "y": 101, "w": 240 }
+      },
+      "t92": {
+        "from": { "side": "bottom", "offset": 85 },
+        "to": { "side": "bottom", "offset": 85 },
+        "via": [[195, 340], [1045, 340]],
+        "label": { "x": 300, "y": 321, "w": 600 }
+      },
+      "t93": {
+        "route": "s",
+        "from": { "side": "top", "offset": 40 },
+        "to": { "side": "top", "offset": 40 },
+        "jog": { "y": 30 }
+      },
+      "t94": {
+        "route": "s",
+        "from": { "side": "top", "offset": 520 },
+        "to": { "side": "top", "offset": 80 },
+        "jog": { "y": 30 }
+      },
+      "t95": {
+        "from": { "side": "left", "offset": 100 },
+        "to": { "side": "right", "offset": 60 },
+        "label": { "x": 300, "y": 141, "w": 240 }
+      },
+      "t96": {
+        "from": { "side": "left", "offset": 140 },
+        "to": { "side": "right", "offset": 100 },
+        "label": { "x": 300, "y": 181, "w": 240 }
+      },
+      "t105": {
+        "from": { "side": "top", "offset": 380 },
+        "to": { "side": "top", "offset": 80 },
+        "via": [[962, 895], [2850, 900]],
+        "label": { "x": 2372, "y": 904, "w": 400 }
+      },
+      "t106": {
+        "from": { "side": "bottom", "offset": 60 },
+        "to": { "side": "bottom", "offset": 164 },
+        "via": [[2832, 1866], [746, 1866]],
+        "label": { "x": 800, "y": 1820, "w": 2040 }
+      },
+      "t107": {
+        "from": { "side": "bottom", "offset": 80 },
+        "to": { "side": "bottom", "offset": 148 },
+        "via": [[2852, 1906], [730, 1906]],
+        "label": { "x": 800, "y": 1860, "w": 2060 }
+      }
+    }
+  },
+  "targets": { "ts": { "className": "EditorFsm", "module": "editor-fsm" } }
+}

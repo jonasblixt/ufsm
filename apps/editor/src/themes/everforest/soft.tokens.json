@@ -1,0 +1,13 @@
+{
+  "$description": "Everforest soft contrast (g:everforest_background = 'soft'): the background ladder of the appearance in use.",
+  "bg": {
+    "$type": "color",
+    "bg_dim": { "$value": "{ladder.soft.bg_dim}" },
+    "bg0": { "$value": "{ladder.soft.bg0}" },
+    "bg1": { "$value": "{ladder.soft.bg1}" },
+    "bg2": { "$value": "{ladder.soft.bg2}" },
+    "bg3": { "$value": "{ladder.soft.bg3}" },
+    "bg4": { "$value": "{ladder.soft.bg4}" },
+    "bg5": { "$value": "{ladder.soft.bg5}" }
+  }
+}

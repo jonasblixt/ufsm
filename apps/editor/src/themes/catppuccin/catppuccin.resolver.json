@@ -1,0 +1,24 @@
+{
+  "name": "Catppuccin",
+  "description": "Soothing pastel theme (https://github.com/catppuccin/palette, MIT licence): Latte when light; Frappé, Macchiato or Mocha when dark.",
+  "version": "2025.10",
+  "sets": {
+    "base": {
+      "description": "The editor's token names, the four absolute flavors and the roles",
+      "sources": [{ "$ref": "../ui.tokens.json" }, { "$ref": "catppuccin.tokens.json" }, { "$ref": "roles.tokens.json" }]
+    }
+  },
+  "modifiers": {
+    "appearance": {
+      "description": "Dark: the flavor below; light: Latte",
+      "contexts": { "dark": [{ "$ref": "dark.tokens.json" }], "light": [{ "$ref": "latte.tokens.json" }] },
+      "default": "dark"
+    },
+    "flavor": {
+      "description": "The dark flavor (light is always Latte)",
+      "contexts": { "frappe": [{ "$ref": "frappe.tokens.json" }], "macchiato": [{ "$ref": "macchiato.tokens.json" }], "mocha": [{ "$ref": "mocha.tokens.json" }] },
+      "default": "mocha"
+    }
+  },
+  "resolutionOrder": [{ "$ref": "#/sets/base" }, { "$ref": "#/modifiers/flavor" }, { "$ref": "#/modifiers/appearance" }]
+}

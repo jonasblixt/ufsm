@@ -1,0 +1,8 @@
+{
+  "model": "../models/test_nested_finals2.ufsm",
+  "doc": "From old/tests/C/test_nested_finals2.c. Completion propagates outwards: A1 completes into Final2, which completes A.",
+  "steps": [
+    { "reset": true, "expect": ["eA", "eA1", "eA11"] },
+    { "send": "e1", "expect": ["xA11", "xA1", "xA", "eEnd"], "active": ["End"] }
+  ]
+}

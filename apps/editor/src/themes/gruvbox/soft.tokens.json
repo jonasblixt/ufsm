@@ -1,0 +1,9 @@
+{
+  "$description": "Gruvbox soft contrast (g:gruvbox_contrast_dark/light = 'soft'): picks bg0 and the matching surround and grid from what the appearance defines.",
+  "palette": {
+    "$type": "color",
+    "bg0": { "$value": "{palette.bg0Soft}" },
+    "bgDeep": { "$value": "{palette.deepSoft}" },
+    "bgGrid": { "$value": "{palette.gridSoft}" }
+  }
+}

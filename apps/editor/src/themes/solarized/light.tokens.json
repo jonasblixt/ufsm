@@ -1,0 +1,17 @@
+{
+  "$description": "Solarized light: background base3, highlights base2, body text base00, secondary content base1 (the dark roles inverted, as the README says). ufsm adds one step of the monotone ladder (L*87, same a*b* as base2/base3) for raised backgrounds and card edges.",
+  "palette": {
+    "$type": "color",
+    "bg0": { "$value": "{solarized.base3}" },
+    "bgDeep": { "$value": "{solarized.base2}", "$description": "Around the sheet: paper on a desk" },
+    "bgGrid": { "$value": "{solarized.base2}" },
+    "bg1": { "$value": "{solarized.base2}" },
+    "bg2": { "$value": { "colorSpace": "srgb", "components": [0.8784, 0.851, 0.7804], "hex": "#e0d9c7" }, "$description": "L*87 a*0 b*10: one step below base2" },
+    "fg1": { "$value": "{solarized.base00}" },
+    "fg4": { "$value": "{solarized.base1}" },
+    "gray": { "$value": "{solarized.base1}" },
+    "chrome": { "$value": "{solarized.base2}" },
+    "edge": { "$value": "{palette.bg2}", "$description": "Card edges: darker than both the card and the chrome" },
+    "shadow": { "$value": { "colorSpace": "srgb", "components": [0, 0.1686, 0.2118], "alpha": 0.2, "hex": "#002b36" }, "$description": "base03 at 20%" }
+  }
+}
