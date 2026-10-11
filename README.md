@@ -1,4 +1,4 @@
-<img src="old/doc/logo.png" alt="uFSM logo" width="80">
+<img src="docs/logo.png" alt="uFSM logo" width="80">
 
 # uFSM
 
@@ -9,8 +9,8 @@ generating code from them. Version 0.6 is a rewrite: a TypeScript core with
 code generator backends for C, C++, C#, Python, TypeScript/JavaScript, Rust and Go, and a
 cross-platform desktop editor built with [Tauri](https://tauri.app).
 
-The previous C/GTK editor and Python generator (v0.5.x) are kept in
-[`old/`](old/) for reference while the rewrite catches up. Models drawn with
+The previous C/GTK editor and Python generator (v0.5.x) are available at the
+[v0.5.3](https://github.com/jonasblixt/ufsm/tree/v0.5.3) tag. Models drawn with
 v0.5 open in the new editor and CLI and are converted to the new format.
 
 ## Disclaimer
@@ -33,8 +33,7 @@ apps/editor       @ufsm/editor: Vite + TypeScript frontend
 apps/editor/src-tauri   Rust shell (window, native dialogs, file IO)
 docs/             architecture, glossary, contributing, file format, semantics, generators
 examples/         example models (v1)
-tests/models/     test models (v1), including the old editor's own canvas.ufsm
-old/              v0.5.x C/GTK editor, Python generator, examples and tests
+tests/models/     test models (v1), including the v0.5 editor's own canvas.ufsm
 ```
 
 ## Prerequisites
@@ -80,7 +79,7 @@ Other scripts, run from the repository root:
 
 ### Editor controls
 
-The key map follows the old editor; two-key commands start with <kbd>A</kbd> (add), <kbd>E</kbd> (edit), <kbd>Z</kbd> (zoom) or <kbd>J</kbd> (jump).
+The key map follows the v0.5 editor; two-key commands start with <kbd>A</kbd> (add), <kbd>E</kbd> (edit), <kbd>Z</kbd> (zoom) or <kbd>J</kbd> (jump).
 
 | Action | Mouse | Key |
 |--------|-------|-----|
@@ -181,8 +180,8 @@ are yours too. The GPL covers uFSM itself: the editor, the CLI and the
 `@ufsm/core` library (a program that embeds the library or its interpreter
 is covered by the GPL).
 
-The v0.5 code in `old/` remains under its BSD 3-Clause licence
-([old/LICENSE](old/LICENSE)).
+uFSM v0.5.x and earlier ([v0.5.3](https://github.com/jonasblixt/ufsm/tree/v0.5.3)) remain under the BSD 3-Clause
+licence.
 
 The color palettes in `apps/editor/src/themes/` come from
 [gruvbox](https://github.com/morhetz/gruvbox) by Pavel Pertsev (MIT/X11),
