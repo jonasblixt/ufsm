@@ -179,12 +179,12 @@ export interface IrModule {
   timers: IrTimer[];
   /** Run by reset() after clearing everything (it starts by stopping every timer). */
   start: Stmt[];
-  /** Step function per event / signal id (absent: nothing reacts to it). */
+  /** Step function per event / signal id (absent: nothing reacts to it; no signal steps when no signal is ever emitted). */
   onEvent: Record<Id, string>;
   onSignal: Record<Id, string>;
   /** Step function for auto/completion transitions, if any. */
   eventless: string | undefined;
-  /** In definition order: helpers first, then step functions. */
+  /** In definition order: helpers first, then step functions. Only what the runtime loop can reach. */
   functions: IrFunction[];
   /** Whether the lowering emitted trace statements, and the runtime loop reports events and signals (`trace` option). */
   trace: boolean;

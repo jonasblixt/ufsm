@@ -11,6 +11,7 @@
 import type { Action } from "../v1/model";
 import type { EntryOp, FlatGuard, FlatModel, FlatTransition, Offer, RegionOp } from "../semantics/flatten";
 import type { Expr, IrFunction, IrHistory, IrModule, IrTimer, IrTransition, Stmt } from "./ir";
+import { emitsSignals, walkStmts } from "./analyze";
 import { fingerprint, stateNames } from "./ids";
 
 export interface LowerOptions {
@@ -283,6 +284,21 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
     return { id: t.id, label: `${t.id}: ${from} -> ${to}${on}` };
   });
 
+  // Only what the runtime loop can reach: reset's start code, the event steps, the eventless step, and the signal
+  // steps when a signal can be queued at all. Helpers were pushed while building the step functions; they come first,
+  // the steps keep trigger order.
+  const all = [...fns.filter((f) => f.returns === "void"), ...fns.filter((f) => f.returns === "bool")];
+  if (!emitsSignals({ signals: flat.signals, start, functions: all })) for (const k of Object.keys(onSignal)) delete onSignal[k];
+  const byName = new Map(all.map((f) => [f.name, f]));
+  const reachable = new Set<string>();
+  const visit = (name: string): void => {
+    if (reachable.has(name)) return;
+    reachable.add(name);
+    walkStmts(byName.get(name)!.body, (s) => s.op === "invoke" && visit(s.fn));
+  };
+  walkStmts(start, (s) => s.op === "invoke" && visit(s.fn));
+  [...Object.values(onEvent), ...(eventless ? [eventless] : []), ...Object.values(onSignal)].forEach(visit);
+
   const eventIndex = new Map(flat.events.map((e, i) => [e.id, i]));
   const timers: IrTimer[] = flat.timers.map((t) => ({ id: t.id, name: t.name, ms: t.ms, periodic: t.periodic, event: eventIndex.get(t.event)! }));
 
@@ -302,8 +318,7 @@ export function lowerToIr(flat: FlatModel, options: LowerOptions = {}): IrModule
     onEvent,
     onSignal,
     eventless,
-    // helpers were pushed while building the step functions; put them first, keep the steps in trigger order
-    functions: [...fns.filter((f) => f.returns === "void"), ...fns.filter((f) => f.returns === "bool")],
+    functions: all.filter((f) => reachable.has(f.name)),
     trace,
     fingerprint: fingerprint({ name: flat.name, events: flat.events, signals: flat.signals, states, transitions }),
   };

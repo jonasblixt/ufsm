@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { IrRunner, flatten, formatFailure, loadModel, lowerToIr, parseTrace, runTrace, simplify, type Expr, type IrModule, type Stmt } from "../src/index";
+import { IrRunner, analyzeIr, flatten, formatFailure, loadModel, lowerToIr, parseTrace, runTrace, simplify, someStmt, walkStmts, type Expr, type IrModule, type Stmt, type UfsmDocument } from "../src/index";
 import { checkJoinAgreement, compareWithInterpreter, type Engine } from "./harness";
 import { randomModel } from "./random-model";
 
@@ -140,5 +140,39 @@ describe("IR simplifier", () => {
     // a set on another region keeps the fact
     const other = simplify([{ op: "if", cond: active(1, 2), then: [{ op: "set", region: 4, slot: 1 }, inner] }]);
     assert.deepEqual((other[0] as Extract<Stmt, { op: "if" }>).then[1], call);
+  });
+});
+
+describe("IR analysis", () => {
+  const lowered = (doc: UfsmDocument): IrModule => lowerToIr(flatten(doc));
+  const invoked = (ir: IrModule): Set<string> => {
+    const out = new Set<string>([...Object.values(ir.onEvent), ...Object.values(ir.onSignal), ...(ir.eventless ? [ir.eventless] : [])]);
+    const visit = (s: Stmt): void => void (s.op === "invoke" && out.add(s.fn));
+    walkStmts(ir.start, visit);
+    for (const f of ir.functions) walkStmts(f.body, visit);
+    return out;
+  };
+
+  it("the lowering keeps only functions the runtime loop reaches, and no signal steps without emits", () => {
+    for (const f of modelFiles) {
+      const ir = lowered(loadModel(readFileSync(f, "utf8")).doc);
+      const reached = invoked(ir);
+      for (const fn of ir.functions) assert.ok(reached.has(fn.name), `${f}: ${fn.name} is never reached`);
+      if (!analyzeIr(ir, 1).hasQueue) assert.deepEqual(ir.onSignal, {}, f);
+    }
+  });
+
+  it("finds the queue, terminate, timers, the step counter and the functions that can fail", () => {
+    const load = (name: string): IrModule => lowered(loadModel(readFileSync(join(repoRoot, "tests/models", name), "utf8")).doc);
+    const signals = analyzeIr(load("test_signals.ufsm"), 10);
+    assert.ok(signals.hasQueue && !signals.hasTimers && signals.checkSteps && signals.countSteps);
+    const emitting = load("test_signals.ufsm").functions.filter((f) => someStmt({ start: [], functions: [f] }, (s) => s.op === "emit"));
+    assert.ok(emitting.length > 0 && emitting.every((f) => signals.fallible.has(f.name)), "a function that emits can fail");
+    assert.ok(analyzeIr(load("test_terminate.ufsm"), 10).hasTerminate);
+    assert.ok(analyzeIr(load("test_timers.ufsm"), 10).hasTimers);
+    // without a microstep limit only emitting functions (and their callers) can fail
+    const guard1 = analyzeIr(load("test_guard1.ufsm"), 0);
+    assert.ok(!guard1.checkSteps && !guard1.countSteps && !guard1.hasQueue && guard1.fallible.size === 0);
+    assert.ok(analyzeIr(load("test_guard1.ufsm"), 10).fallible.size > 0, "with a limit, counting a microstep can fail");
   });
 });

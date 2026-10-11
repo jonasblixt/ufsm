@@ -50,6 +50,7 @@ export * from "./semantics/flatten";
 export * from "./semantics/flat-run";
 export * from "./ir/ir";
 export * from "./ir/lower";
+export * from "./ir/analyze";
 export * from "./ir/ids";
 export * from "./ir/eval";
 export * from "./ir/print";
