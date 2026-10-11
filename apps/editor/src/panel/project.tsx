@@ -39,7 +39,7 @@ import {
   setTarget,
   setTargetOption,
 } from "@ufsm/core/edit";
-import { rustModuleName } from "@ufsm/core/pipeline";
+import { goPackageName, rustModuleName } from "@ufsm/core/pipeline";
 import { type PanelOps, type PanelDoc } from "./types";
 import { IconButton, TextInput, declsOf } from "./fields";
 import { resolveOut } from "../out-path";
@@ -111,6 +111,20 @@ export const TARGETS: { key: CodeTarget; title: string; options: TargetOption[] 
     options: [
       { key: "className", label: "Struct", fallback: (n) => pascalCase(n) },
       { key: "module", label: "Module", fallback: (n) => rustModuleName(n) },
+    ],
+  },
+  {
+    key: "go",
+    title: "Go",
+    options: [
+      { key: "package", label: "Package", fallback: (n) => goPackageName(n) },
+      { key: "className", label: "Type", fallback: () => "Machine" },
+      {
+        key: "file",
+        label: "File",
+        fallback: (n, set) =>
+          typeof set["package"] === "string" && set["package"] ? set["package"] : goPackageName(n),
+      },
     ],
   },
 ];

@@ -34,6 +34,11 @@ paths:
   `rustc`); clippy (`$CLIPPY_DRIVER`) and rustfmt (`$RUSTFMT`) checks skip
   without those; CI sets `UFSM_REQUIRE_RUST` (all three).
   `UFSM_RUST_RANDOM=<n>` runs more random models.
+  Generated Go is one package per machine, imports nothing, builds with Go 1.20+, passes `go vet` and must equal
+  `gofmt` output (struct fields aligned by the printer, enumerations with `iota` so const blocks need no alignment,
+  no trailing comments on statements). Its tests skip without go (`$GO`, else `go`; gofmt from `$GOFMT`, else
+  `GOROOT/bin`); CI sets `UFSM_REQUIRE_GO`. `UFSM_GO_RANDOM=<n>` runs more random models. The driver builds one module
+  (package `u<k>` per unit) with `GOTOOLCHAIN=local GOPROXY=off`.
 - Timers: a test driver implements `timer_start`/`timer_stop` and logs them
   among the action calls as `~start:<name>:<ms>:<0|1>` / `~stop:<name>`
   (`driverCall` in `test/harness.ts` turns them into the trace spelling); it
@@ -45,7 +50,7 @@ paths:
   pseudo-calls (`decodeHooks`/`interpreterHooks` in `test/harness.ts`) and
   compared with the interpreter's `onStep`; the type/lint checks also cover a
   debug variant of every repo model. A new backend implements the same.
-- Printer layout (all four): a context function (`cContext`, `pyContext`, ...) resolves names, checks clashes and
+- Printer layout (all of them): a context function (`cContext`, `pyContext`, ...) resolves names, checks clashes and
   calls `prepare()` from `backends/common.ts` (options with defaults, `ir/analyze.ts` facts, the queue and trace
   checks); then named parts take the context and a line writer (`lines()`): expressions, statements, and one function
   per section of the output. A new backend copies that shape and imports only `common.ts` and the IR, never another

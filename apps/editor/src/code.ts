@@ -4,7 +4,7 @@
 /**
  * Live code preview: the generated files of the active machine, regenerated only when something the generators read
  * changed (machine, declarations, name, options, targets; not the layout), and a small syntax highlighter for C, Python,
- * TypeScript and Rust. No DOM here.
+ * TypeScript, Rust and Go. No DOM here.
  */
 import {
   CodegenError,
@@ -30,6 +30,7 @@ export const CODE_VIEWS: readonly CodeView[] = [
   { id: "python", label: "Python", target: "python", file: 0 },
   { id: "ts", label: "TypeScript", target: "ts", file: 0 },
   { id: "rust", label: "Rust", target: "rust", file: 0 },
+  { id: "go", label: "Go", target: "go", file: 0 },
 ];
 
 export type CodeResult = GeneratedCode | { error: string };
@@ -106,6 +107,10 @@ const WORDS: Record<CodeTarget, string> = {
     "as break const continue crate dyn else enum extern false fn for if impl in let loop match mod move mut pub ref return self " +
     "Self static struct super trait true type unsafe use where while async await u8 u16 u32 u64 usize i8 i16 i32 i64 isize " +
     "f32 f64 bool char str Option Some None Result Ok Err",
+  go:
+    "break case chan const continue default defer else fallthrough for func go goto if import interface map package range " +
+    "return select struct switch type var true false nil iota bool byte error int int8 int16 int32 int64 uint uint8 uint16 " +
+    "uint32 uint64 string any",
 };
 
 const COMMENT: Record<CodeTarget, string> = {
@@ -113,6 +118,7 @@ const COMMENT: Record<CodeTarget, string> = {
   python: String.raw`#[^\n]*`,
   ts: String.raw`\/\*[\s\S]*?\*\/|\/\/[^\n]*`,
   rust: String.raw`\/\*[\s\S]*?\*\/|\/\/[^\n]*`,
+  go: String.raw`\/\*[\s\S]*?\*\/|\/\/[^\n]*`,
 };
 
 const STRING: Record<CodeTarget, string> = {
@@ -121,6 +127,7 @@ const STRING: Record<CodeTarget, string> = {
   ts: String.raw`"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|\x60(?:[^\x60\\]|\\.)*\x60`,
   // a char literal holds one character, so lifetimes ('static, '_) are not strings
   rust: String.raw`"(?:[^"\\]|\\.)*"|'(?:[^'\\\n]|\\.)'`,
+  go: String.raw`"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|\x60[^\x60]*\x60`,
 };
 
 const patterns = new Map<CodeTarget, RegExp>();

@@ -27,13 +27,19 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
+      - name: Go for the generated Go (go, gofmt, go vet)
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache: false
       - run: npm test
         env:
-          # fail instead of skipping the generated-code tests if gcc, Python, pyright or Rust is missing
+          # fail instead of skipping the generated-code tests if gcc, Python, pyright, Rust or Go is missing
           UFSM_REQUIRE_CC: 1
           UFSM_REQUIRE_PYTHON: 1
           UFSM_REQUIRE_PYRIGHT: 1
           UFSM_REQUIRE_RUST: 1
+          UFSM_REQUIRE_GO: 1
 
   editor:
     name: Editor (${{ matrix.os }})

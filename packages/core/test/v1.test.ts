@@ -520,7 +520,7 @@ describe("design rule check", () => {
     assert.deepEqual(generateFiles(back, "c").problems, []);
     assert.deepEqual(generateFiles(back, "rust").problems, []);
 
-    back.target = "go";
+    back.target = "cobol";
     back.targets = { c: { out: 3 }, ts: { out: " " } };
     assert.equal(selectedTarget(back), "c", "an unknown target falls back to C");
     assert.equal(targetOut(back, "c"), undefined);
@@ -529,7 +529,7 @@ describe("design rule check", () => {
       [
         ["warning", "target-option", "targets.c.out is ignored: expected a folder name"],
         ["warning", "target-option", "targets.ts.out is ignored: expected a folder name"],
-        ["warning", "unknown-target", "target 'go' is not a code generator (c, python, ts, rust); C is used"],
+        ["warning", "unknown-target", "target 'cobol' is not a code generator (c, python, ts, rust, go); C is used"],
       ],
     );
     assert.deepEqual(generateFiles(back, "c").problems, ["targets.c.out: expected a string"]);

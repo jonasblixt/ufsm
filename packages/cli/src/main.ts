@@ -12,6 +12,7 @@ import {
   MachineError,
   checkV1,
   generateFiles,
+  CODE_TARGETS,
   isCodeTarget,
   selectedTarget,
   targetOut,
@@ -62,6 +63,9 @@ Usage:
   ufsm generate rust <model.ufsm> [-o dir]
          [--class-name C] [--signal-queue n] [--max-microsteps n] [--debug-info] [--trace]
                                          Generate <name>.rs (overrides targets.rust, options; docs/backend-rust.md)
+  ufsm generate go <model.ufsm> [-o dir]
+         [--class-name C] [--signal-queue n] [--max-microsteps n] [--debug-info] [--trace]
+                                         Generate <package>.go (overrides targets.go, options; docs/backend-go.md)
   ufsm schema [-o file]                  The JSON Schema of format v1 (stdout without -o)
   ufsm --version
 
@@ -344,7 +348,7 @@ function main(argv: string[]): number {
       const [given, model] = named ? files : [undefined, files[0]];
       const target = given === "typescript" ? "ts" : given;
       if (named && !isCodeTarget(target)) {
-        console.error(`ufsm generate: unknown target '${given}' (available: c, python, ts, rust)`);
+        console.error(`ufsm generate: unknown target '${given}' (available: ${CODE_TARGETS.join(", ")})`);
         return 1;
       }
       if (!model) {
@@ -358,7 +362,7 @@ ${USAGE}`);
       const t = isCodeTarget(target) ? target : selectedTarget(m.doc);
       for (const [flag, targets] of [
         ["prefix", ["c"]],
-        ["class-name", ["python", "ts", "rust"]],
+        ["class-name", ["python", "ts", "rust", "go"]],
       ] as const) {
         if (values[flag] !== undefined && !(targets as readonly string[]).includes(t)) {
           console.error(

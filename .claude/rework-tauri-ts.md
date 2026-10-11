@@ -117,8 +117,12 @@ the generated code. Status refers to the new implementation.
       review the API choices (decisions log); check the oldest supported Rust (1.81) in CI, not only stable; a
       `State` enum / `is_active()` would need the state `ident` question settled (open questions); a build.rs recipe
       (generate into `OUT_DIR`) once the single-binary CLI exists?
-- [ ] B-FZ Differential fuzzer: the per-backend differential runs exist (C, Python, TypeScript and Rust, 300 random
-      models each, `UFSM_C_RANDOM`/`UFSM_PY_RANDOM`/`UFSM_TS_RANDOM`/`UFSM_RUST_RANDOM` for more); left: a long-running fuzz command or nightly CI job that
+- [x] B-GO Go backend + driver (package per machine, no imports, gofmt- and vet-clean, Go 1.20+) (2026-10-11)
+- [ ] B-GO follow-ups: Jonas to review the API (first letter capitalized, `Machine`/`New`, `*Error` sentinels, package
+      per machine) in `npm run ufsm -- generate go examples/dimmer.ufsm -o build/dimmer`; CI checks only Go stable, not
+      1.20; staticcheck on the output?
+- [ ] B-FZ Differential fuzzer: the per-backend differential runs exist (C, Python, TypeScript, Rust and Go, 300
+      random models each, `UFSM_C_RANDOM`/`UFSM_PY_RANDOM`/`UFSM_TS_RANDOM`/`UFSM_RUST_RANDOM`/`UFSM_GO_RANDOM` for more); left: a long-running fuzz command or nightly CI job that
       saves failing seeds
 - [x] Busy latch: a failed call (error, exception, caught panic, longjmp) or a nested `process()` leaves/meets the
       machine busy, `process()` fails with `busy` until `reset()`; interpreter, runners and all four backends; trace keys

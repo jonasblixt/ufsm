@@ -7,7 +7,15 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CodegenError, generateFiles, loadModel, modelIr, type UfsmDocument } from "../src";
-import { flatten, generateC, generatePython, generateRust, generateTypeScript, lowerToIr } from "../src/pipeline";
+import {
+  flatten,
+  generateC,
+  generateGo,
+  generatePython,
+  generateRust,
+  generateTypeScript,
+  lowerToIr,
+} from "../src/pipeline";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const load = (f: string): UfsmDocument => loadModel(readFileSync(join(repoRoot, f), "utf8")).doc;
@@ -16,7 +24,12 @@ describe("generateFiles", () => {
   it("gives what the backends give, with the options and the settings from targets", () => {
     const doc = load("examples/dimmer.ufsm");
     doc.options = { maxMicrosteps: 7 };
-    doc.targets = { c: { prefix: "dim_" }, python: { className: "Dim" }, rust: { module: "dim" } };
+    doc.targets = {
+      c: { prefix: "dim_" },
+      python: { className: "Dim" },
+      rust: { module: "dim" },
+      go: { package: "dim" },
+    };
     const ir = lowerToIr(flatten(doc));
     const c = generateC(ir, { prefix: "dim_", maxMicrosteps: 7 });
     assert.deepEqual(generateFiles(doc, "c").files, [
@@ -29,6 +42,8 @@ describe("generateFiles", () => {
     assert.deepEqual(generateFiles(doc, "ts").files, [{ name: ts.fileName, text: ts.source }]);
     const rs = generateRust(ir, { module: "dim", maxMicrosteps: 7 });
     assert.deepEqual(generateFiles(doc, "rust").files, [{ name: "dim.rs", text: rs.source }]);
+    const go = generateGo(ir, { package: "dim", maxMicrosteps: 7 });
+    assert.deepEqual(generateFiles(doc, "go").files, [{ name: "dim.go", text: go.source }]);
   });
 
   it("resolves options, then targets (never behaviour options there), then overrides", () => {
@@ -65,6 +80,8 @@ describe("generateFiles", () => {
     assert.deepEqual(ts.problems, []);
     const rs = generateFiles(doc, "rust", { prefix: "ignored_", className: "Lamp", signalQueue: 3 });
     assert.match(rs.files[0]!.text, /^pub struct Lamp<H> \{$/m);
+    const go = generateFiles(doc, "go", { prefix: "ignored_", className: "Lamp", signalQueue: 3 });
+    assert.match(go.files[0]!.text, /^type Lamp struct \{$/m);
   });
 
   it("refuses a model with errors", () => {

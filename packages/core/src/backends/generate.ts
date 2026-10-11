@@ -17,6 +17,7 @@ import { cOptionsFromTargets, generateC, type COptions } from "./c";
 import { generatePython, pythonOptionsFromTargets, type PythonOptions } from "./python";
 import { generateTypeScript, tsOptionsFromTargets, type TsOptions } from "./ts";
 import { generateRust, rustOptionsFromTargets, type RustOptions } from "./rust";
+import { generateGo, goOptionsFromTargets, type GoOptions } from "./go";
 
 export interface GeneratedFile {
   name: string;
@@ -34,7 +35,7 @@ export interface GeneratedCode {
 export interface GenerateOverrides {
   /** C only. */
   prefix?: string;
-  /** Python, TypeScript and Rust only. */
+  /** Python, TypeScript, Rust and Go only. */
   className?: string;
   /** Overrides `options.signalQueue` for this run. */
   signalQueue?: number;
@@ -86,17 +87,27 @@ export function generateFiles(
       problems,
     };
   }
-  const { options, problems } =
-    target === "ts"
-      ? tsOptionsFromTargets(doc)
-      : target === "rust"
-        ? rustOptionsFromTargets(doc)
-        : pythonOptionsFromTargets(doc);
+  const single = SINGLE_FILE[target];
+  const { options, problems } = single.read(doc);
   const resolved = resolveOptions(doc, options, common);
-  const o: TsOptions | PythonOptions | RustOptions = { ...options, ...resolved };
+  const o: SingleFileOptions = { ...options, ...resolved };
   if (className !== undefined) o.className = className;
-  const tir = lowered(resolved.trace);
-  const out =
-    target === "ts" ? generateTypeScript(tir, o) : target === "rust" ? generateRust(tir, o) : generatePython(tir, o);
+  const out = single.generate(lowered(resolved.trace), o);
   return { files: [{ name: out.fileName, text: out.source }], problems };
 }
+
+type SingleFileOptions = TsOptions & PythonOptions & RustOptions & GoOptions;
+
+/** The targets that write one file: how to read their `targets.<name>` and generate. */
+const SINGLE_FILE: Record<
+  Exclude<CodeTarget, "c">,
+  {
+    read(doc: UfsmDocument): { options: SingleFileOptions; problems: string[] };
+    generate(ir: IrModule, options: SingleFileOptions): { fileName: string; source: string };
+  }
+> = {
+  python: { read: pythonOptionsFromTargets, generate: generatePython },
+  ts: { read: tsOptionsFromTargets, generate: generateTypeScript },
+  rust: { read: rustOptionsFromTargets, generate: generateRust },
+  go: { read: goOptionsFromTargets, generate: generateGo },
+};

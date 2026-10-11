@@ -200,7 +200,7 @@ export function createSearch(app: App): SearchController {
       kind: "setting",
       label: "Project: Code Generator: Language",
       detail: t.title,
-      keywords: "generator target c python typescript rust",
+      keywords: "generator target c python typescript rust go golang",
       run: field("Language"),
     });
     out.push({
