@@ -719,7 +719,7 @@ await pick("eTimeout");
 let tms = (await vtx("s5")).timers;
 const evTimeout = await declId("events", "eTimeout");
 check("...a new event, declared in the same step; one-shot after 1 s", JSON.stringify(tms) === JSON.stringify([{ id: tms?.[0]?.id, name: "timer1", after: 1, unit: "s", event: evTimeout }]), JSON.stringify(tms));
-await page.click('details.internal > summary:has-text("t/timer1")');
+await page.click('details.internal > summary:has-text("timer1(")');
 await page.fill('input[aria-label="Timer name"]', "travel");
 await page.keyboard.press("Enter");
 await page.fill('input[aria-label="Duration"]', "20");
