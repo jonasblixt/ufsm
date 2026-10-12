@@ -125,6 +125,25 @@ export function commonRegion(index: DocIndex, a: Id, b: Id): Region {
   return common;
 }
 
+/** Regions from the root down to (and including) `region`. */
+export function regionPath(index: DocIndex, region: Region): Region[] {
+  const owner = index.regions.get(region.id)?.owner;
+  const parent = owner ? index.vertices.get(owner.id)?.region : undefined;
+  return parent ? [...regionPath(index, parent), region] : [region];
+}
+
+/** Innermost region containing both regions (one of them when it holds the other; the root region at worst). */
+export function commonRegionOf(index: DocIndex, a: Region, b: Region): Region {
+  const ca = regionPath(index, a);
+  const cb = regionPath(index, b);
+  let common = index.doc.machine.root;
+  for (let i = 0; i < Math.min(ca.length, cb.length); i++) {
+    if (ca[i] !== cb[i]) break;
+    common = ca[i]!;
+  }
+  return common;
+}
+
 /** Ancestor states of a vertex, outermost first. */
 export function ancestors(index: DocIndex, vertexId: Id): State[] {
   return regionChain(index, vertexId)

@@ -351,6 +351,55 @@ in the state's first region (`actions-overlap`). Lines hidden by
 
 `orientation` applies to `fork`/`join` only (`vertical` by default).
 
+### Notes, frames and arrows
+
+Documentation drawn on a sheet for the reader. They are part of the
+`diagram` section only: nothing in `machine` refers to them, so they never
+change what a machine does, the generated code (byte for byte), the
+fingerprint or the simulator.
+
+```jsonc
+"diagram": {
+  "frames": { "g1": { "region": "r1", "x": 80, "y": 90, "w": 260, "h": 820, "caption": "Brightness cycle" } },
+  "notes":  { "n1": { "region": "r0", "x": 1400, "y": 380, "w": 260, "h": 100,
+                      "text": "Switching on again restores the last brightness ({s5})." },
+              "n2": { "region": "r1", "x": 280, "y": 810, "w": 200, "h": 80, "text": "Fade out?", "todo": true } },
+  "arrows": { "a1": { "region": "r0", "from": { "ref": "n1", "x": 0, "y": 40 }, "to": { "ref": "s3", "x": 420, "y": 50 },
+                      "head": "none", "dashed": true },
+              "a2": { "region": "r0", "from": { "x": 500, "y": 700 }, "to": { "ref": "t3", "at": 0.5 } } }
+}
+```
+
+- A **note** (`notes`, ids `n1`, `n2`, ...) is text in a box with a folded
+  corner. `x`/`y` are relative to the origin of `region`, like a vertex in that
+  region, so a note in a state's region moves with the state; `w`/`h` are its
+  size (the editor makes it at least as tall as its text at that width). The
+  text wraps at the box's width and keeps its line breaks. `{id}` in the text
+  is drawn as the current name of the element with that id (a vertex, region,
+  declaration, timer, transition label or frame caption), so a rename shows
+  everywhere; an id that names nothing is drawn as written. `todo: true` marks
+  an open question: drawn in the warning color and listed by the design rule
+  check as info.
+- A **group frame** (`frames`, ids `g1`, ...) is a dashed rectangle with an
+  optional `caption` in a tab at its top-left, relative to `region` like a
+  note. It groups what it surrounds for the reader only (it is not a
+  composite state) and is drawn behind the contents of its region.
+- An **arrow** (`arrows`, ids `a1`, ...) is a straight line between two ends.
+  An end is a free point `{ x, y }` relative to the origin of the arrow's
+  `region`; a point on a vertex, note or frame `{ ref, x, y }`, relative to that
+  element's top-left corner and kept inside its box, so the end follows the
+  element; or a point along a transition's route `{ ref, at }`, `at` being the
+  fraction of the route's length from its source (0 to 1). `head` is `none`,
+  `end` (the default, not written) or `both`; `dashed: true` draws a dashed
+  line (with no head: UML's anchor from a note to what it explains). An
+  attached end without a head is drawn with a small dot.
+
+All three are drawn in the theme's note color, never the machine's ink, so an
+arrow is never mistaken for a transition. Deleting an element turns the
+arrow ends attached to it into free ends where they were; deleting a state
+deletes the notes, frames and arrows of its regions. Their ids are document
+ids like every other.
+
 ## Options
 
 Shared by every code generator, the interpreter and the simulator. All keys
@@ -417,7 +466,8 @@ Settings of the generators: [C](backend-c.md#generating) (`c`),
 
 The writer (`serializeV1`, used by the editor and `ufsm fmt`) produces:
 
-- keys in the order shown in this document; diagram maps in document order
+- keys in the order shown in this document; diagram maps in document order (`frames`, `notes` and `arrows` in id
+  order, `n2` before `n10`; each written only when not empty)
 - optional empty lists (`entry`, `exit`, `timers`, `internal`, `regions`, `guard`, `do`) omitted
 - whole numbers without a decimal point, others rounded to 3 decimals
 - 2-space indentation; an array or object stays on one line if it fits in
@@ -448,7 +498,10 @@ under `targets`, API options there that are not `true`/`false` and an `out` that
 (`target-option`), a `target` that is not a code generator (`unknown-target`), stale or missing
 layout, and drawings that do not fit their sheet (outside the drawing frame,
 or over the title block; see "Drawing frame and title block"; a transition's label counts, its width estimated at
-7 units per character).
+7 units per character), notes, frames and arrows whose region or attached element does not exist
+(`annotation-region`, `arrow-ref`) or whose id another element has (`annotation-id`), a `{id}` in a note that names
+nothing (`note-ref`), an arrow attached to an element on another sheet (`arrow-sheet`). Info: notes marked TODO
+(`todo`), with the note's first line.
 
 ## Converting from v0
 

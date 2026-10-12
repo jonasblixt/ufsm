@@ -27,6 +27,8 @@ normatively, the definition there wins.
 | jog | The movable middle segment of an S route, stored as `{x}` or `{y}` once dragged | `diagram/route.ts` |
 | label anchor | The point on a route a transition's label position is relative to | `diagram/route.ts` |
 | label layout | A transition label's items wrapped at its width; widths come from a measure (the editor's canvas, or an estimate) | `diagram/label-layout.ts` |
+| note, group frame, arrow | Documentation on a sheet (`diagram.notes`, `frames`, `arrows`): text in a folded box, a dashed rectangle with a caption, a straight leader line. Never part of the machine, the generated code or the fingerprint; drawn in the note color. Together: annotations (in code) | [format-v1.md](format-v1.md#notes-frames-and-arrows), `diagram/annotations.ts` |
+| attached end | An arrow end that follows an element: a point on a vertex, note or frame (`{ref, x, y}`), or along a transition's route (`{ref, at}`); a free end is a point in the arrow's region | `diagram/annotations.ts` |
 
 ## Semantics and code generation
 

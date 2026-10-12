@@ -12,7 +12,7 @@
  * names, structure) are the design rule check's (`check.ts`).
  */
 import Type, { type Static, type TSchema } from "typebox";
-import { ID_PATTERN, PAPER_SIZES, PSEUDO_KINDS, TIMER_UNITS } from "./model";
+import { ARROW_HEADS, ID_PATTERN, PAPER_SIZES, PSEUDO_KINDS, TIMER_UNITS } from "./model";
 import type * as M from "./model";
 
 const closed = { additionalProperties: false } as const;
@@ -158,6 +158,50 @@ const defs = {
     { revision: opt(str()), date: opt(str()), author: opt(str()), company: opt(str()), document: opt(str()) },
     { ...closed, description: "Free fields of the title block drawn on every sheet; written only when not empty." },
   ),
+  noteLayout: Type.Object(
+    { region: ref("id"), x: num(), y: num(), w: num(), h: num(), text: str(), todo: opt(ref("flag")) },
+    {
+      ...closed,
+      description:
+        "A note for the reader, no effect on the machine. x/y are relative to the region's origin; {id} in the text shows that element's name; todo lists it in Problems.",
+    },
+  ),
+  frameLayout: Type.Object(
+    { region: ref("id"), x: num(), y: num(), w: num(), h: num(), caption: opt(str()) },
+    {
+      ...closed,
+      description: "A group frame for the reader, no effect on the machine: a dashed rectangle with a caption.",
+    },
+  ),
+  freeArrowEnd: Type.Object(
+    { x: num(), y: num() },
+    { ...closed, description: "A free point, relative to the arrow's region origin." },
+  ),
+  boxArrowEnd: Type.Object(
+    { ref: ref("id"), x: num(), y: num() },
+    { ...closed, description: "A point on a vertex, note or frame, relative to its top-left corner." },
+  ),
+  routeArrowEnd: Type.Object(
+    { ref: ref("id"), at: Type.Number({ minimum: 0, maximum: 1 }) },
+    { ...closed, description: "A point along a transition's route: the fraction of its length from the source." },
+  ),
+  arrowEnd: Type.Union([ref("freeArrowEnd"), ref("boxArrowEnd"), ref("routeArrowEnd")], {
+    errorMessage: "expected { x, y }, { ref, x, y } or { ref, at }",
+  }),
+  arrowLayout: Type.Object(
+    {
+      region: ref("id"),
+      from: ref("arrowEnd"),
+      to: ref("arrowEnd"),
+      head: opt(Type.Enum([...ARROW_HEADS])),
+      dashed: opt(ref("flag")),
+    },
+    {
+      ...closed,
+      description:
+        "An arrow for the reader, no effect on the machine. head defaults to end; region is what free ends are relative to.",
+    },
+  ),
   diagram: Type.Object(
     {
       paper: Type.Enum(Object.keys(PAPER_SIZES) as M.Paper[], {
@@ -173,6 +217,11 @@ const defs = {
         description:
           'Keyed by transition id. route absent or "free": from/to required, via bend points. route "s": derived orthogonal route; from/to optional (absent = automatic), jog = position of the movable segment. via, jog and free labels are relative to the innermost region containing both endpoints; S labels to the route\'s label anchor.',
       }),
+      frames: opt(
+        Type.Record(str(), ref("frameLayout"), { description: "Group frames keyed by id (documentation only)." }),
+      ),
+      notes: opt(Type.Record(str(), ref("noteLayout"), { description: "Notes keyed by id (documentation only)." })),
+      arrows: opt(Type.Record(str(), ref("arrowLayout"), { description: "Arrows keyed by id (documentation only)." })),
     },
     closed,
   ),
@@ -309,6 +358,13 @@ const agree: {
   freeEdgeLayout: true,
   sEdgeLayout: true,
   titleBlock: true,
+  noteLayout: true,
+  frameLayout: true,
+  freeArrowEnd: true,
+  boxArrowEnd: true,
+  routeArrowEnd: true,
+  arrowEnd: true,
+  arrowLayout: true,
   diagram: true,
   options: true,
   document: true,
@@ -334,6 +390,13 @@ interface Checked {
   freeEdgeLayout: ["freeEdgeLayout", M.FreeEdgeLayout];
   sEdgeLayout: ["sEdgeLayout", M.SEdgeLayout];
   titleBlock: ["titleBlock", M.TitleBlock];
+  noteLayout: ["noteLayout", M.NoteLayout];
+  frameLayout: ["frameLayout", M.FrameLayout];
+  freeArrowEnd: ["freeArrowEnd", M.FreeArrowEnd];
+  boxArrowEnd: ["boxArrowEnd", M.BoxArrowEnd];
+  routeArrowEnd: ["routeArrowEnd", M.RouteArrowEnd];
+  arrowEnd: ["arrowEnd", M.ArrowEnd];
+  arrowLayout: ["arrowLayout", M.ArrowLayout];
   diagram: ["diagram", M.Diagram];
   options: ["options", M.ModelOptions];
   document: ["document", M.UfsmDocument & { $schema?: string }];

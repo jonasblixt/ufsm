@@ -331,6 +331,84 @@
       },
       "additionalProperties": false
     },
+    "noteLayout": {
+      "description": "A note for the reader, no effect on the machine. x/y are relative to the region's origin; {id} in the text shows that element's name; todo lists it in Problems.",
+      "type": "object",
+      "required": ["region", "x", "y", "w", "h", "text"],
+      "properties": {
+        "region": { "$ref": "#/definitions/id" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "w": { "type": "number" },
+        "h": { "type": "number" },
+        "text": { "type": "string" },
+        "todo": { "$ref": "#/definitions/flag" }
+      },
+      "additionalProperties": false
+    },
+    "frameLayout": {
+      "description": "A group frame for the reader, no effect on the machine: a dashed rectangle with a caption.",
+      "type": "object",
+      "required": ["region", "x", "y", "w", "h"],
+      "properties": {
+        "region": { "$ref": "#/definitions/id" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "w": { "type": "number" },
+        "h": { "type": "number" },
+        "caption": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "freeArrowEnd": {
+      "description": "A free point, relative to the arrow's region origin.",
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": { "x": { "type": "number" }, "y": { "type": "number" } },
+      "additionalProperties": false
+    },
+    "boxArrowEnd": {
+      "description": "A point on a vertex, note or frame, relative to its top-left corner.",
+      "type": "object",
+      "required": ["ref", "x", "y"],
+      "properties": {
+        "ref": { "$ref": "#/definitions/id" },
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "routeArrowEnd": {
+      "description": "A point along a transition's route: the fraction of its length from the source.",
+      "type": "object",
+      "required": ["ref", "at"],
+      "properties": {
+        "ref": { "$ref": "#/definitions/id" },
+        "at": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "arrowEnd": {
+      "anyOf": [
+        { "$ref": "#/definitions/freeArrowEnd" },
+        { "$ref": "#/definitions/boxArrowEnd" },
+        { "$ref": "#/definitions/routeArrowEnd" }
+      ],
+      "errorMessage": "expected { x, y }, { ref, x, y } or { ref, at }"
+    },
+    "arrowLayout": {
+      "description": "An arrow for the reader, no effect on the machine. head defaults to end; region is what free ends are relative to.",
+      "type": "object",
+      "required": ["region", "from", "to"],
+      "properties": {
+        "region": { "$ref": "#/definitions/id" },
+        "from": { "$ref": "#/definitions/arrowEnd" },
+        "to": { "$ref": "#/definitions/arrowEnd" },
+        "head": { "enum": ["none", "end", "both"] },
+        "dashed": { "$ref": "#/definitions/flag" }
+      },
+      "additionalProperties": false
+    },
     "diagram": {
       "type": "object",
       "required": ["paper", "states", "regions", "transitions"],
@@ -354,6 +432,21 @@
           "description": "Keyed by transition id. route absent or \"free\": from/to required, via bend points. route \"s\": derived orthogonal route; from/to optional (absent = automatic), jog = position of the movable segment. via, jog and free labels are relative to the innermost region containing both endpoints; S labels to the route's label anchor.",
           "type": "object",
           "additionalProperties": { "$ref": "#/definitions/edgeLayout" }
+        },
+        "frames": {
+          "description": "Group frames keyed by id (documentation only).",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/frameLayout" }
+        },
+        "notes": {
+          "description": "Notes keyed by id (documentation only).",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/noteLayout" }
+        },
+        "arrows": {
+          "description": "Arrows keyed by id (documentation only).",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/arrowLayout" }
         }
       },
       "additionalProperties": false

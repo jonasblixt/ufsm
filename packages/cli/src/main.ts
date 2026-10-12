@@ -174,6 +174,15 @@ function main(argv: string[]): number {
       console.log(`Guards:      ${d.guards.length}`);
       if (index.timers.size) console.log(`Timers:      ${index.timers.size}`);
       if (doc.diagram) console.log(`Sheets:      ${sheets(index).length} (${doc.diagram.paper})`);
+      const docs = [
+        [Object.keys(doc.diagram?.notes ?? {}).length, "note"],
+        [Object.keys(doc.diagram?.frames ?? {}).length, "frame"],
+        [Object.keys(doc.diagram?.arrows ?? {}).length, "arrow"],
+      ] as const;
+      if (docs.some(([n]) => n > 0))
+        console.log(
+          `Notes:       ${docs.map(([n, w]) => `${n} ${w}${n === 1 ? "" : "s"}`).join(", ")} (documentation only)`,
+        );
       // the fingerprint of the numbering generated code uses (state enum, trace ids)
       const ok = checkV1(doc).every((x) => x.severity !== "error");
       console.log(`Fingerprint: ${ok ? hex32(modelIr(doc).fingerprint) : "- (the model has errors)"}`);
@@ -192,7 +201,10 @@ function main(argv: string[]): number {
       for (const d of diags)
         console.log(`${d.severity}: ${d.message}  [${d.code}${d.id ? ` ${d.id}` : ""}${where(d.id)}]`);
       const errors = diags.filter((d) => d.severity === "error").length;
-      console.log(errors === 0 ? `OK (${diags.length} warning${diags.length === 1 ? "" : "s"})` : `${errors} error(s)`);
+      const todos = diags.filter((d) => d.severity === "info").length;
+      const warnings = diags.length - errors - todos;
+      const todo = todos ? `, ${todos} TODO` : "";
+      console.log(errors === 0 ? `OK (${warnings} warning${warnings === 1 ? "" : "s"}${todo})` : `${errors} error(s)`);
       return errors === 0 ? 0 : 2;
     }
     case "list": {
