@@ -2,13 +2,18 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 /**
- * The editor model's region Tool: arming a tool (keys, palette, Add menu), placing a vertex (click, or drag for its
- * size) and drawing a transition (source, bend points, target), with the ghost and route previews drawn over the sheet.
+ * The editor model's region Tool: arming a tool (keys, palette, Add menu), placing a vertex, note or frame (click, or
+ * drag for its size) and drawing a transition (source, bend points, target) or an arrow (start, end), with the ghost
+ * and route previews drawn over the sheet.
  */
 import { indexV1, type DocIndex, type EdgeEnd, type UfsmDocument, type Vertex } from "@ufsm/core";
 import {
+  addArrow,
+  addFrame,
+  addNote,
   addTransition,
   addVertex,
+  snap,
   cannotAdd,
   cannotConnect,
   draggedVertexBox,
@@ -18,15 +23,31 @@ import {
   regionAt,
   type VertexKind,
 } from "@ufsm/core/edit";
-import { attachPoint, autoSides, edgeGeometry, sRoute, vertexBox, type Box, type Point } from "@ufsm/core/diagram";
+import {
+  MIN_FRAME,
+  MIN_NOTE_H,
+  MIN_NOTE_W,
+  NEW_FRAME_H,
+  NEW_FRAME_W,
+  NEW_NOTE_H,
+  NEW_NOTE_W,
+  attachBox,
+  attachPoint,
+  autoSides,
+  edgeGeometry,
+  sRoute,
+  vertexBox,
+  type Box,
+  type Point,
+} from "@ufsm/core/diagram";
 import type { App } from "../app";
 import type { EditorFsmHandler } from "../fsm/editor-fsm";
 import type { InputState } from "../fsm/input";
-import { hitTest } from "../hit";
+import { arrowTargetAt, hitTest } from "../hit";
 import type { ToolId } from "../palette";
-import { drawGhost, drawLink, drawLinkRoute } from "../preview";
+import { drawArrowPreview, drawGhost, drawLink, drawLinkRoute } from "../preview";
 import type { DocSession } from "../session";
-import { isLinkTool, isVertexTool } from "./state";
+import { isLinkTool, isNoteTool, isVertexTool } from "./state";
 
 const DRAG_THRESHOLD = 4;
 
@@ -40,6 +61,27 @@ export function vertexAt(app: App, p: Point): Vertex | undefined {
 function placeBox(kind: VertexKind, p0: Point, p: Point, dragged: boolean, horizontal: boolean): Box {
   if (isRoundKind(kind)) return newVertexBox(kind, p);
   return dragged ? draggedVertexBox(kind, p0, p, horizontal) : newVertexBox(kind, p0, horizontal);
+}
+
+/** Box of a note or frame placed with a click at `p0` (its top-left there) or dragged from `p0` to `p`. */
+function noteBox(kind: "note" | "frame", p0: Point, p: Point, dragged: boolean): Box {
+  const [w, h] = kind === "note" ? [NEW_NOTE_W, NEW_NOTE_H] : [NEW_FRAME_W, NEW_FRAME_H];
+  const [mw, mh] = kind === "note" ? [MIN_NOTE_W, MIN_NOTE_H] : [MIN_FRAME, MIN_FRAME];
+  if (!dragged) return { x: snap(p0.x), y: snap(p0.y), w, h };
+  const x0 = snap(Math.min(p0.x, p.x)),
+    y0 = snap(Math.min(p0.y, p.y));
+  return {
+    x: x0,
+    y: y0,
+    w: Math.max(snap(Math.max(p0.x, p.x)) - x0, mw),
+    h: Math.max(snap(Math.max(p0.y, p.y)) - y0, mh),
+  };
+}
+
+/** What an arrow end at world point p attaches to (undefined: nothing, a free end). */
+function arrowTarget(app: App, p: Point): string | undefined {
+  const d = app.ws.active;
+  return d ? arrowTargetAt(d.index, d.sheet, p.x, p.y, 6 / app.canvas.view.scale, app.canvas.measure) : undefined;
 }
 
 /** The last route computed for each document version, by what decides it (see linkRoute). */
@@ -92,9 +134,12 @@ function sRouteTowards(index: DocIndex, source: string, start: EdgeEnd, p: Point
 /** Tool overlay: the ghost of what a click places, or the transition being drawn. */
 export function drawOverlay(app: App, c: CanvasRenderingContext2D, scale: number): void {
   const d = app.ws.active;
-  const { link, ghost, tool } = app.tools;
+  const { link, ghost, tool, arrow } = app.tools;
   if (!d) return;
-  if (link && d.index.vertices.has(link.source)) {
+  if (arrow) {
+    const target = arrowTarget(app, arrow.to);
+    drawArrowPreview(c, arrow.from, arrow.to, target === undefined ? undefined : attachBox(d.index, target), scale);
+  } else if (link && d.index.vertices.has(link.source)) {
     const v = vertexAt(app, link.to);
     const ok = v !== undefined && cannotConnect(d.index, link.source, v.id) === undefined;
     const target = v && { box: vertexBox(d.index, v.id), ok };
@@ -122,6 +167,13 @@ export function toolActions(app: App, input: InputState) {
     const pl = s.placing;
     if (!d || !pl || pl.error || pl.kind === "region") return;
     const kind = pl.kind;
+    if (kind === "note" || kind === "frame") {
+      const box = noteBox(kind, pl.p0, p, dragged);
+      pl.box = box;
+      d.preview((x) => void (pl.created = kind === "note" ? addNote(x, pl.region, box) : addFrame(x, pl.region, box)));
+      app.ws.changed("document");
+      return;
+    }
     const box = placeBox(kind, pl.p0, p, dragged, s.horizontal);
     d.preview((x) => void (pl.created = addVertex(x, pl.region, kind, box, { horizontal: s.horizontal })));
     app.ws.changed("document");
@@ -139,6 +191,9 @@ export function toolActions(app: App, input: InputState) {
     toolFork: arm("fork"),
     toolJoin: arm("join"),
     toolTerminate: arm("terminate"),
+    toolNote: arm("note"),
+    toolArrow: arm("arrow"),
+    toolFrame: arm("frame"),
     paletteTool: () => void (s.tool = input.tool as ToolId),
     showTool: () => {
       app.shell.palette.setActive(s.tool);
@@ -165,6 +220,7 @@ export function toolActions(app: App, input: InputState) {
       if (!d) return;
       const p = at();
       if (isVertexTool(s.tool)) s.ghost = { kind: s.tool, box: newVertexBox(s.tool, p, s.horizontal) };
+      else if (isNoteTool(s.tool)) s.ghost = { kind: s.tool, box: noteBox(s.tool, p, p, false) };
       else if (s.tool === "region") {
         const v = vertexAt(app, p);
         s.ghost = v?.kind === "state" ? { kind: s.tool, box: vertexBox(d.index, v.id) } : undefined;
@@ -177,6 +233,18 @@ export function toolActions(app: App, input: InputState) {
       if (!d) return;
       s.ghost = undefined;
       const p0 = app.canvas.worldAt(input.startX, input.startY);
+      if (isNoteTool(s.tool)) {
+        s.placing = {
+          kind: s.tool,
+          p0,
+          region: regionAt(d.index, d.sheet, p0).id,
+          error: undefined,
+          created: undefined,
+        };
+        d.begin();
+        previewPlace(p0, false);
+        return;
+      }
       if (!isVertexTool(s.tool)) {
         s.placing = { kind: "region", p0, region: "", error: undefined, created: undefined };
         return;
@@ -214,7 +282,20 @@ export function toolActions(app: App, input: InputState) {
         app.ws.say(pl.error);
         return;
       }
+      if (pl.kind === "note") {
+        // the note exists once its text is typed (text-edit.ts creates it)
+        d.cancel();
+        app.ws.changed("document");
+        if (pl.box) app.textEdit.openNew(pl.region, pl.box);
+        return;
+      }
       d.commit();
+      if (pl.kind === "frame" && pl.created) {
+        app.ws.changed("document");
+        app.ws.select([pl.created]);
+        app.textEdit.open(pl.created);
+        return;
+      }
       app.ws.changed("document");
       if (pl.created) app.ws.select([pl.created]);
     },
@@ -228,16 +309,24 @@ export function toolActions(app: App, input: InputState) {
     },
     validSource: () => {
       const d = app.ws.active;
+      if (s.tool === "arrow") return !!d;
       const v = d && vertexAt(app, at());
       return !!d && !!v && cannotConnect(d.index, v.id) === undefined;
     },
-    overVertex: () => vertexAt(app, at()) !== undefined,
+    overVertex: () => s.tool !== "arrow" && vertexAt(app, at()) !== undefined,
     validTarget: () => {
       const d = app.ws.active;
+      if (s.tool === "arrow") return !!d && !!s.arrow;
       const v = d && s.link && vertexAt(app, at());
       return !!d && !!s.link && !!v && cannotConnect(d.index, s.link.source, v.id) === undefined;
     },
     linkStart: () => {
+      if (s.tool === "arrow") {
+        const p = at();
+        s.arrow = { from: p, target: arrowTarget(app, p), to: p };
+        app.ws.changed("chrome", "view");
+        return;
+      }
       const v = vertexAt(app, at());
       if (!v) return;
       const p = at();
@@ -245,11 +334,20 @@ export function toolActions(app: App, input: InputState) {
       app.ws.changed("chrome", "view");
     },
     linkUpdate: () => {
+      if (s.arrow) {
+        s.arrow.to = at();
+        app.canvas.requestDraw();
+        return;
+      }
       if (!s.link) return;
       s.link.to = at();
       app.canvas.requestDraw();
     },
     linkBend: () => {
+      if (s.arrow) {
+        app.ws.say("An arrow is one straight line: click where it points.");
+        return;
+      }
       if (!s.link) return;
       if (s.tool === "transition") {
         app.ws.say("An S transition lays out its own route: use the straight transition (A L) to place bend points.");
@@ -271,6 +369,20 @@ export function toolActions(app: App, input: InputState) {
       app.ws.say(why ?? (s.link ? "Click the target state." : "Click the state the transition starts from."));
     },
     linkFinish: () => {
+      const a = s.arrow;
+      if (a) {
+        s.arrow = undefined;
+        const d = app.ws.active;
+        const p = at();
+        if (!d) return;
+        let id = "";
+        const sheet = d.sheet.id;
+        app.ws.edit(
+          (x) => void (id = addArrow(x, sheet, { target: a.target, p: a.from }, { target: arrowTarget(app, p), p })),
+        );
+        if (id) app.ws.select([id]);
+        return;
+      }
       const l = s.link;
       s.link = undefined;
       const p = at();
@@ -285,6 +397,7 @@ export function toolActions(app: App, input: InputState) {
     },
     linkCancel: () => {
       s.link = undefined;
+      s.arrow = undefined;
       app.ws.changed("chrome", "view");
     },
     paletteSelect: () => input.tool === "select",

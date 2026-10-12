@@ -46,6 +46,8 @@
     "warning": { "$value": "{palette.yellow}", "$description": "Warning badges" },
     "badge-mark": { "$value": "{palette.bgDeep}", "$description": "The exclamation mark on a badge" },
     "active": { "$value": "{palette.green}", "$description": "Simulator: active states (outline, a faint fill for the innermost) and the last step's transitions" },
-    "would": { "$value": "{palette.aqua}", "$description": "Simulator: transitions the hovered event would take" }
+    "would": { "$value": "{palette.aqua}", "$description": "Simulator: transitions the hovered event would take" },
+    "note": { "$value": "{palette.blue}", "$description": "Notes, group frames and arrows: documentation that is not part of the machine" },
+    "todo": { "$value": "{palette.yellow}", "$description": "Notes marked TODO" }
   }
 }

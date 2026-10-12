@@ -3,7 +3,7 @@
 
 /**
  * The Properties tab: what the selection is and every property it has (state, pseudo-state, transition, and a
- * state's internal transitions and timers).
+ * state's internal transitions and timers; notes, frames and arrows in annotations.tsx).
  */
 import { Field, Section } from "../widgets";
 import { useLayoutEffect, useState } from "preact/hooks";
@@ -39,7 +39,8 @@ import {
   timerNameProblem,
   timerDurationProblem,
 } from "@ufsm/core/edit";
-import { stateLayout } from "@ufsm/core/diagram";
+import { annotationKind, annotationTitle, stateLayout } from "@ufsm/core/diagram";
+import { ANNOTATION_NAMES, AnnotationProps } from "./annotations";
 import { type FocusField, type PanelOps, type PanelDoc } from "./types";
 import {
   Link,
@@ -477,7 +478,7 @@ export function Properties({
   if (selection.size === 0) {
     return (
       <div class="pempty">
-        Select a state or transition to see its properties.
+        Select a state, transition or note to see its properties.
         <div class="dim">
           Machine {index.doc.name}: {index.vertices.size} states, {index.transitions.size} transitions.
         </div>
@@ -488,6 +489,17 @@ export function Properties({
   const id = selection.values().next().value!;
   const v = index.vertices.get(id)?.vertex;
   const t = index.transitions.get(id);
+  const note = annotationKind(index, id);
+  if (note)
+    return (
+      <div key={id}>
+        <div class="pheader">
+          <span class="kind">{ANNOTATION_NAMES[note]}</span>
+          <span class="name">{annotationTitle(index, id).replace(/^(note|frame) '(.*)'$/, "$2")}</span>
+        </div>
+        <AnnotationProps index={index} id={id} kind={note} ops={ops} />
+      </div>
+    );
   return (
     // keyed by the element, so drafts in text fields never carry over to another element
     <div key={id}>

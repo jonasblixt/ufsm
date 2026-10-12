@@ -6,7 +6,8 @@
  * and showing an element picked in the explorer, the panel, the search or the Problems list.
  */
 import type { Region, State, Vertex } from "@ufsm/core";
-import { sheetOfRegion, sheetOfVertex } from "@ufsm/core/diagram";
+import { sheetOfRegion, sheetOfVertex, annotationSheet } from "@ufsm/core/diagram";
+import { annotationBounds } from "@ufsm/core/edit";
 import type { App } from "./app";
 import { boxSelect, vertexBounds } from "./hit";
 import { parentSheet } from "./nav";
@@ -88,6 +89,14 @@ export function createNavigation(app: App): Navigation {
     const index = d.index;
     if (index.decls.has(id)) {
       app.shell.highlightDecl(id);
+      return;
+    }
+    const noteSheet = annotationSheet(index, id);
+    if (noteSheet) {
+      if (noteSheet !== d.sheet) showSheet(noteSheet);
+      ws.select([id]);
+      const b = annotationBounds(d.index, id);
+      if (b) app.canvas.fitBounds({ x0: b.x, y0: b.y, x1: b.x + b.w, y1: b.y + b.h }, 1.5);
       return;
     }
     const t = index.transitions.get(id);

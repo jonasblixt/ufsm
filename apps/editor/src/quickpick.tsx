@@ -75,6 +75,9 @@ function KindIcon({ kind }: { kind: ItemKind }) {
     case "machine":
       body = <path d="M4 2.5H9.5L12 5V13.5H4ZM9.5 2.5V5H12" {...S} />;
       break;
+    case "note":
+      body = <path d="M3 3.5H10.5L13 6V12.5H3ZM10.5 3.5V6H13M5.5 8.5H10.5M5.5 10.5H8.5" {...S} />;
+      break;
     case "setting":
       body = (
         <>

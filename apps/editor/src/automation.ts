@@ -7,7 +7,7 @@
  * methods; .claude/rules/editor.md lists what it offers.
  */
 import { loadModel, serializeV1 } from "@ufsm/core";
-import { actionBlock, edgeGeometry, vertexBox } from "@ufsm/core/diagram";
+import { actionBlock, annotationBox, arrowPoints, edgeGeometry, vertexBox } from "@ufsm/core/diagram";
 import type { App } from "./app";
 import type { ToolId } from "./palette";
 import { search } from "./search";
@@ -62,6 +62,14 @@ export function installAutomation(app: App): void {
         const m = block.hiddenMarker;
         return { ...block, hiddenMarkerScreen: m && canvas.worldToScreen(b.x + m.x + m.w / 2, b.y + m.y + m.h / 2) };
       },
+      /** A note's or frame's absolute box, or an arrow's ends (world coordinates). */
+      annotation: (id: string) => {
+        const d = ws.active;
+        if (!d) return undefined;
+        return annotationBox(d.index, id) ?? arrowPoints(d.index, id);
+      },
+      /** Is a note's text or a frame's caption being typed on the canvas? */
+      textEditing: () => app.textEdit.active,
       /** Absolute polyline and label of a transition. */
       route: (id: string) => (ws.active ? edgeGeometry(ws.active.index, id) : undefined),
       /** Simulator: start (or restart), stop, send an event, set a guard, and what it shows. */

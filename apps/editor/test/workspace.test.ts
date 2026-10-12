@@ -6,10 +6,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadModel, type LoadedModel } from "@ufsm/core";
+import { indexV1, loadModel, parseV1, type LoadedModel } from "@ufsm/core";
 import { deleteElements, moveVertices } from "@ufsm/core/edit";
 import { edgeGeometry, estimateLabelWidth, transitionLabelBox, vertexBox } from "@ufsm/core/diagram";
-import { boxSelect, hitTest, hitTransition, sheetBounds } from "../src/hit";
+import { gripAt } from "../src/handles";
+import { arrowTargetAt, boxSelect, hitAnnotation, hitTest, hitTransition, sheetBounds } from "../src/hit";
 import { Workspace, type Change } from "../src/workspace";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
@@ -151,5 +152,54 @@ describe("hit testing (no DOM)", () => {
     const [p, q] = edgeGeometry(d.index, t.id)!.points;
     const mid = { x: (p!.x + q!.x) / 2, y: (p!.y + q!.y) / 2 };
     assert.equal(hitTransition(d.index, d.sheet, mid.x, mid.y, 4, estimateLabelWidth)?.id !== undefined, true);
+  });
+
+  it("a frame in a state's region wins over that state, selected or not, but not over the states in its region", () => {
+    // P (100,100 400x300) holds r1 with A (abs 120,250) and frame g1 (abs 150,300 150x80) without a caption
+    const doc = parseV1(
+      JSON.stringify({
+        format: "ufsm",
+        version: 1,
+        name: "frames",
+        declarations: { events: [], signals: [], actions: [], guards: [] },
+        machine: {
+          root: {
+            id: "r0",
+            states: [
+              {
+                id: "s1",
+                kind: "state",
+                name: "P",
+                regions: [{ id: "r1", states: [{ id: "s2", kind: "state", name: "A" }] }],
+              },
+            ],
+          },
+          transitions: [],
+        },
+        diagram: {
+          paper: "A4",
+          states: { s1: { x: 100, y: 100, w: 400, h: 300 }, s2: { x: 20, y: 150, w: 100, h: 60 } },
+          regions: {},
+          transitions: {},
+          frames: { g1: { region: "r1", x: 50, y: 200, w: 150, h: 80 } },
+        },
+      }),
+    );
+    const index = indexV1(doc);
+    const sheet = doc.machine.root;
+    const grip = (x: number, y: number, selected: string[]) =>
+      gripAt(index, sheet, new Set(selected), [], x, y, 1, false)?.grip;
+    const under = (x: number, y: number) => hitTest(index, sheet, x, y, 6).vertex;
+    // its left edge, inside P's region
+    assert.equal(under(150, 340)?.id, "s1");
+    assert.equal(hitAnnotation(index, sheet, 150, 340, 6, "frames", undefined, under(150, 340)), "g1");
+    assert.deepEqual(grip(150, 340, []), { kind: "move", id: "g1" });
+    assert.deepEqual(grip(150, 340, ["s1"]), { kind: "move", id: "g1" });
+    // its inside is P's (a press there moves the selected P), A over its corner is A's
+    assert.deepEqual(grip(220, 340, ["s1"]), { kind: "move", id: "s1" });
+    assert.equal(hitAnnotation(index, sheet, 150, 300, 6, "frames", undefined, under(150, 300)), undefined);
+    assert.equal(under(150, 300)?.id, "s2");
+    // an arrow pointed inside it attaches to the frame, not to P
+    assert.equal(arrowTargetAt(index, sheet, 220, 340, 6), "g1");
   });
 });

@@ -25,6 +25,7 @@ import {
   type DeclKind,
   type DocIndex,
 } from "@ufsm/core";
+import { noteDisplayText } from "@ufsm/core/diagram";
 
 export type ItemKind =
   | "command"
@@ -36,6 +37,7 @@ export type ItemKind =
   | "transition"
   | "internal"
   | "timer"
+  | "note"
   | DeclKind
   | "help";
 
@@ -126,6 +128,7 @@ const ELEMENT_KINDS: ReadonlySet<ItemKind> = new Set([
   "transition",
   "internal",
   "timer",
+  "note",
   "event",
   "signal",
   "action",
@@ -149,7 +152,7 @@ const PSEUDO_NAMES: Readonly<Record<string, string>> = {
 /**
  * Everything of one machine a search can find, in document order: states (and named pseudo-states), off-page regions
  * and named regions of states with several, transitions, internal transitions, timers, then declarations (events, signals,
- * actions, guards).
+ * actions, guards), then notes (by their text, references shown as names) and group frames (by their caption).
  */
 export function elementItems(index: DocIndex, doc: number, docName: string): SearchItem[] {
   const out: SearchItem[] = [];
@@ -243,6 +246,25 @@ export function elementItems(index: DocIndex, doc: number, docName: string): Sea
       label: decl.name,
       detail: decl.doc ? `${kind} · ${decl.doc}` : kind,
     });
+  }
+  const dia = index.doc.diagram;
+  for (const [id, n] of Object.entries(dia?.notes ?? {})) {
+    const text = noteDisplayText(index, n.text).replace(/\s+/g, " ").trim();
+    if (!text) continue;
+    const owner = index.regions.get(n.region)?.owner;
+    out.push({
+      ...base,
+      key: key(id),
+      kind: "note",
+      id,
+      label: text.length > 80 ? `${text.slice(0, 79)}…` : text,
+      detail: `${n.todo ? "TODO note" : "note"}${owner ? ` in ${owner.name}` : ""}`,
+      keywords: text,
+    });
+  }
+  for (const [id, f] of Object.entries(dia?.frames ?? {})) {
+    if (!f.caption) continue;
+    out.push({ ...base, key: key(id), kind: "note", id, label: f.caption, detail: "group frame" });
   }
   return out;
 }

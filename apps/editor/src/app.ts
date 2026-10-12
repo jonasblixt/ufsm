@@ -15,6 +15,7 @@
  *   settings  settings.json, theme, UI zoom (settings-controller.ts)
  *   sim       the simulator and the Code tab (sim-controller.ts)
  *   search    the search field's rows and picks (search-items.ts)
+ *   textEdit  a note's text or a frame's caption typed on the canvas (text-edit.ts)
  *   input     the pointer and modifiers of the event being handled (fsm/input.ts); `pickTool` arms a tool through
  *             the editor model (palette clicks, the Add menu)
  */
@@ -28,6 +29,7 @@ import type { SearchController } from "./search-items";
 import type { SettingsController } from "./settings-controller";
 import type { Shell } from "./shell";
 import type { SimController } from "./sim-controller";
+import type { TextEdit } from "./text-edit";
 import type { Workspace } from "./workspace";
 import type { InputState } from "./fsm/input";
 import type { ToolId } from "./palette";
@@ -44,6 +46,7 @@ export interface App {
   settings: SettingsController;
   sim: SimController;
   search: SearchController;
+  textEdit: TextEdit;
   input: InputState;
   pickTool(tool: ToolId): void;
 }

@@ -185,6 +185,9 @@ export interface EditorFsmHandler {
   quickOpen(): void;
   commandPalette(): void;
   generate(): void;
+  toolNote(): void;
+  toolArrow(): void;
+  toolFrame(): void;
   ctrl(): boolean;
   singleState(): boolean;
   beyondThreshold(): boolean;
@@ -208,7 +211,7 @@ export class EditorFsm {
   //   4 Armed.r4: 1: Place, 2: Connect
   // Signals: 0 sPlace, 1 sConnect, 2 sSelect, 3 sDone
   /** Identifies the numbering of events, signals, states and transitions (`ufsm info` prints it for a model file). */
-  static readonly FINGERPRINT = 0xcf895751;
+  static readonly FINGERPRINT = 0xb063391f;
   private readonly h: EditorFsmHandler;
   private started = false;
   /** A reset()/process() call is running, or one did not finish. */
@@ -398,7 +401,8 @@ export class EditorFsm {
     let take_t50 = false;
     let take_t51 = false;
     let take_t2 = false;
-    let take_t92 = false;
+    let take_t93 = false;
+    let take_t95 = false;
     if (this.cfg[1] === 1) {
       if (this.h.ctrl() && this.cfg[2] === 1) {
         take_t50 = true;
@@ -409,12 +413,15 @@ export class EditorFsm {
     if (this.cfg[1] === 2) {
       take_t2 = true;
     }
+    if (this.cfg[1] === 4) {
+      take_t93 = true;
+    }
     if (this.cfg[1] === 5) {
       if (this.h.singleState()) {
-        take_t92 = true;
+        take_t95 = true;
       }
     }
-    if (!(take_t50 || take_t51 || take_t2 || take_t92)) {
+    if (!(take_t50 || take_t51 || take_t2 || take_t93 || take_t95)) {
       return false;
     }
     this.microstep();
@@ -430,7 +437,12 @@ export class EditorFsm {
     if (take_t2) {
       this.h.zoomNormal();
     }
-    if (take_t92) {
+    if (take_t93) {
+      this.h.toolNote();
+      this.push(0); // sPlace
+      this.push(3); // sDone
+    }
+    if (take_t95) {
       this.h.editName();
       this.push(3); // sDone
     }
@@ -445,7 +457,7 @@ export class EditorFsm {
     let take_t26 = false;
     let take_t53 = false;
     let take_t5 = false;
-    let take_t91 = false;
+    let take_t92 = false;
     if (this.cfg[1] === 1) {
       if (!this.h.ctrl() && this.cfg[2] === 1) {
         take_t26 = true;
@@ -458,10 +470,10 @@ export class EditorFsm {
     }
     if (this.cfg[1] === 4) {
       if (this.h.singleTransition()) {
-        take_t91 = true;
+        take_t92 = true;
       }
     }
-    if (!(take_t26 || take_t53 || take_t5 || take_t91)) {
+    if (!(take_t26 || take_t53 || take_t5 || take_t92)) {
       return false;
     }
     this.microstep();
@@ -474,7 +486,7 @@ export class EditorFsm {
     if (take_t5) {
       this.h.goUp();
     }
-    if (take_t91) {
+    if (take_t92) {
       this.h.addAction();
       this.push(3); // sDone
     }
@@ -507,23 +519,23 @@ export class EditorFsm {
   /** Event eKey_backspace. */
   private step_eKey_backspace(): boolean {
     let take_t59 = false;
-    let take_t115 = false;
+    let take_t118 = false;
     if (this.cfg[1] === 1) {
       if (this.cfg[2] === 1) {
         take_t59 = true;
       }
     }
     if (this.cfg[2] === 8) {
-      take_t115 = true;
+      take_t118 = true;
     }
-    if (!(take_t59 || take_t115)) {
+    if (!(take_t59 || take_t118)) {
       return false;
     }
     this.microstep();
     if (take_t59) {
       this.h.goUp();
     }
-    if (take_t115) {
+    if (take_t118) {
       this.h.linkUnbend();
     }
     return true;
@@ -725,8 +737,8 @@ export class EditorFsm {
     let take_t6 = false;
     let take_t78 = false;
     let take_t79 = false;
-    let take_t94 = false;
-    let take_t116 = false;
+    let take_t97 = false;
+    let take_t119 = false;
     if (this.cfg[1] === 1) {
       if (this.h.ctrl() && this.cfg[2] !== 6) {
         take_t55 = true;
@@ -744,15 +756,15 @@ export class EditorFsm {
     }
     if (this.cfg[1] === 5) {
       if (this.h.singleBar()) {
-        take_t94 = true;
+        take_t97 = true;
       }
     }
     if (this.cfg[4] === 1) {
       if (!this.h.ctrl() && this.cfg[1] === 1) {
-        take_t116 = true;
+        take_t119 = true;
       }
     }
-    if (!(take_t55 || take_t6 || take_t78 || take_t79 || take_t94 || take_t116)) {
+    if (!(take_t55 || take_t6 || take_t78 || take_t79 || take_t97 || take_t119)) {
       return false;
     }
     this.microstep();
@@ -774,11 +786,11 @@ export class EditorFsm {
       this.push(0); // sPlace
       this.push(3); // sDone
     }
-    if (take_t94) {
+    if (take_t97) {
       this.h.turnBar();
       this.push(3); // sDone
     }
-    if (take_t116) {
+    if (take_t119) {
       this.h.rotateTool();
     }
     if (take_t6) {
@@ -792,11 +804,11 @@ export class EditorFsm {
     let take_t8 = false;
     let take_t29 = false;
     let take_t30 = false;
-    let take_t100 = false;
+    let take_t103 = false;
     let take_t34 = false;
-    let take_t112 = false;
-    let take_t113 = false;
-    let take_t114 = false;
+    let take_t115 = false;
+    let take_t116 = false;
+    let take_t117 = false;
     if (this.cfg[2] === 1) {
       if (this.cfg[3] === 1) {
         take_t8 = true;
@@ -805,21 +817,21 @@ export class EditorFsm {
       } else if (this.cfg[4] === 2 && this.h.validSource()) {
         take_t30 = true;
       } else if (this.cfg[4] === 2) {
-        take_t100 = true;
+        take_t103 = true;
       }
     }
     if (this.cfg[2] === 8) {
       if (!this.h.shift() && this.h.validTarget()) {
         take_t34 = true;
       } else if (this.h.shift()) {
-        take_t112 = true;
+        take_t115 = true;
       } else if (this.h.overVertex()) {
-        take_t113 = true;
+        take_t116 = true;
       } else {
-        take_t114 = true;
+        take_t117 = true;
       }
     }
-    if (!(take_t8 || take_t29 || take_t30 || take_t100 || take_t34 || take_t112 || take_t113 || take_t114)) {
+    if (!(take_t8 || take_t29 || take_t30 || take_t103 || take_t34 || take_t115 || take_t116 || take_t117)) {
       return false;
     }
     this.microstep();
@@ -835,20 +847,20 @@ export class EditorFsm {
     if (take_t30) {
       this.h.linkStart();
     }
-    if (take_t100) {
+    if (take_t103) {
       this.h.linkRefuse();
     }
     if (take_t34) {
       this.h.linkFinish();
       this.push(2); // sSelect
     }
-    if (take_t112) {
+    if (take_t115) {
       this.h.linkBend();
     }
-    if (take_t113) {
+    if (take_t116) {
       this.h.linkRefuse();
     }
-    if (take_t114) {
+    if (take_t117) {
       this.h.linkBend();
     }
     if (take_t8) {
@@ -868,21 +880,21 @@ export class EditorFsm {
 
   /** Event eMotion. */
   private step_eMotion(): boolean {
-    let take_t98 = false;
-    let take_t99 = false;
+    let take_t101 = false;
+    let take_t102 = false;
     let take_t9 = false;
     let take_t10 = false;
-    let take_t104 = false;
+    let take_t107 = false;
     let take_t18 = false;
-    let take_t106 = false;
-    let take_t108 = false;
     let take_t109 = false;
-    let take_t110 = false;
+    let take_t111 = false;
+    let take_t112 = false;
+    let take_t113 = false;
     if (this.cfg[2] === 1) {
       if (this.cfg[4] === 1) {
-        take_t98 = true;
+        take_t101 = true;
       } else {
-        take_t99 = true;
+        take_t102 = true;
       }
     }
     if (this.cfg[2] === 2) {
@@ -893,7 +905,7 @@ export class EditorFsm {
       }
     }
     if (this.cfg[2] === 3) {
-      take_t104 = true;
+      take_t107 = true;
     }
     if (this.cfg[2] === 4) {
       if (this.h.beyondThreshold()) {
@@ -901,28 +913,28 @@ export class EditorFsm {
       }
     }
     if (this.cfg[2] === 5) {
-      take_t106 = true;
-    }
-    if (this.cfg[2] === 6) {
-      take_t108 = true;
-    }
-    if (this.cfg[2] === 7) {
       take_t109 = true;
     }
-    if (this.cfg[2] === 8) {
-      take_t110 = true;
+    if (this.cfg[2] === 6) {
+      take_t111 = true;
     }
-    if (!(take_t98 || take_t99 || take_t9 || take_t10 || take_t104 || take_t18 || take_t106 || take_t108 || take_t109 || take_t110)) {
+    if (this.cfg[2] === 7) {
+      take_t112 = true;
+    }
+    if (this.cfg[2] === 8) {
+      take_t113 = true;
+    }
+    if (!(take_t101 || take_t102 || take_t9 || take_t10 || take_t107 || take_t18 || take_t109 || take_t111 || take_t112 || take_t113)) {
       return false;
     }
     this.microstep();
     if (take_t9 || take_t10 || take_t18) {
       this.exit_r2();
     }
-    if (take_t98) {
+    if (take_t101) {
       this.h.placeMove();
     }
-    if (take_t99) {
+    if (take_t102) {
       this.h.hover();
     }
     if (take_t9) {
@@ -932,23 +944,23 @@ export class EditorFsm {
     if (take_t10) {
       this.h.lassoUpdate();
     }
-    if (take_t104) {
+    if (take_t107) {
       this.h.lassoUpdate();
     }
     if (take_t18) {
       this.h.panBegin();
       this.h.panMove();
     }
-    if (take_t106) {
+    if (take_t109) {
       this.h.panMove();
     }
-    if (take_t108) {
+    if (take_t111) {
       this.h.dragUpdate();
     }
-    if (take_t109) {
+    if (take_t112) {
       this.h.placeUpdate();
     }
-    if (take_t110) {
+    if (take_t113) {
       this.h.linkUpdate();
     }
     if (take_t9) {
@@ -1157,36 +1169,36 @@ export class EditorFsm {
 
   /** Event eWheel. */
   private step_eWheel(): boolean {
-    let take_t96 = false;
-    let take_t105 = false;
-    let take_t107 = false;
-    let take_t111 = false;
+    let take_t99 = false;
+    let take_t108 = false;
+    let take_t110 = false;
+    let take_t114 = false;
     if (this.cfg[2] === 1) {
-      take_t96 = true;
+      take_t99 = true;
     }
     if (this.cfg[2] === 4) {
-      take_t105 = true;
+      take_t108 = true;
     }
     if (this.cfg[2] === 5) {
-      take_t107 = true;
+      take_t110 = true;
     }
     if (this.cfg[2] === 8) {
-      take_t111 = true;
+      take_t114 = true;
     }
-    if (!(take_t96 || take_t105 || take_t107 || take_t111)) {
+    if (!(take_t99 || take_t108 || take_t110 || take_t114)) {
       return false;
     }
     this.microstep();
-    if (take_t96) {
+    if (take_t99) {
       this.h.zoomAtPointer();
     }
-    if (take_t105) {
+    if (take_t108) {
       this.h.zoomAtPointer();
     }
-    if (take_t107) {
+    if (take_t110) {
       this.h.zoomAtPointer();
     }
-    if (take_t111) {
+    if (take_t114) {
       this.h.zoomAtPointer();
     }
     return true;
@@ -1194,11 +1206,11 @@ export class EditorFsm {
 
   /** Event eDoubleClick. */
   private step_eDoubleClick(): boolean {
-    let take_t97 = false;
+    let take_t100 = false;
     if (this.cfg[2] === 1) {
-      take_t97 = true;
+      take_t100 = true;
     }
-    if (!take_t97) {
+    if (!take_t100) {
       return false;
     }
     this.microstep();
@@ -1257,16 +1269,16 @@ export class EditorFsm {
   /** Event eKey_t. */
   private step_eKey_t(): boolean {
     let take_t76 = false;
-    let take_t93 = false;
+    let take_t96 = false;
     if (this.cfg[1] === 4) {
       take_t76 = true;
     }
     if (this.cfg[1] === 5) {
       if (this.h.singleTransition()) {
-        take_t93 = true;
+        take_t96 = true;
       }
     }
-    if (!(take_t76 || take_t93)) {
+    if (!(take_t76 || take_t96)) {
       return false;
     }
     this.microstep();
@@ -1275,7 +1287,7 @@ export class EditorFsm {
       this.push(1); // sConnect
       this.push(3); // sDone
     }
-    if (take_t93) {
+    if (take_t96) {
       this.h.editTrigger();
       this.push(3); // sDone
     }
@@ -1393,16 +1405,27 @@ export class EditorFsm {
   /** Event eKey_c. */
   private step_eKey_c(): boolean {
     let take_t63 = false;
+    let take_t94 = false;
     if (this.cfg[1] === 1) {
       if (this.h.ctrl() && this.cfg[2] === 1) {
         take_t63 = true;
       }
     }
-    if (!take_t63) {
+    if (this.cfg[1] === 4) {
+      take_t94 = true;
+    }
+    if (!(take_t63 || take_t94)) {
       return false;
     }
     this.microstep();
-    this.h.copy();
+    if (take_t63) {
+      this.h.copy();
+    }
+    if (take_t94) {
+      this.h.toolArrow();
+      this.push(1); // sConnect
+      this.push(3); // sDone
+    }
     return true;
   }
 
@@ -1452,30 +1475,30 @@ export class EditorFsm {
 
   /** Event ePalette. */
   private step_ePalette(): boolean {
-    let take_t101 = false;
-    let take_t102 = false;
-    let take_t103 = false;
+    let take_t104 = false;
+    let take_t105 = false;
+    let take_t106 = false;
     if (this.cfg[2] === 1) {
       if (this.h.paletteSelect()) {
-        take_t101 = true;
+        take_t104 = true;
       } else if (this.h.paletteConnect()) {
-        take_t102 = true;
+        take_t105 = true;
       } else {
-        take_t103 = true;
+        take_t106 = true;
       }
     }
-    if (!(take_t101 || take_t102 || take_t103)) {
+    if (!(take_t104 || take_t105 || take_t106)) {
       return false;
     }
     this.microstep();
-    if (take_t101) {
+    if (take_t104) {
       this.push(2); // sSelect
     }
-    if (take_t102) {
+    if (take_t105) {
       this.h.paletteTool();
       this.push(1); // sConnect
     }
-    if (take_t103) {
+    if (take_t106) {
       this.h.paletteTool();
       this.push(0); // sPlace
     }
@@ -1517,29 +1540,39 @@ export class EditorFsm {
   /** Event eKey_g. */
   private step_eKey_g(): boolean {
     let take_t90 = false;
+    let take_t91 = false;
     if (this.cfg[1] === 4) {
       if (this.h.singleTransition()) {
         take_t90 = true;
+      } else {
+        take_t91 = true;
       }
     }
-    if (!take_t90) {
+    if (!(take_t90 || take_t91)) {
       return false;
     }
     this.microstep();
-    this.h.addGuard();
-    this.push(3); // sDone
+    if (take_t90) {
+      this.h.addGuard();
+      this.push(3); // sDone
+    }
+    if (take_t91) {
+      this.h.toolFrame();
+      this.push(0); // sPlace
+      this.push(3); // sDone
+    }
     return true;
   }
 
   /** Event eKey_O. */
   private step_eKey_O(): boolean {
-    let take_t95 = false;
+    let take_t98 = false;
     if (this.cfg[1] === 5) {
       if (this.h.singleState()) {
-        take_t95 = true;
+        take_t98 = true;
       }
     }
-    if (!take_t95) {
+    if (!take_t98) {
       return false;
     }
     this.microstep();

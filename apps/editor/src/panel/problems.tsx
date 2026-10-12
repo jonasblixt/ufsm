@@ -2,7 +2,8 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 /**
- * The Problems tab: the design rule check's findings, live, each with where it is drawn and a jump to it.
+ * The Problems tab: the design rule check's findings, live, each with where it is drawn and a jump to it; notes
+ * marked TODO are listed last.
  */
 import { type DocIndex, type Id } from "@ufsm/core";
 import { locate, locationText } from "@ufsm/core/diagram";
@@ -19,6 +20,7 @@ export function Problems({ doc, ops }: { doc: PanelDoc | undefined; ops: PanelOp
   const rows = [
     ...doc.diagnostics.filter((x) => x.severity === "error"),
     ...doc.diagnostics.filter((x) => x.severity === "warning"),
+    ...doc.diagnostics.filter((x) => x.severity === "info"),
   ];
   if (rows.length === 0 && doc.notes.length === 0) return <div class="pempty">No problems found.</div>;
   return (

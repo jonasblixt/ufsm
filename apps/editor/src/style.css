@@ -372,7 +372,8 @@ body {
   color: var(--purple);
 }
 
-.qp-icon.k-guard {
+.qp-icon.k-guard,
+.qp-icon.k-note {
   color: var(--blue);
 }
 
@@ -1600,6 +1601,10 @@ button.problem:not(:disabled):hover {
   color: var(--yellow);
 }
 
+.problem .sev.info {
+  color: var(--blue);
+}
+
 .problem .msg {
   flex: 1;
   min-width: 0;
@@ -2114,4 +2119,34 @@ button.problem:not(:disabled):hover {
 .settings-problems {
   margin-top: 6px;
   font-size: 12px;
+}
+
+/* Editing a note's text or a frame's caption on the canvas (text-edit.ts sets position, size and font from the zoom). */
+.note-edit {
+  position: fixed;
+  z-index: 50;
+  box-sizing: border-box;
+  margin: 0;
+  border: 1.5px solid var(--blue);
+  border-radius: 0;
+  outline: none;
+  background: var(--bg0);
+  color: var(--blue);
+  font-family: sans-serif;
+  resize: none;
+  overflow: hidden;
+}
+
+.note-edit.todo {
+  border-color: var(--yellow);
+  color: var(--yellow);
+}
+
+.note-edit.caption {
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.note-edit::placeholder {
+  color: var(--fg4);
 }

@@ -3,14 +3,16 @@
 
 /**
  * The editor model's region Pointer with the select tool: click and Shift-click selection, the rubber band, panning
- * (right button), wheel zoom, double-click (enter a state, reset a handle, fit) and dragging what the press went down
- * on (a vertex, a handle, a label).
+ * (right button), wheel zoom, double-click (enter a state, reset a handle, edit a note or a frame's caption, fit) and
+ * dragging what the press went down on (a vertex, a note, frame or arrow, a handle, a label).
  */
 import type { State, UfsmDocument } from "@ufsm/core";
 import {
   moveRegionSplit,
-  moveVertices,
+  moveSelection,
   removeBendPoint,
+  resizeAnnotation,
+  setArrowEnd,
   resetActionsHeight,
   resetJog,
   resetLabel,
@@ -23,27 +25,56 @@ import {
   unpinEdgeEnd,
   type EdgeTargets,
 } from "@ufsm/core/edit";
-import { HEADER_H, actionBlock, edgeGeometry, regionBoxes, routeInfo, vertexBox } from "@ufsm/core/diagram";
+import {
+  HEADER_H,
+  actionBlock,
+  annotationBox,
+  annotationKind,
+  edgeGeometry,
+  noteDisplayText,
+  noteHeightFor,
+  regionBoxes,
+  routeInfo,
+  vertexBox,
+  type MeasureText,
+} from "@ufsm/core/diagram";
 import type { App } from "../app";
 import type { EditorFsmHandler } from "../fsm/editor-fsm";
 import type { InputState } from "../fsm/input";
 import { gripAt, type Grip } from "../handles";
-import { boxSelect, hiddenMarkerAt, hitTest, hitTransition } from "../hit";
+import { arrowTargetAt, boxSelect, hiddenMarkerAt, hitAnnotation, hitTest, hitTransition } from "../hit";
 import { TITLE_FIELD_LABELS } from "../panel";
 import { lassoMode, type Drag } from "./state";
 
 const DRAG_THRESHOLD = 4;
 
 /** What the current drag does to the document at pointer world position (x, y). */
-function applyDrag(d: UfsmDocument, drag: Drag, x: number, y: number): void {
+function applyDrag(d: UfsmDocument, drag: Drag, x: number, y: number, measure: MeasureText, slop: number): void {
   const { grip, base } = drag;
   const dx = x - drag.x0,
     dy = y - drag.y0;
   switch (grip.kind) {
     case "move":
-      moveVertices(d, drag.ids, dx, dy, grip.id);
+      moveSelection(d, drag.ids, dx, dy, grip.id);
+      break;
+    case "arrowEnd":
+      setArrowEnd(d, grip.id, grip.end, arrowTargetAt(base, drag.sheet, x, y, slop, measure, grip.id), { x, y });
       break;
     case "resize": {
+      const ab = annotationBox(base, grip.id);
+      if (ab) {
+        const at = { left: ab.x + dx, right: ab.x + ab.w + dx, top: ab.y + dy, bottom: ab.y + ab.h + dy };
+        const targets: EdgeTargets = {};
+        for (const e of grip.edges) targets[e] = at[e];
+        resizeAnnotation(d, grip.id, targets);
+        // a note is never shorter than its text at its new width
+        const n = d.diagram?.notes?.[grip.id];
+        if (n) {
+          const need = Math.ceil(noteHeightFor(noteDisplayText(base, n.text), n.w, measure) / 10) * 10;
+          if (n.h < need) n.h = need;
+        }
+        break;
+      }
       const b = vertexBox(base, grip.id);
       const at = { left: b.x + dx, right: b.x + b.w + dx, top: b.y + dy, bottom: b.y + b.h + dy };
       const targets: EdgeTargets = {};
@@ -95,15 +126,20 @@ export function pointerActions(app: App, input: InputState) {
     const [x, y] = canvas.screenToWorld(clientX, clientY);
     return gripAt(d.index, d.sheet, d.selection, canvas.handles(), x, y, canvas.view.scale, shift, canvas.measure);
   };
-  /** What a click at a client point selects: a transition (line or label), else the innermost vertex. */
+  /**
+   * What a click at a client point selects: a note or arrow, a transition (line or label), a frame's outline or caption
+   * drawn over the innermost vertex there, else that vertex.
+   */
   const pickAt = (clientX: number, clientY: number): string | undefined => {
     const d = app.ws.active;
     if (!d) return undefined;
     const [x, y] = canvas.screenToWorld(clientX, clientY);
-    return (
-      hitTransition(d.index, d.sheet, x, y, slop(), canvas.measure)?.id ??
-      hitTest(d.index, d.sheet, x, y, slop()).vertex?.id
-    );
+    const top =
+      hitAnnotation(d.index, d.sheet, x, y, slop(), "top", canvas.measure) ??
+      hitTransition(d.index, d.sheet, x, y, slop(), canvas.measure)?.id;
+    if (top) return top;
+    const v = hitTest(d.index, d.sheet, x, y, slop()).vertex;
+    return hitAnnotation(d.index, d.sheet, x, y, slop(), "frames", canvas.measure, v) ?? v?.id;
   };
   /** A click on a handle keeps the selection (the handle belongs to it). */
   const onHandle = (): boolean =>
@@ -113,8 +149,9 @@ export function pointerActions(app: App, input: InputState) {
     const d = app.ws.active;
     if (!d) return "";
     const g = drag.grip;
+    if ((g.kind === "move" || g.kind === "resize") && annotationKind(d.index, g.id) === "arrow") return "Esc cancels";
     if (g.kind === "move" || g.kind === "resize") {
-      const b = vertexBox(d.index, g.id);
+      const b = annotationBox(d.index, g.id) ?? vertexBox(d.index, g.id);
       return g.kind === "move" ? `x ${b.x} · y ${b.y}` : `${b.w} × ${b.h}`;
     }
     return "Esc cancels";
@@ -205,8 +242,19 @@ export function pointerActions(app: App, input: InputState) {
         return;
       }
       const [x, y] = canvas.screenToWorld(input.x, input.y);
+      // a note or a frame: edit its text in place
+      const note = hitAnnotation(d.index, d.sheet, x, y, slop(), "top", canvas.measure);
+      if (note) {
+        if (annotationKind(d.index, note) === "note") app.textEdit.open(note);
+        return;
+      }
       if (hitTransition(d.index, d.sheet, x, y, slop(), canvas.measure)) return;
       const hit = hitTest(d.index, d.sheet, x, y, slop());
+      const frame = hitAnnotation(d.index, d.sheet, x, y, slop(), "frames", canvas.measure, hit.vertex);
+      if (frame) {
+        app.textEdit.open(frame);
+        return;
+      }
       if (hit.vertex?.kind === "state") app.nav.enterState(hit.vertex, hit.region);
       else if (!hit.vertex && canvas.onTitleBlock(x, y)) app.shell.focusProjectField(TITLE_FIELD_LABELS.revision);
       else if (!hit.vertex) canvas.fit();
@@ -217,7 +265,10 @@ export function pointerActions(app: App, input: InputState) {
       const g = s.pressGrip;
       if ((g.kind === "move" || g.kind === "label") && !d.selection.has(g.id)) app.ws.select([g.id]);
       const [x0, y0] = canvas.screenToWorld(input.startX, input.startY);
-      s.drag = { grip: g, x0, y0, base: d.index, ids: [...d.selection].filter((id) => d.index.vertices.has(id)) };
+      const ids = [...d.selection].filter(
+        (id) => d.index.vertices.has(id) || annotationKind(d.index, id) !== undefined,
+      );
+      s.drag = { grip: g, x0, y0, base: d.index, ids, sheet: d.sheet };
       d.begin();
     },
     dragUpdate: () => {
@@ -225,7 +276,7 @@ export function pointerActions(app: App, input: InputState) {
       const drag = s.drag;
       if (!d || !drag) return;
       const [x, y] = canvas.screenToWorld(input.x, input.y);
-      d.preview((draft) => applyDrag(draft, drag, x, y));
+      d.preview((draft) => applyDrag(draft, drag, x, y, canvas.measure, slop()));
       app.ws.changed("document");
       app.shell.setStatus(dragStatus(drag));
     },

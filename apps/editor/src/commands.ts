@@ -180,6 +180,9 @@ export function createCommands(app: App): Commands {
         "fork",
         "join",
         "terminate",
+        "note",
+        "arrow",
+        "frame",
       ] as const
     ).map((t): Command => ({
       id: `tool:${t}`,
@@ -356,6 +359,8 @@ export function createCommands(app: App): Commands {
       "-",
       "addBendPoint",
       "convertToS",
+      "-",
+      ...tools(["note", "arrow", "frame"]),
     ]),
     menu("View", [
       ...[

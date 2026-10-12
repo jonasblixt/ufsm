@@ -4,7 +4,7 @@
 /**
  * What the canvas draws on top of the sheet while a tool is armed: a ghost of the vertex a click would place, and the
  * transition being drawn (source, bend points, a line to the pointer, the target under it; over a valid target the
- * route the click would give it, S or straight). World coordinates;
+ * route the click would give it, S or straight), and the arrow being drawn. World coordinates;
  * line widths and dashes are scaled so they look the same at every zoom.
  */
 import type { Box, Point } from "@ufsm/core/diagram";
@@ -96,4 +96,16 @@ export function drawLinkRoute(
   ctx.closePath();
   ctx.fill();
   ctx.restore();
+}
+
+/** The arrow being drawn: a dashed line from its start to the pointer with a head, the element under the pointer outlined. */
+export function drawArrowPreview(
+  ctx: CanvasRenderingContext2D,
+  from: Point,
+  to: Point,
+  target: Box | undefined,
+  scale: number,
+): void {
+  if (target) outline(ctx, target, false, scale, C.note, false);
+  drawLinkRoute(ctx, { x: from.x, y: from.y, w: 0, h: 0 }, [from, to], undefined, scale);
 }

@@ -173,6 +173,8 @@ describe("gruvbox theme files", () => {
         badgeMark: "#1d2021",
         active: "#b8bb26",
         would: "#8ec07c",
+        note: "#83a598",
+        todo: "#fabd2f",
       },
     );
     assert.equal(t.css["--shadow"], "rgb(0 0 0 / 0.45)");
@@ -190,6 +192,7 @@ describe("gruvbox theme files", () => {
         assert.ok(contrastRatio(css("fg4"), css("card")) >= 3.5, `${key}: secondary text on cards`);
         assert.ok(contrastRatio(t.canvasRgba.ink, t.canvasRgba.paper) >= 3.5, `${key}: diagram on the sheet`);
         assert.ok(contrastRatio(t.canvasRgba.selection, t.canvasRgba.paper) >= 4.5, `${key}: selection on the sheet`);
+        assert.ok(contrastRatio(t.canvasRgba.note, t.canvasRgba.paper) >= 3, `${key}: note text on the sheet`);
         assert.ok(contrastRatio(css("bg-dark"), css("orange")) >= 3, `${key}: text on orange`);
       }
     }

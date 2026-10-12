@@ -8,7 +8,11 @@
  */
 import type { DocIndex, Region, State, Transition, Vertex } from "@ufsm/core";
 import {
+  FRAME_CAPTION_H,
   actionBlock,
+  annotationBox,
+  annotationsOn,
+  arrowPoints,
   edgeGeometry,
   estimateLabelWidth,
   isOffPage,
@@ -158,7 +162,113 @@ export function boxSelect(index: DocIndex, sheet: Region, r: Bounds, mode: BoxMo
         : pts.some((p, i) => i > 0 && segmentHits(r, pts[i - 1]!, p));
     if (picked) ids.push(t.id);
   });
+  const on = annotationsOn(index, sheet);
+  for (const id of [...on.frames, ...on.notes]) {
+    const b = annotationBox(index, id);
+    if (
+      b &&
+      (contains(r, b) ||
+        (mode === "touching" &&
+          overlaps(r, b) &&
+          !(b.x <= r.x0 && b.y <= r.y0 && b.x + b.w >= r.x1 && b.y + b.h >= r.y1)))
+    )
+      ids.push(id);
+  }
+  for (const id of on.arrows) {
+    const a = arrowPoints(index, id);
+    if (!a) continue;
+    if (mode === "enclosed" ? pointIn(r, a.from) && pointIn(r, a.to) : segmentHits(r, a.from, a.to)) ids.push(id);
+  }
   return ids;
+}
+
+/**
+ * What an arrow end at world point (x, y) on `sheet` attaches to: a note, a transition (its line or label), the
+ * innermost vertex or a group frame (anywhere inside it) drawn over it, else nothing (a free end). `exclude` is never
+ * picked.
+ */
+export function arrowTargetAt(
+  index: DocIndex,
+  sheet: Region,
+  x: number,
+  y: number,
+  slop: number,
+  measure: MeasureText = estimateLabelWidth,
+  exclude?: string,
+): string | undefined {
+  const on = annotationsOn(index, sheet);
+  for (const id of [...on.notes].reverse()) {
+    const b = annotationBox(index, id);
+    if (id !== exclude && b && inside(b, x, y)) return id;
+  }
+  const t = hitTransition(index, sheet, x, y, slop, measure);
+  if (t) return t.id;
+  const v = hitTest(index, sheet, x, y, slop).vertex;
+  for (const id of [...on.frames].reverse()) {
+    const b = annotationBox(index, id);
+    if (id !== exclude && b && inside(grow(b, slop), x, y) && frameOver(index, id, v)) return id;
+  }
+  return v?.id;
+}
+
+/**
+ * Is the frame `id` drawn over vertex `v`? A frame is drawn behind the vertices of its own region but over the states
+ * that hold that region, so the state around a frame never hides it. Without `v` (nothing there) it is.
+ */
+function frameOver(index: DocIndex, id: string, v: Vertex | undefined): boolean {
+  if (!v) return true;
+  let r = index.regions.get(index.doc.diagram?.frames?.[id]?.region ?? "")?.region;
+  while (r) {
+    const owner = index.regions.get(r.id)?.owner;
+    if (!owner) return false;
+    if (owner.id === v.id) return true;
+    r = index.vertices.get(owner.id)?.region;
+  }
+  return false;
+}
+
+/** Width of a frame's caption tab, for hit testing (the renderer draws it this wide). */
+export const frameCaptionWidth = (caption: string, measure: MeasureText = estimateLabelWidth): number =>
+  measure(caption) + 20;
+
+/**
+ * The note or arrow at world point (x, y) on `sheet` (`layer` "top": they are drawn over everything, the last drawn
+ * wins), or the group frame whose outline or caption tab is there (`layer` "frames": a frame is drawn behind the
+ * states of its region, and its inside belongs to what is in it). `under` is the vertex at the point (hitTest): only a
+ * frame drawn over it counts, so a frame in a state's region wins over that state.
+ */
+export function hitAnnotation(
+  index: DocIndex,
+  sheet: Region,
+  x: number,
+  y: number,
+  slop: number,
+  layer: "top" | "frames",
+  measure: MeasureText = estimateLabelWidth,
+  under?: Vertex,
+): string | undefined {
+  const on = annotationsOn(index, sheet);
+  if (layer === "top") {
+    for (const id of [...on.arrows].reverse()) {
+      const a = arrowPoints(index, id);
+      if (a && segmentDistance({ x, y }, a.from, a.to) <= slop) return id;
+    }
+    for (const id of [...on.notes].reverse()) {
+      const b = annotationBox(index, id);
+      if (b && inside(b, x, y)) return id;
+    }
+    return undefined;
+  }
+  for (const id of [...on.frames].reverse()) {
+    const b = annotationBox(index, id);
+    if (!b || !frameOver(index, id, under)) continue;
+    const caption = index.doc.diagram?.frames?.[id]?.caption;
+    if (caption && inside({ x: b.x, y: b.y, w: frameCaptionWidth(caption, measure), h: FRAME_CAPTION_H }, x, y))
+      return id;
+    const near = inside(grow(b, slop), x, y) && !inside(grow(b, -slop), x, y);
+    if (near) return id;
+  }
+  return undefined;
 }
 
 export function vertexBounds(index: DocIndex, id: string): Bounds {
@@ -188,6 +298,15 @@ export function sheetBounds(index: DocIndex, sheet: Region): Bounds | undefined 
     g.points.forEach((p) => add(p.x, p.y, 0, 0));
     if (g.label) add(g.label.x, g.label.y, g.label.w, 60);
   });
+  const on = annotationsOn(index, sheet);
+  for (const id of [...on.frames, ...on.notes]) {
+    const ab = annotationBox(index, id);
+    if (ab) add(ab.x, ab.y, ab.w, ab.h);
+  }
+  for (const id of on.arrows) {
+    const a = arrowPoints(index, id);
+    if (a) [a.from, a.to].forEach((p) => add(p.x, p.y, 0, 0));
+  }
   return b;
 }
 

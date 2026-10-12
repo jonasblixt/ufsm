@@ -84,7 +84,7 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend, laid out after
 
 The editor exposes `window.ufsm` for automation: `load(text, name)`, `newModel()`,
 `worldToScreen(x, y)`, `selectedName()`, `selectedIds()`, `select(ids)`, `serialize()`,
-`box(id)`, `route(id)`, `actionBlock(id)` (a state's action block layout from core, plus `hiddenMarkerScreen`, the screen centre of its hidden-lines marker), `problems()` (the design rule check's findings), `handles()` (with screen positions), `undo()`, `redo()`,
+`box(id)`, `annotation(id)` (a note's or frame's box, an arrow's ends), `textEditing()`, `route(id)`, `actionBlock(id)` (a state's action block layout from core, plus `hiddenMarkerScreen`, the screen centre of its hidden-lines marker), `problems()` (the design rule check's findings), `handles()` (with screen positions), `undo()`, `redo()`,
 `canUndo()`, `canRedo()`, `isDirty()`, `tabs()`, `activateTab(i)`, `closeTab(i, force)`, `view()`,
 `tool()`, `pickTool(id)`, `status()`, `panelTab()`, `openSearch(text)`, `search(text)` (the rows the search lists: label, kind, detail, machine, checked), `theme()` (id, inputs, appearance), `zoom()` (UI zoom %), `settings()` (settings.json text), simulator: `simStart()`, `simStop()`, `simSend(event)`,
 `simGuard(name, true|false)`, `sim()` (steps, active, fired, last calls, hovered event and its transitions, trace text),
