@@ -19,6 +19,12 @@ export interface MenuItem {
   enabled?(): boolean;
   /** Shows a check mark when true (toggles such as panels). */
   checked?(): boolean;
+  /** Dimmed text in place of the keys (a recent file's folder). */
+  detail?: string;
+  /** Tooltip (a recent file's full path). */
+  title?: string;
+  /** Items of a submenu that opens beside this one (File › Open Recent); clicking the item opens it too. */
+  submenu?(): MenuEntry[];
 }
 
 export type MenuEntry = MenuItem | "-";
@@ -58,8 +64,43 @@ function AppIcon() {
 }
 
 function MenuBar({ menus }: { menus: Menu[] }) {
-  const [open, setOpen] = useState<number | undefined>(undefined);
+  const [open, setOpenMenu] = useState<number | undefined>(undefined);
+  /** The item of the open menu whose submenu is shown. */
+  const [sub, setSub] = useState<number | undefined>(undefined);
   const ref = useRef<HTMLElement>(null);
+  const setOpen = (i: number | undefined): void => {
+    setOpenMenu(i);
+    setSub(undefined);
+  };
+
+  const item = (it: MenuItem, k: number, onEnter: () => void) => (
+    <button
+      type="button"
+      key={k}
+      class={`menu-item${it.submenu ? " has-submenu" : ""}`}
+      role={it.checked ? "menuitemcheckbox" : "menuitem"}
+      aria-checked={it.checked ? it.checked() : undefined}
+      aria-haspopup={it.submenu ? "true" : undefined}
+      title={it.title}
+      disabled={it.enabled ? !it.enabled() : false}
+      onPointerDown={(e) => e.preventDefault()}
+      onPointerEnter={onEnter}
+      onClick={() => {
+        if (it.submenu) {
+          setSub(k);
+          return;
+        }
+        setOpen(undefined);
+        it.run();
+      }}
+    >
+      <span class="check">{it.checked?.() ? "✓" : ""}</span>
+      <span class="text">{typeof it.label === "function" ? it.label() : it.label}</span>
+      {it.detail !== undefined && <span class="detail">{it.detail}</span>}
+      <span class="keys">{it.submenu ? "›" : (it.keys ?? "")}</span>
+    </button>
+  );
+  const sep = (k: number) => <div class="menu-sep" key={k} role="separator" />;
 
   // layout effect: the listeners must be in place before the next key press, not after the next paint
   useLayoutEffect(() => {
@@ -108,25 +149,18 @@ function MenuBar({ menus }: { menus: Menu[] }) {
             <div class="menu-dropdown" role="menu">
               {m.items.map((it, k) =>
                 it === "-" ? (
-                  <div class="menu-sep" key={k} role="separator" />
+                  sep(k)
+                ) : it.submenu ? (
+                  <div class="menu-sub" key={k}>
+                    {item(it, k, () => setSub(k))}
+                    {sub === k && (
+                      <div class="menu-dropdown submenu" role="menu">
+                        {it.submenu().map((s, j) => (s === "-" ? sep(j) : item(s, j, () => undefined)))}
+                      </div>
+                    )}
+                  </div>
                 ) : (
-                  <button
-                    type="button"
-                    key={k}
-                    class="menu-item"
-                    role={it.checked ? "menuitemcheckbox" : "menuitem"}
-                    aria-checked={it.checked ? it.checked() : undefined}
-                    disabled={it.enabled ? !it.enabled() : false}
-                    onPointerDown={(e) => e.preventDefault()}
-                    onClick={() => {
-                      setOpen(undefined);
-                      it.run();
-                    }}
-                  >
-                    <span class="check">{it.checked?.() ? "✓" : ""}</span>
-                    <span class="text">{typeof it.label === "function" ? it.label() : it.label}</span>
-                    <span class="keys">{it.keys ?? ""}</span>
-                  </button>
+                  item(it, k, () => setSub(undefined))
                 ),
               )}
             </div>

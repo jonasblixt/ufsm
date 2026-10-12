@@ -67,7 +67,10 @@ an action with the name of a command runs that command (`commands.ts`), the othe
 | Add | e | `singleState()` | `addEntry()` `^sDone` | (stays) |
 | Add | x | `singleState()` | `addExit()` `^sDone` | (stays) |
 | Add | g | `singleTransition()` | `addGuard()` `^sDone` | (stays) |
+| Add | g |  | `toolFrame()` `^sPlace` `^sDone` | (stays) |
 | Add | a | `singleTransition()` | `addAction()` `^sDone` | (stays) |
+| Add | n |  | `toolNote()` `^sPlace` `^sDone` | (stays) |
+| Add | c |  | `toolArrow()` `^sConnect` `^sDone` | (stays) |
 | Edit | signal sDone |  |  | Tools |
 | Edit | Esc |  |  | Tools |
 | Edit | n | `singleState()` | `editName()` `^sDone` | (stays) |

@@ -92,7 +92,8 @@ export function createShell(app: App): Shell {
       return;
     }
     const errors = d.diagnostics.filter((x) => x.severity === "error").length;
-    const warnings = d.diagnostics.length - errors;
+    const todos = d.diagnostics.filter((x) => x.severity === "info").length;
+    const warnings = d.diagnostics.length - errors - todos;
     const lines = [
       ...d.notes.map((n) => `converted: ${n.message}`),
       ...d.diagnostics.map((x) => `${x.severity}: ${x.message}`),
@@ -101,6 +102,7 @@ export function createShell(app: App): Shell {
     problemsEl.textContent = [
       errors ? `${errors} error${errors > 1 ? "s" : ""}` : "",
       warnings ? `${warnings} warning${warnings > 1 ? "s" : ""}` : "",
+      todos ? `${todos} TODO` : "",
       d.notes.length ? `${d.notes.length} converted` : "",
     ]
       .filter(Boolean)
@@ -122,7 +124,6 @@ export function createShell(app: App): Shell {
         activeDoc: d?.key,
         recent: search.recent,
         onPick: search.onPick,
-        onPreview: search.onPreview,
       },
       windowControls: customWindowControls,
       mac: isMac && inTauri,

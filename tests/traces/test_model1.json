@@ -1,6 +1,6 @@
 {
   "model": "../models/test_model1.ufsm",
-  "doc": "From old/tests/C/test_model1.c.",
+  "doc": "From v0.5.3 tests/C/test_model1.c.",
   "steps": [
     { "reset": true, "expect": ["eA", "eC1", "eC11"] },
     { "send": "e4", "expect": ["xC11", "xC1", "eC2"] },

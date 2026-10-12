@@ -117,6 +117,8 @@ export interface CanvasColors {
   badgeMark: string;
   active: string;
   would: string;
+  note: string;
+  todo: string;
 }
 
 export type CanvasColor = keyof CanvasColors;
@@ -135,6 +137,8 @@ const CANVAS_KEYS: readonly CanvasColor[] = [
   "badgeMark",
   "active",
   "would",
+  "note",
+  "todo",
 ];
 
 /** CSS custom properties every theme must produce (style.css uses them). */

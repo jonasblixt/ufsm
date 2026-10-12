@@ -697,6 +697,26 @@ check(
   (await newTabs()) === "untitled.ufsm,untitled2.ufsm,untitled3.ufsm*",
   await newTabs(),
 );
+// File › Open Recent: a submenu at the right of its item (the browser build has no recent machines).
+await page.click(".menu-label >> text=File");
+await page.hover('.menu-item:has-text("Open Recent")');
+const recentSub = await page.evaluate(() => {
+  const item = [...document.querySelectorAll(".menu-item")].find((b) => b.textContent?.includes("Open Recent"));
+  const sub = document.querySelector(".menu-dropdown.submenu");
+  const rows = sub ? [...sub.querySelectorAll(".menu-item")] : [];
+  return {
+    rows: rows.map((b) => `${b.querySelector(".text")?.textContent}:${b.disabled}`).join(),
+    beside: !!item && !!sub && sub.getBoundingClientRect().left >= item.getBoundingClientRect().right - 2,
+  };
+});
+check(
+  "File › Open Recent opens a submenu beside it, empty in the browser",
+  recentSub.rows === "No Recent Machines:true" && recentSub.beside,
+  JSON.stringify(recentSub),
+);
+await page.hover('.menu-item:has-text("Save As")');
+check("moving to another item closes the submenu", (await $count(".menu-dropdown.submenu")) === 0);
+await page.keyboard.press("Escape");
 await page.keyboard.press("a");
 await page.keyboard.press("s");
 {
@@ -2763,7 +2783,7 @@ await page.evaluate(() => localStorage.removeItem("ufsm.searchRecent"));
   check("Ctrl+Shift+P goes back to commands", (await searchValue()) === ">delete");
   await page.keyboard.press("Escape");
 
-  // settings: a theme row previews while highlighted, as VS Code's color theme picker does; Enter keeps it
+  // settings: a highlighted theme row changes nothing until it is picked; Enter applies and saves it
   await page.keyboard.press("Control+Shift+P");
   await page.keyboard.type("appearance light");
   r = await qp();
@@ -2773,11 +2793,11 @@ await page.evaluate(() => localStorage.removeItem("ufsm.searchRecent"));
     JSON.stringify(r.slice(0, 3)),
   );
   check(
-    "the highlighted appearance is previewed, not saved",
-    (await U("theme")).appearance === "light" && !/light/.test(await U("settings")),
+    "the highlighted appearance is not previewed, nor saved",
+    (await U("theme")).appearance === "dark" && !/light/.test(await U("settings")),
   );
   await page.keyboard.press("Escape");
-  check("Esc puts the theme back", (await U("theme")).appearance === "dark");
+  check("Esc leaves the theme as it was", (await U("theme")).appearance === "dark");
   await page.keyboard.press("Control+Shift+P");
   await page.keyboard.type("appearance light");
   await page.keyboard.press("Enter");
@@ -2800,9 +2820,9 @@ await page.evaluate(() => localStorage.removeItem("ufsm.searchRecent"));
   );
   await page.keyboard.press("Control+Shift+P");
   await page.keyboard.type("theme catpp");
-  check("hovering a theme row previews it too", (await U("theme")).id === "catppuccin");
+  await page.hover(".qp-row >> nth=0");
+  check("highlighting or hovering a theme row does not preview it", (await U("theme")).id === "gruvbox");
   await page.keyboard.press("Escape");
-  check("...and Esc restores it", (await U("theme")).id === "gruvbox");
 
   // project settings of the machine in focus
   await U("activateTab", 0);
@@ -3213,6 +3233,314 @@ await page.evaluate(() => localStorage.removeItem("ufsm.searchRecent"));
     JSON.stringify(blocked),
   );
   check("...but text fields keep theirs", inField === false, JSON.stringify(blocked));
+  await U(
+    "closeTab",
+    (await U("tabs")).findIndex((t) => t.active),
+    true,
+  );
+}
+// ---------------------------------------------------------------- notes, group frames and arrows (documentation)
+{
+  const model = {
+    format: "ufsm",
+    version: 1,
+    name: "notes",
+    declarations: { events: [{ id: "ev1", name: "eGo" }], signals: [], actions: [], guards: [] },
+    machine: {
+      root: {
+        id: "r0",
+        states: [
+          { id: "s0", kind: "initial" },
+          { id: "s1", kind: "state", name: "Alpha" },
+          { id: "s2", kind: "state", name: "Beta" },
+        ],
+      },
+      transitions: [
+        { id: "t1", from: "s0", to: "s1" },
+        { id: "t2", from: "s1", to: "s2", on: "ev1" },
+      ],
+    },
+    diagram: {
+      paper: "A4",
+      states: {
+        s0: { x: 40, y: 130, w: 20, h: 20 },
+        s1: { x: 100, y: 100, w: 160, h: 80 },
+        s2: { x: 500, y: 100, w: 160, h: 80 },
+      },
+      regions: {},
+      transitions: {
+        t1: { from: { side: "right", offset: 10 }, to: { side: "left", offset: 40 } },
+        t2: { from: { side: "right", offset: 40 }, to: { side: "left", offset: 40 } },
+      },
+    },
+  };
+  await page.evaluate(([t]) => window.ufsm.load(t, "notes.ufsm"), [JSON.stringify(model)]);
+  await page.waitForTimeout(200);
+  const doc = async () => JSON.parse(await U("serialize")).diagram;
+  const NOTE = [131, 165, 152]; // gruvbox dark blue: canvas.note
+  const near = (px, c) => px.every((v, i) => Math.abs(v - c[i]) < 24);
+  const k = await scale(); // this machine's own zoom
+  const empty = await w2s(400, 600);
+  await page.mouse.click(empty[0], empty[1]);
+
+  // a n: the note tool; a click opens a text field there, Ctrl+Enter keeps the text and creates the note
+  await page.keyboard.press("a");
+  await page.keyboard.press("n");
+  check("a n arms the note tool", (await U("tool")) === "note", await U("tool"));
+  let [nx, ny] = await w2s(100, 300);
+  await page.mouse.click(nx, ny);
+  check("a click with the note tool opens a text field on the canvas", (await U("textEditing")) === true);
+  check("...and creates nothing yet", (await doc()).notes === undefined);
+  await page.keyboard.type("Waits for {ev1} in {s1}");
+  await page.keyboard.press("Control+Enter");
+  let notes = (await doc()).notes ?? {};
+  const nid = Object.keys(notes)[0];
+  check(
+    "Ctrl+Enter creates the note with its text, at the click, on the grid",
+    nid === "n1" && notes.n1.text === "Waits for {ev1} in {s1}" && notes.n1.x === 100 && notes.n1.y === 300,
+    JSON.stringify(notes),
+  );
+  check("the new note is selected", JSON.stringify(await sel()) === '["n1"]', JSON.stringify(await sel()));
+  check("the tool is back to select", (await U("tool")) === "select");
+  {
+    const b = await U("annotation", "n1");
+    const [lx, ly] = await w2s(b.x, b.y + b.h / 2);
+    await U("select", []);
+    check("a note is drawn in the note color", near(await pixel(lx, ly), NOTE), JSON.stringify(await pixel(lx, ly)));
+  }
+  await U("undo");
+  check("undo removes the note in one step", (await doc()).notes === undefined);
+  await U("redo");
+  check("redo brings it back", (await doc()).notes?.n1 !== undefined);
+  check(
+    "the search finds a note by its text, references shown as names",
+    (await U("search", "Waits")).some((r) => r.kind === "note" && r.label === "Waits for eGo in Alpha"),
+    JSON.stringify(await U("search", "Waits")),
+  );
+
+  // drag a note; resize it by its right side
+  {
+    const b = await U("annotation", "n1");
+    const [cx, cy] = await w2s(b.x + b.w / 2, b.y + b.h / 2);
+    await drag([cx, cy], [cx + 40 * k, cy + 20 * k]);
+    const a = await U("annotation", "n1");
+    check("dragging a note moves it (on the grid)", a.x === b.x + 40 && a.y === b.y + 20, JSON.stringify([b, a]));
+    const [rx, ry] = await w2s(a.x + a.w, a.y + a.h / 2);
+    await drag([rx, ry], [rx + 60 * k, ry]);
+    const c = await U("annotation", "n1");
+    check("a selected note resizes by its side", c.w === a.w + 60 && c.x === a.x, JSON.stringify([a, c]));
+  }
+
+  // double-click edits the text in place; Esc drops the change
+  {
+    const b = await U("annotation", "n1");
+    const [cx, cy] = await w2s(b.x + b.w / 2, b.y + b.h / 2);
+    await page.mouse.dblclick(cx, cy);
+    check("double-click on a note opens its text", (await U("textEditing")) === true);
+    await page.keyboard.type(" (changed)");
+    await page.keyboard.press("Escape");
+    check(
+      "Esc keeps the old text",
+      (await U("textEditing")) === false && (await doc()).notes.n1.text === "Waits for {ev1} in {s1}",
+    );
+  }
+
+  // a c: an arrow from the note to Beta; it stays attached when Beta moves
+  await page.mouse.click(empty[0], empty[1]);
+  await page.keyboard.press("a");
+  await page.keyboard.press("c");
+  check("a c arms the arrow tool", (await U("tool")) === "arrow", await U("tool"));
+  {
+    const nb = await U("annotation", "n1");
+    const [fx, fy] = await w2s(nb.x + nb.w - 20, nb.y + 10);
+    const [tx, ty] = await w2s(560, 170);
+    await page.mouse.click(fx, fy);
+    await page.mouse.click(tx, ty);
+  }
+  let arrows = (await doc()).arrows ?? {};
+  check(
+    "the arrow is attached to the note and to Beta",
+    arrows.a1?.from.ref === "n1" && arrows.a1?.to.ref === "s2",
+    JSON.stringify(arrows),
+  );
+  {
+    const before = await U("annotation", "a1");
+    const [bx, by] = await center("s2", -30);
+    await U("select", ["s2"]);
+    await drag([bx, by], [bx + 100 * k, by + 40 * k]);
+    const after = await U("annotation", "a1");
+    check(
+      "moving Beta takes the arrow's end with it",
+      after.to.x === before.to.x + 100 && after.to.y === before.to.y + 40 && after.from.x === before.from.x,
+      JSON.stringify([before, after]),
+    );
+  }
+  // drag the arrow's end onto empty canvas: a free end
+  {
+    await U("select", ["a1"]);
+    const h = (await handles()).find((x) => x.kind === "arrowEnd" && x.end === "to");
+    const [tx, ty] = await w2s(900, 500);
+    await drag(h.screen, [tx, ty]);
+    arrows = (await doc()).arrows;
+    check(
+      "dragging an arrow end onto empty canvas leaves it free there",
+      arrows.a1.to.ref === undefined && arrows.a1.to.x === 900 && arrows.a1.to.y === 500,
+      JSON.stringify(arrows.a1),
+    );
+  }
+
+  // a g: a group frame drawn around Alpha, then its caption typed
+  await page.mouse.click(empty[0], empty[1]);
+  await page.keyboard.press("a");
+  await page.keyboard.press("g");
+  check("a g arms the frame tool", (await U("tool")) === "frame");
+  {
+    const [x0, y0] = await w2s(80, 60),
+      [x1, y1] = await w2s(300, 220);
+    await drag([x0, y0], [x1, y1]);
+    check("after drawing a frame its caption is typed in place", (await U("textEditing")) === true);
+    await page.keyboard.type("Start");
+    await page.keyboard.press("Enter");
+    const frames = (await doc()).frames ?? {};
+    check(
+      "the frame spans the drag and has its caption",
+      JSON.stringify(frames.g1) === JSON.stringify({ region: "r0", x: 80, y: 60, w: 220, h: 160, caption: "Start" }),
+      JSON.stringify(frames),
+    );
+    // inside the frame a click selects what is there (Alpha), its outline selects the frame
+    const [ax, ay] = await center("s1");
+    await page.mouse.click(ax, ay);
+    check(
+      "a click inside a frame selects what is under it",
+      JSON.stringify(await sel()) === '["s1"]',
+      JSON.stringify(await sel()),
+    );
+    const [ox, oy] = await w2s(80, 200);
+    await page.mouse.click(ox, oy);
+    check(
+      "a click on its outline selects the frame",
+      JSON.stringify(await sel()) === '["g1"]',
+      JSON.stringify(await sel()),
+    );
+  }
+
+  // Properties: TODO, listed in Problems and the status bar
+  await U("select", ["n1"]);
+  await page.click("#panel-tab-properties").catch(() => undefined);
+  await page.waitForTimeout(100);
+  {
+    const box = page.locator("#panel label.check", { hasText: "TODO" }).locator("input");
+    const found = (await box.count()) === 1;
+    check("Properties of a note offer TODO", found);
+    if (found) await box.click();
+    await page.waitForTimeout(100);
+    const todo = (await U("problems")).filter((p) => p.severity === "info");
+    check(
+      "a TODO note is listed in Problems as info",
+      todo.length === 1 && todo[0].code === "todo" && todo[0].id === "n1",
+      JSON.stringify(todo),
+    );
+    const status = await page.evaluate(() => document.getElementById("problems")?.textContent ?? "");
+    check("...and counted in the status bar", /1 TODO/.test(status), status);
+  }
+
+  // the rubber band picks notes and frames; copy and paste a note
+  {
+    const [x0, y0] = await w2s(60, 40),
+      [x1, y1] = await w2s(700, 480);
+    await drag([x0, y0], [x1, y1]);
+    const picked = await sel();
+    check(
+      "a rubber band around them selects the note and the frame",
+      picked.includes("n1") && picked.includes("g1"),
+      JSON.stringify(picked),
+    );
+    await U("select", ["n1"]);
+    await page.mouse.move(empty[0], empty[1]);
+    await page.keyboard.press("Control+c");
+    await page.keyboard.press("Control+v");
+    notes = (await doc()).notes;
+    check("copy and paste a note", Object.keys(notes).length === 2, JSON.stringify(Object.keys(notes)));
+  }
+
+  // deleting what an arrow is attached to keeps the arrow, with a free end
+  await U("select", ["n1"]);
+  await page.mouse.move(empty[0], empty[1]);
+  await page.keyboard.press("Delete");
+  arrows = (await doc()).arrows;
+  check(
+    "deleting a note keeps the arrow attached to it, with a free end",
+    arrows?.a1 !== undefined && arrows.a1.from.ref === undefined,
+    JSON.stringify(arrows),
+  );
+  check(
+    "notes never reach the generated code: no design rule errors, nothing about notes",
+    (await U("problems")).every((p) => p.severity !== "error"),
+    JSON.stringify(await U("problems")),
+  );
+  await U(
+    "closeTab",
+    (await U("tabs")).findIndex((t) => t.active),
+    true,
+  );
+}
+// a frame and notes in a state's region: the frame is picked over the state around it, a note dropped there follows it
+{
+  const model = {
+    format: "ufsm",
+    version: 1,
+    name: "regionnotes",
+    declarations: { events: [], signals: [], actions: [], guards: [] },
+    machine: {
+      root: {
+        id: "r0",
+        states: [
+          {
+            id: "s1",
+            kind: "state",
+            name: "P",
+            regions: [{ id: "r1", states: [{ id: "s2", kind: "state", name: "A" }] }],
+          },
+        ],
+      },
+      transitions: [],
+    },
+    diagram: {
+      paper: "A4",
+      states: { s1: { x: 100, y: 100, w: 500, h: 400 }, s2: { x: 20, y: 60, w: 100, h: 60 } },
+      regions: {},
+      transitions: {},
+      frames: { g1: { region: "r1", x: 50, y: 200, w: 150, h: 150 } },
+      notes: { n1: { region: "r0", x: 800, y: 100, w: 100, h: 40, text: "outside" } },
+    },
+  };
+  await page.evaluate(([t]) => window.ufsm.load(t, "regionnotes.ufsm"), [JSON.stringify(model)]);
+  await page.waitForTimeout(200);
+  const doc = async () => JSON.parse(await U("serialize")).diagram;
+  const [ix, iy] = await w2s(450, 250);
+  await page.mouse.click(ix, iy);
+  check("a click in a state's empty region selects the state", JSON.stringify(await sel()) === '["s1"]');
+  const [ex, ey] = await w2s(150, 375);
+  await page.mouse.click(ex, ey);
+  check(
+    "a click on the edge of a frame without a caption in its region then selects the frame",
+    JSON.stringify(await sel()) === '["g1"]',
+    JSON.stringify(await sel()),
+  );
+  const [nx, ny] = await w2s(830, 120),
+    [tx, ty] = await w2s(530, 420);
+  await drag([nx, ny], [tx, ty]);
+  const n1 = (await doc()).notes.n1;
+  check("a note dropped into a state's region belongs to it", n1.region === "r1", JSON.stringify(n1));
+  const before = await U("annotation", "n1");
+  const [px, py] = await w2s(450, 110);
+  await drag([px, py], [px + 50 * (await scale()), py]);
+  const after = await U("annotation", "n1");
+  check(
+    "...and moves with the state",
+    after.x === before.x + 50 && after.y === before.y,
+    JSON.stringify([before, after]),
+  );
   await U(
     "closeTab",
     (await U("tabs")).findIndex((t) => t.active),

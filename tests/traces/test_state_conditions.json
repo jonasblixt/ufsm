@@ -1,6 +1,6 @@
 {
   "model": "../models/test_state_conditions.ufsm",
-  "doc": "From old/tests/C/test_state_conditions.c. Guard on another region's state.",
+  "doc": "From v0.5.3 tests/C/test_state_conditions.c. Guard on another region's state.",
   "steps": [
     { "reset": true, "expect": ["eMode1"] },
     { "send": "eSwitchMode", "expect": [] },

@@ -25,6 +25,7 @@ import { autoHideScrollbars, wheelScrollsHorizontally } from "./scrollbars";
 import { createSearch } from "./search-items";
 import { createSettingsController } from "./settings-controller";
 import { createShell } from "./shell";
+import { createTextEdit } from "./text-edit";
 import { createSimController } from "./sim-controller";
 import { Workspace } from "./workspace";
 
@@ -39,6 +40,7 @@ app.files = createFiles(app);
 app.sim = createSimController(app);
 app.search = createSearch(app);
 app.shell = createShell(app);
+app.textEdit = createTextEdit(app);
 
 // What a change touches is redrawn at once (the canvas on the next frame).
 app.ws.onChange((c) => {
@@ -90,6 +92,7 @@ onCloseRequested(
 app.ws.activate(undefined, true);
 onSystemAppearance(app.settings.onSystemDark);
 void app.settings.load();
+void app.files.loadRecent();
 // The panel's tab strip exists once the panel has rendered (Preact keeps the element).
 const panelTabsEl = el("panel").querySelector<HTMLElement>(".panel-tabs");
 if (panelTabsEl) wheelScrollsHorizontally(panelTabsEl);

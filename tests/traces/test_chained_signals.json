@@ -1,6 +1,6 @@
 {
   "model": "../models/test_chained_signals.ufsm",
-  "doc": "From old/tests/C/test_chained_signals.c. Signals queue up and run after eventless transitions.",
+  "doc": "From v0.5.3 tests/C/test_chained_signals.c. Signals queue up and run after eventless transitions.",
   "steps": [
     { "reset": true, "expect": ["eA"] },
     { "send": "e1", "expect": ["xA", "eB", "xB", "eC", "xC", "eD", "xD", "eC"], "active": ["C"] },

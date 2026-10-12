@@ -10,13 +10,17 @@
 import {
   TITLE_BLOCK_FIELDS,
   type Action,
+  type ArrowEnd,
+  type ArrowLayout,
   type Decl,
   type Diagram,
   type EdgeEnd,
   type EdgeLayout,
+  type FrameLayout,
   type GuardTerm,
   type InternalTransition,
   type ModelOptions,
+  type NoteLayout,
   type Region,
   type RegionLayout,
   type StateLayout,
@@ -166,6 +170,64 @@ const edgeLayoutJ = (e: EdgeLayout): Json =>
     ["label", e.label ? { x: num(e.label.x), y: num(e.label.y), w: num(e.label.w) } : undefined],
   ]);
 
+const frameJ = (f: FrameLayout): Json =>
+  ordered([
+    ["region", f.region],
+    ["x", num(f.x)],
+    ["y", num(f.y)],
+    ["w", num(f.w)],
+    ["h", num(f.h)],
+    ["caption", f.caption || undefined],
+  ]);
+
+const noteJ = (n: NoteLayout): Json =>
+  ordered([
+    ["region", n.region],
+    ["x", num(n.x)],
+    ["y", num(n.y)],
+    ["w", num(n.w)],
+    ["h", num(n.h)],
+    ["text", n.text],
+    ["todo", n.todo],
+  ]);
+
+const arrowEndJ = (e: ArrowEnd): Json =>
+  "at" in e
+    ? { ref: e.ref, at: Math.round(e.at * 10000) / 10000 + 0 }
+    : ordered([
+        ["ref", "ref" in e ? e.ref : undefined],
+        ["x", num(e.x)],
+        ["y", num(e.y)],
+      ]);
+
+const arrowJ = (a: ArrowLayout): Json =>
+  ordered([
+    ["region", a.region],
+    ["from", arrowEndJ(a.from)],
+    ["to", arrowEndJ(a.to)],
+    ["head", a.head === "end" ? undefined : a.head],
+    ["dashed", a.dashed],
+  ]);
+
+/** Ids with a number at the end in numeric order (`n2` before `n10`), then by text. */
+function naturalOrder(ids: string[]): string[] {
+  const key = (id: string): [string, number] => {
+    const m = /^(.*?)(\d+)$/.exec(id);
+    return m ? [m[1]!, Number(m[2])] : [id, -1];
+  };
+  return [...ids].sort((a, b) => {
+    const [pa, na] = key(a),
+      [pb, nb] = key(b);
+    return pa < pb ? -1 : pa > pb ? 1 : na - nb || (a < b ? -1 : a > b ? 1 : 0);
+  });
+}
+
+/** A documentation map in natural id order; undefined when empty. */
+function annotationMap<T>(m: Record<string, T> | undefined, f: (x: T) => Json): Json | undefined {
+  if (!m || Object.keys(m).length === 0) return undefined;
+  return orderedMap(m, naturalOrder(Object.keys(m)), f);
+}
+
 /** Ids of all regions and vertices in document order (depth first, top-down). */
 function documentOrder(root: Region): { regions: string[]; states: string[] } {
   const regions: string[] = [];
@@ -216,6 +278,9 @@ function diagramJ(d: Diagram, doc: UfsmDocument): Json {
         edgeLayoutJ,
       ),
     ],
+    ["frames", annotationMap(d.frames, frameJ)],
+    ["notes", annotationMap(d.notes, noteJ)],
+    ["arrows", annotationMap(d.arrows, arrowJ)],
   ]);
 }
 

@@ -347,3 +347,41 @@ describe("search: speed", () => {
     assert.ok(per < 50, `${per.toFixed(1)} ms per query over ${all.length} items`);
   });
 });
+
+describe("search: menu commands", () => {
+  it("lists a submenu's items under both names, keyed by their tooltip, and leaves out the disabled ones", () => {
+    const opened: string[] = [];
+    const recent = (path: string, name: string, dir: string) => ({
+      label: name,
+      detail: dir,
+      title: path,
+      run: () => opened.push(path),
+    });
+    const items = menuCommands([
+      {
+        label: "File",
+        items: [
+          {
+            label: "Open Recent",
+            run: noop,
+            submenu: () => [
+              recent("C:\a\dimmer.ufsm", "dimmer.ufsm", "C:\a"),
+              recent("C:\b\dimmer.ufsm", "dimmer.ufsm", "C:\b"),
+              "-",
+              { label: "Nothing", run: noop, enabled: () => false },
+            ],
+          },
+        ],
+      },
+    ]);
+    assert.deepEqual(
+      items.map((it) => [it.key, it.label, it.detail]),
+      [
+        ["cmd:File: Open Recent: dimmer.ufsm@C:\a\dimmer.ufsm", "File: Open Recent: dimmer.ufsm", "C:\a"],
+        ["cmd:File: Open Recent: dimmer.ufsm@C:\b\dimmer.ufsm", "File: Open Recent: dimmer.ufsm", "C:\b"],
+      ],
+    );
+    items[1]?.run?.();
+    assert.deepEqual(opened, ["C:\b\dimmer.ufsm"]);
+  });
+});

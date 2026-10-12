@@ -145,7 +145,10 @@
       { "id": "act86", "name": "uiZoomReset" },
       { "id": "act87", "name": "quickOpen" },
       { "id": "act88", "name": "commandPalette" },
-      { "id": "act89", "name": "generate" }
+      { "id": "act89", "name": "generate" },
+      { "id": "act90", "name": "toolNote" },
+      { "id": "act91", "name": "toolArrow" },
+      { "id": "act92", "name": "toolFrame" }
     ],
     "guards": [
       { "id": "grd1", "name": "ctrl" },
@@ -444,10 +447,25 @@
                       "do": [{ "call": "act73" }, { "emit": "sig4" }]
                     },
                     {
+                      "id": "t124",
+                      "on": "ev35",
+                      "do": [{ "call": "act92" }, { "emit": "sig1" }, { "emit": "sig4" }]
+                    },
+                    {
                       "id": "t100",
                       "on": "ev5",
                       "guard": [{ "call": "grd6" }],
                       "do": [{ "call": "act74" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t122",
+                      "on": "ev4",
+                      "do": [{ "call": "act90" }, { "emit": "sig1" }, { "emit": "sig4" }]
+                    },
+                    {
+                      "id": "t123",
+                      "on": "ev30",
+                      "do": [{ "call": "act91" }, { "emit": "sig2" }, { "emit": "sig4" }]
                     }
                   ]
                 },
@@ -779,7 +797,7 @@
       "s4": { "x": 582, "y": 930, "w": 448, "h": 620 },
       "s5": { "x": 1330, "y": 1030, "w": 170, "h": 130 },
       "s6": { "x": 1800, "y": 1030, "w": 170, "h": 130 },
-      "s19": { "x": 2270, "y": 1030, "w": 420, "h": 440 },
+      "s19": { "x": 2270, "y": 1030, "w": 420, "h": 480 },
       "s22": { "x": 2772, "y": 1030, "w": 400, "h": 170 },
       "s7": { "x": 40, "y": 115, "w": 20, "h": 20 },
       "s8": { "x": 110, "y": 110, "w": 420, "h": 230 },

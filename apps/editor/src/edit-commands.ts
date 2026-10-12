@@ -65,14 +65,20 @@ export function createEditCommands(app: App): EditCommands {
     if (!d) return false;
     const frag = copyFragment(d.index, d.selection);
     if (!frag) {
-      ws.say("Select the states to copy (a transition comes along when both its ends do).");
+      ws.say("Select the states or notes to copy (a transition comes along when both its ends do).");
       return false;
     }
     ws.clipboard = { frag, key: d.key };
-    const t = frag.transitions.length;
-    ws.say(
-      `Copied ${frag.vertices.length} state${frag.vertices.length > 1 ? "s" : ""}${t ? ` and ${t} transition${t > 1 ? "s" : ""}` : ""}`,
-    );
+    const count = (n: number, what: string): string => (n ? `${n} ${what}${n > 1 ? "s" : ""}` : "");
+    const a = frag.annotations;
+    const parts = [
+      count(frag.vertices.length, "state"),
+      count(frag.transitions.length, "transition"),
+      count(a ? Object.keys(a.notes).length : 0, "note"),
+      count(a ? Object.keys(a.frames).length : 0, "frame"),
+      count(a ? Object.keys(a.arrows).length : 0, "arrow"),
+    ].filter(Boolean);
+    ws.say(`Copied ${parts.length > 1 ? `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}` : parts[0]}`);
     return true;
   };
 

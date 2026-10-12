@@ -6,7 +6,7 @@
  * and world coordinates. The view itself (pan/zoom) belongs to the session, so every machine keeps its own.
  */
 import type { Diagnostic } from "@ufsm/core";
-import { paperOf, sheetFrame, type Point } from "@ufsm/core/diagram";
+import { isAnnotation, paperOf, sheetFrame, type Point } from "@ufsm/core/diagram";
 import { el, type App } from "../app";
 import { handlesFor, type Handle } from "../handles";
 import { sheetBounds, type Bounds, type View } from "../hit";
@@ -67,10 +67,10 @@ export function createCanvasView(app: App): CanvasView {
     if (cached) return cached;
     const marks = new Map<string, "error" | "warning">();
     for (const x of d.diagnostics) {
-      if (!x.id) continue;
+      if (!x.id || x.severity === "info") continue;
       const ix = d.index;
       const id =
-        ix.vertices.has(x.id) || ix.transitions.has(x.id)
+        ix.vertices.has(x.id) || ix.transitions.has(x.id) || isAnnotation(ix, x.id)
           ? x.id
           : (ix.internals.get(x.id)?.state.id ?? ix.timers.get(x.id)?.state.id ?? ix.regions.get(x.id)?.owner?.id);
       if (id && marks.get(id) !== "error") marks.set(id, x.severity === "error" ? "error" : "warning");

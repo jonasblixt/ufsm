@@ -6,20 +6,26 @@
  * ends, S jogs, free bend points, the bottom line of a state's action block); a single selected vertex can also be resized by any of its sides (the whole side
  * grabs, with no handle drawn) and by its corners (both ways at once). Besides those, a transition label can be
  * dragged, and a vertex moves the selection (a composite state only by its header and action block unless it is
- * selected, so a rubber band can still start inside it). The edits themselves are in @ufsm/core (edit/layout.ts).
+ * selected, so a rubber band can still start inside it). Notes and frames resize like a state, arrows show their two
+ * ends; a note or arrow anywhere, and a frame by its outline or caption, move the selection. The edits themselves are
+ * in @ufsm/core (edit/layout.ts, edit/annotations.ts).
  */
 import { type DocIndex, type Id, type Region } from "@ufsm/core";
 import { resizableEdges, type Edge, type EdgeEndName } from "@ufsm/core/edit";
 import {
   HEADER_H,
   actionBlock,
+  annotationBox,
+  annotationKind,
+  annotationSheet,
+  arrowPoints,
   edgeGeometry,
   regionBoxes,
   routeInfo,
   type MeasureText,
   type Point,
 } from "@ufsm/core/diagram";
-import { drawnBox, forEachVisible, hitTest, hitTransition } from "./hit";
+import { drawnBox, forEachVisible, hitAnnotation, hitTest, hitTransition } from "./hit";
 
 export type Grip =
   | { kind: "move"; id: Id }
@@ -29,7 +35,8 @@ export type Grip =
   | { kind: "end"; id: Id; end: EdgeEndName; pinned: boolean }
   | { kind: "jog"; id: Id }
   | { kind: "bend"; id: Id; i: number }
-  | { kind: "label"; id: Id };
+  | { kind: "label"; id: Id }
+  | { kind: "arrowEnd"; id: Id; end: "from" | "to" };
 
 export interface Handle {
   grip: Grip;
@@ -66,26 +73,27 @@ export function handlesFor(index: DocIndex, sheet: Region, selection: ReadonlySe
   forEachVisible(index, sheet, (v) => visible.add(v.id));
   const out: Handle[] = [];
   const vertices = [...selection].filter((id) => visible.has(id));
+  const onSheet = (id: Id): boolean => annotationSheet(index, id) === sheet;
+  const boxes = [...selection].filter((id) => onSheet(id) && annotationBox(index, id) !== undefined);
+  if (vertices.length === 0 && boxes.length === 1) {
+    // a single note or frame: every side and corner resizes it
+    const id = boxes[0]!;
+    const b = annotationBox(index, id)!;
+    for (const r of RESIZE) out.push(resizeHandle(id, b, r));
+  }
+  for (const id of selection) {
+    if (annotationKind(index, id) !== "arrow" || !onSheet(id)) continue;
+    const a = arrowPoints(index, id);
+    if (!a) continue;
+    out.push({ grip: { kind: "arrowEnd", id, end: "from" }, ...a.from, shape: "dot", cursor: "crosshair" });
+    out.push({ grip: { kind: "arrowEnd", id, end: "to" }, ...a.to, shape: "dot", cursor: "crosshair" });
+  }
   if (vertices.length === 1) {
     const id = vertices[0]!;
     const v = index.vertices.get(id)!.vertex;
     const b = drawnBox(index, v);
     const allowed = new Set(resizableEdges(index, id));
-    for (const r of RESIZE) {
-      if (!r.edges.every((e) => allowed.has(e))) continue;
-      const h: Handle = {
-        grip: { kind: "resize", id, edges: r.edges },
-        x: b.x + r.fx * b.w,
-        y: b.y + r.fy * b.h,
-        shape: "square",
-        hidden: true,
-        cursor: r.cursor,
-      };
-      // a side grabs along its whole length; a corner is a point (it beats the sides near it)
-      if (r.edges.length === 1)
-        Object.assign(h, r.fx === 0.5 ? { span: [b.x, b.x + b.w], axis: "x" } : { span: [b.y, b.y + b.h], axis: "y" });
-      out.push(h);
-    }
+    for (const r of RESIZE) if (r.edges.every((e) => allowed.has(e))) out.push(resizeHandle(id, b, r));
     if (v.kind === "state") {
       // the bottom line of the action block: drag it to hide lines, or to show them again
       const block = actionBlock(index, v);
@@ -154,6 +162,21 @@ export function handlesFor(index: DocIndex, sheet: Region, selection: ReadonlySe
   return out;
 }
 
+/** A hidden resize handle of box `b`: a side grabs along its whole length; a corner is a point (it beats the sides near it). */
+function resizeHandle(id: Id, b: { x: number; y: number; w: number; h: number }, r: (typeof RESIZE)[number]): Handle {
+  const h: Handle = {
+    grip: { kind: "resize", id, edges: r.edges },
+    x: b.x + r.fx * b.w,
+    y: b.y + r.fy * b.h,
+    shape: "square",
+    hidden: true,
+    cursor: r.cursor,
+  };
+  if (r.edges.length === 1)
+    Object.assign(h, r.fx === 0.5 ? { span: [b.x, b.x + b.w], axis: "x" } : { span: [b.y, b.y + b.h], axis: "y" });
+  return h;
+}
+
 /** Middle of the route segment that is the movable one: vertical at x = value (axis x) or horizontal at y = value. */
 function jogMidpoint(points: Point[], axis: "x" | "y", value: number): Point | undefined {
   for (let i = 1; i < points.length; i++) {
@@ -207,9 +230,14 @@ export function gripAt(
   }
   if (best) return { grip: best.grip, cursor: best.cursor };
   if (shift) return undefined;
+  const note = hitAnnotation(index, sheet, x, y, 6 / scale, "top", measure);
+  if (note) return { grip: { kind: "move", id: note }, cursor: "move" };
   const t = hitTransition(index, sheet, x, y, 6 / scale, measure);
   if (t) return t.label ? { grip: { kind: "label", id: t.id }, cursor: "move" } : undefined;
   const hit = hitTest(index, sheet, x, y, 6 / scale);
+  // a frame in a state's region is drawn over that state, so its outline wins even when the state is selected
+  const frame = hitAnnotation(index, sheet, x, y, 6 / scale, "frames", measure, hit.vertex);
+  if (frame) return { grip: { kind: "move", id: frame }, cursor: "move" };
   if (hit.vertex && (selection.has(hit.vertex.id) || !hit.region))
     return { grip: { kind: "move", id: hit.vertex.id }, cursor: "move" };
   return undefined;

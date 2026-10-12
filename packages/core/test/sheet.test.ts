@@ -3,7 +3,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv from "ajv";
@@ -392,8 +392,7 @@ describe("fit on the sheet", () => {
   });
 
   it("the v0 converter takes the smallest paper (no smaller than v0's) on which the drawing fits", () => {
-    const path = join(repoRoot, "old/tests/test_fork_join.ufsm");
-    if (!existsSync(path)) return; // old/ is optional
+    const path = join(repoRoot, "tests/v0/test_fork_join.ufsm");
     const v0doc = v0.parseV0(readFileSync(path, "utf8"));
     assert.equal(v0doc["paper-size"] ?? 1, 1, "drawn on A4 in v0");
     const { doc, notes } = migrateV0(v0doc);
@@ -403,10 +402,10 @@ describe("fit on the sheet", () => {
       notes.filter((n) => n.code === "paper").map((n) => n.message),
       ["paper A4 is now A3, so the drawing fits inside the frame and clear of the title block"],
     );
-    const small = migrateV0(v0.parseV0(readFileSync(join(repoRoot, "old/tests/test_guard1.ufsm"), "utf8")));
+    const small = migrateV0(v0.parseV0(readFileSync(join(repoRoot, "tests/v0/test_guard1.ufsm"), "utf8")));
     assert.equal(small.doc.diagram!.paper, "A4", "a drawing that fits keeps its paper");
     assert.ok(!small.notes.some((n) => n.code === "paper"));
-    const big = v0.parseV0(readFileSync(join(repoRoot, "old/tests/test_guard1.ufsm"), "utf8"));
+    const big = v0.parseV0(readFileSync(join(repoRoot, "tests/v0/test_guard1.ufsm"), "utf8"));
     big["paper-size"] = 3;
     assert.equal(migrateV0(big).doc.diagram!.paper, "A2", "never a smaller paper than v0's");
   });

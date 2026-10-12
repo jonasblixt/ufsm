@@ -6,7 +6,7 @@
  * placed, a transition being drawn, a drag, a rubber band. Plain data shared by the handler parts (pointer.ts,
  * tools.ts) and the drawing (view.ts); it is reset when another machine is shown.
  */
-import type { DocIndex } from "@ufsm/core";
+import type { DocIndex, Region } from "@ufsm/core";
 import type { VertexKind } from "@ufsm/core/edit";
 import type { Box, Point } from "@ufsm/core/diagram";
 import type { Grip } from "../handles";
@@ -31,8 +31,10 @@ export interface Drag {
   y0: number;
   /** The document as it was when the drag began; every preview starts from it. */
   base: DocIndex;
-  /** Vertices to move (the selection when the drag began). */
+  /** Vertices, notes, frames and arrows to move (the selection when the drag began). */
   ids: string[];
+  /** The sheet shown when the drag began (an arrow end attaches to what is under the pointer there). */
+  sheet: Region;
 }
 
 export interface CanvasState {
@@ -44,10 +46,19 @@ export interface CanvasState {
   ghost: { kind: ToolId; box: Box } | undefined;
   /** A vertex being placed (the press went down; the vertex is previewed in the document). */
   placing:
-    | { kind: VertexKind | "region"; p0: Point; region: string; error: string | undefined; created: string | undefined }
+    | {
+        kind: VertexKind | "region" | "note" | "frame";
+        p0: Point;
+        region: string;
+        error: string | undefined;
+        created: string | undefined;
+        box?: Box;
+      }
     | undefined;
   /** A transition being drawn: its source and where it was clicked, the bend points so far and the pointer. */
   link: { source: string; from: Point; bends: Point[]; to: Point } | undefined;
+  /** An arrow being drawn: where it starts and what that end attaches to (undefined: a free end), and the pointer. */
+  arrow: { from: Point; target: string | undefined; to: Point } | undefined;
   drag: Drag | undefined;
   lasso: Lasso | undefined;
   /** Shift was held when the rubber band started: add to the selection. */
@@ -63,6 +74,7 @@ export function canvasState(): CanvasState {
     ghost: undefined,
     placing: undefined,
     link: undefined,
+    arrow: undefined,
     drag: undefined,
     lasso: undefined,
     lassoAdd: false,
@@ -70,8 +82,11 @@ export function canvasState(): CanvasState {
   };
 }
 
-export const isLinkTool = (t: ToolId): boolean => t === "transition" || t === "straight";
-export const isVertexTool = (t: ToolId): t is VertexKind => t !== "select" && !isLinkTool(t) && t !== "region";
+export const isLinkTool = (t: ToolId): boolean => t === "transition" || t === "straight" || t === "arrow";
+/** Tools that place a note or frame (click, or drag for its size). */
+export const isNoteTool = (t: ToolId): t is "note" | "frame" => t === "note" || t === "frame";
+export const isVertexTool = (t: ToolId): t is VertexKind =>
+  t !== "select" && !isLinkTool(t) && t !== "region" && !isNoteTool(t);
 
 /** Status line text while a tool is armed. */
 export function toolHint(s: CanvasState): string {
@@ -87,6 +102,14 @@ export function toolHint(s: CanvasState): string {
         : "Straight transition: click the source, then the target (or drag from one to the other) · Esc cancels";
     case "region":
       return "Region: click a state to add a region at its bottom · Esc cancels";
+    case "note":
+      return "Note: click to place, or drag for its size, then type · Esc cancels";
+    case "frame":
+      return "Group frame: drag around what it groups, then type its caption · Esc cancels";
+    case "arrow":
+      return s.arrow
+        ? "Arrow: click where it points (on an element it stays attached; on empty canvas it is free) · Esc cancels"
+        : "Arrow: click where it starts, then where it points (or drag) · Esc cancels";
     case "state":
       return "State: click to place, or drag to draw it · Esc cancels";
     case "fork":

@@ -78,7 +78,7 @@ export interface State {
   entry?: Action[];
   exit?: Action[];
   /**
-   * Internal transitions (UML; visualSTATE: static reactions): react to an event without leaving the state, so no
+   * Internal transitions (UML; also called static reactions): react to an event without leaving the state, so no
    * exit or entry actions run and the state's regions keep their configuration. Drawn as text in the action block.
    */
   internal?: InternalTransition[];
@@ -273,12 +273,80 @@ export interface TitleBlock {
 /** The title block's free fields in canonical order. */
 export const TITLE_BLOCK_FIELDS: readonly (keyof TitleBlock)[] = ["revision", "date", "author", "company", "document"];
 
+/**
+ * A note: text in a box with a folded corner, for the reader only (never part of the machine, the generated code or
+ * the fingerprint). `x`/`y` are relative to the origin of `region` (as for a state in it), so a note in a state's
+ * region moves with the state. `{id}` in the text shows the current name of that element.
+ */
+export interface NoteLayout {
+  region: Id;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  text: string;
+  /** An open question: drawn in the warning color and listed in Problems. */
+  todo?: true;
+}
+
+/** A group frame: a dashed rectangle with a caption around part of a region, for the reader only. */
+export interface FrameLayout {
+  region: Id;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  caption?: string;
+}
+
+/** A free arrow end: a point relative to the arrow's region origin. */
+export interface FreeArrowEnd {
+  x: number;
+  y: number;
+}
+
+/** An arrow end on a vertex, note or frame: a point relative to the element's top-left corner. */
+export interface BoxArrowEnd {
+  ref: Id;
+  x: number;
+  y: number;
+}
+
+/** An arrow end on a transition: the point at fraction `at` of its route's length from the source. */
+export interface RouteArrowEnd {
+  ref: Id;
+  at: number;
+}
+
+export type ArrowEnd = FreeArrowEnd | BoxArrowEnd | RouteArrowEnd;
+
+export type ArrowHead = "none" | "end" | "both";
+
+export const ARROW_HEADS: readonly ArrowHead[] = ["none", "end", "both"];
+
+/** An arrow (a leader line) between two ends, for the reader only. */
+export interface ArrowLayout {
+  /** The region whose origin free ends are relative to (and whose sheet the arrow is drawn on). */
+  region: Id;
+  from: ArrowEnd;
+  to: ArrowEnd;
+  /** Arrowheads; default "end". */
+  head?: ArrowHead;
+  dashed?: true;
+}
+
 export interface Diagram {
   paper: Paper;
   titleBlock?: TitleBlock;
   states: Record<Id, StateLayout>;
   regions: Record<Id, RegionLayout>;
   transitions: Record<Id, EdgeLayout>;
+  /** Group frames (documentation only), drawn behind the states. */
+  frames?: Record<Id, FrameLayout>;
+  /** Notes (documentation only), drawn over the states. */
+  notes?: Record<Id, NoteLayout>;
+  /** Arrows (documentation only), drawn last. */
+  arrows?: Record<Id, ArrowLayout>;
 }
 
 // ---------------------------------------------------------------- options

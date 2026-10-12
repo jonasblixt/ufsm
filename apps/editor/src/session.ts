@@ -19,6 +19,7 @@ import {
   type Region,
   type UfsmDocument,
 } from "@ufsm/core";
+import { isAnnotation } from "@ufsm/core/diagram";
 import type { View } from "./hit";
 import { History } from "./history";
 import type { SimHighlight } from "./render";
@@ -95,7 +96,11 @@ export class DocSession {
     const index = indexV1(this.history.current);
     this.index = index;
     this.sheet = index.regions.get(this.sheet.id)?.region ?? index.doc.machine.root;
-    this.selection = new Set([...this.selection].filter((id) => index.vertices.has(id) || index.transitions.has(id)));
+    this.selection = new Set(
+      [...this.selection].filter(
+        (id) => index.vertices.has(id) || index.transitions.has(id) || isAnnotation(index, id),
+      ),
+    );
     if (recheck) this.diagnostics = checkV1(index.doc, index);
     if (!this.history.editing) this.explorer?.syncTree();
   }

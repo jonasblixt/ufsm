@@ -12,7 +12,7 @@ normatively, the definition there wins.
 | pseudo-state | initial, shallow/deep history, final, fork, join, terminate. Only states and final states are ever active | [format-v1.md](format-v1.md#regions-and-states) |
 | region | A container of vertices; a state's regions are orthogonal (all active at once) and listed top-down | [format-v1.md](format-v1.md#regions-and-states) |
 | initializer | A region's initial or history pseudo-state: how the region is entered by default | `semantics/structure.ts`, [semantics.md](semantics.md#entering) |
-| internal transition | A reaction listed in a state (event, guard, actions) that never leaves the state (visualSTATE's static reaction) | [format-v1.md](format-v1.md#internal-transitions) |
+| internal transition | A reaction listed in a state (event, guard, actions) that never leaves the state (also called a static reaction) | [format-v1.md](format-v1.md#internal-transitions) |
 | declaration | An event, signal, action or guard, referenced by id | [format-v1.md](format-v1.md#declarations) |
 | signal | An event the machine sends itself (`{emit}`), queued and taken after the current microstep | [semantics.md](semantics.md#steps) |
 | design rule check | `checkV1`: what the schema cannot express. No errors means the model can be simulated and generated in every language (the validity gate) | `check/`, [format-v1.md](format-v1.md#design-rule-check) |
@@ -27,6 +27,8 @@ normatively, the definition there wins.
 | jog | The movable middle segment of an S route, stored as `{x}` or `{y}` once dragged | `diagram/route.ts` |
 | label anchor | The point on a route a transition's label position is relative to | `diagram/route.ts` |
 | label layout | A transition label's items wrapped at its width; widths come from a measure (the editor's canvas, or an estimate) | `diagram/label-layout.ts` |
+| note, group frame, arrow | Documentation on a sheet (`diagram.notes`, `frames`, `arrows`): text in a folded box, a dashed rectangle with a caption, a straight leader line. Never part of the machine, the generated code or the fingerprint; drawn in the note color. Together: annotations (in code) | [format-v1.md](format-v1.md#notes-frames-and-arrows), `diagram/annotations.ts` |
+| attached end | An arrow end that follows an element: a point on a vertex, note or frame (`{ref, x, y}`), or along a transition's route (`{ref, at}`); a free end is a point in the arrow's region | `diagram/annotations.ts` |
 
 ## Semantics and code generation
 

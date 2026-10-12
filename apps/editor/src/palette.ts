@@ -6,7 +6,8 @@
  * the highlight shows the tool the model has armed (setActive), so the palette, the `a` + key map and the Add menu
  * stay in step. Every tool except select is one-shot: it disarms after placing or connecting. There are two transition
  * tools: S transitions (a derived orthogonal route that follows its states) and straight ones (a free route: one line
- * between the states, or through the bend points clicked on the way).
+ * between the states, or through the bend points clicked on the way). The last row is documentation: notes, arrows
+ * and group frames, which the machine never sees.
  */
 
 export type ToolId =
@@ -21,7 +22,10 @@ export type ToolId =
   | "deep-history"
   | "fork"
   | "join"
-  | "terminate";
+  | "terminate"
+  | "note"
+  | "arrow"
+  | "frame";
 
 interface ToolDef {
   id: ToolId;
@@ -105,6 +109,29 @@ const GROUPS: ToolDef[][] = [
       name: "Terminate",
       keys: "A Shift+T",
       icon: `<path d="M4.5 4.5L15.5 15.5M15.5 4.5L4.5 15.5" ${S} stroke-width="2"/>`,
+    },
+  ],
+  [
+    // a sheet with its top-right corner folded, two lines of text
+    {
+      id: "note",
+      name: "Note",
+      keys: "A N",
+      icon: `<path d="M3.5 3.5H12.5L16.5 7.5V16.5H3.5Z" ${S}/><path d="M12.5 3.5V7.5H16.5" ${S}/><path d="M6.5 10.5H13.5M6.5 13.5H11" ${S}/>`,
+    },
+    // a leader line: a dot where it is attached, a head where it points
+    {
+      id: "arrow",
+      name: "Arrow",
+      keys: "A C",
+      icon: `<circle cx="4.5" cy="15.5" r="1.6" ${F}/><path d="M5.5 14.5L15.5 4.5" ${S}/><path d="M10.5 4.5H15.5V9.5" ${S}/>`,
+    },
+    // a dashed rectangle with a caption tab
+    {
+      id: "frame",
+      name: "Group frame",
+      keys: "A G",
+      icon: `<rect x="2.5" y="4.5" width="15" height="12" ${S} stroke-dasharray="2.5 2"/><path d="M2.5 4.5H9.5V7.5H2.5" ${S}/>`,
     },
   ],
 ];

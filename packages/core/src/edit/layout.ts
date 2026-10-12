@@ -89,6 +89,39 @@ export function regionLayoutOf(doc: UfsmDocument, id: Id): RegionLayout {
   return (diagramOf(doc).regions[id] ??= {});
 }
 
+/**
+ * Move what is stored relative to the origins of the given regions, but is not a vertex, by (dx, dy): their notes and
+ * frames, and the free ends of their arrows. For edits that move a region's contents without moving its origin.
+ */
+export function shiftRegionAnnotations(doc: UfsmDocument, regions: ReadonlySet<Id>, dx: number, dy: number): void {
+  const dia = doc.diagram;
+  if (!dia || (dx === 0 && dy === 0)) return;
+  for (const l of [...Object.values(dia.notes ?? {}), ...Object.values(dia.frames ?? {})]) {
+    if (!regions.has(l.region)) continue;
+    l.x += dx;
+    l.y += dy;
+  }
+  for (const a of Object.values(dia.arrows ?? {})) {
+    if (!regions.has(a.region)) continue;
+    for (const which of ["from", "to"] as const) {
+      const e = a[which];
+      if (!("ref" in e)) a[which] = { x: e.x + dx, y: e.y + dy };
+    }
+  }
+}
+
+/** Arrow ends on box element `id` (relative to its top-left), after its top-left moved by (dl, dt): kept in place, inside the new box. */
+export function keepArrowEnds(doc: UfsmDocument, id: Id, dl: number, dt: number, w: number, h: number): void {
+  if (dl === 0 && dt === 0) return;
+  for (const a of Object.values(doc.diagram?.arrows ?? {})) {
+    for (const which of ["from", "to"] as const) {
+      const e = a[which];
+      if ("ref" in e && e.ref === id && !("at" in e))
+        a[which] = { ref: id, x: Math.min(Math.max(e.x - dl, 0), w), y: Math.min(Math.max(e.y - dt, 0), h) };
+    }
+  }
+}
+
 /** Which edges of a vertex can be dragged: all four for states, the two ends of a fork/join bar, none for the rest. */
 export function resizableEdges(index: DocIndex, id: Id): Edge[] {
   const v = index.vertices.get(id)?.vertex;
@@ -299,6 +332,7 @@ export function resizeVertex(doc: UfsmDocument, id: Id, targets: EdgeTargets): v
             cl.y -= dt;
           }
         }
+        shiftRegionAnnotations(doc, new Set(regions.filter((r) => !isOffPage(index, r.id)).map((r) => r.id)), -dl, -dt);
       }
       const h0 = regions.length ? fixed(0) : undefined;
       if (dt !== 0 && h0 !== undefined) regionLayoutOf(doc, regions[0]!.id).h = h0 - dt;
@@ -306,6 +340,7 @@ export function resizeVertex(doc: UfsmDocument, id: Id, targets: EdgeTargets): v
         regionLayoutOf(doc, regions[last]!.id).h = y1 - lastTop;
     }
     if (dl === 0 && dt === 0) return;
+    keepArrowEnds(doc, id, dl, dt, x1 - x0, y1 - y0);
     for (const t of doc.machine.transitions) {
       const e = doc.diagram?.transitions[t.id];
       if (!e) continue;
@@ -601,6 +636,7 @@ export function setOffPage(doc: UfsmDocument, regionId: Id, offPage: boolean): v
     s.x += sx;
     s.y += sy;
   }
+  shiftRegionAnnotations(doc, new Set([regionId]), sx, sy);
   for (const t of doc.machine.transitions) {
     const e = dia.transitions[t.id];
     if (!e || commonRegion(index, t.from, t.to).id !== regionId) continue;

@@ -9,7 +9,7 @@
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { OUTPUT_NOTICE, loadModel } from "../src";
@@ -27,7 +27,7 @@ import {
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const SPDX = "SPDX-License-Identifier: GPL-3.0-or-later";
-const SKIP_DIRS = new Set(["node_modules", "old", "build", "target", "dist", ".git", "gen"]);
+const SKIP_DIRS = new Set(["node_modules", "build", "target", "dist", ".git", "gen"]);
 const CODE = new Set([".ts", ".tsx", ".rs", ".css", ".html", ".yml", ".mjs", ".js"]);
 
 function sourceFiles(dir: string): string[] {
@@ -65,14 +65,6 @@ describe("licensing", () => {
       /^license = "GPL-3\.0-or-later"$/m,
     );
   });
-
-  it(
-    "keeps the v0.5 code in old/ under its BSD licence",
-    { skip: !existsSync(join(repoRoot, "old")) && "old/ not present" },
-    () => {
-      assert.match(readFileSync(join(repoRoot, "old/LICENSE"), "utf8"), /SPDX-License-Identifier: BSD-3-Clause/);
-    },
-  );
 
   it("puts the SPDX header and a copyright line at the top of every source file", () => {
     const files = sourceFiles(repoRoot);

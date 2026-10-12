@@ -1,4 +1,4 @@
-<img src="old/doc/logo.png" alt="uFSM logo" width="80">
+<img src="docs/logo.png" alt="uFSM logo" width="80">
 
 # uFSM
 
@@ -9,8 +9,8 @@ generating code from them. Version 0.6 is a rewrite: a TypeScript core with
 code generator backends for C, C++, C#, Python, TypeScript/JavaScript, Rust and Go, and a
 cross-platform desktop editor built with [Tauri](https://tauri.app).
 
-The previous C/GTK editor and Python generator (v0.5.x) are kept in
-[`old/`](old/) for reference while the rewrite catches up. Models drawn with
+The previous C/GTK editor and Python generator (v0.5.x) are available at the
+[v0.5.3](https://github.com/jonasblixt/ufsm/tree/v0.5.3) tag. Models drawn with
 v0.5 open in the new editor and CLI and are converted to the new format.
 
 ## Disclaimer
@@ -33,8 +33,7 @@ apps/editor       @ufsm/editor: Vite + TypeScript frontend
 apps/editor/src-tauri   Rust shell (window, native dialogs, file IO)
 docs/             architecture, glossary, contributing, file format, semantics, generators
 examples/         example models (v1)
-tests/models/     test models (v1), including the old editor's own canvas.ufsm
-old/              v0.5.x C/GTK editor, Python generator, examples and tests
+tests/models/     test models (v1), including the v0.5 editor's own canvas.ufsm
 ```
 
 ## Prerequisites
@@ -80,7 +79,7 @@ Other scripts, run from the repository root:
 
 ### Editor controls
 
-The key map follows the old editor; two-key commands start with <kbd>A</kbd> (add), <kbd>E</kbd> (edit), <kbd>Z</kbd> (zoom) or <kbd>J</kbd> (jump).
+The key map follows the v0.5 editor; two-key commands start with <kbd>A</kbd> (add), <kbd>E</kbd> (edit), <kbd>Z</kbd> (zoom) or <kbd>J</kbd> (jump).
 
 | Action | Mouse | Key |
 |--------|-------|-----|
@@ -100,6 +99,7 @@ The key map follows the old editor; two-key commands start with <kbd>A</kbd> (ad
 | Add a region | Region tool, then click a state; Properties › Add region | <kbd>A</kbd> <kbd>R</kbd> (to the selected state; without one it arms the tool) |
 | Add a transition | S transition tool (an orthogonal route that lays itself out on the grid and follows its states) or straight transition tool (one line, or through bend points: clicks on empty canvas in between, <kbd>Shift</kbd>-click forces one): click the source, then the target, or drag from one to the other; the preview shows the route; an initial state is never a target | <kbd>A</kbd> <kbd>T</kbd> S, <kbd>A</kbd> <kbd>L</kbd> straight; <kbd>Backspace</kbd> removes the last bend point |
 | Bend points | Add › Bend Point; double-click one to remove it; Add › Convert to S Route | <kbd>A</kbd> <kbd>V</kbd> (on the selected transition, at the pointer) |
+| Notes, arrows, group frames | documentation only, never in the generated code: the last palette row or the Add menu. A note: click (or drag its size) and type, <kbd>Ctrl</kbd>+<kbd>Enter</kbd> keeps it; `{s3}` in the text shows that element's name. An arrow: click where it starts and where it points; an end on a state, note, frame or transition stays attached, on empty canvas it is free. A frame: drag around what it groups, then type its caption. Double-click a note or a frame's outline to edit its text; Properties has TODO (listed in Problems), arrowheads and dashed lines | <kbd>A</kbd> <kbd>N</kbd> note, <kbd>A</kbd> <kbd>C</kbd> arrow, <kbd>A</kbd> <kbd>G</kbd> frame (with no transition selected) |
 | Delete (with what is inside and the transitions attached) | Edit › Delete; × next to a region in Properties | <kbd>Delete</kbd> |
 | Cut / copy / paste (at the pointer, into the region under it) | Edit › Cut / Copy / Paste | <kbd>Ctrl</kbd>+<kbd>X</kbd> / <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>Ctrl</kbd>+<kbd>V</kbd> |
 | Rename, set a trigger | Properties (Name, Trigger); Edit › Rename / Trigger | <kbd>E</kbd> <kbd>N</kbd> (selected state), <kbd>E</kbd> <kbd>T</kbd> (selected transition) |
@@ -181,8 +181,8 @@ are yours too. The GPL covers uFSM itself: the editor, the CLI and the
 `@ufsm/core` library (a program that embeds the library or its interpreter
 is covered by the GPL).
 
-The v0.5 code in `old/` remains under its BSD 3-Clause licence
-([old/LICENSE](old/LICENSE)).
+uFSM v0.5.x and earlier ([v0.5.3](https://github.com/jonasblixt/ufsm/tree/v0.5.3)) remain under the BSD 3-Clause
+licence.
 
 The color palettes in `apps/editor/src/themes/` come from
 [gruvbox](https://github.com/morhetz/gruvbox) by Pavel Pertsev (MIT/X11),

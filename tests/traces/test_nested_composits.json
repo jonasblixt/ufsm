@@ -1,6 +1,6 @@
 {
   "model": "../models/test_nested_composits.ufsm",
-  "doc": "From old/tests/C/test_nested_composits.c.",
+  "doc": "From v0.5.3 tests/C/test_nested_composits.c.",
   "steps": [
     { "reset": true, "expect": ["eInitA", "eA21"] },
     { "send": "EV3", "expect": ["xA21", "eA22"] },

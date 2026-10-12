@@ -80,7 +80,7 @@ the generated code. Status refers to the new implementation.
 - [x] Confirm CI green on Windows/macOS/Linux (green at 8cc5061, 2026-10-11) (Rust shell has only been built on Jonas's machine; tests run on
       Ubuntu only and now require gcc, Python and pyright)
 - [ ] Merge `ts-rewrite` into master with a merge commit (never squash or rebase: `.git-blame-ignore-revs` names
-      c861e89); readthedocs: turn the project off or set its default version to v0.5.3 (`.readthedocs.yml` is in `old/`)
+      c861e89); readthedocs: turn the project off or set its default version to v0.5.3 (`.readthedocs.yml` was in `old/`, tag v0.5.3)
 
 ### Phase S — semantics (done; one review open)
 - [ ] Jonas: review the remaining semantics choices in `docs/semantics.md` ("Changes from v0.5"): B12 and
@@ -174,7 +174,7 @@ the generated code. Status refers to the new implementation.
       the Code tab, `write_generated` in the Rust shell with an overwrite guard (2026-10-11)
 - [ ] Generate follow-ups: Jonas to try it in `npm run dev` (Browse…, first Generate on an unsaved machine: Save As, then
       the folder; a folder outside the model's folder asks once; a hand-written file of the same name is refused);
-      reopening a model in a later run needs its dialog grant (recent files would need persisted scope); generate on
+      reopening a model in a later run needs its dialog grant (File › Open Recent grants it again); generate on
       save?; several targets at once (firmware C + host TS)?; File › Generate Code To… and the Code tab's Save both… still
       overwrite anything in the picked folder (the fs plugin)
 - [ ] Options follow-ups: Jonas to try the Project tab's Behaviour section and the Simulator's options (model's values,
@@ -207,6 +207,11 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
       VS Code's Shift+F12) instead of only the declaration; while simulating, events as rows ("Simulator: Send eButton");
       `:` sheet and zone (VS Code's go to line) once the drawing frame has zones; show Cmd instead of Ctrl on macOS
       (menus too); search the documentation texts?; frequency as well as recency (VS Code's MRU only)
+- [x] File › Open Recent: the last 10 machines opened or saved (desktop; `recent.json` kept by the Rust shell), a submenu
+      with each file's folder and Clear Recently Opened, also in the command palette (2026-10-11)
+- [ ] Open Recent follow-ups: Jonas to try it in `npm run dev` (open, restart, reopen from the list, then Save and
+      Generate on it; a moved file is taken off the list); a key for the last machine (needs editor.ufsm); recent machines
+      in the empty explorer and in the Ctrl+P search without `>`; restore the machines open at exit (uses the same list)
 - [ ] File › New follow-ups: Jonas to try the first save in `npm run dev` (native dialog; machine renamed to the file);
       a starting template (an initial state and one state) instead of an empty sheet?; choose the paper size on New?
 - [ ] E-UI follow-ups: Jonas to check in `npm run dev` on Windows (drag the title bar, double-click maximizes, resize at
@@ -258,8 +263,8 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [x] Sheet frame and title block: frame with zone references, title block from the model + free fields in
       `diagram.titleBlock`, fit as design rule warnings, sheet and zone in Problems, the status line and `ufsm check`,
       off-page markers name their sheet (2026-10-10)
-- [ ] Sheet follow-ups: Jonas to look at it in `npm run dev` and decide the open points: one paper size per sheet instead
-      of one per file (as KiCad; decide while format v1 can still change); portrait sheets?; a "move to its own sheet"
+- [x] Paper size: one per file, not per sheet (decided 2026-10-11)
+- [ ] Sheet follow-ups: portrait sheets?; a "move to its own sheet"
       command so hitting the edge is cheap; `:` in the search to go to "sheet 2, B4"; the zone under the pointer in the
       status bar; the light print palette comes with E7's export/print; a uFSM version/logo cell in the title block?
       (not deterministic across versions, so only when printing); a second free line for the description (only the
@@ -282,8 +287,8 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [x] File access through `tauri-plugin-fs` instead of own read/write commands: only paths picked in a dialog this run
       (2026-10-10)
 - [ ] fs-plugin follow-ups: Jonas to try open, save, Save As, File › Generate into a folder and Save trace in `npm run dev`;
-      reopening files by path in a later run (recent files, restoring open machines) needs `tauri-plugin-persisted-scope`
-      or a static scope, since dialog grants last only until the app exits
+      dialog grants last only until the app exits; File › Open Recent grants a listed file again (`open_recent`), and
+      restoring the open machines could go the same way
 - [x] One schema source for format v1: TypeBox definitions in `core/src/v1/schema.ts` drive the reader and generate
       `schema/ufsm-v1.schema.json`; `model.ts` checked against them at compile time (2026-10-10)
 - [ ] Later: live tracing from a target (compact replay log of events + guard bits, keyframes, timeline in the
@@ -310,6 +315,40 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - [x] R11 Formatter (Prettier, printWidth 120, CI `format:check`, `.git-blame-ignore-revs`) and import-boundary
       check (`test/boundaries.test.ts`) (2026-10-11)
 - [x] R12 One backend contract suite (`test/backend-contract.ts`) (2026-10-11)
+
+### Phase M — modelling additions (2026-10-11)
+- [ ] Choice pseudo-state (decisions log 2026-10-11): format (`kind: "choice"`, `else: true` on a branch), design rules
+      (else required, no trigger on branches, no cycles, allowed targets), semantics.md + hand-derived traces, interpreter,
+      flat tables, IR, every backend, editor tool and drawing
+- [ ] Junction pseudo-state (decisions log 2026-10-11): format, design rules, expansion in flattening, numbering, editor
+      tool (drawn distinct from an initial state); junction then choice must work
+- [x] M-DOC Notes, group frames and arrows (documentation only; decisions log 2026-10-12): format, core geometry and
+      edits, design rules (+ info severity for TODO), editor tools `a n`/`a c`/`a g`, in-place text, Properties, search,
+      CLI, docs (2026-10-12)
+- [ ] M-DOC follow-ups: Jonas to try it in `npm run dev` (place, type, Ctrl+Enter/Esc, attach an arrow to a state, a
+      transition and a note, move them, delete what an arrow points at, TODO in Problems, light themes); a dropped note
+      or frame takes the region under its top-left corner (vertices still do not); a frame does not move its contents (lasso them);
+      a note's `{id}` is not clickable on the canvas (Properties › Refers to jumps); `{id}` only completes by hand (a
+      picker?); arrows have no bend points; print/export will need the note color in the light print palette
+
+### Phase V — verifier (decisions log 2026-10-11)
+- [ ] V1 Outer search in core (`analysis/` or similar; boundaries test updated): configuration + history graph over the
+      flat-table or IR runner with a branching guard oracle; inner per-macrostep search for livelock and queue size; state
+      budget with a partial report. First measure the state-space size on every repo model (canvas.ufsm, deep history)
+- [ ] V2 Findings: states never active, transitions never fired / always losing, unused events, actions, signals and
+      timers, impossible completions and joins, state and system dead ends (SCCs), livelock, signal queue size needed
+      ("can be N", "overflow reachable", "unbounded")
+- [ ] V3 Witness traces: shortest path per finding and `--trace-to <state>…`, written as trace JSON; trace format
+      extension for a guard that needs several values in one step (a list consumed in call order)
+- [ ] V4 `ufsm verify <model> [--json] [--strict-timers] [--max-states N] [--trace-to …] [-o dir]`; docs page
+- [ ] V5 Tests: every witness replays on the interpreter and reaches its claim; random simulation never reaches what the
+      verifier calls unreachable; hand-derived small models, one concept each; generated code with exactly the reported
+      queue size never overflows on random sequences
+- [ ] V6 Editor: run in a Web Worker, "Verification" section in Problems, Show trace opens simulator replay (needs the E6
+      replay follow-up)
+- [ ] V7 Later: guard exclusion declarations (fewer impossible witnesses); simple properties ("never A and B",
+      "Idle always reachable"); a "verified" generation profile that drops run-time checks the verifier proved
+      unnecessary; optional SMV/Promela export, checked against the interpreter on random models
 
 ### Open questions
 - Event parameters, machine variables, expression guards (`&&`/`||`/`!`)? Guards are bool-only
@@ -355,6 +394,10 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - Palette clicks while drawing a transition (pointer in Linking) are ignored; Esc first.
 - Putting a region back inline keeps its contents where they were relative to the band; a band smaller than its contents
   then shows them sticking out until the state or band is resized.
+- Notes, frames and arrows are drawn by the editor only; the CLI has no renderer, and `ufsm check`'s fit check measures
+  note boxes as stored (the editor sizes a note's height to its text with the canvas font). A note or frame
+  dragged out of a state's band joins the region under its top-left corner (nothing clamps it); the fit check only
+  looks at the sheet.
 
 - `maxMicrosteps: 0` means "no livelock check" to the generators but makes the interpreter fail at the first microstep;
   `options` and the trace format accept 0; no model or trace uses it. The simulator only allows 1 and up. Decide one
@@ -396,7 +439,7 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - Old generator CLI: `ufsm-generate c --sq_length 16 <model> <outdir>` (subcommand before positionals). Run without installing by stubbing `importlib.metadata.version`.
 - The old CMake test build always used signal queue length 16.
 - v0 transitions are stored under their source state; no transitions cross sheets in the legacy models.
-- Old editor colours: gruvbox dark (`old/compose/src/render.c`, `ufsmm_color_set`).
+- Old editor colours: gruvbox dark (v0.5.3 `compose/src/render.c`, `ufsmm_color_set`).
 - Downloading from GitHub in the cloud workspace: `git clone --depth 1 https://github.com/<owner>/<repo>` works; raw.githubusercontent.com
   and `gh api` are refused (2026-10-09).
 - Claude's shell on Jonas's machine is a Linux VM where npm is blocked and the Windows `node_modules` can't run

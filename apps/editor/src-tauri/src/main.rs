@@ -36,18 +36,93 @@ fn read_settings(app: tauri::AppHandle) -> Result<SettingsFile, String> {
     Ok(SettingsFile { path: path.display().to_string(), contents })
 }
 
-/// Write the editor settings: into a temporary file next to settings.json, then renamed over it, so a crash never
-/// leaves half a file.
+/// Write the editor settings (atomically).
 #[tauri::command]
 fn write_settings(app: tauri::AppHandle, contents: String) -> Result<(), String> {
-    let path = settings_path(&app)?;
-    let fail = |p: &PathBuf, e: std::io::Error| format!("{}: {e}", p.display());
+    write_atomically(&settings_path(&app)?, &contents)
+}
+
+/// Write a file in the config folder: into a temporary file next to it, then renamed over it, so a crash never leaves
+/// half a file. Creates the folder when missing.
+fn write_atomically(path: &Path, contents: &str) -> Result<(), String> {
+    let fail = |p: &Path, e: std::io::Error| format!("{}: {e}", p.display());
     if let Some(dir) = path.parent() {
-        std::fs::create_dir_all(dir).map_err(|e| fail(&dir.to_path_buf(), e))?;
+        std::fs::create_dir_all(dir).map_err(|e| fail(dir, e))?;
     }
     let tmp = path.with_extension("json.tmp");
     std::fs::write(&tmp, contents).map_err(|e| fail(&tmp, e))?;
-    std::fs::rename(&tmp, &path).map_err(|e| fail(&path, e))
+    std::fs::rename(&tmp, path).map_err(|e| fail(path, e))
+}
+
+/// How many machines File › Open Recent lists.
+const RECENT_MAX: usize = 10;
+
+/// `recent.json` in the app's config folder: the paths of the machines opened or saved last, most recent first. Kept
+/// by the shell, not in settings.json, so the frontend can only add a path it was given in a dialog.
+fn recent_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    app.path()
+        .app_config_dir()
+        .map(|dir| dir.join("recent.json"))
+        .map_err(|e| format!("no config folder: {e}"))
+}
+
+/// The recent list; empty when there is none or it cannot be read.
+fn read_recent(app: &tauri::AppHandle) -> Vec<String> {
+    recent_path(app)
+        .ok()
+        .and_then(|p| std::fs::read_to_string(p).ok())
+        .and_then(|text| serde_json::from_str::<Vec<String>>(&text).ok())
+        .unwrap_or_default()
+}
+
+fn write_recent(app: &tauri::AppHandle, list: &[String]) -> Result<(), String> {
+    let text = serde_json::to_string_pretty(list).map_err(|e| e.to_string())?;
+    write_atomically(&recent_path(app)?, &format!("{text}\n"))
+}
+
+/// The machines opened or saved last, most recent first.
+#[tauri::command]
+fn recent_files(app: tauri::AppHandle) -> Vec<String> {
+    read_recent(&app)
+}
+
+/// Put a machine first in the recent list. Only a path the user picked in a dialog this run (or reopened from the
+/// list) is taken. Returns the new list.
+#[tauri::command]
+fn add_recent(app: tauri::AppHandle, path: String) -> Result<Vec<String>, String> {
+    if !app.fs_scope().is_allowed(Path::new(&path)) {
+        return Err(format!("{path} was not opened in this run"));
+    }
+    let mut list = read_recent(&app);
+    list.retain(|p| p != &path);
+    list.insert(0, path);
+    list.truncate(RECENT_MAX);
+    write_recent(&app, &list)?;
+    Ok(list)
+}
+
+/// Take a machine off the recent list, or clear the list (no path). Returns the new list.
+#[tauri::command]
+fn forget_recent(app: tauri::AppHandle, path: Option<String>) -> Result<Vec<String>, String> {
+    let mut list = read_recent(&app);
+    match path {
+        Some(path) => list.retain(|p| p != &path),
+        None => list.clear(),
+    }
+    write_recent(&app, &list)?;
+    Ok(list)
+}
+
+/// Read a machine from the recent list and let the fs plugin reach it for the rest of this run (as if it had been
+/// picked in a dialog), so Save and Generate work on it. Paths that are not on the list are refused.
+#[tauri::command]
+fn open_recent(app: tauri::AppHandle, path: String) -> Result<String, String> {
+    if !read_recent(&app).contains(&path) {
+        return Err(format!("{path} is not a recently opened machine"));
+    }
+    let text = std::fs::read_to_string(&path).map_err(|e| format!("{path}: {e}"))?;
+    app.fs_scope().allow_file(&path).map_err(|e| e.to_string())?;
+    Ok(text)
 }
 
 /// One generated file (a bare file name and its text).
@@ -150,10 +225,18 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         // Models, traces and generated code are read and written through the fs plugin. It has no static scope: a
         // path is reachable only after the user picked it in a dialog (the dialog plugin adds files exactly, folders
-        // with their direct children), and only until the app exits. Generated code goes through write_generated,
-        // next to a model opened that way.
+        // with their direct children), and only until the app exits; open_recent adds a machine from the recent list
+        // the same way. Generated code goes through write_generated, next to a model opened that way.
         .plugin(tauri_plugin_fs::init())
-        .invoke_handler(tauri::generate_handler![read_settings, write_settings, write_generated])
+        .invoke_handler(tauri::generate_handler![
+            read_settings,
+            write_settings,
+            write_generated,
+            recent_files,
+            add_recent,
+            forget_recent,
+            open_recent
+        ])
         .run(tauri::generate_context!())
         .expect("error while running uFSM");
 }

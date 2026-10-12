@@ -24,8 +24,8 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend, laid out after
   src/canvas/           view.ts (drawing a frame, pan/zoom, coordinates), state.ts (tool, placing, link, drag, lasso),
                         keys.ts / pointer.ts / tools.ts (the editor model's actions and guards, by its regions Keys,
                         Pointer and Tool)
-  src/files.ts          open, File › New, save, save as, close; navigation.ts (sheets, entering states, jumping);
-                        edit-commands.ts (delete, clipboard, regions, bend points, S routes, bars, off-page);
+  src/files.ts          open, Open Recent (list kept by the Rust shell), File › New, save, save as, close;
+                        navigation.ts (sheets, entering states, jumping); edit-commands.ts (delete, clipboard, regions, bend points, S routes, bars, off-page);
                         settings-controller.ts (settings.json, theme, UI zoom); sim-controller.ts (Simulator and Code
                         tabs, Generate: into the selected target's output folder, out-path.ts turns a picked folder into
                         the stored relative form); search-items.ts (what the search finds, search.ts ranks); automation.ts
@@ -58,7 +58,7 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend, laid out after
 ## Conventions
 
 - Editor: canvas in vanilla TS + Canvas 2D, panels and dialogs in Preact.
-  Drawing rules mirror `old/compose/src/render.c`. State lives in the workspace and its sessions only; a part that
+  Drawing rules mirror v0.5.3's `compose/src/render.c`. State lives in the workspace and its sessions only; a part that
   changes something calls `ws.changed(kind)` (or a ws method that does) instead of redrawing itself. Every edit is a core
   function (`edit/layout.ts`, `edit/create.ts`, `edit/clipboard.ts`, `edit/props.ts`) run on an Immer draft by
   `history.ts`; the document is the only state, everything else (index,
@@ -84,7 +84,7 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend, laid out after
 
 The editor exposes `window.ufsm` for automation: `load(text, name)`, `newModel()`,
 `worldToScreen(x, y)`, `selectedName()`, `selectedIds()`, `select(ids)`, `serialize()`,
-`box(id)`, `route(id)`, `actionBlock(id)` (a state's action block layout from core, plus `hiddenMarkerScreen`, the screen centre of its hidden-lines marker), `problems()` (the design rule check's findings), `handles()` (with screen positions), `undo()`, `redo()`,
+`box(id)`, `annotation(id)` (a note's or frame's box, an arrow's ends), `textEditing()`, `route(id)`, `actionBlock(id)` (a state's action block layout from core, plus `hiddenMarkerScreen`, the screen centre of its hidden-lines marker), `problems()` (the design rule check's findings), `handles()` (with screen positions), `undo()`, `redo()`,
 `canUndo()`, `canRedo()`, `isDirty()`, `tabs()`, `activateTab(i)`, `closeTab(i, force)`, `view()`,
 `tool()`, `pickTool(id)`, `status()`, `panelTab()`, `openSearch(text)`, `search(text)` (the rows the search lists: label, kind, detail, machine, checked), `theme()` (id, inputs, appearance), `zoom()` (UI zoom %), `settings()` (settings.json text), simulator: `simStart()`, `simStop()`, `simSend(event)`,
 `simGuard(name, true|false)`, `sim()` (steps, active, fired, last calls, hovered event and its transitions, trace text),
@@ -98,7 +98,7 @@ guards, internal transitions, declarations, options, Problems tab), then the sim
 highlight read back as pixels, log, saved traces, out of date, a model with errors), the code preview on repository
 models (C, Python, TypeScript, Rust) and the Settings tab (all six gruvbox variants and Everforest/Solarized/Catppuccin dark and light read back as pixels,
 Catppuccin's flavor, following the OS, kept across a reload; UI zoom with the canvas unchanged), then the search
-(Ctrl+P/Ctrl+Shift+P/F1, other machines, focus order, commands, settings preview, Project settings, prefixes),
+(Ctrl+P/Ctrl+Shift+P/F1, other machines, focus order, commands, settings (no preview while highlighted), Project settings, prefixes),
 the sheet frame and title block (frame, zones, off-page marker, fields, double-click, fit findings with sheet and zone), the mouse's back button (sent through CDP, so the webview's history navigation is covered), no webview context menu outside text fields;
 with a second argument
 it writes screenshots there); it needs esbuild and

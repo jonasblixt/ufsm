@@ -3,7 +3,7 @@
 
 /**
  * Canvas renderer for v1 documents. Drawing rules follow the old GTK editor
- * (old/compose/src/render.c) so existing diagrams look the same; geometry
+ * (v0.5.3: compose/src/render.c) so existing diagrams look the same; geometry
  * comes from @ufsm/core (relative layout -> absolute sheet coordinates).
  */
 import { type DocIndex, type Region, type State, type Transition, type Vertex } from "@ufsm/core";
@@ -33,9 +33,20 @@ import {
   LABEL_FONT_SIZE,
   layoutTransitionLabel,
   type MeasureText,
+  FRAME_CAPTION_H,
+  NOTE_FOLD,
+  NOTE_FONT_SIZE,
+  NOTE_LINE_H,
+  NOTE_PAD,
+  annotationBox,
+  annotationsOn,
+  arrowPoints,
+  noteDisplayText,
+  wrapNoteText,
+  type Point,
 } from "@ufsm/core/diagram";
 import type { Handle } from "./handles";
-import { drawnBox, forEachVisible, forEachVisibleTransition, type View } from "./hit";
+import { drawnBox, forEachVisible, forEachVisibleTransition, frameCaptionWidth, type View } from "./hit";
 
 export type { View } from "./hit";
 import { drawIcon } from "./icons";
@@ -353,6 +364,142 @@ function drawTransition(ctx: CanvasRenderingContext2D, index: DocIndex, t: Trans
   ctx.fillStyle = C.ink;
 }
 
+// ---------------------------------------------------------------- notes, frames and arrows (documentation only)
+
+/** Opacity of the note color washed over a note's and a frame caption's background. */
+const NOTE_WASH = 0.1;
+
+/** A group frame: a dashed outline in the note color, its caption in a tab at the top-left. */
+function drawFrame(ctx: CanvasRenderingContext2D, index: DocIndex, id: string, selected: boolean): void {
+  const b = annotationBox(index, id);
+  if (!b) return;
+  const caption = index.doc.diagram?.frames?.[id]?.caption;
+  ctx.save();
+  ctx.strokeStyle = selected ? C.selection : C.note;
+  ctx.lineWidth = selected ? 3 : 1.5;
+  ctx.setLineDash([8, 6]);
+  ctx.strokeRect(b.x, b.y, b.w, b.h);
+  ctx.setLineDash([]);
+  if (caption) {
+    ctx.font = `italic ${NOTE_FONT_SIZE}px ${FONT}`;
+    const w = Math.min(frameCaptionWidth(caption, labelFont(ctx)), b.w);
+    ctx.fillStyle = canvasAlpha("note", NOTE_WASH * 1.5);
+    ctx.fillRect(b.x, b.y, w, FRAME_CAPTION_H);
+    clipRect(ctx, b.x, b.y, w, FRAME_CAPTION_H);
+    ctx.font = `italic ${NOTE_FONT_SIZE}px ${FONT}`;
+    ctx.fillStyle = C.note;
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "left";
+    ctx.fillText(caption, b.x + 10, b.y + FRAME_CAPTION_H / 2 + 1);
+  }
+  ctx.restore();
+}
+
+/** Outline of a note: a box with its top-right corner folded. */
+function notePath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number): void {
+  const f = Math.min(NOTE_FOLD, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + w - f, y);
+  ctx.lineTo(x + w, y + f);
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.closePath();
+}
+
+/**
+ * A note: the folded box washed with the note color (the TODO color for a TODO note, with a tag on its top edge), its
+ * text wrapped at the box's width, `{id}` references shown as names, clipped to the box.
+ */
+function drawNote(ctx: CanvasRenderingContext2D, index: DocIndex, id: string, selected: boolean): void {
+  const n = index.doc.diagram?.notes?.[id];
+  const b = annotationBox(index, id);
+  if (!n || !b) return;
+  const color = n.todo ? "todo" : "note";
+  const { x, y, w, h } = b;
+  const f = Math.min(NOTE_FOLD, w / 2, h / 2);
+  ctx.save();
+  notePath(ctx, x, y, w, h);
+  ctx.fillStyle = C.paper;
+  ctx.fill();
+  ctx.fillStyle = canvasAlpha(color, NOTE_WASH);
+  ctx.fill();
+  ctx.strokeStyle = selected ? C.selection : C[color];
+  ctx.lineWidth = selected ? 3 : 1.5;
+  ctx.lineJoin = "round";
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x + w - f, y);
+  ctx.lineTo(x + w - f, y + f);
+  ctx.lineTo(x + w, y + f);
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  if (n.todo) {
+    ctx.font = `bold 11px ${FONT}`;
+    const tw = ctx.measureText("TODO").width + 10;
+    ctx.fillStyle = C.todo;
+    ctx.fillRect(x + 8, y - 8, tw, 16);
+    ctx.fillStyle = C.paper;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText("TODO", x + 13, y + 1);
+  }
+  clipRect(ctx, x + 2, y + 2, w - 4, h - 4);
+  ctx.fillStyle = C[color];
+  const measure = labelFont(ctx);
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  wrapNoteText(noteDisplayText(index, n.text), w, measure).forEach((line, i) =>
+    ctx.fillText(line, x + NOTE_PAD, y + NOTE_PAD + (i + 1) * NOTE_LINE_H - 5),
+  );
+  ctx.restore();
+}
+
+/** A filled arrowhead at `tip`, pointing away from `from`. */
+function arrowHead(ctx: CanvasRenderingContext2D, from: Point, tip: Point, size: number): void {
+  const angle = Math.atan2(tip.y - from.y, tip.x - from.x) + Math.PI;
+  ctx.beginPath();
+  ctx.moveTo(tip.x, tip.y);
+  ctx.lineTo(tip.x + size * Math.cos(angle - 0.4), tip.y + size * Math.sin(angle - 0.4));
+  ctx.lineTo(tip.x + size * Math.cos(angle + 0.4), tip.y + size * Math.sin(angle + 0.4));
+  ctx.closePath();
+  ctx.fill();
+}
+
+/** An arrow: a straight line in the note color (dashed when asked), with heads as asked; a dot on an attached end. */
+function drawArrow(ctx: CanvasRenderingContext2D, index: DocIndex, id: string, selected: boolean): void {
+  const a = index.doc.diagram?.arrows?.[id];
+  const pts = arrowPoints(index, id);
+  if (!a || !pts) return;
+  const { from, to } = pts;
+  const color = selected ? C.selection : C.note;
+  const head = a.head ?? "end";
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = selected ? 3 : 1.5;
+  if (a.dashed) ctx.setLineDash([6, 5]);
+  ctx.beginPath();
+  ctx.moveTo(from.x, from.y);
+  ctx.lineTo(to.x, to.y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  if (head !== "none") arrowHead(ctx, from, to, 12);
+  if (head === "both") arrowHead(ctx, to, from, 12);
+  // where a headless end touches an element, a small dot shows it is attached (UML's comment anchor)
+  for (const [end, p, hasHead] of [
+    [a.from, from, head === "both"],
+    [a.to, to, head !== "none"],
+  ] as const) {
+    if (!hasHead && "ref" in end) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 3, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
 /** The transitions the hovered event would take: a dashed aqua line over the route, a constant width on screen. */
 function drawWould(ctx: CanvasRenderingContext2D, index: DocIndex, t: Transition, scale: number): void {
   const pts = edgeGeometry(index, t.id)?.points;
@@ -560,6 +707,15 @@ function drawMarks(
     const b = drawnBox(index, v);
     badge(b.x + b.w, b.y, sev);
   });
+  const on = annotationsOn(index, sheet);
+  for (const id of [...on.frames, ...on.notes, ...on.arrows]) {
+    const sev = marks.get(id);
+    if (!sev) continue;
+    const b = annotationBox(index, id);
+    const a = b ? undefined : arrowPoints(index, id);
+    if (b) badge(b.x + b.w, b.y, sev);
+    else if (a) badge((a.from.x + a.to.x) / 2, (a.from.y + a.to.y) / 2, sev);
+  }
   forEachVisibleTransition(index, sheet, (t) => {
     const sev = marks.get(t.id);
     const pts = sev && edgeGeometry(index, t.id)?.points;
@@ -589,19 +745,33 @@ export function renderSheet(
   drawSheet(ctx, index, sheet, opts.fileName);
 
   const sel = opts.selection;
+  const notes = annotationsOn(index, sheet);
+  // a frame lies behind what its region holds: the sheet's own first, a state's right after the state is drawn
+  const framesIn = new Map<string, string[]>();
+  for (const id of notes.frames) {
+    const r = index.doc.diagram!.frames![id]!.region;
+    framesIn.set(r, [...(framesIn.get(r) ?? []), id]);
+  }
+  const drawFrames = (region: string): void =>
+    framesIn.get(region)?.forEach((id) => drawFrame(ctx, index, id, sel?.has(id) === true));
+  drawFrames(sheet.id);
   const selectedT: Transition[] = [];
   const sim = opts.sim;
   forEachVisible(index, sheet, (v) => {
     const look: SimLook = sim?.leaves.has(v.id) ? "leaf" : sim?.active.has(v.id) ? "active" : undefined;
     // A selected vertex is drawn in the selection color (no extra box around it).
     const picked = sel?.has(v.id) === true;
-    if (v.kind === "state") drawState(ctx, index, v, look, picked);
-    else drawPseudo(ctx, index, v, look, picked);
+    if (v.kind === "state") {
+      drawState(ctx, index, v, look, picked);
+      for (const r of v.regions ?? []) if (!isOffPage(index, r.id)) drawFrames(r.id);
+    } else drawPseudo(ctx, index, v, look, picked);
   });
   forEachVisibleTransition(index, sheet, (t) => {
     if (sel?.has(t.id)) selectedT.push(t);
     drawTransition(ctx, index, t, sim?.fired.has(t.id));
   });
+  for (const id of notes.notes) drawNote(ctx, index, id, sel?.has(id) === true);
+  for (const id of notes.arrows) drawArrow(ctx, index, id, sel?.has(id) === true);
   if (sim?.would.size)
     forEachVisibleTransition(index, sheet, (t) => void (sim.would.has(t.id) && drawWould(ctx, index, t, view.scale)));
   for (const t of selectedT) {

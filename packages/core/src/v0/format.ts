@@ -3,7 +3,7 @@
 
 /**
  * The legacy (v0.4 / v0.5) `.ufsm` JSON format, exactly as written by the
- * GTK editor in `old/compose`. Kept as-is so every existing model can be
+ * v0.5 GTK editor (samples in `tests/v0`). Kept as-is so every existing model can be
  * loaded and later migrated to the v1 format.
  */
 

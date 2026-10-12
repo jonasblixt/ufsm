@@ -4,7 +4,8 @@
 /** What the design rule check reports. */
 import type { Id } from "../format/model";
 
-export type Severity = "error" | "warning";
+/** `info`: nothing wrong, but worth listing (a note marked TODO). */
+export type Severity = "error" | "warning" | "info";
 
 export interface Diagnostic {
   severity: Severity;

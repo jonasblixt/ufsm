@@ -20,6 +20,7 @@
 import { commonRegion, vertexName, type DocIndex } from "../model/doc-index";
 import { edgeGeometry, isSheet, sheetOfRegion, sheetOfVertex, vertexBox, type Box, type Point } from "./geometry";
 import { LABEL_FIRST_LINE, LABEL_GAP, LABEL_LINE_H, transitionLabelBox } from "./label-layout";
+import { annotationBox, annotationKind, annotationRegion, arrowPoints, frameLayout, noteLayout } from "./annotations";
 import { PAPER_SIZES, type Id, type Paper, type Region, type State, type TitleBlock } from "../format/model";
 
 /** Paper edge to the edge of the drawing area (8.8 mm). */
@@ -146,6 +147,15 @@ export function locate(index: DocIndex, id: Id): { sheet: SheetInfo; zone: strin
   if (info) {
     const b = vertexBox(index, id);
     return { sheet: sheetInfo(index, info.region), zone: zoneOf(frame, { x: b.x + b.w / 2, y: b.y + b.h / 2 }) };
+  }
+  const region = annotationRegion(index, id);
+  if (region) {
+    const b = annotationBox(index, id);
+    const a = arrowPoints(index, id);
+    const p = b
+      ? { x: b.x + b.w / 2, y: b.y + b.h / 2 }
+      : a && { x: (a.from.x + a.to.x) / 2, y: (a.from.y + a.to.y) / 2 };
+    return p && { sheet: sheetInfo(index, region), zone: zoneOf(frame, p) };
   }
   const t = index.transitions.get(id);
   const g = t && edgeGeometry(index, id);
@@ -366,6 +376,31 @@ export function sheetFit(index: DocIndex): SheetFitProblem[] {
         problem: outside ? "outside" : "title-block",
       });
   }
+  // notes, frames and arrows: not when they are inside a state already listed
+  const dia = index.doc.diagram;
+  for (const id of [
+    ...Object.keys(dia?.frames ?? {}),
+    ...Object.keys(dia?.notes ?? {}),
+    ...Object.keys(dia?.arrows ?? {}),
+  ]) {
+    const region = annotationRegion(index, id);
+    const owner = region && !isSheet(index, region) ? index.regions.get(region.id)?.owner : undefined;
+    if (!region || (owner && covered.has(owner.id))) continue;
+    const b = annotationBox(index, id);
+    const a = b ? undefined : arrowPoints(index, id);
+    let problem: SheetFitProblem["problem"] | undefined;
+    if (b) problem = !within(frame.area, b) ? "outside" : overlaps(frame.titleBlock, b) ? "title-block" : undefined;
+    else if (a) {
+      const pt = (q: Point): Box => ({ x: q.x, y: q.y, w: 0, h: 0 });
+      problem =
+        !within(frame.area, pt(a.from)) || !within(frame.area, pt(a.to))
+          ? "outside"
+          : segmentCrosses(frame.titleBlock, a.from, a.to)
+            ? "title-block"
+            : undefined;
+    }
+    if (problem) out.push({ id, sheet: sheetInfo(index, region), problem });
+  }
   return out;
 }
 
@@ -374,6 +409,20 @@ export function sheetFitMessage(index: DocIndex, p: SheetFitProblem): string {
   const t = index.transitions.get(p.id);
   const what = t
     ? `transition ${vertexName(index, t.from)} -> ${vertexName(index, t.to)}`
-    : `state '${vertexName(index, p.id)}'`;
+    : annotationKind(index, p.id)
+      ? annotationTitle(index, p.id)
+      : `state '${vertexName(index, p.id)}'`;
   return p.problem === "outside" ? `${what} lies outside the frame` : `${what} overlaps the title block`;
+}
+
+/** How a message names a note (its first line), a frame (its caption) or an arrow. */
+export function annotationTitle(index: DocIndex, id: Id): string {
+  const n = noteLayout(index, id);
+  if (n) {
+    const first = n.text.split("\n")[0]!.trim();
+    return first ? `note '${first.length > 40 ? first.slice(0, 39) + "…" : first}'` : "a note";
+  }
+  const f = frameLayout(index, id);
+  if (f) return f.caption ? `frame '${f.caption}'` : "a frame";
+  return "an arrow";
 }

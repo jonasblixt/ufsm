@@ -11,7 +11,18 @@
  * still reports everything else (a transition without a trigger, a region without an initial state, ...).
  */
 import { ancestors, commonRegion, indexV1, type DocIndex } from "../model/doc-index";
-import { endAt, followTransitions, nearestEnd, regionLayoutOf, diagramOf, snap, MIN_BAR, MIN_STATE } from "./layout";
+import {
+  endAt,
+  followTransitions,
+  nearestEnd,
+  regionLayoutOf,
+  diagramOf,
+  shiftRegionAnnotations,
+  snap,
+  MIN_BAR,
+  MIN_STATE,
+} from "./layout";
+import { annotationKind, arrowEndPoint } from "../diagram/annotations";
 import {
   HEADER_H,
   actionBlockHeight,
@@ -366,14 +377,16 @@ export function addTransition(
  * go too; guard terms `in`/`not in` a deleted state are dropped (a guard left empty is removed); their diagram
  * entries are removed. Deleting a region of a surviving state keeps the state's size: the regions below it move up
  * with their contents, and the last region fills the rest. The root region cannot be deleted. Declarations stay.
- * Returns the ids removed.
+ * Notes, frames and arrows go with their region, or when given; an arrow end attached to anything deleted stays where
+ * it was as a free end. Returns the ids removed.
  */
 export function deleteElements(doc: UfsmDocument, ids: Iterable<Id>): Set<Id> {
   const index = indexV1(doc);
   const goneV = new Set<Id>(),
     goneR = new Set<Id>(),
     goneT = new Set<Id>(),
-    goneTimers = new Set<Id>();
+    goneTimers = new Set<Id>(),
+    goneA = new Set<Id>();
   const dropRegion = (r: Region): void => {
     goneR.add(r.id);
     r.states.forEach(dropVertex);
@@ -390,6 +403,7 @@ export function deleteElements(doc: UfsmDocument, ids: Iterable<Id>): Set<Id> {
     if (v) dropVertex(v);
     else if (index.transitions.has(id) || index.internals.has(id)) goneT.add(id);
     else if (index.timers.has(id)) goneTimers.add(id);
+    else if (annotationKind(index, id)) goneA.add(id);
     else {
       const info = index.regions.get(id);
       if (info?.owner) explicitRegions.push(info.region);
@@ -397,7 +411,23 @@ export function deleteElements(doc: UfsmDocument, ids: Iterable<Id>): Set<Id> {
   }
   for (const r of explicitRegions) dropRegion(r);
   for (const t of index.doc.machine.transitions) if (goneV.has(t.from) || goneV.has(t.to)) goneT.add(t.id);
-  if (goneV.size + goneR.size + goneT.size + goneTimers.size === 0) return new Set();
+  const dia0 = doc.diagram;
+  for (const m of [dia0?.notes, dia0?.frames, dia0?.arrows])
+    for (const [id, l] of Object.entries(m ?? {})) if (goneR.has(l.region)) goneA.add(id);
+  if (goneV.size + goneR.size + goneT.size + goneTimers.size + goneA.size === 0) return new Set();
+  // arrow ends on what goes become free ends where they are now (before anything moves)
+  const freed: [Id, "from" | "to", Point][] = [];
+  for (const [id, a] of Object.entries(dia0?.arrows ?? {})) {
+    if (goneA.has(id)) continue;
+    for (const which of ["from", "to"] as const) {
+      const e = a[which];
+      if (!("ref" in e) || !(goneV.has(e.ref) || goneT.has(e.ref) || goneA.has(e.ref))) continue;
+      const p = arrowEndPoint(index, a, e);
+      const r = index.regions.get(a.region)?.region;
+      if (p && r) freed.push([id, which, { x: p.x - regionOrigin(index, r).x, y: p.y - regionOrigin(index, r).y }]);
+    }
+  }
+  for (const [id, which, p] of freed) dia0!.arrows![id]![which] = { x: Math.round(p.x), y: Math.round(p.y) };
 
   followTransitions(doc, index, () => {
     // regions deleted from states that stay: later bands move up, the last band fills
@@ -419,6 +449,7 @@ export function deleteElements(doc: UfsmDocument, ids: Iterable<Id>): Set<Id> {
           const l = (diagramOf(doc).states[c.id] ??= { ...stateLayout(index, c.id) });
           l.y -= shift;
         }
+        shiftRegionAnnotations(doc, new Set([region.id]), 0, -shift);
       }
       const keep = (s.regions ?? []).filter((r) => !goneR.has(r.id));
       const lastGone = bands.length > 0 && goneR.has(bands[bands.length - 1]!.region.id);
@@ -471,8 +502,14 @@ export function deleteElements(doc: UfsmDocument, ids: Iterable<Id>): Set<Id> {
     for (const id of goneV) delete dia.states[id];
     for (const id of goneR) delete dia.regions[id];
     for (const id of goneT) delete dia.transitions[id];
+    for (const key of ["notes", "frames", "arrows"] as const) {
+      const m = dia[key];
+      if (!m) continue;
+      for (const id of goneA) delete m[id];
+      if (Object.keys(m).length === 0) delete dia[key];
+    }
   }
-  return new Set([...goneV, ...goneR, ...goneT, ...goneTimers]);
+  return new Set([...goneV, ...goneR, ...goneT, ...goneTimers, ...goneA]);
 }
 
 /** True when vertex `id` is `ancestor` or lies inside it. */

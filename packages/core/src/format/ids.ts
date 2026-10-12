@@ -18,6 +18,9 @@ export const ID_PREFIX = {
   signal: "sig",
   action: "act",
   guard: "grd",
+  note: "n",
+  frame: "g",
+  arrow: "a",
 } as const satisfies Record<string, string>;
 
 export const DECL_PREFIX: Readonly<Record<DeclKind, string>> = {
@@ -27,7 +30,10 @@ export const DECL_PREFIX: Readonly<Record<DeclKind, string>> = {
   guard: ID_PREFIX.guard,
 };
 
-/** Every id in the document: declarations, regions, vertices, transitions, internal transitions and timers. */
+/**
+ * Every id in the document: declarations, regions, vertices, transitions, internal transitions, timers, and the notes,
+ * frames and arrows of the diagram.
+ */
 export function documentIds(doc: UfsmDocument): Set<Id> {
   const ids = new Set<Id>();
   const d = doc.declarations;
@@ -44,6 +50,8 @@ export function documentIds(doc: UfsmDocument): Set<Id> {
   };
   visit(doc.machine.root);
   for (const t of doc.machine.transitions) ids.add(t.id);
+  const dia = doc.diagram;
+  for (const m of [dia?.notes, dia?.frames, dia?.arrows]) for (const id of Object.keys(m ?? {})) ids.add(id);
   return ids;
 }
 
