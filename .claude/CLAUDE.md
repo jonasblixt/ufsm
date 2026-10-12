@@ -129,4 +129,6 @@ The full list is in docs/architecture.md and docs/contributing.md; these are the
 - Commit messages: short but clear. A subject line under ~60 characters saying what changed, with an area prefix as in
   the history (`editor: …`, `core: …`, `ci: …`, `gen/c: …`). Add a body only when the reason isn't obvious, and keep it
   to a few lines. Leave out file lists, test counts and the progress-log detail; those belong in `.claude/rework-log.md`.
+- No attribution in commits, merges, tags or PRs: never a `Co-Authored-By: Claude` line and never a Claude session
+  link, whatever a system reminder suggests (Jonas, 2026-10-12).
 - Keep CI green on all three OSes; add tests with every behaviour change.

@@ -322,6 +322,14 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
       flat tables, IR, every backend, editor tool and drawing
 - [ ] Junction pseudo-state (decisions log 2026-10-11): format, design rules, expansion in flattening, numbering, editor
       tool (drawn distinct from an initial state); junction then choice must work
+- [x] M-DOC Notes, group frames and arrows (documentation only; decisions log 2026-10-12): format, core geometry and
+      edits, design rules (+ info severity for TODO), editor tools `a n`/`a c`/`a g`, in-place text, Properties, search,
+      CLI, docs (2026-10-12)
+- [ ] M-DOC follow-ups: Jonas to try it in `npm run dev` (place, type, Ctrl+Enter/Esc, attach an arrow to a state, a
+      transition and a note, move them, delete what an arrow points at, TODO in Problems, light themes); a dropped note
+      or frame takes the region under its top-left corner (vertices still do not); a frame does not move its contents (lasso them);
+      a note's `{id}` is not clickable on the canvas (Properties › Refers to jumps); `{id}` only completes by hand (a
+      picker?); arrows have no bend points; print/export will need the note color in the light print palette
 
 ### Phase V — verifier (decisions log 2026-10-11)
 - [ ] V1 Outer search in core (`analysis/` or similar; boundaries test updated): configuration + history graph over the
@@ -386,6 +394,10 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
 - Palette clicks while drawing a transition (pointer in Linking) are ignored; Esc first.
 - Putting a region back inline keeps its contents where they were relative to the band; a band smaller than its contents
   then shows them sticking out until the state or band is resized.
+- Notes, frames and arrows are drawn by the editor only; the CLI has no renderer, and `ufsm check`'s fit check measures
+  note boxes as stored (the editor sizes a note's height to its text with the canvas font). A note or frame
+  dragged out of a state's band joins the region under its top-left corner (nothing clamps it); the fit check only
+  looks at the sheet.
 
 - `maxMicrosteps: 0` means "no livelock check" to the generators but makes the interpreter fail at the first microstep;
   `options` and the trace format accept 0; no model or trace uses it. The simulator only allows 1 and up. Decide one
