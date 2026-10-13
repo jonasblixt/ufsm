@@ -122,6 +122,8 @@ export function installAutomation(app: App): void {
       zoom: () => app.settings.settings.zoom,
       /** The settings as settings.json would hold them. */
       settings: () => serializeSettings(app.settings.settings),
+      /** The updater: its phase (kind and details) and the version running (`running`). */
+      updates: () => ({ ...app.updates.phase, running: app.updates.version }),
       /** Handles of the selection, with their screen positions. */
       handles: () => canvas.handles().map((h) => ({ ...h.grip, screen: canvas.worldToScreen(h.x, h.y) })),
     },

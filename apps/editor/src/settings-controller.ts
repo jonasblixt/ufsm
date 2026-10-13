@@ -2,7 +2,8 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 /**
- * Global settings (settings.json): the color theme (following the OS appearance when asked) and the UI zoom. Settings are read from the browser-storage copy at once, so the first paint has the
+ * Global settings (settings.json): the color theme (following the OS appearance when asked), the UI zoom and how the
+ * app looks for updates. Settings are read from the browser-storage copy at once, so the first paint has the
  * right colors, then from settings.json; every change is applied at once and saved.
  */
 import type { App } from "./app";
@@ -15,6 +16,7 @@ import {
   ZOOM_MIN,
   type Settings,
   type ThemeSetting,
+  type UpdateMode,
 } from "./settings";
 import { resolveTheme, setCanvasTheme, type ResolvedTheme } from "./theme";
 
@@ -34,6 +36,8 @@ export interface SettingsController {
   zoomIn(): void;
   zoomOut(): void;
   zoomReset(): void;
+  /** Look for updates by itself or only when asked (the Settings tab); saved at once. */
+  setUpdates(mode: UpdateMode): void;
   /** The UI zoom as a factor (the sashes scale their drags by it). */
   uiZoom(): number;
   /** The OS switched between dark and light. */
@@ -117,6 +121,13 @@ export function createSettingsController(app: App): SettingsController {
       save();
     },
     setZoom,
+    setUpdates: (mode) => {
+      if (mode === settings.updates) return;
+      settings = { ...settings, updates: mode };
+      app.updates.modeChanged();
+      app.ws.changed("shell");
+      save();
+    },
     zoomIn: () => setZoom(zoomStep(settings.zoom, 1)),
     zoomOut: () => setZoom(zoomStep(settings.zoom, -1)),
     zoomReset: () => setZoom(100),

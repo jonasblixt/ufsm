@@ -172,9 +172,18 @@ export function createShell(app: App): Shell {
         problems: s.problems(),
         onTheme: s.setTheme,
         onZoom: s.setZoom,
+        updates: {
+          version: app.updates.version ?? UFSM_VERSION,
+          phase: app.updates.phase,
+          canCheck: app.updates.canCheck(),
+          onMode: s.setUpdates,
+          onCheck: app.updates.check,
+          onInstall: app.updates.install,
+        },
       },
     });
     app.sim.updateStatus();
+    app.updates.updateStatus();
   };
 
   /** Breadcrumbs, the up button, the status line and the tree's marks; then the rest of the shell. */
@@ -182,7 +191,8 @@ export function createShell(app: App): Shell {
     const d = ws.active;
     if (!d) {
       crumbsEl.replaceChildren();
-      if (ws.sessions.length === 0) statusEl.textContent = "";
+      // With no machine open the status line only shows a message (Check for Updates, a settings problem).
+      if (ws.sessions.length === 0) statusEl.textContent = ws.note ?? "";
       renderShell();
       return;
     }

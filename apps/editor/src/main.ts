@@ -27,6 +27,7 @@ import { createSettingsController } from "./settings-controller";
 import { createShell } from "./shell";
 import { createTextEdit } from "./text-edit";
 import { createSimController } from "./sim-controller";
+import { createUpdateController } from "./update-controller";
 import { Workspace } from "./workspace";
 
 const app = { ws: new Workspace(), tools: canvasState(), pickTool: () => undefined } as Partial<App> as App;
@@ -39,6 +40,7 @@ app.edits = createEditCommands(app);
 app.files = createFiles(app);
 app.sim = createSimController(app);
 app.search = createSearch(app);
+app.updates = createUpdateController(app);
 app.shell = createShell(app);
 app.textEdit = createTextEdit(app);
 
@@ -91,7 +93,8 @@ onCloseRequested(
 );
 app.ws.activate(undefined, true);
 onSystemAppearance(app.settings.onSystemDark);
-void app.settings.load();
+// The update check waits for the settings (`updates`), and the first one runs a few seconds after start anyway.
+void app.settings.load().then(() => app.updates.start());
 void app.files.loadRecent();
 // The panel's tab strip exists once the panel has rendered (Preact keeps the element).
 const panelTabsEl = el("panel").querySelector<HTMLElement>(".panel-tabs");

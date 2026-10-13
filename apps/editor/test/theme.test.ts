@@ -677,6 +677,28 @@ describe("settings.json", () => {
     assert.equal(parseSettings('{"zoom": 1000, "theme": 3}').settings.zoom, ZOOM_MAX, "zoom survives a broken theme");
   });
 
+  it("reads how to look for updates, writes it only when it is not automatic", () => {
+    assert.equal(defaultSettings().updates, "auto");
+    const { settings, problems } = parseSettings('{"updates": "manual", "theme": {"name": "gruvbox"}, "zoom": 110}');
+    assert.deepEqual(problems, []);
+    assert.equal(settings.updates, "manual");
+    assert.deepEqual(settings.other, {}, "updates is a known key");
+    const out = serializeSettings(settings);
+    assert.match(out, /"zoom": 110,\n  "updates": "manual"\n}/, "after the zoom");
+    assert.deepEqual(parseSettings(out).settings, settings);
+    assert.doesNotMatch(serializeSettings({ ...settings, updates: "auto" }), /updates/);
+    for (const text of ['{"updates": "never"}', '{"updates": true}', '{"updates": null}']) {
+      const r = parseSettings(text);
+      assert.equal(r.settings.updates, "auto", text);
+      assert.deepEqual(r.problems, ['settings.json: updates must be "auto" or "manual"; using "auto"'], text);
+    }
+    assert.equal(
+      parseSettings('{"updates": "manual", "theme": 3}').settings.updates,
+      "manual",
+      "survives a broken theme",
+    );
+  });
+
   it("steps the zoom through the browser levels", () => {
     assert.equal(ZOOM_STEPS[0], ZOOM_MIN);
     assert.equal(ZOOM_STEPS[ZOOM_STEPS.length - 1], ZOOM_MAX);
