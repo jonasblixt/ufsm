@@ -51,8 +51,10 @@ packages/core/          @ufsm/core: everything that is not UI (folders and rules
                         gate.test.ts (the validity gate), boundaries.test.ts (import rules)
 packages/cli/           @ufsm/cli: `ufsm` command (info, check, list, migrate, fmt, run, trace, flatten, ir, generate, schema)
 apps/editor/            @ufsm/editor: Vite + TypeScript frontend after VS Code (file map in .claude/rules/editor.md)
-apps/editor/src-tauri/  Rust shell: window, dialog and fs plugins (fs reaches only dialog-picked paths), settings.json, icons
-docs/                   architecture, glossary, contributing; format-v1, semantics (normative); backend-{c,cpp,csharp,python,ts,rust,go}
+apps/editor/src-tauri/  Rust shell: window, dialog and fs plugins (fs reaches only dialog-picked paths), settings.json, icons,
+                        updater plugin behind the update_* commands (docs/releasing.md)
+docs/                   architecture, glossary, contributing; format-v1, semantics (normative); backend-{c,cpp,csharp,python,ts,rust,go};
+                        releasing (tags, draft releases, the signed updates)
 examples/, tests/models/  models in v1 format (tests/models has canvas.ufsm, the old editor's own logic)
 tests/traces/           conformance traces (JSON): steps + expected action calls, by name
 tests/v0/               the v0.5.3 models, unchanged: input of the v0 reader and migrator tests (v0.5.x code: tag v0.5.3)

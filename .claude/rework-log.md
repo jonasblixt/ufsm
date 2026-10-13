@@ -720,3 +720,17 @@ Measured over the 21 valid legacy models (864 KB):
   `arrowTargetAt`. A note placed in a region already followed its state; a note or frame dragged into a region kept its
   old one: `moveSelection` now moves each moved one to the region under its top-left corner (`settleInRegion`, same
   absolute place). Core, hit-test and browser checks added (430 passed).
+- 2026-10-14: **Updates after VS Code** (overnight, unattended; decisions log 2026-10-14). Rust shell: tauri-plugin-updater
+  2.13 behind `update_support`/`update_check`/`update_download` (progress over a Channel, about 100 messages)/
+  `update_install` (then `request_restart`), `plugins.updater` in tauri.conf.json (GitHub `latest.json`, empty pubkey,
+  `requireSignedVersion`, Windows passive), `rust-version` 1.90 (the plugin's MSRV). Written against the plugin's
+  source at tag updater-v2.13.3 but **not compiled**: the cloud workspace reaches neither crates.io nor npm, so
+  `Cargo.lock` is not updated either. Editor: `updates.ts` (the flow: phases, scheduling, texts; no DOM) and
+  `update-controller.ts`, `updates` in settings.json (`auto` | `manual`), Settings › Updates, status bar item, Help ›
+  Check for Updates / Restart to Update (also in the command palette), `window.ufsm.updates()`; the status line now shows
+  a message when no machine is open. CI: tag builds sign with `TAURI_SIGNING_PRIVATE_KEY` when set
+  (`--config src-tauri/tauri.updater.conf.json`), every build stages its installers with
+  `apps/editor/scripts/release-assets.ts stage`, the release job writes `latest.json` with `... manifest`.
+  docs/releasing.md, README. Tests: `updates.test.ts` (12, fake host and clock), `release-assets.test.ts` (8), settings
+  test; browser check 440 passed (Help menu, Settings › Updates, the setting); the downloading/ready/install UI was
+  also driven once against a fake Tauri host (not committed).
