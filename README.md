@@ -22,7 +22,8 @@ the editor can still change between releases.
 
 [Architecture](docs/architecture.md) (how the parts fit together), [glossary](docs/glossary.md),
 [contributing](docs/contributing.md) (rules and recipes), the [file format](docs/format-v1.md) and the
-[execution semantics](docs/semantics.md), and one page per code generator (`docs/backend-*.md`).
+[execution semantics](docs/semantics.md), one page per code generator (`docs/backend-*.md`), and
+[releases and updates](docs/releasing.md).
 
 ## Layout
 
@@ -30,7 +31,7 @@ the editor can still change between releases.
 packages/core     @ufsm/core: model, v0 importer, checks, semantics, IR, backends (no Node/DOM APIs)
 packages/cli      @ufsm/cli:  `ufsm` command line
 apps/editor       @ufsm/editor: Vite + TypeScript frontend
-apps/editor/src-tauri   Rust shell (window, native dialogs, file IO)
+apps/editor/src-tauri   Rust shell (window, native dialogs, file IO, updates)
 docs/             architecture, glossary, contributing, file format, semantics, generators
 examples/         example models (v1)
 tests/models/     test models (v1), including the v0.5 editor's own canvas.ufsm
@@ -119,6 +120,7 @@ The key map follows the v0.5 editor; two-key commands start with <kbd>A</kbd> (a
 | Color theme (Catppuccin, Everforest, Gruvbox or Solarized, each dark or light, with the scheme's own options: contrast, flavor; follows the OS by default) | File › Settings or View › Settings: Settings tab; saved to `settings.json` in the app's config folder | |
 | Title block fields (revision, date, author, company, document no.); paper size | Project tab › Title block / Paper; double-click the title block on the canvas | |
 | UI zoom: larger or smaller text and controls around the canvas, 50–300% (the diagram keeps its own zoom) | View › Zoom In / Zoom Out / Reset Zoom; Settings tab › Zoom; saved to `settings.json` | <kbd>Ctrl</kbd>+<kbd>+</kbd> (or <kbd>=</kbd>) / <kbd>Ctrl</kbd>+<kbd>-</kbd> / <kbd>Ctrl</kbd>+<kbd>0</kbd> |
+| Updates: a new version is downloaded in the background, then restart into it ([how](docs/releasing.md#how-the-editor-updates-itself)) | Status bar › Restart to Update; Help › Check for Updates / Restart to Update; Settings tab › Updates (automatically or when asked; `updates` in `settings.json`) | |
 
 The application icons are rendered from `apps/editor/src-tauri/icons/icon.svg`
 (`npx tauri icon apps/editor/src-tauri/icons/icon.svg` regenerates the set from one
@@ -149,6 +151,8 @@ render; the committed small sizes were rendered one by one).
 - [x] Sheets as drawings: a frame with zone references (ISO 5457) and a title block on every sheet; the design rule
   check reports what does not fit, and problems name their sheet and zone ("sheet 2, B4")
 - [x] Editor: color themes as [Design Tokens](https://www.designtokens.org/tr/2025.10/) (Catppuccin, Everforest, Gruvbox, Solarized), Settings tab
+- [x] Editor: updates itself from GitHub releases, after VS Code (signed packages; on once the signing key is set up,
+  see [releasing](docs/releasing.md))
 
 ## History
 
