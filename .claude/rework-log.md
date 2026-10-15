@@ -734,3 +734,4 @@ Measured over the 21 valid legacy models (864 KB):
   docs/releasing.md, README. Tests: `updates.test.ts` (12, fake host and clock), `release-assets.test.ts` (8), settings
   test; browser check 440 passed (Help menu, Settings › Updates, the setting); the downloading/ready/install UI was
   also driven once against a fake Tauri host (not committed).
+- 2026-10-15: updater branch wrapped up: the Rust shell with tauri-plugin-updater compiles on Windows (`cargo check --locked`), `Cargo.lock` committed (format v4); typecheck, format:check and `npm test` green; PR to master.

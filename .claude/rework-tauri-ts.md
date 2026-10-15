@@ -152,7 +152,7 @@ the generated code. Status refers to the new implementation.
       C/Python/TS/Rust APIs (traces + random models with timers in every differential pass), CLI (`run`, `info`, `list`),
       editor (action block, Properties › Timers, Edit › Add Timer, clipboard, search, simulator Timers with Fire), docs incl.
       the Zephyr example in backend-c.md (2026-10-11)
-- [ ] Timers follow-ups: Jonas to review the generated APIs (`npm run ufsm -- generate c tests/models/test_timers.ufsm -o build
+- [ ] Timers follow-ups: Jonas to review the generated APIs (C and Python reviewed 2026-10-12; `npm run ufsm -- generate c tests/models/test_timers.ufsm -o build
       --debug-info`, also python/ts/rust) and try Properties › Timers and the simulator's Fire in `npm run dev`; an `e` key for
       Add Timer (needs editor.ufsm and a regenerated editor-fsm.ts); reorder timers in Properties (as for other lists);
       a "restart" action (decided: not for now); a wall-clock mode in the simulator?; a host-side check that a late expiry
@@ -164,7 +164,7 @@ the generated code. Status refers to the new implementation.
 - [x] State ids, `debugInfo` and `trace` (decisions log 2026-10-10/11): state enum and fingerprint always; `debugInfo` and
       `trace` API options in all four backends, decided in the lowering; hooks documented in semantics.md; differential
       pass per backend with both on; Project tab, CLI flags, `ufsm info` fingerprint (2026-10-11)
-- [ ] Debug/trace follow-ups: Jonas to review the generated API (`npm run ufsm -- generate c examples/dimmer.ufsm -o build
+- [ ] Debug/trace follow-ups: Jonas to review the generated API (C reviewed 2026-10-12; `npm run ufsm -- generate c examples/dimmer.ufsm -o build
       --debug-info --trace`) and the Project tab in `npm run dev`; a host decoder (`ufsm decode <model> <log>`: kind/id
       records -> names, checking the fingerprint), maybe with the simulator replaying a recorded log (docs/live-trace.md);
       a `reset` trace kind (today a host infers a reset from enter reports at the root); a state `ident` override
@@ -290,9 +290,8 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
       unsaved changes), Settings › Updates; CI signs the update packages on tag builds when the key secret exists and
       attaches `latest.json` to the draft release (`apps/editor/scripts/release-assets.ts`); docs/releasing.md (2026-10-14)
 - [ ] Updater follow-ups: Jonas to generate the signing key and set it up (docs/releasing.md "Setting up the signing
-      key": pubkey in tauri.conf.json, secrets `TAURI_SIGNING_PRIVATE_KEY` and `_PASSWORD`); the Rust side was written
-      without a compiler (the cloud workspace reaches neither crates.io nor npm): first `npm run dev` compiles it and
-      updates `Cargo.lock` (commit that); with the key in, Help › Check for Updates reports a failed check (404) until the
+      key": pubkey in tauri.conf.json, secrets `TAURI_SIGNING_PRIVATE_KEY` and `_PASSWORD`); the Rust side compiles on
+      Windows (2026-10-15, `Cargo.lock` with the updater crates committed; lockfile format v4); with the key in, Help › Check for Updates reports a failed check (404) until the
       first signed release is published, and after that that the version is the newest; try a
       real update with two local builds (docs/releasing.md "Trying an update"); the first signed release can only update
       copies installed from it or later (0.8.0 has no updater); code-sign the installers (Windows SmartScreen, macOS
