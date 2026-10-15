@@ -1,6 +1,6 @@
 {
   "name": "@ufsm/editor",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "private": true,
   "type": "module",
   "description": "uFSM desktop editor (Tauri shell + TypeScript frontend)",
