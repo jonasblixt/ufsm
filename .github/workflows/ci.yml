@@ -73,21 +73,40 @@ jobs:
           workspaces: apps/editor/src-tauri
       - run: npm ci
       - name: Build installers
-        run: npm run build
+        # A tag build signs the update packages when the repository has the key (docs/releasing.md); every other
+        # build, and a fork without the secret, builds the installers only.
+        shell: bash
+        env:
+          UPDATER_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          UPDATER_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* && -n "$UPDATER_KEY" ]]; then
+            pubkey="$(node -p "require('./apps/editor/src-tauri/tauri.conf.json').plugins.updater.pubkey")"
+            if [ -z "$pubkey" ]; then
+              echo "::error::TAURI_SIGNING_PRIVATE_KEY is set but plugins.updater.pubkey in tauri.conf.json is empty"
+              exit 1
+            fi
+            export TAURI_SIGNING_PRIVATE_KEY="$UPDATER_KEY"
+            export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="$UPDATER_KEY_PASSWORD"
+            npm run build -- --config src-tauri/tauri.updater.conf.json
+          else
+            npm run build
+          fi
+      - name: Collect the installers (and the update packages with their signatures)
+        shell: bash
+        run: |
+          node apps/editor/scripts/release-assets.ts stage apps/editor/src-tauri/target/release/bundle \
+            build/release --version "$(node -p "require('./package.json').version")"
       - uses: actions/upload-artifact@v7
         with:
           name: ufsm-editor-${{ runner.os }}
-          path: |
-            apps/editor/src-tauri/target/release/bundle/**/*.msi
-            apps/editor/src-tauri/target/release/bundle/**/*.exe
-            apps/editor/src-tauri/target/release/bundle/**/*.dmg
-            apps/editor/src-tauri/target/release/bundle/**/*.AppImage
-            apps/editor/src-tauri/target/release/bundle/**/*.deb
+          path: build/release/
           if-no-files-found: ignore
 
   release:
     name: Draft release
-    # a pushed tag v<version> collects the installers into a draft GitHub release (publish it by hand)
+    # a pushed tag v<version> collects the installers into a draft GitHub release (publish it by hand); with the
+    # signing key the release also carries latest.json, which installed apps read once the release is published
     if: startsWith(github.ref, 'refs/tags/v')
     needs: editor
     runs-on: ubuntu-latest
@@ -95,6 +114,10 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          # release-assets.ts runs as TypeScript (Node 24 strips the types)
+          node-version: 24
       - name: Tag matches the version in package.json
         run: |
           version="v$(node -p "require('./package.json').version")"
@@ -107,6 +130,8 @@ jobs:
           pattern: ufsm-editor-*
           path: dist
           merge-multiple: true
+      - name: latest.json for the updater (only when the installers were signed)
+        run: node apps/editor/scripts/release-assets.ts manifest dist --tag "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY"
       - name: Create the draft release with the installers
         env:
           GH_TOKEN: ${{ github.token }}

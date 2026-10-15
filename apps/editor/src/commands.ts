@@ -301,6 +301,21 @@ export function createCommands(app: App): Commands {
     { id: "copyTrace", label: "Copy Trace", run: () => void app.sim.copyTrace(), enabled: hasSteps },
     // Help
     {
+      id: "checkForUpdates",
+      label: "Check for Updates…",
+      run: () => app.updates.check(),
+      enabled: () => app.updates.canCheck(),
+    },
+    {
+      id: "installUpdate",
+      label: () => {
+        const p = app.updates.phase;
+        return p.kind === "ready" ? `Restart to Update (${p.version})` : "Restart to Update";
+      },
+      run: () => app.updates.install(),
+      enabled: () => app.updates.phase.kind === "ready",
+    },
+    {
       id: "about",
       label: `About uFSM ${UFSM_VERSION}`,
       run: () => app.shell.setStatus(`uFSM ${UFSM_VERSION} · GPL-3.0-or-later · github.com/jonasblixt/ufsm`),
@@ -400,7 +415,7 @@ export function createCommands(app: App): Commands {
       "prevTab",
     ]),
     menu("Run", ["simStart", "simStop", "-", "saveTrace", "copyTrace"]),
-    menu("Help", ["about"]),
+    menu("Help", ["checkForUpdates", "installUpdate", "-", "about"]),
   ];
 
   return { get, run: (id) => get(id).run(), menus };

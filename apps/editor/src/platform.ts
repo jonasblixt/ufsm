@@ -7,10 +7,11 @@
  * dialog during this run; in a plain browser (`npm run dev:web`) we fall back
  * to <input type=file> and downloads, handy for quick UI work.
  */
-import { invoke } from "@tauri-apps/api/core";
+import { Channel, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ask, open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import type { UpdateHost, UpdateInfo, UpdateSupport } from "./updates";
 
 export interface OpenedFile {
   /** Full path in Tauri, bare file name in the browser. */
@@ -302,3 +303,20 @@ export function onSystemAppearance(cb: (dark: boolean) => void): void {
     void w.onThemeChanged(({ payload }) => cb(payload === "dark")).catch(() => undefined);
   }
 }
+
+// ---------------------------------------------------------------- updates
+
+/**
+ * The desktop app's updater (the Rust shell's update_* commands over tauri-plugin-updater); the browser build has
+ * none. updates.ts decides when to use it.
+ */
+export const updateHost: UpdateHost = {
+  support: async () => (inTauri ? invoke<UpdateSupport>("update_support") : undefined),
+  check: async () => (await invoke<UpdateInfo | null>("update_check")) ?? undefined,
+  download: async (progress) => {
+    const onProgress = new Channel<{ downloaded: number; total: number | null }>();
+    onProgress.onmessage = (m) => progress(m.downloaded, m.total ?? undefined);
+    await invoke("update_download", { onProgress });
+  },
+  install: () => invoke<void>("update_install"),
+};

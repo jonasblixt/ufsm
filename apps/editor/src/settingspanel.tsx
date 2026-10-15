@@ -1,10 +1,34 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
-/** The right panel's Settings tab: global editor settings (color theme, zoom), saved to settings.json at once. */
-import { zoomStep, ZOOM_MAX, ZOOM_MIN, type AppearanceChoice, type Settings, type ThemeSetting } from "./settings";
+/**
+ * The right panel's Settings tab: global editor settings (color theme, zoom, updates), saved to settings.json at once.
+ */
+import {
+  zoomStep,
+  ZOOM_MAX,
+  ZOOM_MIN,
+  type AppearanceChoice,
+  type Settings,
+  type ThemeSetting,
+  type UpdateMode,
+} from "./settings";
 import { FALLBACK_THEME, THEMES, findTheme, modifierHasEffect, themeInfo, type ResolvedTheme } from "./theme";
+import { phaseText, type UpdatePhase } from "./updates";
 import { Field, Section } from "./widgets";
+
+/** The Updates section: the version running, the `updates` setting and what the updater is doing. */
+export interface UpdateProps {
+  /** The version running. */
+  version: string;
+  phase: UpdatePhase;
+  /** Check for Updates can run now. */
+  canCheck: boolean;
+  onMode(mode: UpdateMode): void;
+  onCheck(): void;
+  /** Restart into a downloaded version. */
+  onInstall(): void;
+}
 
 export interface SettingsProps {
   settings: Settings;
@@ -18,6 +42,7 @@ export interface SettingsProps {
   onTheme(theme: ThemeSetting): void;
   /** Zoom the whole window to this percentage. */
   onZoom(percent: number): void;
+  updates: UpdateProps;
 }
 
 const capital = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
@@ -174,6 +199,7 @@ export function SettingsTab(p: SettingsProps) {
           menu.
         </div>
       </Section>
+      <UpdatesSection mode={p.settings.updates} {...p.updates} />
       <Section title="Settings file">
         <div class="dim settings-location" title={p.location}>
           {p.location === undefined
@@ -193,5 +219,55 @@ export function SettingsTab(p: SettingsProps) {
         )}
       </Section>
     </>
+  );
+}
+
+function UpdatesSection(p: UpdateProps & { mode: UpdateMode }) {
+  const phase = p.phase;
+  const ready = phase.kind === "ready";
+  return (
+    <Section title="Updates">
+      <div class="settings-fields">
+        <Field label="Version">
+          <span class="update-version">uFSM {p.version}</span>
+        </Field>
+        <Field label="Check">
+          <Segmented<UpdateMode>
+            label="Check for updates"
+            value={p.mode}
+            onPick={p.onMode}
+            options={[
+              {
+                value: "auto",
+                text: "Automatically",
+                title: "Look for a new version at start and every few hours, download it in the background",
+              },
+              { value: "manual", text: "When asked", title: "Only Help › Check for Updates" },
+            ]}
+          />
+        </Field>
+      </div>
+      <div class={`dim update-state${phase.kind === "failed" ? " swarn" : ""}`} aria-live="polite">
+        {phaseText(phase)}
+      </div>
+      {ready && phase.notes && <div class="dim update-notes">{phase.notes}</div>}
+      <div class="generate-row">
+        {ready ? (
+          <button type="button" class="sbtn primary update-install" onClick={p.onInstall}>
+            Restart to Update
+          </button>
+        ) : (
+          <button
+            type="button"
+            class="sbtn update-check"
+            disabled={!p.canCheck}
+            title="Look for a new version now (Help › Check for Updates)"
+            onClick={p.onCheck}
+          >
+            Check Now
+          </button>
+        )}
+      </div>
+    </Section>
   );
 }

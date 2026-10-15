@@ -11,7 +11,7 @@
  * canvas highlight, the log, saved traces, going out of date, a model with errors), the code preview and the Settings tab
  * (color themes: all gruvbox variants, Everforest, Solarized and Catppuccin dark and light, Catppuccin's flavor, following
  * the OS, kept across a reload; UI zoom: keys, View menu, the tab's buttons, limits, the sash, kept across a reload, the
- * canvas never zoomed), the search field, and the sheet frame and title block (frame lines, zones, the off-page marker's
+ * canvas never zoomed; updates: Help menu, Settings › Updates, the setting), the search field, and the sheet frame and title block (frame lines, zones, the off-page marker's
  * sheet number, the free fields from the Project tab, a double-click and the search, fit findings with sheet and zone).
  *
  *   node apps/editor/test/browser/check.mjs [model.ufsm] [screenshot-dir]
@@ -42,7 +42,7 @@ const stub = {
     b.onResolve({ filter: /^@tauri-apps\// }, (a) => ({ path: a.path, namespace: "stub" }));
     b.onLoad({ filter: /.*/, namespace: "stub" }, () => ({
       contents:
-        "export const invoke = async () => { throw new Error('no tauri'); }; export const open = async () => null; export const save = async () => null; export const ask = async () => false; export const readTextFile = async () => { throw new Error('no tauri'); }; export const writeTextFile = readTextFile; export const getCurrentWindow = () => ({ setTitle: async () => {} }); export default {};",
+        "export const invoke = async () => { throw new Error('no tauri'); }; export const open = async () => null; export const save = async () => null; export const ask = async () => false; export const readTextFile = async () => { throw new Error('no tauri'); }; export const writeTextFile = readTextFile; export const getCurrentWindow = () => ({ setTitle: async () => {} }); export class Channel { onmessage = () => {}; } export default {};",
       loader: "js",
     }));
   },
@@ -2433,8 +2433,10 @@ if (shots) await page.screenshot({ path: `${shots}/settings.png` });
       );
       if (shots) await page.screenshot({ path: `${shots}/theme-${id}-${appearance.toLowerCase()}.png` });
     }
-    const controls = await page.$$eval(".settings-fields .segmented[role=radiogroup]", (g) =>
-      g.map((x) => x.getAttribute("aria-label")).join(),
+    // The theme's controls (Settings › Updates has one too)
+    const controls = await page.$$eval(
+      ".settings-fields .segmented[role=radiogroup]:not([aria-label='Check for updates'])",
+      (g) => g.map((x) => x.getAttribute("aria-label")).join(),
     );
     check(
       `${label} offers its own options`,
@@ -2649,6 +2651,54 @@ check(
   (await U("zoom")) === 300 && /zoom must be 50 to 300/.test(await $text(".settings-problems")),
   await $text(".settings-problems"),
 );
+await page.evaluate(() => localStorage.removeItem("ufsm.settings"));
+// 20b. updates: the browser build does not update itself; the Help menu, Settings › Updates and the `updates` setting
+await page.reload();
+await page.waitForTimeout(300);
+await page.click(".menu-label >> text=Help");
+check(
+  "Help › Check for Updates… is there and on",
+  !(await page.$eval('.menu-item:has-text("Check for Updates")', (e) => e.disabled)),
+);
+check(
+  "Help › Restart to Update is off without a downloaded update",
+  await page.$eval('.menu-item:has-text("Restart to Update")', (e) => e.disabled),
+);
+await page.click('.menu-item:has-text("Check for Updates")');
+check(
+  "Check for Updates in the browser build says it does not update itself",
+  /browser build does not update itself/.test(await $text("#status")),
+  await $text("#status"),
+);
+check("no update item in the status bar", await page.$eval("#update-status", (e) => e.hidden));
+check("updates() reports the phase", (await U("updates")).kind === "unsupported");
+await page.click(".menu-label >> text=View");
+await page.click(".menu-item >> text=Settings");
+check(
+  "Settings › Updates shows the version and what the updater can do",
+  /^uFSM \d+\.\d+\.\d+/.test(await $text(".update-version")) && /browser build/.test(await $text(".update-state")),
+  `${await $text(".update-version")} / ${await $text(".update-state")}`,
+);
+check(
+  "…checking automatically by default",
+  (await page.$eval('[aria-label="Check for updates"] [aria-checked="true"]', (e) => e.textContent)) ===
+    "Automatically",
+);
+await page.click('[aria-label="Check for updates"] >> text=When asked');
+check(
+  "When asked is saved as updates: manual",
+  /"updates": "manual"/.test(await U("settings")) &&
+    JSON.parse(await page.evaluate(() => localStorage.getItem("ufsm.settings"))).updates === "manual",
+);
+await page.click('[aria-label="Check for updates"] >> text=Automatically');
+check("Automatically drops the key from settings.json again", !/updates/.test(await U("settings")));
+await page.click(".update-check");
+check(
+  "Check Now explains too",
+  /browser build does not update itself/.test(await $text("#status")),
+  await $text("#status"),
+);
+if (shots) await page.screenshot({ path: `${shots}/settings-updates.png` });
 await page.evaluate(() => localStorage.removeItem("ufsm.settings"));
 // 21. search (title bar, Ctrl+P), after VS Code's Quick Open and command palette: every open machine (the one in focus
 // first), commands, settings

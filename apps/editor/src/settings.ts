@@ -7,16 +7,20 @@
  * version does not know are written back unchanged. No DOM.
  *
  * ```json
- * { "theme": { "name": "gruvbox", "appearance": "system", "contrast": "medium" }, "zoom": 125 }
+ * { "theme": { "name": "gruvbox", "appearance": "system", "contrast": "medium" }, "zoom": 125, "updates": "manual" }
  * ```
  *
  * `theme.name` picks a theme (a Design Tokens resolver), `appearance` is `system` (follow the OS), `dark` or
  * `light`, and every other string is an input for one of the theme's modifiers (gruvbox: `contrast`). `zoom` scales
  * the UI around the canvas (text and controls; the diagram keeps its own zoom) in percent, 50 to 300; left out at 100.
+ * `updates` is `auto` (check for a new version at start and now and then, download it in the background and offer to
+ * restart; left out) or `manual` (only Help › Check for Updates).
  */
 
 export type Appearance = "dark" | "light";
 export type AppearanceChoice = Appearance | "system";
+/** How the desktop app looks for new versions (settings.json `updates`). */
+export type UpdateMode = "auto" | "manual";
 
 export interface ThemeSetting {
   name: string;
@@ -29,6 +33,8 @@ export interface Settings {
   theme: ThemeSetting;
   /** UI zoom in percent (100 = normal size), ZOOM_MIN..ZOOM_MAX. Not the canvas. */
   zoom: number;
+  /** Look for new versions by itself (`auto`) or only when asked (`manual`). */
+  updates: UpdateMode;
   /** Top-level keys this version does not know, written back as they were. */
   other: Readonly<Record<string, unknown>>;
 }
@@ -36,7 +42,7 @@ export interface Settings {
 export const DEFAULT_THEME: ThemeSetting = { name: "gruvbox", appearance: "system", inputs: {} };
 
 export function defaultSettings(): Settings {
-  return { theme: { ...DEFAULT_THEME, inputs: {} }, zoom: 100, other: {} };
+  return { theme: { ...DEFAULT_THEME, inputs: {} }, zoom: 100, updates: "auto", other: {} };
 }
 
 export const ZOOM_MIN = 50;
@@ -51,6 +57,7 @@ export function zoomStep(zoom: number, dir: 1 | -1): number {
 }
 
 const APPEARANCES: readonly string[] = ["system", "dark", "light"];
+const UPDATE_MODES: readonly string[] = ["auto", "manual"];
 
 export interface ParsedSettings {
   settings: Settings;
@@ -73,8 +80,12 @@ export function parseSettings(text: string | undefined): ParsedSettings {
     problems.push("settings.json must hold an object; using defaults");
     return { settings, problems };
   }
-  const { theme, zoom, ...other } = json as Record<string, unknown>;
+  const { theme, zoom, updates, ...other } = json as Record<string, unknown>;
   settings.other = other;
+  if (updates !== undefined) {
+    if (typeof updates === "string" && UPDATE_MODES.includes(updates)) settings.updates = updates as UpdateMode;
+    else problems.push(`settings.json: updates must be "auto" or "manual"; using "auto"`);
+  }
   if (zoom !== undefined) {
     if (typeof zoom !== "number" || !Number.isFinite(zoom))
       problems.push("settings.json: zoom must be a number (percent); using 100");
@@ -104,11 +115,15 @@ export function parseSettings(text: string | undefined): ParsedSettings {
   return { settings, problems };
 }
 
-/** The canonical text: two-space indent, theme first, then zoom unless it is 100, a final newline. */
+/**
+ * The canonical text: two-space indent, theme first, then zoom unless it is 100, updates unless they are automatic, a
+ * final newline.
+ */
 export function serializeSettings(s: Settings): string {
   const theme = { name: s.theme.name, appearance: s.theme.appearance, ...s.theme.inputs };
   const zoom = s.zoom === 100 ? {} : { zoom: s.zoom };
-  return `${JSON.stringify({ theme, ...zoom, ...s.other }, null, 2)}\n`;
+  const updates = s.updates === "auto" ? {} : { updates: s.updates };
+  return `${JSON.stringify({ theme, ...zoom, ...updates, ...s.other }, null, 2)}\n`;
 }
 
 /** The appearance to use now. */

@@ -780,6 +780,36 @@ body {
   display: none;
 }
 
+/* Updates: "Downloading update 40%" while it downloads (click: Settings), "Restart to Update" once ready. */
+.update-status {
+  padding: 0 8px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--fg4);
+  white-space: nowrap;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.update-status:hover {
+  background: var(--bg1);
+}
+
+.update-status.ready {
+  color: var(--bg-dark);
+  background: var(--blue);
+}
+
+.update-status.ready:hover {
+  border-color: var(--fg);
+}
+
+.update-status[hidden] {
+  display: none;
+}
+
 /* ================================================================ left sidebar: tools above the explorer */
 
 .palette {
@@ -2114,6 +2144,21 @@ button.problem:not(:disabled):hover {
   line-height: 1.5;
   overflow-wrap: anywhere;
   user-select: text;
+}
+
+.update-state,
+.update-notes {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.update-notes {
+  max-height: 8em;
+  overflow: auto;
+  white-space: pre-wrap;
 }
 
 .settings-problems {
