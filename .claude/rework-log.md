@@ -735,3 +735,11 @@ Measured over the 21 valid legacy models (864 KB):
   test; browser check 440 passed (Help menu, Settings › Updates, the setting); the downloading/ready/install UI was
   also driven once against a fake Tauri host (not committed).
 - 2026-10-15: updater branch wrapped up: the Rust shell with tauri-plugin-updater compiles on Windows (`cargo check --locked`), `Cargo.lock` committed (format v4); typecheck, format:check and `npm test` green; PR to master.
+- 2026-10-22: updater tried end to end on Windows: two local NSIS builds (0.9.0, 0.9.1) signed with a throwaway key
+  through config overlays, `latest.json` from `release-assets.ts` served on localhost; the 0.9.0 install found,
+  downloaded and installed 0.9.1 and came back up as 0.9.1 (CLI 2.12.1 writes `version:` into the trusted comment, so
+  `requireSignedVersion` holds). `release-assets.ts stage` now takes only the assets of the version being staged (the
+  bundler leaves older versions' installers in `target/release/bundle`: 0.6.0's were there). The update item moved from
+  the status bar to a button in the title bar right of the search field, as in VS Code (Jonas); the search field keeps
+  its place. docs/releasing.md "Trying an update" rewritten for the throwaway key. Tests: updates 12, release-assets 9;
+  browser check 442 passed (the button's place, also in a narrow window).

@@ -29,7 +29,7 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend, laid out after
                         settings-controller.ts (settings.json: theme, UI zoom, updates); sim-controller.ts (Simulator and Code
                         tabs, Generate: into the selected target's output folder, out-path.ts turns a picked folder into
                         the stored relative form); search-items.ts (what the search finds, search.ts ranks); automation.ts
-                        (`window.ufsm`); update-controller.ts (the status bar's update item, Restart to Update asks about
+                        (`window.ufsm`); update-controller.ts (the title bar's update button, Restart to Update asks about
                         unsaved changes) over updates.ts (the update flow after VS Code: when to check, download, phases
                         and their texts; no DOM, tested with a fake host and clock)
   src/hit.ts            hit testing, rubber band, bounds (no DOM: label widths come from a measure, render.ts has the
@@ -101,7 +101,7 @@ guards, internal transitions, declarations, options, Problems tab), then the sim
 highlight read back as pixels, log, saved traces, out of date, a model with errors), the code preview on repository
 models (C, Python, TypeScript, Rust) and the Settings tab (all six gruvbox variants and Everforest/Solarized/Catppuccin dark and light read back as pixels,
 Catppuccin's flavor, following the OS, kept across a reload; UI zoom with the canvas unchanged; Updates: Help menu, the
-setting, the browser build's message), then the search
+setting, the browser build's message, the title bar's update button's place), then the search
 (Ctrl+P/Ctrl+Shift+P/F1, other machines, focus order, commands, settings (no preview while highlighted), Project settings, prefixes),
 the sheet frame and title block (frame, zones, off-page marker, fields, double-click, fit findings with sheet and zone), the mouse's back button (sent through CDP, so the webview's history navigation is covered), no webview context menu outside text fields;
 with a second argument

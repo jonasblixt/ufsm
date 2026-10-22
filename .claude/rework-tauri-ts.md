@@ -286,15 +286,16 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
       autosave/recovery
 - [x] Updates after VS Code (decisions log 2026-10-14): tauri-plugin-updater behind the shell's `update_*` commands,
       `latest.json` from the newest GitHub release, checked 10 s after start and every 6 h (`updates: "auto"`) or only on
-      Help › Check for Updates (`"manual"`), background download, status bar and Help › Restart to Update (asks about
+      Help › Check for Updates (`"manual"`), background download, title bar button and Help › Restart to Update (asks about
       unsaved changes), Settings › Updates; CI signs the update packages on tag builds when the key secret exists and
       attaches `latest.json` to the draft release (`apps/editor/scripts/release-assets.ts`); docs/releasing.md (2026-10-14)
-- [ ] Updater follow-ups: Jonas to generate the signing key and set it up (docs/releasing.md "Setting up the signing
-      key": pubkey in tauri.conf.json, secrets `TAURI_SIGNING_PRIVATE_KEY` and `_PASSWORD`); the Rust side compiles on
+- [ ] Updater follow-ups: signing key set up 2026-10-22 (`~/.tauri/ufsm.key` on Jonas's machine, password in
+      `ufsm.key.password` next to it: Jonas to keep both somewhere safe besides GitHub; pubkey in tauri.conf.json, secrets
+      `TAURI_SIGNING_PRIVATE_KEY` and `_PASSWORD` set); the Rust side compiles on
       Windows (2026-10-15, `Cargo.lock` with the updater crates committed; lockfile format v4); with the key in, Help › Check for Updates reports a failed check (404) until the
-      first signed release is published, and after that that the version is the newest; try a
-      real update with two local builds (docs/releasing.md "Trying an update"); the first signed release can only update
-      copies installed from it or later (0.8.0 has no updater); code-sign the installers (Windows SmartScreen, macOS
+      first signed release is published, and after that that the version is the newest; a real update with two local
+      builds worked on Windows (2026-10-22, NSIS; MSI, macOS and Linux not tried); the first signed release can only update
+      copies installed from it or later (0.9.0 has the updater but no key, so it cannot update); code-sign the installers (Windows SmartScreen, macOS
       notarization) some day; release notes in `latest.json` are a link only
 - [x] File access through `tauri-plugin-fs` instead of own read/write commands: only paths picked in a dialog this run
       (2026-10-10)

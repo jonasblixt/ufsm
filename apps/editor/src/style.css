@@ -147,6 +147,44 @@ body {
   min-width: 8px;
 }
 
+/* The right half after the search field holds the update button at its start (VS Code's place for it); it does not
+   shrink below the button, so a narrow window moves the search field left rather than covering the button. */
+.titlebar .drag.after-search {
+  display: flex;
+  align-items: center;
+  min-width: max-content;
+  padding-left: 8px;
+}
+
+/* Updates: "Downloading update 40%" while it downloads (click: Settings), "Restart to Update" once ready. */
+.update-button {
+  flex: none;
+  height: 24px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--fg4);
+  white-space: nowrap;
+  background: var(--card);
+  border: 1px solid var(--card-edge);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.update-button:hover {
+  color: var(--fg);
+}
+
+.update-button.ready {
+  color: var(--bg-dark);
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.update-button.ready:hover {
+  border-color: var(--fg);
+}
+
 .menubar {
   display: flex;
   height: 100%;
@@ -777,36 +815,6 @@ body {
 }
 
 .problems[hidden] {
-  display: none;
-}
-
-/* Updates: "Downloading update 40%" while it downloads (click: Settings), "Restart to Update" once ready. */
-.update-status {
-  padding: 0 8px;
-  font: inherit;
-  font-size: 12px;
-  color: var(--fg4);
-  white-space: nowrap;
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.update-status:hover {
-  background: var(--bg1);
-}
-
-.update-status.ready {
-  color: var(--bg-dark);
-  background: var(--blue);
-}
-
-.update-status.ready:hover {
-  border-color: var(--fg);
-}
-
-.update-status[hidden] {
   display: none;
 }
 

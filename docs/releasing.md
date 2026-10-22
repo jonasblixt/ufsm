@@ -21,8 +21,9 @@ branch's fix with "Set as the latest release" unticked, or installed copies woul
 The editor works like VS Code here:
 
 - With `"updates": "auto"` in `settings.json` (the default; Settings › Updates › Automatically) it checks 10 seconds
-  after it starts and then every 6 hours. A newer version is downloaded in the background; the status bar then shows
-  **Restart to Update**, as does the Help menu. `"manual"` (When asked) only checks on Help › Check for Updates.
+  after it starts and then every 6 hours. A newer version is downloaded in the background (the title bar shows its
+  progress right of the search field); then a **Restart to Update** button takes its place, and the Help menu offers it
+  too. `"manual"` (When asked) only checks on Help › Check for Updates.
 - Restart to Update asks first when a machine has unsaved changes, as quitting does. On Windows the installer then runs
   in its passive mode (a progress bar, no questions; the `.msi`, which installs for all users, asks for administrator
   rights) and starts the new version; on macOS and Linux the app replaces itself and restarts.
@@ -68,15 +69,41 @@ CI refuses to build a tag with the secret but no public key in `tauri.conf.json`
 
 ## Trying an update before a release
 
-Build two versions locally with the key, serve a `latest.json` and point a build at it:
+Build two versions locally, serve the newer one's `latest.json` from your machine and let the older one update to it.
+This does not need the release key: a throwaway key and two config overlays under `build/trial/` (ignored by git)
+leave `tauri.conf.json` as it is. In Git Bash on Windows (the NSIS installer only, which is quickest):
 
-1. `export TAURI_SIGNING_PRIVATE_KEY="$(cat ~/.tauri/ufsm.key)"` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, set the
-   version in `tauri.conf.json` to, say, 0.9.0-test.1, and
-   `npm run build -- --config src-tauri/tauri.updater.conf.json`.
-2. Stage what it made: `node apps/editor/scripts/release-assets.ts stage apps/editor/src-tauri/target/release/bundle
-   build/release --version 0.9.0-test.1`, then
-   `node apps/editor/scripts/release-assets.ts manifest build/release --tag v0.9.0-test.1 --repo jonasblixt/ufsm` and
-   edit the URLs in `build/release/latest.json` to `http://localhost:8000/<file>`; serve `build/release` there.
-3. Set the version back (to 0.8.0, say) in `tauri.conf.json`, set `endpoints` to `http://localhost:8000/latest.json` and
-   `"dangerousInsecureTransportProtocol": true` under `plugins.updater` (never commit those two), build, install,
-   start it and use Help › Check for Updates.
+1. A throwaway key and an overlay per version (the old and the new one; any two will do):
+
+   ```sh
+   mkdir -p build/trial
+   npm run tauri -w @ufsm/editor -- signer generate --ci -p trial -w "$PWD/build/trial/trial.key"
+   for v in 0.9.0 0.9.1; do cat > build/trial/$v.json <<EOF
+   { "version": "$v", "bundle": { "createUpdaterArtifacts": true },
+     "plugins": { "updater": { "pubkey": "$(cat build/trial/trial.key.pub)",
+       "endpoints": ["http://localhost:8000/latest.json"], "dangerousInsecureTransportProtocol": true } } }
+   EOF
+   done
+   export TAURI_SIGNING_PRIVATE_KEY="$(cat build/trial/trial.key)" TAURI_SIGNING_PRIVATE_KEY_PASSWORD=trial
+   ```
+
+2. Build the new version, stage it as CI does, point its URLs at localhost and serve it:
+
+   ```sh
+   npm run build -- --bundles nsis --config "$PWD/build/trial/0.9.1.json"
+   node apps/editor/scripts/release-assets.ts stage apps/editor/src-tauri/target/release/bundle build/trial/release \
+     --version 0.9.1
+   node apps/editor/scripts/release-assets.ts manifest build/trial/release --tag v0.9.1 --repo jonasblixt/ufsm
+   sed -i 's#https://github.com/jonasblixt/ufsm/releases/download/v0.9.1/#http://localhost:8000/#' \
+     build/trial/release/latest.json
+   python -m http.server 8000 -d build/trial/release --bind 127.0.0.1
+   ```
+
+3. In another shell (with the two variables of step 1), build the old version with
+   `npm run build -- --bundles nsis --config "$PWD/build/trial/0.9.0.json"`, install
+   `apps/editor/src-tauri/target/release/bundle/nsis/uFSM_0.9.0_x64-setup.exe`, start it and use Help › Check for
+   Updates. It downloads 0.9.1, the title bar offers Restart to Update, the installer runs and starts 0.9.1 (Settings ›
+   Updates shows the version running; Help › About shows the frontend's `UFSM_VERSION`, the same in both). Install the real release again afterwards: the trial builds trust only the throwaway key.
+
+A version with a pre-release part must be numeric there (`0.9.1-1`, not `0.9.1-test.1`) when the MSI is built: WiX
+refuses anything else.

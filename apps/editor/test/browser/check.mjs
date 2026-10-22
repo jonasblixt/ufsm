@@ -2670,7 +2670,45 @@ check(
   /browser build does not update itself/.test(await $text("#status")),
   await $text("#status"),
 );
-check("no update item in the status bar", await page.$eval("#update-status", (e) => e.hidden));
+check("no update button in the title bar", (await page.$(".update-button")) === null);
+// the button's place (the browser build never has one, so put one there): right of the search field, which does not
+// move for it; a narrow window moves the search field rather than covering the button
+const updateLayout = () =>
+  page.evaluate(() => {
+    const r = (q) => document.querySelector(q)?.getBoundingClientRect();
+    const bar = r("#titlebar"),
+      search = r(".search"),
+      button = r(".update-button");
+    return {
+      search: Math.round((search.left + search.right) / 2),
+      gap: button && button.left - search.right,
+      inside: button && button.right <= bar.right && button.top >= bar.top && button.bottom <= bar.bottom,
+    };
+  });
+const withoutButton = await updateLayout();
+await page.evaluate(() => {
+  const b = document.createElement("button");
+  b.className = "update-button ready";
+  b.textContent = "Restart to Update";
+  document.querySelector(".drag.after-search").append(b);
+});
+const wideLayout = await updateLayout();
+check(
+  "the update button sits right of the search field, which stays where it was",
+  wideLayout.search === withoutButton.search && wideLayout.gap >= 8 && wideLayout.gap <= 10 && wideLayout.inside,
+  JSON.stringify({ withoutButton, wideLayout }),
+);
+if (shots) await page.locator("#titlebar").screenshot({ path: `${shots}/titlebar-update.png` });
+const viewport = page.viewportSize();
+await page.setViewportSize({ width: 700, height: viewport.height });
+const narrowLayout = await updateLayout();
+check(
+  "…and stays whole in a narrow window",
+  narrowLayout.gap >= 8 && narrowLayout.inside,
+  JSON.stringify(narrowLayout),
+);
+await page.setViewportSize(viewport);
+await page.evaluate(() => document.querySelector(".update-button").remove());
 check("updates() reports the phase", (await U("updates")).kind === "unsupported");
 await page.click(".menu-label >> text=View");
 await page.click(".menu-item >> text=Settings");
