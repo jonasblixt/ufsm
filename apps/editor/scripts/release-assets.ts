@@ -94,8 +94,9 @@ function walk(dir: string): string[] {
 
 /**
  * Copy the release assets found under `bundleDir` into `outDir` and return the updater record (assets without a
- * signature are copied but not recorded). The macOS archive is named `uFSM.app.tar.gz` by the bundler; it is renamed
- * to `uFSM_<version>_<arch>.app.tar.gz` so builds for two architectures cannot collide.
+ * signature are copied but not recorded). Only assets of `version` are taken: the bundler never removes what an
+ * earlier build of another version left there. The macOS archive is named `uFSM.app.tar.gz` by the bundler (each build
+ * overwrites it); it is renamed to `uFSM_<version>_<arch>.app.tar.gz` so builds for two architectures cannot collide.
  */
 export function stage(
   bundleDir: string,
@@ -112,6 +113,7 @@ export function stage(
     .filter((p) => isReleaseAsset(basename(p)))
     .sort()) {
     const installer = installerOf(basename(path));
+    if (installer !== "app" && !basename(path).includes(`_${version}_`)) continue;
     const name = installer === "app" ? `${basename(path, ".app.tar.gz")}_${version}_${cpu}.app.tar.gz` : basename(path);
     if (!SAFE_NAME.test(name)) throw new Error(`release asset name ${name} would not survive as a URL`);
     if (existsSync(join(outDir, name))) throw new Error(`two release assets are called ${name}`);

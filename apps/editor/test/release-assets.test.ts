@@ -106,6 +106,27 @@ describe("release assets", () => {
     ]);
   });
 
+  it("leave out what a build of another version left in the bundle folder", () => {
+    const dir = bundle({
+      "nsis/uFSM_0.6.0_x64-setup.exe": "old",
+      "nsis/uFSM_0.8.0_x64-setup.exe": "older signed",
+      "nsis/uFSM_0.8.0_x64-setup.exe.sig": "SIG-OLD",
+      "nsis/uFSM_0.9.0_x64-setup.exe": "nsis",
+      "nsis/uFSM_0.9.0_x64-setup.exe.sig": "SIG-NSIS",
+      "msi/uFSM_0.6.0_x64_en-US.msi": "old",
+    });
+    const o = out();
+    const r = stage(dir, o, "0.9.0", "win32", "x64");
+    assert.deepEqual(r.assets, {
+      "windows-x86_64-nsis": { file: "uFSM_0.9.0_x64-setup.exe", signature: "SIG-NSIS" },
+    });
+    assert.deepEqual(readdirSync(o).sort(), [
+      "uFSM_0.9.0_x64-setup.exe",
+      "uFSM_0.9.0_x64-setup.exe.sig",
+      "updater-windows-x86_64.json",
+    ]);
+  });
+
   it("refuse names that would not survive as a URL", () => {
     const dir = bundle({ "nsis/u FSM_0.9.0_x64-setup.exe": "x" });
     assert.throws(() => stage(dir, out(), "0.9.0", "win32", "x64"), /would not survive/);
