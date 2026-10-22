@@ -120,7 +120,7 @@ The key map follows the v0.5 editor; two-key commands start with <kbd>A</kbd> (a
 | Color theme (Catppuccin, Everforest, Gruvbox or Solarized, each dark or light, with the scheme's own options: contrast, flavor; follows the OS by default) | File › Settings or View › Settings: Settings tab; saved to `settings.json` in the app's config folder | |
 | Title block fields (revision, date, author, company, document no.); paper size | Project tab › Title block / Paper; double-click the title block on the canvas | |
 | UI zoom: larger or smaller text and controls around the canvas, 50–300% (the diagram keeps its own zoom) | View › Zoom In / Zoom Out / Reset Zoom; Settings tab › Zoom; saved to `settings.json` | <kbd>Ctrl</kbd>+<kbd>+</kbd> (or <kbd>=</kbd>) / <kbd>Ctrl</kbd>+<kbd>-</kbd> / <kbd>Ctrl</kbd>+<kbd>0</kbd> |
-| Updates: a new version is downloaded in the background, then restart into it ([how](docs/releasing.md#how-the-editor-updates-itself)) | Status bar › Restart to Update; Help › Check for Updates / Restart to Update; Settings tab › Updates (automatically or when asked; `updates` in `settings.json`) | |
+| Updates: a new version is downloaded in the background, then restart into it ([how](docs/releasing.md#how-the-editor-updates-itself)) | Title bar › Restart to Update (right of the search field); Help › Check for Updates / Restart to Update; Settings tab › Updates (automatically or when asked; `updates` in `settings.json`) | |
 
 The application icons are rendered from `apps/editor/src-tauri/icons/icon.svg`
 (`npx tauri icon apps/editor/src-tauri/icons/icon.svg` regenerates the set from one

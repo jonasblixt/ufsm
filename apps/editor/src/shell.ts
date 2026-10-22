@@ -2,9 +2,9 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 /**
- * The window around the canvas: title bar (menus, search field, window buttons), tab strip, explorer rows,
- * breadcrumbs, the right panel (Properties, Project, Problems, Simulator, Code, Settings) and the status bar. Everything
- * here is drawn from the workspace and the controllers; `update` redraws what a change touches (main.ts calls it).
+ * The window around the canvas: title bar (menus, search field, update button, window buttons), tab strip, explorer
+ * rows, breadcrumbs, the right panel (Properties, Project, Problems, Simulator, Code, Settings) and the status bar.
+ * Everything here is drawn from the workspace and the controllers; `update` redraws what a change touches (main.ts calls it).
  */
 import { UFSM_VERSION, type Region } from "@ufsm/core";
 import { addDecl } from "@ufsm/core/edit";
@@ -125,6 +125,7 @@ export function createShell(app: App): Shell {
         recent: search.recent,
         onPick: search.onPick,
       },
+      update: app.updates.button(),
       windowControls: customWindowControls,
       mac: isMac && inTauri,
       maximized,
@@ -183,7 +184,6 @@ export function createShell(app: App): Shell {
       },
     });
     app.sim.updateStatus();
-    app.updates.updateStatus();
   };
 
   /** Breadcrumbs, the up button, the status line and the tree's marks; then the rest of the shell. */

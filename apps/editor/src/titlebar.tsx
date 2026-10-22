@@ -2,9 +2,10 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 /**
- * Title bar in the style of VS Code: app icon, menu bar, the search field in the middle (quickpick.tsx) and (on
- * Windows and Linux, where the window is frameless) minimize/maximize/close. The empty parts drag the window
- * (`data-tauri-drag-region`; double-click maximizes). On macOS the system's traffic lights sit at the left.
+ * Title bar in the style of VS Code: app icon, menu bar, the search field in the middle (quickpick.tsx), right of it
+ * the update button while there is an update (update-controller.ts), and (on Windows and Linux, where the window is
+ * frameless) minimize/maximize/close. The empty parts drag the window (`data-tauri-drag-region`; double-click
+ * maximizes). On macOS the system's traffic lights sit at the left.
  */
 import { render } from "preact";
 import { useLayoutEffect, useRef, useState } from "preact/hooks";
@@ -34,10 +35,21 @@ export interface Menu {
   items: MenuEntry[];
 }
 
+/** The update button: "Downloading update 40%", "Restart to Update", "Installing 0.9.1…". */
+export interface UpdateButton {
+  text: string;
+  title: string;
+  /** A click installs (otherwise it shows where the download stands). */
+  install: boolean;
+  onClick(): void;
+}
+
 export interface TitleBarProps {
   menus: Menu[];
   /** The search field (Ctrl+P) and what it finds. */
   search: QuickPickProps;
+  /** Shown right of the search field while an update is downloading, ready or installing. */
+  update?: UpdateButton | undefined;
   /** Draw minimize/maximize/close (frameless window). */
   windowControls: boolean;
   /** Leave room for the macOS traffic lights. */
@@ -213,7 +225,20 @@ function TitleBar(p: TitleBarProps) {
       <MenuBar menus={p.menus} />
       <div class="drag" data-tauri-drag-region />
       <QuickPick {...p.search} />
-      <div class="drag" data-tauri-drag-region />
+      {/* the button starts the right half, so the search field stays in the middle */}
+      <div class="drag after-search" data-tauri-drag-region>
+        {p.update && (
+          <button
+            type="button"
+            class={`update-button${p.update.install ? " ready" : ""}`}
+            title={p.update.title}
+            onPointerDown={(e) => e.preventDefault()}
+            onClick={p.update.onClick}
+          >
+            {p.update.text}
+          </button>
+        )}
+      </div>
       {p.windowControls && <WindowControls {...p} />}
     </>
   );

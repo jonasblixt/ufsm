@@ -13,7 +13,7 @@ import {
   phaseText,
   plainVersion,
   sizeText,
-  statusItem,
+  updateButton,
   type UpdateHost,
   type UpdateInfo,
   type UpdateSupport,
@@ -136,25 +136,25 @@ describe("updates: helpers", () => {
     assert.equal(errorText(""), "unknown error");
   });
 
-  it("put an item in the status bar only while downloading, ready or installing", () => {
-    assert.equal(statusItem({ kind: "idle" }), undefined);
-    assert.equal(statusItem({ kind: "current", checked: new Date() }), undefined);
+  it("show the title bar button only while downloading, ready or installing", () => {
+    assert.equal(updateButton({ kind: "idle" }), undefined);
+    assert.equal(updateButton({ kind: "current", checked: new Date() }), undefined);
     assert.equal(
-      statusItem({ kind: "failed", message: "x", checked: new Date() }),
+      updateButton({ kind: "failed", message: "x", checked: new Date() }),
       undefined,
       "background failures are quiet",
     );
-    assert.deepEqual(statusItem({ kind: "downloading", version: "0.9.0", downloaded: 250, total: 1000 }), {
+    assert.deepEqual(updateButton({ kind: "downloading", version: "0.9.0", downloaded: 250, total: 1000 }), {
       text: "Downloading update 25%",
       title: "Downloading uFSM 0.9.0 in the background",
       install: false,
     });
-    assert.equal(statusItem({ kind: "downloading", version: "0.9.0", downloaded: 250 })!.text, "Downloading update");
-    const ready = statusItem({ kind: "ready", version: "0.9.0", notes: "Fixes" })!;
+    assert.equal(updateButton({ kind: "downloading", version: "0.9.0", downloaded: 250 })!.text, "Downloading update");
+    const ready = updateButton({ kind: "ready", version: "0.9.0", notes: "Fixes" })!;
     assert.equal(ready.text, "Restart to Update");
     assert.equal(ready.install, true);
     assert.match(ready.title, /0\.9\.0[\s\S]*Fixes/);
-    assert.equal(statusItem({ kind: "installing", version: "0.9.0" })!.install, false);
+    assert.equal(updateButton({ kind: "installing", version: "0.9.0" })!.install, false);
   });
 
   it("describe every phase in one line", () => {
@@ -236,7 +236,7 @@ describe("updates: the flow", () => {
     await r.updater.check(true);
     assert.deepEqual(r.said.slice(1), [
       "Downloading uFSM 0.9.0…",
-      "uFSM 0.9.0 is ready: restart to update (status bar or Help menu).",
+      "uFSM 0.9.0 is ready: restart to update (title bar or Help menu).",
     ]);
     await r.updater.check(true);
     assert.equal(r.said[3], "uFSM 0.9.0 is ready: Help › Restart to Update.");

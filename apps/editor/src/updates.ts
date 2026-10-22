@@ -4,7 +4,7 @@
 /**
  * Updates of the desktop app, after VS Code: with `updates: "auto"` (the default) the app looks for a newer release a
  * little after it starts and then every few hours, downloads it in the background and offers "Restart to Update" in
- * the status bar and the Help menu; with `"manual"` it only looks when asked (Help › Check for Updates). Installing
+ * the title bar and the Help menu; with `"manual"` it only looks when asked (Help › Check for Updates). Installing
  * asks about unsaved changes first, like quitting.
  *
  * No DOM: the host (platform.ts through update-controller.ts, or a fake in the tests) does the work, a clock schedules
@@ -79,7 +79,7 @@ export interface UpdaterDeps {
   clock: Clock;
   /** The `updates` setting now (it can change while the app runs). */
   mode(): UpdateMode;
-  /** The phase changed (redraw the status bar, the Help menu and the Settings tab). */
+  /** The phase changed (redraw the title bar, the Help menu and the Settings tab). */
   changed(): void;
   /** Tell the user something (the status line): only for what they asked for, never for a background check. */
   say(message: string): void;
@@ -138,8 +138,8 @@ export function phaseText(p: UpdatePhase): string {
   }
 }
 
-/** The status bar's update item, when there is something to show: what it says and whether a click installs. */
-export function statusItem(p: UpdatePhase): { text: string; title: string; install: boolean } | undefined {
+/** The title bar's update button, when there is something to show: what it says and whether a click installs. */
+export function updateButton(p: UpdatePhase): { text: string; title: string; install: boolean } | undefined {
   switch (p.kind) {
     case "downloading": {
       const pc = percent(p.downloaded, p.total);
@@ -259,7 +259,7 @@ export class Updater {
       return;
     }
     this.set({ kind: "ready", version, ...(notes ? { notes } : {}) });
-    if (manual) this.deps.say(`uFSM ${version} is ready: restart to update (status bar or Help menu).`);
+    if (manual) this.deps.say(`uFSM ${version} is ready: restart to update (title bar or Help menu).`);
   }
 
   /** Restart into the downloaded release (asks about unsaved changes first). */
