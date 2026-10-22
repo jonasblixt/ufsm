@@ -40,7 +40,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM4OUQxOERGQkVDM0RFODAKUldTQTNzTyszeGlkeU9wekJFN0RyemkyaURnN2ZBZVNTY2Zaa0FaNXI5RzNIaTBmeXRSQVBiOWQK",
       "endpoints": [
         "https://github.com/jonasblixt/ufsm/releases/latest/download/latest.json"
       ],
