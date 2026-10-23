@@ -2,7 +2,8 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 /**
- * The right panel's Settings tab: global editor settings (color theme, zoom, updates), saved to settings.json at once.
+ * The right panel's Settings tab: global editor settings (color theme, zoom, updates, export), saved to settings.json
+ * at once.
  */
 import {
   zoomStep,
@@ -42,6 +43,8 @@ export interface SettingsProps {
   onTheme(theme: ThemeSetting): void;
   /** Zoom the whole window to this percentage. */
   onZoom(percent: number): void;
+  /** Include the drawing frame in SVG exports. */
+  onExportFrame(on: boolean): void;
   updates: UpdateProps;
 }
 
@@ -200,6 +203,25 @@ export function SettingsTab(p: SettingsProps) {
         </div>
       </Section>
       <UpdatesSection mode={p.settings.updates} {...p.updates} />
+      <Section title="Export">
+        <div class="settings-fields">
+          <Field label="Drawing frame">
+            <label class="check">
+              <input
+                type="checkbox"
+                class="export-frame"
+                aria-label="Include the drawing frame"
+                checked={p.settings.exportFrame}
+                onChange={(e) => p.onExportFrame(e.currentTarget.checked)}
+              />
+              {p.settings.exportFrame ? "included" : "left out"}
+            </label>
+          </Field>
+        </div>
+        <div class="dim zoom-about">
+          File › Export SVG: the whole sheet with its frame, zones and title block, or only the diagram.
+        </div>
+      </Section>
       <Section title="Settings file">
         <div class="dim settings-location" title={p.location}>
           {p.location === undefined

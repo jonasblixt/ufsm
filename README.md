@@ -112,6 +112,7 @@ The key map follows the v0.5 editor; two-key commands start with <kbd>A</kbd> (a
 | Simulate | Run › Start Simulation; Simulator tab: click an event to send it (marked when it would take a transition now; hover to see which), set guard values, follow the log; active states are green on the canvas | <kbd>F5</kbd> start / restart, <kbd>Shift</kbd>+<kbd>F5</kbd> stop |
 | Record a conformance trace | every simulation step is recorded: Simulator › Trace › Save trace… (replay with `ufsm trace`) | |
 | Generated code | Code tab: C header and source, C++, C#, Python, TypeScript, Rust, Go, live; Copy, Save…. Project › Code generator: the language, its output folder (relative to the model) and settings; Generate (also File › Generate Code and the Code tab) writes the files there, File › Generate Code To… into a folder picked once | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> generate |
+| Export a sheet as SVG (light colors, prints 1:1; with the drawing frame and title block, or only the diagram) | File › Export SVG… writes the sheet shown; File › Export with Drawing Frame or Settings tab › Export (`exportFrame` in `settings.json`) | |
 | Open state (off-page region, or zoom in) | double-click | <kbd>Enter</kbd> |
 | Up to parent page / root | breadcrumb, ↑, the mouse's back button | <kbd>Backspace</kbd>, <kbd>J</kbd> <kbd>A</kbd> / <kbd>J</kbd> <kbd>R</kbd> |
 | Show / hide the explorer (tools and machine trees) | View › Explorer | <kbd>N</kbd> |

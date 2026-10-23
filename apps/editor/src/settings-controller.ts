@@ -2,8 +2,8 @@
 // Copyright (C) 2026 Jonas Blixt <jonas@blxt.se>
 
 /**
- * Global settings (settings.json): the color theme (following the OS appearance when asked), the UI zoom and how the
- * app looks for updates. Settings are read from the browser-storage copy at once, so the first paint has the
+ * Global settings (settings.json): the color theme (following the OS appearance when asked), the UI zoom, how the
+ * app looks for updates and whether an SVG export includes the drawing frame. Settings are read from the browser-storage copy at once, so the first paint has the
  * right colors, then from settings.json; every change is applied at once and saved.
  */
 import type { App } from "./app";
@@ -38,6 +38,8 @@ export interface SettingsController {
   zoomReset(): void;
   /** Look for updates by itself or only when asked (the Settings tab); saved at once. */
   setUpdates(mode: UpdateMode): void;
+  /** Include the drawing frame in File › Export SVG (the Settings tab, File menu); saved at once. */
+  setExportFrame(on: boolean): void;
   /** The UI zoom as a factor (the sashes scale their drags by it). */
   uiZoom(): number;
   /** The OS switched between dark and light. */
@@ -125,6 +127,12 @@ export function createSettingsController(app: App): SettingsController {
       if (mode === settings.updates) return;
       settings = { ...settings, updates: mode };
       app.updates.modeChanged();
+      app.ws.changed("shell");
+      save();
+    },
+    setExportFrame: (on) => {
+      if (on === settings.exportFrame) return;
+      settings = { ...settings, exportFrame: on };
       app.ws.changed("shell");
       save();
     },

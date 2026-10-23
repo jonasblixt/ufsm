@@ -8,6 +8,7 @@
  * Copyright (c) 2020-2026 Paweł Kuna: 24 × 24 units, stroked 2 units wide with round caps and joins.
  */
 import type { ActionKind } from "@ufsm/core/diagram";
+import { SvgContext } from "./svg";
 
 export type IconName = ActionKind | "chevron-down" | "chevron-right";
 
@@ -57,6 +58,8 @@ export function drawIcon(ctx: CanvasRenderingContext2D, name: IconName, x: numbe
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.setLineDash([]);
-  ctx.stroke(pathOf(name));
+  // the SVG export cannot read a Path2D back: it gets the outlines as path data
+  if (ctx instanceof SvgContext) ctx.stroke(PATHS[name].join(" "));
+  else ctx.stroke(pathOf(name));
   ctx.restore();
 }

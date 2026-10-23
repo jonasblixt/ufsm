@@ -14,7 +14,8 @@
  * `light`, and every other string is an input for one of the theme's modifiers (gruvbox: `contrast`). `zoom` scales
  * the UI around the canvas (text and controls; the diagram keeps its own zoom) in percent, 50 to 300; left out at 100.
  * `updates` is `auto` (check for a new version at start and now and then, download it in the background and offer to
- * restart; left out) or `manual` (only Help › Check for Updates).
+ * restart; left out) or `manual` (only Help › Check for Updates). `exportFrame` says whether File › Export SVG
+ * includes the sheet's drawing frame and title block (`true`, left out) or only the diagram (`false`).
  */
 
 export type Appearance = "dark" | "light";
@@ -35,6 +36,8 @@ export interface Settings {
   zoom: number;
   /** Look for new versions by itself (`auto`) or only when asked (`manual`). */
   updates: UpdateMode;
+  /** File › Export SVG includes the drawing frame and title block. */
+  exportFrame: boolean;
   /** Top-level keys this version does not know, written back as they were. */
   other: Readonly<Record<string, unknown>>;
 }
@@ -42,7 +45,7 @@ export interface Settings {
 export const DEFAULT_THEME: ThemeSetting = { name: "gruvbox", appearance: "system", inputs: {} };
 
 export function defaultSettings(): Settings {
-  return { theme: { ...DEFAULT_THEME, inputs: {} }, zoom: 100, updates: "auto", other: {} };
+  return { theme: { ...DEFAULT_THEME, inputs: {} }, zoom: 100, updates: "auto", exportFrame: true, other: {} };
 }
 
 export const ZOOM_MIN = 50;
@@ -80,8 +83,12 @@ export function parseSettings(text: string | undefined): ParsedSettings {
     problems.push("settings.json must hold an object; using defaults");
     return { settings, problems };
   }
-  const { theme, zoom, updates, ...other } = json as Record<string, unknown>;
+  const { theme, zoom, updates, exportFrame, ...other } = json as Record<string, unknown>;
   settings.other = other;
+  if (exportFrame !== undefined) {
+    if (typeof exportFrame === "boolean") settings.exportFrame = exportFrame;
+    else problems.push("settings.json: exportFrame must be true or false; using true");
+  }
   if (updates !== undefined) {
     if (typeof updates === "string" && UPDATE_MODES.includes(updates)) settings.updates = updates as UpdateMode;
     else problems.push(`settings.json: updates must be "auto" or "manual"; using "auto"`);
@@ -116,14 +123,15 @@ export function parseSettings(text: string | undefined): ParsedSettings {
 }
 
 /**
- * The canonical text: two-space indent, theme first, then zoom unless it is 100, updates unless they are automatic, a
- * final newline.
+ * The canonical text: two-space indent, theme first, then zoom unless it is 100, updates unless they are automatic,
+ * exportFrame unless it is true, a final newline.
  */
 export function serializeSettings(s: Settings): string {
   const theme = { name: s.theme.name, appearance: s.theme.appearance, ...s.theme.inputs };
   const zoom = s.zoom === 100 ? {} : { zoom: s.zoom };
   const updates = s.updates === "auto" ? {} : { updates: s.updates };
-  return `${JSON.stringify({ theme, ...zoom, ...updates, ...s.other }, null, 2)}\n`;
+  const exportFrame = s.exportFrame ? {} : { exportFrame: false };
+  return `${JSON.stringify({ theme, ...zoom, ...updates, ...exportFrame, ...s.other }, null, 2)}\n`;
 }
 
 /** The appearance to use now. */

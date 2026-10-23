@@ -50,6 +50,7 @@ import { drawnBox, forEachVisible, forEachVisibleTransition, frameCaptionWidth, 
 
 export type { View } from "./hit";
 import { drawIcon } from "./icons";
+import { canvasMeasure, type SvgMeasure } from "./svg";
 import { C, canvasAlpha } from "./theme";
 
 /** Diagram colors come from the active theme (theme.ts); re-exported for the previews. */
@@ -335,6 +336,12 @@ export function canvasLabelMeasure(): MeasureText {
   return labelFont(measureCtx);
 }
 
+/** Text metrics for the SVG export, from the canvas fonts the editor draws with. */
+export function canvasSvgMeasure(): SvgMeasure {
+  measureCtx ??= document.createElement("canvas").getContext("2d")!;
+  return canvasMeasure(measureCtx);
+}
+
 function drawTransition(ctx: CanvasRenderingContext2D, index: DocIndex, t: Transition, fired = false): void {
   const g = edgeGeometry(index, t.id);
   if (!g || g.points.length < 2) return;
@@ -520,12 +527,18 @@ function drawWould(ctx: CanvasRenderingContext2D, index: DocIndex, t: Transition
  * The sheet of paper with its drawing frame (sheet.ts): outer border, the drawing area's edge, zone ticks and references
  * in the band between, the grid inside the drawing area only, and the title block in its bottom-right corner.
  */
-function drawSheet(ctx: CanvasRenderingContext2D, index: DocIndex, region: Region, fileName: string | undefined): void {
+function drawSheet(
+  ctx: CanvasRenderingContext2D,
+  index: DocIndex,
+  region: Region,
+  fileName: string | undefined,
+  grid: boolean,
+): void {
   const { sheet, border, area, xs, ys } = sheetFrame(paperOf(index));
   ctx.fillStyle = C.paper;
   ctx.fillRect(sheet.x, sheet.y, sheet.w, sheet.h);
   ctx.fillStyle = C.grid;
-  for (let gx = 0; gx <= area.w; gx += 20) {
+  for (let gx = 0; grid && gx <= area.w; gx += 20) {
     for (let gy = 0; gy <= area.h; gy += 20) ctx.fillRect(gx - 1, gy - 1, 2, 2);
   }
   ctx.save();
@@ -620,6 +633,10 @@ export interface RenderOptions {
   sim?: SimHighlight;
   /** The file's name for the title block (none before the first save). */
   fileName?: string;
+  /** Draw the sheet of paper with its drawing frame and title block (default true; the SVG export can leave it out). */
+  frame?: boolean;
+  /** Draw the grid dots on the drawing area (default true; not exported). */
+  grid?: boolean;
 }
 
 export interface SimHighlight {
@@ -742,7 +759,7 @@ export function renderSheet(
   ctx.translate(view.x, view.y);
   ctx.scale(view.scale, view.scale);
 
-  drawSheet(ctx, index, sheet, opts.fileName);
+  if (opts.frame !== false) drawSheet(ctx, index, sheet, opts.fileName, opts.grid !== false);
 
   const sel = opts.selection;
   const notes = annotationsOn(index, sheet);

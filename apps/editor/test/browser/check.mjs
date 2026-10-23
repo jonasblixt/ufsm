@@ -12,7 +12,8 @@
  * (color themes: all gruvbox variants, Everforest, Solarized and Catppuccin dark and light, Catppuccin's flavor, following
  * the OS, kept across a reload; UI zoom: keys, View menu, the tab's buttons, limits, the sash, kept across a reload, the
  * canvas never zoomed; updates: Help menu, Settings › Updates, the setting), the search field, and the sheet frame and title block (frame lines, zones, the off-page marker's
- * sheet number, the free fields from the Project tab, a double-click and the search, fit findings with sheet and zone).
+ * sheet number, the free fields from the Project tab, a double-click and the search, fit findings with sheet and zone),
+ * and File › Export SVG (with and without the frame, rasterized; the option in the File menu and the Settings tab).
  *
  *   node apps/editor/test/browser/check.mjs [model.ufsm] [screenshot-dir]
  *
@@ -3629,6 +3630,126 @@ await page.evaluate(() => localStorage.removeItem("ufsm.searchRecent"));
     after.x === before.x + 50 && after.y === before.y,
     JSON.stringify([before, after]),
   );
+  await U(
+    "closeTab",
+    (await U("tabs")).findIndex((t) => t.active),
+    true,
+  );
+}
+// ---------------------------------------------------------------- File › Export SVG
+{
+  await page.evaluate(
+    ([t]) => window.ufsm.load(t, "dimmer.ufsm"),
+    [readFileSync(join(repo, "examples/dimmer.ufsm"), "utf8")],
+  );
+  await page.waitForTimeout(200);
+  const offId = await stateId("Off");
+  const off = await box(offId);
+  // parse it, put it in the page (text advances as laid out) and rasterize it, one pixel per sheet unit
+  const look = (svg, b) =>
+    page.evaluate(
+      async ([svg, b]) => {
+        const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
+        const parseError = doc.querySelector("parsererror")?.textContent ?? null;
+        const root = doc.documentElement;
+        const holder = document.createElement("div");
+        holder.style.cssText = "position:fixed;left:0;top:0;visibility:hidden";
+        holder.innerHTML = svg.replace(/^<\?xml[^>]*\?>/, "");
+        document.body.append(holder);
+        const name = [...holder.querySelectorAll("text")].find((t) => t.textContent === "Off");
+        const nameW = name ? name.getComputedTextLength() : -1;
+        holder.remove();
+        const c = document.createElement("canvas").getContext("2d");
+        c.font = "18px sans-serif";
+        const canvasW = c.measureText("Off").width;
+        const img = new Image();
+        img.src = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+        await img.decode();
+        const [, , vw, vh] = root.getAttribute("viewBox").split(" ").map(Number);
+        const cv = document.createElement("canvas");
+        cv.width = vw;
+        cv.height = vh;
+        const g = cv.getContext("2d");
+        g.drawImage(img, 0, 0, cv.width, cv.height);
+        // the darkest pixel around the middle of the state's top edge (the light theme's ink is darker than its paper)
+        const lum = (x, y) => {
+          const d = g.getImageData(Math.round(x) - 2, Math.round(y) - 2, 5, 5).data;
+          let m = 1;
+          for (let i = 0; i < d.length; i += 4) m = Math.min(m, (d[i] + d[i + 1] + d[i + 2]) / 765);
+          return m;
+        };
+        const [ox, oy] = b.origin;
+        return {
+          parseError,
+          viewBox: root.getAttribute("viewBox"),
+          width: root.getAttribute("width"),
+          texts: [...doc.querySelectorAll("text")].map((t) => t.textContent),
+          nameW,
+          canvasW,
+          edge: lum(b.x + b.w / 2 - ox, b.y - oy),
+          paper: lum(2, 2),
+        };
+      },
+      [svg, b],
+    );
+
+  const framed = await U("exportSvg", true);
+  const f = await look(framed, { ...off, origin: [-50, -50] });
+  check("Export SVG with the frame is well-formed SVG", f.parseError === null, f.parseError);
+  check(
+    "...covering the whole A3 sheet at its paper size",
+    f.viewBox === "0 0 2380 1684" && f.width === "1190pt",
+    `${f.viewBox} ${f.width}`,
+  );
+  check(
+    "...with the frame's zones and the title block",
+    ["Off", "On", "1", "8", "A", "F", "dimmer.ufsm"].every((t) => f.texts.includes(t)),
+    JSON.stringify(f.texts),
+  );
+  check("...a state's outline drawn in ink on light paper", f.paper > 0.6 && f.edge < f.paper - 0.3, JSON.stringify(f));
+  check(
+    "...and its text as wide as the canvas draws it",
+    Math.abs(f.nameW - f.canvasW) < 1,
+    `${f.nameW} vs ${f.canvasW}`,
+  );
+
+  const bare = await U("exportSvg", false);
+  const b = await look(bare, { ...off, origin: [0, 0] });
+  const vb = b.viewBox.split(" ").map(Number);
+  check("Export SVG without the frame is well-formed SVG", b.parseError === null, b.parseError);
+  check(
+    "...only the diagram: smaller, no title block",
+    vb[2] < 2380 && vb[3] < 1684 && b.texts.includes("Off") && !b.texts.includes("dimmer.ufsm"),
+    JSON.stringify([vb, b.texts]),
+  );
+  if (shots) {
+    writeFileSync(`${shots}/export-frame.svg`, framed);
+    writeFileSync(`${shots}/export-bare.svg`, bare);
+  }
+
+  // the option: File menu and Settings › Export, saved in settings.json (left out while on)
+  await page.click(".menu-label >> text=File");
+  const toggle = page.locator('.menu-item:has-text("Export with Drawing Frame")');
+  check(
+    "File lists Export SVG… and the frame option, ticked by default",
+    (await page.locator('.menu-item:has-text("Export SVG…")').count()) === 1 &&
+      (await toggle.getAttribute("aria-checked")) === "true",
+  );
+  await toggle.click();
+  check("unticking it saves exportFrame: false", /"exportFrame": false/.test(await U("settings")));
+  await page.click("#panel-tab-settings");
+  check("Settings › Export shows it", (await page.locator("input.export-frame").isChecked()) === false);
+  await page.click(".menu-label >> text=File");
+  const [dl] = await Promise.all([page.waitForEvent("download"), page.click('.menu-item:has-text("Export SVG…")')]);
+  const written = readFileSync(await dl.path(), "utf8");
+  check(
+    "File › Export SVG… writes dimmer.svg, without the frame as set",
+    dl.suggestedFilename() === "dimmer.svg" && written === bare,
+    dl.suggestedFilename(),
+  );
+  check("...and says so", /Exported dimmer\.svg/.test(await U("status")), await U("status"));
+  await page.locator("input.export-frame").check();
+  check("ticking it in Settings includes the frame again", !/exportFrame/.test(await U("settings")));
   await U(
     "closeTab",
     (await U("tabs")).findIndex((t) => t.active),
