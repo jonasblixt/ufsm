@@ -5,12 +5,14 @@
  * Machines as files: open (v0 files are converted in memory and never overwritten silently), File › New, save and
  * save as (the first save of a new machine names it after its file), close (asking first when there are unsaved
  * changes). Each open machine gets its tab and its section in the explorer. The desktop app remembers the machines
- * opened or saved last (File › Open Recent).
+ * opened or saved last (File › Open Recent). File › Export SVG writes the sheet shown as a drawing (export-svg.ts).
  */
 import { UfsmFormatError, loadModel, serializeV1, type DocIndex, type LoadedModel } from "@ufsm/core";
+import { sheetInfo } from "@ufsm/core/diagram";
 import { newDocument, setMachineName } from "@ufsm/core/edit";
 import { el, type App } from "./app";
 import { explorerEntry } from "./explorer";
+import { exportTheme, sheetSvg, svgFileName } from "./export-svg";
 import {
   addRecent,
   baseName,
@@ -21,8 +23,10 @@ import {
   openRecentFile,
   recentFiles,
   saveModelFile,
+  saveTextFile,
   type OpenedFile,
 } from "./platform";
+import { canvasSvgMeasure } from "./render";
 import type { DocSession } from "./session";
 import { buildTree, type Tree } from "./tree";
 import { nameOnSave, untitledName } from "./untitled";
@@ -43,6 +47,10 @@ export interface Files {
   saveModel(saveAs?: boolean): Promise<void>;
   /** Close a machine; asks first when it has unsaved changes. Resolves true when it was closed. */
   closeDoc(d: DocSession | undefined, force?: boolean): Promise<boolean>;
+  /** The sheet shown as SVG text, with or without the drawing frame (default: the setting). */
+  sheetSvg(frame?: boolean): string | undefined;
+  /** File › Export SVG: write the sheet shown to a file the user picks. */
+  exportSvg(): Promise<void>;
 }
 
 export function createFiles(app: App): Files {
@@ -132,6 +140,17 @@ export function createFiles(app: App): Files {
     console.error(e);
   };
 
+  /** The sheet `d` shows as SVG, in the light appearance of the theme in settings. */
+  const svgOf = (d: DocSession | undefined, frame = app.settings.settings.exportFrame): string | undefined =>
+    d &&
+    sheetSvg(d.index, d.sheet, {
+      frame,
+      theme: exportTheme(app.settings.settings.theme),
+      measure: canvasSvgMeasure(),
+      // No file name in the title block before File › New's first save, as on the canvas.
+      ...(d.untitled ? {} : { fileName: d.fileName }),
+    });
+
   return {
     showModel,
     openModel: async () => {
@@ -217,5 +236,19 @@ export function createFiles(app: App): Files {
       }
     },
     closeDoc,
+    sheetSvg: (frame) => svgOf(ws.active, frame),
+    exportSvg: async () => {
+      const d = ws.active;
+      const svg = svgOf(d);
+      if (!d || svg === undefined) return;
+      try {
+        const name = svgFileName(d.fileName, sheetInfo(d.index, d.sheet).number);
+        const written = await saveTextFile(name, { name: "SVG image", extensions: ["svg"] }, () => svg);
+        if (written) app.shell.setStatus(`Exported ${baseName(written)}`);
+      } catch (e) {
+        app.shell.setStatus(`Export failed: ${String(e)}`);
+        console.error(e);
+      }
+    },
   };
 }

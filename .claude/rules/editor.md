@@ -26,10 +26,12 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend, laid out after
                         Pointer and Tool)
   src/files.ts          open, Open Recent (list kept by the Rust shell), File › New, save, save as, close;
                         navigation.ts (sheets, entering states, jumping); edit-commands.ts (delete, clipboard, regions, bend points, S routes, bars, off-page);
-                        settings-controller.ts (settings.json: theme, UI zoom, updates); sim-controller.ts (Simulator and Code
+                        settings-controller.ts (settings.json: theme, UI zoom, updates, exportFrame); sim-controller.ts (Simulator and Code
                         tabs, Generate: into the selected target's output folder, out-path.ts turns a picked folder into
                         the stored relative form); search-items.ts (what the search finds, search.ts ranks); automation.ts
-                        (`window.ufsm`); update-controller.ts (the title bar's update button, Restart to Update asks about
+                        (`window.ufsm`); export-svg.ts (File › Export SVG: one sheet, with or without the frame, in the
+                        theme's light colors) over svg.ts (a Canvas 2D context that writes SVG, so render.ts draws the
+                        export too; no DOM); update-controller.ts (the title bar's update button, Restart to Update asks about
                         unsaved changes) over updates.ts (the update flow after VS Code: when to check, download, phases
                         and their texts; no DOM, tested with a fake host and clock)
   src/hit.ts            hit testing, rubber band, bounds (no DOM: label widths come from a measure, render.ts has the
@@ -86,7 +88,7 @@ apps/editor/            @ufsm/editor: Vite + TypeScript frontend, laid out after
 
 The editor exposes `window.ufsm` for automation: `load(text, name)`, `newModel()`,
 `worldToScreen(x, y)`, `selectedName()`, `selectedIds()`, `select(ids)`, `serialize()`,
-`box(id)`, `annotation(id)` (a note's or frame's box, an arrow's ends), `textEditing()`, `route(id)`, `actionBlock(id)` (a state's action block layout from core, plus `hiddenMarkerScreen`, the screen centre of its hidden-lines marker), `problems()` (the design rule check's findings), `handles()` (with screen positions), `undo()`, `redo()`,
+`box(id)`, `annotation(id)` (a note's or frame's box, an arrow's ends), `textEditing()`, `route(id)`, `actionBlock(id)` (a state's action block layout from core, plus `hiddenMarkerScreen`, the screen centre of its hidden-lines marker), `problems()` (the design rule check's findings), `exportSvg(frame?)` (the sheet shown as File › Export SVG writes it), `handles()` (with screen positions), `undo()`, `redo()`,
 `canUndo()`, `canRedo()`, `isDirty()`, `tabs()`, `activateTab(i)`, `closeTab(i, force)`, `view()`,
 `tool()`, `pickTool(id)`, `status()`, `panelTab()`, `openSearch(text)`, `search(text)` (the rows the search lists: label, kind, detail, machine, checked), `theme()` (id, inputs, appearance), `zoom()` (UI zoom %), `settings()` (settings.json text), `updates()` (the updater's
 phase, `running` version), simulator: `simStart()`, `simStop()`, `simSend(event)`,
@@ -103,7 +105,8 @@ models (C, Python, TypeScript, Rust) and the Settings tab (all six gruvbox varia
 Catppuccin's flavor, following the OS, kept across a reload; UI zoom with the canvas unchanged; Updates: Help menu, the
 setting, the browser build's message, the title bar's update button's place), then the search
 (Ctrl+P/Ctrl+Shift+P/F1, other machines, focus order, commands, settings (no preview while highlighted), Project settings, prefixes),
-the sheet frame and title block (frame, zones, off-page marker, fields, double-click, fit findings with sheet and zone), the mouse's back button (sent through CDP, so the webview's history navigation is covered), no webview context menu outside text fields;
+the sheet frame and title block (frame, zones, off-page marker, fields, double-click, fit findings with sheet and zone), the mouse's back button (sent through CDP, so the webview's history navigation is covered), no webview context menu outside text fields, File › Export SVG (well-formed, paper size, frame on and off, text
+advances equal to the canvas's, rasterized, the menu option and the setting, the download);
 with a second argument
 it writes screenshots there); it needs esbuild and
 playwright (`UFSM_NODE_TOOLS=/opt/npm-tools` in the cloud workspace). Run it after

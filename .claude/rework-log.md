@@ -743,3 +743,15 @@ Measured over the 21 valid legacy models (864 KB):
   the status bar to a button in the title bar right of the search field, as in VS Code (Jonas); the search field keeps
   its place. docs/releasing.md "Trying an update" rewritten for the throwaway key. Tests: updates 12, release-assets 9;
   browser check 442 passed (the button's place, also in a narrow window).
+- 2026-10-24: SVG export (Jonas: "add SVG export, the drawing frame optional, default on"). `svg.ts` is a Canvas 2D
+  context that records SVG (paths with arcs for arc/arcTo, rects, text with the alphabetic baseline worked out from the
+  canvas's metrics for `middle`, nested clips as clipPath elements clipped by their parent, translate/scale applied to
+  the points, translucent colors as color + opacity for SVG 1.1 viewers); icons.ts hands it the Tabler path data, as a
+  Path2D cannot be read back. `export-svg.ts` runs `renderSheet` on it with the theme's light appearance swapped in
+  (`withCanvasTheme`), paper as the background, no grid (`RenderOptions.grid`) and the frame optional
+  (`RenderOptions.frame`); with the frame the SVG is the paper (A3: 1190 x 842 pt), without it the content bounds
+  (`sheetBounds` now takes a measure for label boxes as drawn) plus 20 units. File › Export SVG…, File › Export with
+  Drawing Frame (checked item), Settings › Export, `exportFrame` in settings.json (written only when false),
+  `window.ufsm.exportSvg(frame?)`. Tests: export-svg 9 (context, both exports, an off-page sheet of canvas.ufsm,
+  colors restored, file names, the setting); browser check 455 passed (13 new: parsed, rasterized, text advance equals
+  the canvas's, menu, setting, download). Version 0.11.0.

@@ -1,6 +1,6 @@
 {
   "name": "ufsm",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "private": true,
   "type": "module",
   "description": "uFSM: hierarchical state machine editor and multi-language code generator",

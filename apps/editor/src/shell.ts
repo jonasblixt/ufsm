@@ -173,6 +173,7 @@ export function createShell(app: App): Shell {
         problems: s.problems(),
         onTheme: s.setTheme,
         onZoom: s.setZoom,
+        onExportFrame: s.setExportFrame,
         updates: {
           version: app.updates.version ?? UFSM_VERSION,
           phase: app.updates.phase,
