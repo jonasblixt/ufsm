@@ -282,7 +282,15 @@ tested behaviour (unit tests, traces of the editor model, headless browser check
       the canvas (only in Properties, search and the CLI): show it dimmed when the state is selected?; resizing a state
       narrower re-wraps the block, which can push it over the first region's contents (reported as `actions-overlap`,
       not prevented); an ellipsis on a cut line can be clipped at the right edge when the line is full
-- [ ] E7 Polish: export SVG/PDF/print, Tauri hardening (CSP; dialog-picked paths only is done: fs plugin, 2026-10-10),
+- [x] SVG export (Jonas 2026-10-24): File › Export SVG… writes the sheet shown, drawn by render.ts on an SVG recording
+      context (`svg.ts`), in the active theme's light colors, at the paper's scale (2 units per pt); the drawing frame and
+      title block optional, on by default (File › Export with Drawing Frame, Settings › Export, `exportFrame` in
+      settings.json) (2026-10-24)
+- [ ] SVG export follow-ups: Jonas to try it in `npm run dev` (Tauri's save dialog; open the file in Inkscape and a
+      browser); every sheet at once (one file per sheet, or a multi-page PDF); a "colors as the editor" choice; text as
+      outlines or embedded fonts (today the viewer's fonts: monospace advances other than the editor's widen or narrow
+      action lines a little); export from the CLI (needs a text measure without a canvas)
+- [ ] E7 Polish: export PDF/print, Tauri hardening (CSP; dialog-picked paths only is done: fs plugin, 2026-10-10),
       autosave/recovery
 - [x] Updates after VS Code (decisions log 2026-10-14): tauri-plugin-updater behind the shell's `update_*` commands,
       `latest.json` from the newest GitHub release, checked 10 s after start and every 6 h (`updates: "auto"`) or only on
