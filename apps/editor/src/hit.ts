@@ -276,8 +276,11 @@ export function vertexBounds(index: DocIndex, id: string): Bounds {
   return { x0: b.x, y0: b.y, x1: b.x + b.w, y1: b.y + b.h };
 }
 
-/** Content bounds of one sheet. */
-export function sheetBounds(index: DocIndex, sheet: Region): Bounds | undefined {
+/**
+ * Content bounds of one sheet. Labels count as their stored width and ~60 units high, or, with `measure`, as the box
+ * their text takes (the SVG export).
+ */
+export function sheetBounds(index: DocIndex, sheet: Region, measure?: MeasureText): Bounds | undefined {
   let b: Bounds | undefined;
   const add = (x: number, y: number, w: number, h: number): void => {
     if (!b) b = { x0: x, y0: y, x1: x + w, y1: y + h };
@@ -296,7 +299,9 @@ export function sheetBounds(index: DocIndex, sheet: Region): Bounds | undefined 
     const g = edgeGeometry(index, t.id);
     if (!g) return;
     g.points.forEach((p) => add(p.x, p.y, 0, 0));
-    if (g.label) add(g.label.x, g.label.y, g.label.w, 60);
+    const lb = g.label && measure ? labelBox(index, t, measure) : undefined;
+    if (lb) add(lb.x, lb.y, lb.w, lb.h);
+    else if (g.label) add(g.label.x, g.label.y, g.label.w, 60);
   });
   const on = annotationsOn(index, sheet);
   for (const id of [...on.frames, ...on.notes]) {

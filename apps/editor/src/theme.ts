@@ -341,6 +341,18 @@ export function setCanvasTheme(t: ResolvedTheme): void {
   Object.assign(rgba, t.canvasRgba);
 }
 
+/** Run `draw` with the diagram colors of `t` (the SVG export), then put the active theme's back. */
+export function withCanvasTheme<T>(t: ResolvedTheme, draw: () => T): T {
+  const saved = { canvas: { ...C }, rgba: { ...rgba } };
+  setCanvasTheme(t);
+  try {
+    return draw();
+  } finally {
+    Object.assign(C, saved.canvas);
+    Object.assign(rgba, saved.rgba);
+  }
+}
+
 /** A canvas color with another alpha, as CSS text (rubber band fill, simulator fill). */
 export function canvasAlpha(key: CanvasColor, a: number): string {
   return withAlpha(rgba[key], a);

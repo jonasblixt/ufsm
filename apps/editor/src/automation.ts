@@ -36,6 +36,8 @@ export function installAutomation(app: App): void {
       /** All selected ids, vertices and transitions, in no particular order. */
       selectedIds: (): string[] => (ws.active ? [...ws.active.selection] : []),
       serialize: () => (ws.active ? serializeV1(ws.active.history.current) : undefined),
+      /** The sheet shown as File › Export SVG writes it (`frame` defaults to the setting). */
+      exportSvg: (frame?: boolean) => app.files.sheetSvg(frame),
       /** The armed tool ("select" when none). */
       tool: () => app.tools.tool,
       /** Pick a tool as a palette click does. */
